@@ -1,10 +1,15 @@
 CMAKE_minimum_required( VERSION 3.20 )
+
+# cmake scripts location
+list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_files" )        
+message(STATUS "CMAKE_MODULE_PATH : ${CMAKE_MODULE_PATH}" )
+include( utils )
+
 ################################################
 # Auto configuration
 # in case no configuration file is used
 ################################################
 # Cache variables will not be reset if already defined with cmake .. -C <cache file>
-
 
 set(languages "Fortran")
 if ("LAMMPS" IN_LIST NDM_PACKAGE_LIST)
@@ -27,111 +32,28 @@ set(GNU_CXX_COMPILERS g++ gcc)
 
 # define configurations
 macro(CONFIG_INTEL)
-    set(CMAKE_${lang}_COMPILER "${VAR_${config}_${lang}}" CACHE STRING "")
-    cmake_path(GET CMAKE_${lang}_COMPILER FILENAME compiler_name)     
+    cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name)     
     set(NDM_PRESET_TITLE "Compile NDM INTEL: ${compiler_name}" CACHE STRING "")
 endmacro(CONFIG_INTEL)
 
 macro(CONFIG_GNU)
-    set(CMAKE_${lang}_COMPILER "${VAR_${config}_${lang}}" CACHE STRING "")
-    cmake_path(GET CMAKE_${lang}_COMPILER FILENAME compiler_name)
-    set(NDM_PRESET_TITLE "Compile NDM GNU : ${compiler_name}" CACHE STRING "")
+    cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name)     
+    set(NDM_PRESET_TITLE "Compile NDM GNU: ${compiler_name}" CACHE STRING "")
     set(CMAKE_Fortran_FLAGS_RELEASE " -O3 -ffree-line-length-512 -funroll-all-loops" CACHE STRING "")
     set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0 -ffree-line-length-512" CACHE STRING "")
     set(MKL_MPI "openmpi" CACHE STRING "MPI")
 endmacro(CONFIG_GNU)
 
-foreach(lang IN ITEMS ${languages})
-
-# Find mpirun directory to look for wrapper
-set(list_MPIEXEC mpiexec mpirun)
-set(VAR_MPIEXEC "VAR_MPIEXEC-NOTFOUND" CACHE STRING "")
-foreach(mpi_prog IN ITEMS ${list_MPIEXEC})
-	if (VAR_MPIEXEC STREQUAL "VAR_MPIEXEC-NOTFOUND")
-	    if (DEFINED ENV{OMP_ROOT})
-	        find_program(VAR_MPIEXEC ${mpi_prog} PATHS $ENV{OMP_ROOT} NO_DEFAULT_PATH)
-	    elseif(DEFINED ENV{MPI_HOME})
-	        find_program(VAR_MPIEXEC ${mpi_prog} PATHS $ENV{MPI_HOME} NO_DEFAULT_PATH)
-	    else()
-	        find_program(VAR_MPIEXEC ${mpi_prog})	# search anywhere
-            endif()
-	endif()
-endforeach()
-
-if (VAR_MPIEXEC STREQUAL "VAR_MPIEXEC-NOTFOUND")
-	set(Project_PARA OFF)
-else()
-	cmake_path(GET VAR_MPIEXEC PARENT_PATH mpi_path)
-	set(Project_PARA ON)
+# Look for available compilers
+# 1. Check if environment variable OMPI_FC, MPI_FC or FC is defined
+# 2. Check for each configuration (INTEL, MIX, GNU) if a suitable wrapper exists
+# 3. For each wrapper found, check its underlying compiler
+set_compiler("NDM" "FC" "Fortran")
+if ("CXX" IN_LIST languages)
+    set_compiler("NDM" "CXX" "CXX")
 endif()
 
-# For each possible configuration, look for a wrapper in the mpirun directory
-set(WRAPPER_FOUND_${lang} False)
-foreach (config IN ITEMS ${compile_configuration_list})
-    set(VAR_${config}_${lang} "VAR_${config}_${lang}-NOTFOUND" CACHE STRING "")
-    foreach (wrapper IN ITEMS ${${config}_${lang}_WRAPPERS})
-        if (VAR_${config}_${lang} STREQUAL "VAR_${config}_${lang}-NOTFOUND")
-            find_program(VAR_${config}_${lang} ${wrapper} PATHS ${mpi_path} NO_DEFAULT_PATH)
-        endif()
-    endforeach()
-    if (NOT VAR_${config}_${lang} STREQUAL "VAR_${config}_${lang}-NOTFOUND") # if a wrapper is found, get the underlying compiler        
-	set(WRAPPER_FOUND_${lang} True)
-	execute_process(
-            COMMAND ${VAR_${config}_${lang}} -show
-            OUTPUT_VARIABLE SHOW_UNDERLYING)
-        if (SHOW_UNDERLYING)
-            string(REPLACE " " ";" SHOW_UNDERLYING2 ${SHOW_UNDERLYING})
-            list(GET SHOW_UNDERLYING2 0 ${config}_${lang}_underlying_compiler)
-        endif()
-    endif()
-endforeach()
-
-# If no wrapper was found, look wider
-if (NOT ${WRAPPER_FOUND_${lang}})
-	foreach (config IN ITEMS ${compile_configuration_list})
-	    foreach (compiler IN ITEMS ${${config}_${lang}_COMPILERS})
-		if (VAR_${config}_${lang} STREQUAL "VAR_${config}_${lang}-NOTFOUND")
-		    find_program(VAR_${config}_${lang} ${compiler})
-		endif()
-	    endforeach()
-	    if (NOT VAR_${config}_${lang} STREQUAL "VAR_${config}_${lang}-NOTFOUND") # if a compiler is found, maybe it's a wrapper and we can get the underlying compiler
-		execute_process(
-		    COMMAND ${VAR_${config}_${lang}} -show
-		    OUTPUT_VARIABLE SHOW_UNDERLYING)
-		if (SHOW_UNDERLYING)
-		    string(REPLACE " " ";" SHOW_UNDERLYING2 ${SHOW_UNDERLYING})
-		    list(GET SHOW_UNDERLYING2 0 ${config}_${lang}_underlying_compiler)
-		endif()
-	    endif()
-	endforeach()
-endif()
-
-# Choose previously defined configuration
-set(config_${lang}_set OFF)
-foreach (config IN ITEMS ${compile_configuration_list})
-    if (NOT ${config_${lang}_set})
-	# if the underlying compiler is defined it means we have found a working wrapper		
-	if (DEFINED ${config}_${lang}_underlying_compiler)
-	    if (${${config}_${lang}_underlying_compiler} IN_LIST ${config}_${lang}_COMPILERS)
-                cmake_language(CALL CONFIG_${config})        #cmake 3.18
-                set(config_${lang}_set ON)
-            endif()
-	elseif(DEFINED CMAKE_${lang}_COMPILER)
-	    cmake_path(GET CMAKE_${lang}_COMPILER FILENAME compiler_name)
-            if (${compiler_name} IN_LIST ${config}_${lang}_COMPILERS)
-		cmake_language(CALL CONFIG_${config})        #cmake 3.18
-		set(config_${lang}_set ON)
-            endif()
-	elseif (NOT ${Project_PARA} AND NOT VAR_${config}_${lang} STREQUAL "VAR_${config}_${lang}-NOTFOUND")
-		cmake_language(CALL CONFIG_${config})        #cmake 3.18
-                set(config_${lang}_set ON)
-        endif()
-    endif()
-endforeach()
-
-endforeach()
-
-if (${Project_PARA})
+if (VAR_MPIEXEC AND NOT NDM_FORCED_SERIAL)
     list(APPEND NDM_PACKAGE_LIST "MPI")
     list(APPEND NDM_COMPILE_DEFINITION "PARA")
     list(APPEND NDM_COMPILE_DEFINITION "PARAML")
@@ -177,7 +99,7 @@ set( PROJECT_AUTHOR "Jean-Paul Crocombette" )
 
 option( ${PROJECT_NAME}_OPT_TRACE "trace all variables for cmake debug" OFF )
 option( ${PROJECT_NAME}_OPT_TEST "Prepare tests" ON )
-option( ${PROJECT_NAME}_OPT_COVERAGE "code coverage option" ON)
+option( ${PROJECT_NAME}_OPT_COVERAGE "code coverage option" OFF)
 option( ${PROJECT_NAME}_OPT_COMPILE_DOC "Compile documentation" OFF )
 
 
@@ -187,10 +109,6 @@ option( ${PROJECT_NAME}_OPT_COMPILE_DOC "Compile documentation" OFF )
 
 # Get the languages list for this project
 get_property(${PROJECT_NAME}_LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)   
-
-# cmake scripts location
-list( APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake_files" )        
-message(STATUS "CMAKE_MODULE_PATH : ${CMAKE_MODULE_PATH}" )
 
 # Import cmake scripts
 include(doxygen_doc)        # to compile documentation with Doxygen
@@ -288,6 +206,7 @@ if (${PROJECT_NAME}_OPT_TEST)
             WORKING_DIRECTORY "${test_path}"
         )
         set_tests_properties("${test_name}" PROPERTIES TIMEOUT 120)
+        set_tests_properties("${test_name}" PROPERTIES FIXTURES_REQUIRED tests)
         list(APPEND all_tests ${test_name})
     endforeach()
 
@@ -300,13 +219,14 @@ if( ${PROJECT_NAME}_OPT_COVERAGE )
             COMMAND profmerge "*.dyn"
             WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
         )
-  set_tests_properties("profmerge_step" PROPERTIES FIXTURES_CLEANUP "mld01_gin;mld02_cin")
+  set_tests_properties("profmerge_step" PROPERTIES FIXTURES_CLEANUP tests)
   ADD_TEST(
             NAME "codecov_step"
             COMMAND codecov
             WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
         )
   set_tests_properties("codecov_step" PROPERTIES FIXTURES_REQUIRED "profmerge_step")
+  set_tests_properties("codecov_step" PROPERTIES FIXTURES_CLEANUP tests)
 
 endif()
 

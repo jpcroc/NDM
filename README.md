@@ -154,6 +154,13 @@ For now, tests only check that NDM runs without failure.
   located in a [NDM_TESTS separate git repository](https://codev-tuleap.intra.cea.fr/plugins/git/ndm/NDM_TESTS.git) TODO.
 -->
 
-### code coverage
+### Code coverage
 
-Compilation with intel, assuming codecov and profmerge are available.
+Tests coverage gives information on which blocks and functions of the code are used when running tests and can be useful to set relevant tests.
+
+Only works with intel ifort, compile NDM with option `NDM_OPT_COVERAGE=ON` and tests. After compilation, run tests with `ctest` and read the output html file with any web browser, for example:
+
+```
+ctest
+firefox CODE_COVERAGE.HTML
+```

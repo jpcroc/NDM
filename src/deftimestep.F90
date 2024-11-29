@@ -71,6 +71,7 @@ subroutine deftimestep(atcf,box)
         vmax2=vpmod2(i)
      end if
   end do
+#ifdef PARA
 !  write(6,*)'imax',myidsp,imaxT
   call comm_space%barrier
 !  write(6,*)'VmaxT',myidsp,vmax2T
@@ -79,7 +80,6 @@ subroutine deftimestep(atcf,box)
     call comm_space%barrier
   
 
-#ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
    vmaxt=-1
    call comm_space%sum(vmax2t)
