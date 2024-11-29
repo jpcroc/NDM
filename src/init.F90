@@ -93,11 +93,12 @@ contains
     iteration=0
     !<---------setting the configuration by reading gin / cin file --------------
 
-    if ((ipotentiel==-10).or.(ipotentiel==-11))then
+    select case (ipotentiel)
+    case(10,11,20)
        lrepart=.false.
-    else
+    case default
        lrepart=.true.
-    end if
+    end select
     call constrconf(atdml,boxndm,celndm,lrepart,psc=psc)
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
