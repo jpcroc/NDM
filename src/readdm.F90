@@ -11,7 +11,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    use Tpara,only:nprocs
+    use Tpara,only:nprocs,mpi_world
     USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,gamprfact,&
          &epcou,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,couxyz,&
          &igen,ilangevin,iseed,itab,iteanaposneb,itederive,&
@@ -1621,15 +1621,17 @@ contains
     end If
 
 
-       if (iseed.le.0) then
+    if (iseed.le.0) then
           call system_clock (iseed)
           iseed =iseed +10*rang
        end if
-          if (rang==0)      write(6,*)'rang readdm iseed ',rang,iseed
-
-!#ifdef PARA
-!    call mpi_world%bcast(0,iseed)
-!#endif              
+       if (lspacendm.eqv..false.) then
+#ifdef PARA
+          call mpi_world%bcast(0,iseed)
+#endif
+       end if
+       
+       write(6,*)'rang readdm iseed ',rang,iseed
 
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'

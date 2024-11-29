@@ -100,6 +100,7 @@ contains
        lrepart=.true.
     end select
     call constrconf(atdml,boxndm,celndm,lrepart,psc=psc)
+    write(6,*)'TTTTTTTTTT',rang,atdml%xp(1,1)
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
     else
