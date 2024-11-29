@@ -27,7 +27,7 @@ contains
     integer  :: ntyp
     integer  :: npair
     real(double) , intent(in) :: csive
-    real(double) , intent(inout) :: pot(4,npair,0:ngrid+1)
+    real(double) , intent(inout) :: pot(4,npair,0:ngrid)
     real(double)  :: catom(ntyp)
     real(double)  :: roff1(npair)
     real(double)  :: roff2(npair)

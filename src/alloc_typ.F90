@@ -34,8 +34,8 @@ contains
        allocate(cm(ntyp)) ; allocate(catom(ntyp))
 
        allocate(ty(ntyp))
-       allocate(pot(4,npair,0:ngrid+1))
-       allocate(pot_d(4,npair,0:ngrid+1))
+       allocate(pot(4,npair,0:ngrid))
+       allocate(pot_d(4,npair,0:ngrid))
 
        allocate(q(ntyp))
        q(:)=0
@@ -114,46 +114,46 @@ contains
     if (lpotentiel(ipot_loc).eqv..true.) then
        allocate(Awat(npair));allocate(Bwat(npair));allocate(pwat(npair))
        allocate(qwat(npair));allocate(rawat(npair)) ; allocate(rawat2(npair))
-       allocate(potw(npair,0:ngrid+1))
-       allocate(bspw(npair,0:ngrid+1));allocate(cspw(npair,0:ngrid+1))
-       allocate(dspw(npair,0:ngrid+1))
-       allocate (gz(0:ngrid+1))
-       allocate(fcr(0:ngrid+1))
+       allocate(potw(npair,0:ngrid))
+       allocate(bspw(npair,0:ngrid));allocate(cspw(npair,0:ngrid))
+       allocate(dspw(npair,0:ngrid))
+       allocate (gz(0:ngrid))
+       allocate(fcr(0:ngrid))
 
-       allocate(bspg(0:ngrid+1))
-       allocate(cspg(0:ngrid+1))
-       allocate(dspg(0:ngrid+1))
-       allocate(cspf(0:ngrid+1))
-       allocate(bspf(0:ngrid+1))
-       allocate(dspf(0:ngrid+1))
+       allocate(bspg(0:ngrid))
+       allocate(cspg(0:ngrid))
+       allocate(dspg(0:ngrid))
+       allocate(cspf(0:ngrid))
+       allocate(bspf(0:ngrid))
+       allocate(dspf(0:ngrid))
 
 
     endif
 
     do ipot_loc=10,12
        if (lpotentiel(ipot_loc).eqv..true.) then
-          allocate(eamrep(4,npair,0:ngrid+1))
-          allocate(eamrep_d(4,npair,0:ngrid+1))
+          allocate(eamrep(4,npair,0:ngrid))
+          allocate(eamrep_d(4,npair,0:ngrid))
           if (ipot_loc==12) then
-             allocate(eamrho(4,npair,0:ngrid+1))
-             allocate(eamrho_d(4,npair,0:ngrid+1))
+             allocate(eamrho(4,npair,0:ngrid))
+             allocate(eamrho_d(4,npair,0:ngrid))
           else
-             allocate(eamrho(4,ntyp,0:ngrid+1))
-             allocate(eamrho_d(4,ntyp,0:ngrid+1))
+             allocate(eamrho(4,ntyp,0:ngrid))
+             allocate(eamrho_d(4,ntyp,0:ngrid))
           end if
-          allocate(eamglue(4,ntyp,0:ngrid+1))
-          allocate(eamglue_d(4,ntyp,0:ngrid+1))
+          allocate(eamglue(4,ntyp,0:ngrid))
+          allocate(eamglue_d(4,ntyp,0:ngrid))
           allocate(rhomax(ntyp))
           allocate(rhomin(ntyp))
        end if
     end do
     if (lpotentiel (16).eqv..true.) then
-       allocate(eamrep(4,npair,0:ngrid+1))
-       allocate(eamrho(4,npair,0:ngrid+1))
-       allocate(eamglue(4,ntyp,0:ngrid+1))
-       allocate(eamrep_d(4,npair,0:ngrid+1))
-       allocate(eamrho_d(4,ntyp,0:ngrid+1))
-       allocate(eamglue_d(4,ntyp,0:ngrid+1))
+       allocate(eamrep(4,npair,0:ngrid))
+       allocate(eamrho(4,npair,0:ngrid))
+       allocate(eamglue(4,ntyp,0:ngrid))
+       allocate(eamrep_d(4,npair,0:ngrid))
+       allocate(eamrho_d(4,ntyp,0:ngrid))
+       allocate(eamglue_d(4,ntyp,0:ngrid))
        allocate(rhomax(ntyp))
        allocate(rhomin(ntyp))
     end if
