@@ -3,7 +3,14 @@
 function(compile_with_MILADY)
 
     #find_package(MILADY)
-    if (DEFINED ENV{MILADY_ROOT})
+    if (NOT DEFINED ENV{MILADY_ROOT})
+        message(FATAL_ERROR "Missing MILADY_ROOT environment variable")
+    endif()
+    
+    if (EXISTS "$ENV{MILADY_ROOT}/MILADYConfig.cmake")
+        find_package(MILADY CONFIG HINTS $ENV{MILADY_ROOT})
+        set(MILADY_FOUND ON)
+    else()
         set(MLD_SOURCES "$ENV{MILADY_ROOT}")
     endif()
     
@@ -20,10 +27,13 @@ function(compile_with_MILADY)
             INSTALL_COMMAND ""
             TEST_COMMAND ""       
             )
+        set(MILADY_LIBRARIES "MILADY")
+        set(MILADY_LIBRARY_DIRS "${milady_build_dir}/src/milady-build/lib")
+        set(MILADY_INCLUDE_DIR "${milady_build_dir}/src/milady-build/mod" )
     endif()
     
-    set(${PROJECT_NAME}_MILADY_LIBRARIES "MILADY" PARENT_SCOPE)
-    set(${PROJECT_NAME}_MILADY_LIBRARY_DIRS "${milady_build_dir}/src/milady-build/lib" PARENT_SCOPE)
-    set(${PROJECT_NAME}_MILADY_INCLUDE_DIR "${milady_build_dir}/src/milady-build/mod" PARENT_SCOPE)
+    set(${PROJECT_NAME}_MILADY_LIBRARIES "${MILADY_LIBRARIES}" PARENT_SCOPE)
+    set(${PROJECT_NAME}_MILADY_LIBRARY_DIRS "${MILADY_LIBRARY_DIRS}" PARENT_SCOPE)
+    set(${PROJECT_NAME}_MILADY_INCLUDE_DIR "${MILADY_INCLUDE_DIR}" PARENT_SCOPE)
 
 endfunction()

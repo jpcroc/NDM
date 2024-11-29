@@ -88,7 +88,7 @@ endif()
 project( NDM
          VERSION 3.0.0
          DESCRIPTION "NDM project with CMake"
-         HOMEPAGE_URL "https://codev-tuleap.intra.cea.fr/plugins/git/ndm"
+         HOMEPAGE_URL "https://github.com/jpcroc/NDM"
          LANGUAGES ${languages})
 
 set( PROJECT_AUTHOR "Jean-Paul Crocombette" )
