@@ -64,6 +64,7 @@ cmake .. -D NDM_PACKAGE_LIST=LAMMPS
 #### NDM+MILADY build
 
 ```
+export MILADY_ROOT=PATH/TO/ML/DIRECTORY
 cmake .. -D NDM_PACKAGE_LIST=MILADY
 ```
 <!---

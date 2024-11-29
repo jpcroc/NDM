@@ -11,10 +11,11 @@ if ("LAMMPS" IN_LIST NDM_PACKAGE_LIST)
     list(APPEND languages "CXX")
 endif()
 
+set(CMAKE_BUILD_TYPE "RELEASE" CACHE STRING "RELEASE or DEBUG")
 set(compile_configuration_list INTEL GNU)
 
 # List fortran mpi wrappers to look for
-set(INTEL_Fortran_WRAPPERS mpiifx mpiifort mpifort)
+set(INTEL_Fortran_WRAPPERS mpiifort mpiifx mpifort)
 set(INTEL_Fortran_COMPILERS ifx ifort)
 set(INTEL_CXX_WRAPPERS mpiicpc)
 set(INTEL_CXX_COMPILERS icpc)
@@ -176,6 +177,7 @@ set( PROJECT_AUTHOR "Jean-Paul Crocombette" )
 
 option( ${PROJECT_NAME}_OPT_TRACE "trace all variables for cmake debug" OFF )
 option( ${PROJECT_NAME}_OPT_TEST "Prepare tests" ON )
+option( ${PROJECT_NAME}_OPT_COVERAGE "code coverage option" ON)
 option( ${PROJECT_NAME}_OPT_COMPILE_DOC "Compile documentation" OFF )
 
 
@@ -286,7 +288,25 @@ if (${PROJECT_NAME}_OPT_TEST)
             WORKING_DIRECTORY "${test_path}"
         )
         set_tests_properties("${test_name}" PROPERTIES TIMEOUT 120)
+        list(APPEND all_tests ${test_name})
     endforeach()
+
+endif()
+
+if( ${PROJECT_NAME}_OPT_COVERAGE )
+  string(APPEND CMAKE_Fortran_FLAGS_${CMAKE_BUILD_TYPE} " -prof-gen=srcpos")
+  ADD_TEST(
+            NAME "profmerge_step"
+            COMMAND profmerge "*.dyn"
+            WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
+        )
+  set_tests_properties("profmerge_step" PROPERTIES FIXTURES_CLEANUP "mld01_gin;mld02_cin")
+  ADD_TEST(
+            NAME "codecov_step"
+            COMMAND codecov
+            WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
+        )
+  set_tests_properties("codecov_step" PROPERTIES FIXTURES_REQUIRED "profmerge_step")
 
 endif()
 
