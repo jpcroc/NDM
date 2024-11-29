@@ -53,6 +53,13 @@ if ("CXX" IN_LIST languages)
     set_compiler("NDM" "CXX" "CXX")
 endif()
 
+# Determine the configuration
+# if a suitable pair (wrapper+underlying_compiler) has been found, run the macro CONFIG_<config>
+set_config("NDM" "Fortran")
+if ("CXX" IN_LIST languages)
+    set_config("NDM" "CXX")
+endif()
+
 if (VAR_MPIEXEC AND NOT NDM_FORCED_SERIAL)
     list(APPEND NDM_PACKAGE_LIST "MPI")
     list(APPEND NDM_COMPILE_DEFINITION "PARA")

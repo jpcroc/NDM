@@ -15,7 +15,7 @@ macro(look_for_mpi project_name)
         endif()
     endforeach()
     if (NOT VAR_MPIEXEC)
-        message(WARNING "No mpirun found !")
+        message(STATUS "No mpirun found !")
     else()
         cmake_path(GET VAR_MPIEXEC PARENT_PATH mpi_path)
     endif()
@@ -23,6 +23,7 @@ endmacro(look_for_mpi)
 
 # set CMAKE_<LANG>_COMPILER
 macro(set_compiler project_name env_name lang)
+
     if (DEFINED ENV{OMPI_${env_name}})
         set(CMAKE_${lang}_COMPILER "$ENV{OMPI_${env_name}}" CACHE STRING "")
         message(STATUS "OMPI_${env_name} = $ENV{OMPI_${env_name}}")
@@ -60,7 +61,7 @@ macro(set_compiler project_name env_name lang)
     endif()
     
     look_for_mpi(${project_name})
-
+    
     # For each possible configuration, look for a wrapper in the mpirun directory
     set(WRAPPER_FOUND False)
     foreach (config IN ITEMS ${compile_configuration_list})
@@ -126,7 +127,16 @@ macro(set_config project_name lang)
         endif()
     endforeach()
     
-    
+    # if still no config found, try serial
+    if (NOT config_set)
+        foreach (config IN ITEMS ${compile_configuration_list})
+            if (VAR_${config}_${lang})
+                set(CMAKE_${lang}_COMPILER "${VAR_${config}_${lang}}" CACHE STRING "")
+		        cmake_language(CALL CONFIG_${config})        #cmake 3.18
+                set(config_set ON)
+            endif()
+        endforeach()
+    endif()
 
     # Display error/warning if no compiler was found
     if (NOT DEFINED CMAKE_${lang}_COMPILER)
