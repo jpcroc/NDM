@@ -24,7 +24,7 @@ module init_mod
   use vars_lammps
 #endif
 #ifdef ML
-  use NDM_ML,only:init_config_ml
+  use mld_interface_mod, only: mld_init_config
 #endif
   
 
@@ -93,12 +93,14 @@ contains
     iteration=0
     !<---------setting the configuration by reading gin / cin file --------------
 
-    if ((ipotentiel==-10).or.(ipotentiel==-11))then
+    select case (ipotentiel)
+    case(10,11,20)
        lrepart=.false.
-    else
+    case default
        lrepart=.true.
-    end if
+    end select
     call constrconf(atdml,boxndm,celndm,lrepart,psc=psc)
+    write(6,*)'TTTTTTTTTT',rang,atdml%xp(1,1)
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
     else
@@ -116,6 +118,21 @@ contains
        if (rang==0) write(6,*)'postinitlammps'
     end if
 #endif  
+#ifdef ML
+    ! MiLaDy
+    if(ipotentiel==20) then
+      if (rang.eq.0) then
+           write(6,*)
+           write(6,*)' ML  ..... configuration MiLady '
+           write(6,*)
+      end if
+      !  !This comes with MiLaDy Package
+
+      call mld_init_config(atdml)
+
+    !call init ! mld init
+    end if
+#endif
     !<---------setting the configuration by generation gin / cin file --------------
 
     select case (igen)
@@ -137,6 +154,8 @@ contains
     case default
     end select
 #ifdef PARA
+
+
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        CALL comm_space%BARRIER
        call init_voisinage(celndm,psc,lwrite=.true.)
@@ -154,19 +173,6 @@ contains
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)
     end if
-
-#ifdef ML
-    ! MiLaDy
-    if(ipotentiel==20) then
-       if (rang.eq.0) then
-          write(6,*)
-          write(6,*)' ML  ..... configuration MiLady '
-          write(6,*)
-       end if
-       !This comes with MiLaDy Package
-       call init_config_ml
-    end if
-#endif
 
 
     if (L2T.eqv..true.) then
