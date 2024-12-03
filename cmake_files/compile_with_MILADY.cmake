@@ -9,7 +9,7 @@ function(compile_with_MILADY)
     
     if (EXISTS "$ENV{MILADY_ROOT}/MILADYConfig.cmake")
         find_package(MILADY CONFIG HINTS $ENV{MILADY_ROOT})
-        set(MILADY_FOUND ON)
+        set(MILADY_FOUND ON PARENT_SCOPE)
     else()
         set(MLD_SOURCES "$ENV{MILADY_ROOT}")
     endif()

@@ -34,6 +34,8 @@ set(GNU_CXX_COMPILERS g++ gcc)
 macro(CONFIG_INTEL)
     cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name)     
     set(NDM_PRESET_TITLE "Compile NDM INTEL: ${compiler_name}" CACHE STRING "")
+    set(CMAKE_Fortran_FLAGS_RELEASE " -O3" CACHE STRING "")
+    set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0" CACHE STRING "")
 endmacro(CONFIG_INTEL)
 
 macro(CONFIG_GNU)
@@ -172,7 +174,7 @@ else()
 endif()
 add_library( ${MAIN_LIBRARY_NAME} STATIC )
 
-if ("MILADY" IN_LIST NDM_PACKAGE_LIST)
+if ("MILADY" IN_LIST NDM_PACKAGE_LIST AND NOT MILADY_FOUND)
     add_dependencies(${MAIN_LIBRARY_NAME} milady)
 endif()
 
