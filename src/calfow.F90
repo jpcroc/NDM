@@ -154,7 +154,7 @@ contains
                 if (.not.linter) cycle
 
                 SK=R/csive
-                K=int(SK)
+                K=SK
 
                 ! spline
 
@@ -167,7 +167,7 @@ contains
                 if(iti.ne.itj)then                      ! liaison SiO
                    if(iti.eq.itO) then                  ! O est l'atome considere
                       sz=z(i)/csive_g                    ! on prend le z de O
-                      kz=int(sz)                              ! voila un entier)
+                      kz=sz                              ! voila un entier
                       dz=z(i)-float(kz)*csive_g 
                       foncgz=  gz(kz)+     &              ! g(z)
                            bspg(kz)*dz+cspg(kz)*dz**2+dspg(kz)*dz**3

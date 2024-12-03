@@ -56,7 +56,7 @@ contains
     real(double) :: &
          f2,f2exp, & ! intermediaires de calcul
          gexp1,gexp2,fcr1,&  ! intermediaires de calcul
-         kgz(0:ngrid),z  ! valeur de z, variable z
+         kgz(0:ngrid+1),z  ! valeur de z, variable z
 
 
     real(double), parameter:: maxSiO=8.0       ! 8 c'est deja beaucoup
@@ -74,7 +74,7 @@ contains
 
 
     real(double):: drkp,skp
-    integer::kp,lpt
+    integer::kp,lpt,ngrp1
 
     factor = (2.0D0*alpha)/sqrt(pi)
 555 format(1x,'Q =',f5.1,3x,'RAY =',f6.2,3x,'BM =',f7.4,3x,'N=',f4.1)
@@ -84,6 +84,7 @@ contains
     !    CALCUL DU POTENTIEL D'INTERACTION ENTRE 2 TYPES DE PAIRE
     !    CHOIX ENTRE : 0. Born-Mayer-Huggins et 1. Buckingham
     ! ****************************************************************
+    ngrp1=ngrid+1
     select case (ipotentiel)
           
     case(0,1,3,4,5,8,9)  ! FORMULES ANALYTIQUES
@@ -350,7 +351,7 @@ contains
        ! Produits des charges entre 2 types (pour terme coulombien)
 
 
-       call coulombbuild(pot,ipotentiel,iewald)
+       call coulombbuild(pot,ipotentiel,iewald,ngrp1)
 !!$       do l=1,npair
 !!$          if (typ_pot_pair(l)==ipotentiel)then
 !!$             write(6,*)'l,k,r,pot(1,l,k)'
@@ -393,7 +394,7 @@ contains
 
        !-------Fonction g(z)
        csive_g= maxSiO/float(ngrid)
-       do k=0,ngrid   ! +1 pas vraiment necessaire...
+       do k=0,ngrid+1     ! +1 pas vraiment necessaire...
           z=float(k)*csive_g
           kgz(k)= z
           gexp1= EXP((gm2-z)/gm3)
@@ -454,7 +455,7 @@ contains
        ! Si il existe des espèces chargées
        ! - Tableau des potentiels et forces correspondant aux interactions coulombiennes
        if (iewald.ne.0) then
-          call coulombbuild(pot,ipotentiel,iewald)
+          call coulombbuild(pot,ipotentiel,iewald,ngrp1)
        end if
 
        
@@ -688,9 +689,9 @@ contains
   end function fac
 
 
-  subroutine coulombbuild(pot,ipotentiel,iewald)
-    real(double)::pot(4,npair,0:ngrid)
-    integer,intent(in)::ipotentiel,iewald
+  subroutine coulombbuild(pot,ipotentiel,iewald,ngrp1)
+    real(double)::pot(4,npair,0:ngrp1)
+    integer,intent(in)::ipotentiel,iewald,ngrp1
     integer::i,j,l,k
     real(double)::r,r2,r3,ar,ar2,damp,damprc,arc,term2,term3,term4
     real(double), dimension(ngrid) ::  kxsp, &

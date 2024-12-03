@@ -134,8 +134,6 @@ contains
          kpmex, kpmey, kpmez, lopt,iewald,ipotrep
     !EWALD
     !  rumax=0.0
-
-
     r3cm=0.0
     rue = 0.0
     alpha = 0.0
