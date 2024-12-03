@@ -48,18 +48,42 @@ contains
 
     !#ifdef LAMMPS_VERSION
 !    firsttime_lammps=.true.
-    if ((ipotentiel==-10).or.(ipotentiel==-11))then
-       call init_potential_simple(rue_lammps,rumax)
-    else
+    select case (ipotentiel)
+       case(-10,-11)
+          call init_potential_simple(rue_lammps,rumax)
+    case(20)
+#ifdef ML
+!!$                !This comes with MiLaDy package
+       call init_potential_simple(rue_pot(20),rumax)
+       call mld_init_potential
+       
+       typ_and_pot(:,20)=.true.
+       typ_pot_pair(:)=20
+       !rue_pot(20)=rue_ml
+       if (rang.eq.0) then
+          write(6,*)
+          write(6,*)' MILADY ..... rvois = ', rvois
+          write(6,*)
+       end if
+#else
+       if (rang.eq.0) then
+          write(6,*)
+          write(6,*)'NOT COMPILED FOR MILADY '
+          write(6,*)
+       end if
+       call arret_ndm
+#endif
+       
+    case default
        !#endif  
-
+       
        do ipotcont=0,npotmax
           if(lpotentiel(ipotcont).EQV..true.) then
              ipotentiel=ipotcont
           else
              cycle
           end if
-
+          
           if (ipotentiel.lt.10) then
              if (rang.eq.0) then
                 write(6,*)
@@ -128,28 +152,6 @@ contains
                 call inputtersoff
 
                 ! MiLaDy
-             case(20)
-#ifdef ML
-!!$                !This comes with MiLaDy package
-                
-                call mld_init_potential
-                
-                typ_and_pot(:,20)=.true.
-                typ_pot_pair(:)=20
-                !rue_pot(20)=rue_ml
-               if (rang.eq.0) then
-                   write(6,*)
-                   write(6,*)' MILADY ..... rvois = ', rvois
-                   write(6,*)
-                end if
-#else
-                if (rang.eq.0) then
-                   write(6,*)
-                   write(6,*)'NOT COMPILED FOR MILADY '
-                   write(6,*)
-                end if
-                call arret_ndm
-#endif
              end select
              
           endif
@@ -188,7 +190,7 @@ contains
        
        !#ifdef LAMMPS_VERSION
        if (rvois.gt.0) rumax=rvois
-    endif
+    end select
     !#endif
 
 

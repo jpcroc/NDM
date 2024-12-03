@@ -107,7 +107,7 @@ contains
     !    if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed,lvpread
     if(present(latcomp))latc=latcomp
 !    if (rang==0) write(6,*)
-    write(6,*)'ISEED initspeed',iseed
+!    write(6,*)'ISEED initspeed',iseed
 !    call atcf%print
     select case (dmtype)
     case(3,30,5,11,31,32,33,21,22,23,24,2)
