@@ -113,11 +113,13 @@ module montecarlo_mod
 
   integer,parameter::nrins=10000
   real(double)::R0mcgc,fdfactmcgc,probaR(0:nrins),bublcenter(3),zlmin
-  real(double)::ZLcenter
+  real(double)::ZLcenter(3)
   integer::iZLins
-  real(double)::epotnp1min=1d12
+  real(double)::epotnp1min=1d12,beta
   integer::ins_typ
   real(double),allocatable::rcpath(:)
+  real(double)::k_string
+  logical lstring
 
 contains 
 
@@ -127,7 +129,7 @@ contains
     logical::linitpot,lcalc
     integer::ipp,imdm=0
 
-
+    beta = 1.0/(bk*Text)    
     call random_seed(size=seed_size)
     allocate(iseedt(seed_size))
     iseedt(:)=iseed
@@ -219,7 +221,7 @@ contains
           case (1)
              if (rang==0) write(6,*)'R0mcgc bublcenter ',R0mcgc,bublcenter
           case(3)
-             if (rang==0) write(6,'(A,G15.7,I3,G15.7)')'R0mcgc, izlins(X,Y,Z), zlcenter ',R0mcgc,izlins, zlcenter
+             if (rang==0) write(6,'(A,G15.7,I3,G15.7)')'R0mcgc, izlins(X,Y,Z), zlcenter ',R0mcgc,izlins, zlcenter(izlins)
           end select
        end if
     end if
@@ -847,13 +849,13 @@ contains
     real(double) :: biais
     real(double) :: W, xprob, xalea
     real(double) :: ln_xalea, ln_Wprec, ln_W, ln_xprob
-    real(double) :: theta, beta,xp_np1(3)
+    real(double) :: theta, xp_np1(3)
     real(double), dimension(nparapath+1) :: xprob_i ! naparapath = 1 dans le cas du monoproposal
     logical :: lextend, lperiod 
     real(double), dimension(2,22) :: tab_cumul
 
     theta = 0.5
-    beta = 1.0/(bk*Text)    
+
     lextend = .true.
     lperiod = .true.
     xprob_i(:) = 0.0
@@ -1538,9 +1540,9 @@ contains
        call cryst_to_cart(1,poscenter,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
        postest(:)=-1*(poscenter(:,1)-xpt(:))
        rd=sqrt(postest(1)**2+postest(2)**2+postest(3)**2)
-       pinser= 1/(1+exp(fdfactmcgc*(rd-R0mcgc)))
+       pinser= rd**2/(1+exp(fdfactmcgc*(rd-R0mcgc)))
     case(3)
-       distzl=abs(ZLcenter-dot_product(xpt,boxmcgc_p%as(:,izlins))/norm2(boxmcgc_p%as(:,izlins)))*norm2(boxmcgc_p%as(:,izlins))
+       distzl=abs(ZLcenter(izlins)-dot_product(xpt,boxmcgc_p%as(:,izlins))/norm2(boxmcgc_p%as(:,izlins)))*norm2(boxmcgc_p%as(:,izlins))
        pinser=1/(1+exp(fdfactmcgc*(distzl-R0mcgc)))
        
     case default
@@ -1954,12 +1956,16 @@ contains
     dist=0
     select case (ins_typ)
 
-    case(1)
+    case(1,11)
        call atom_supp_sph(vecteur,pins,rd)
        rcpath(ipp)=rd
 
-    case(3)
+    case(3,33)
        call atom_supp_sl(vecteur,pins,rd)
+       rcpath(ipp)=rd
+
+    case(44)
+       call atom_supp_line(vecteur,pins,rd)
        rcpath(ipp)=rd
 
     case(0)
@@ -2889,7 +2895,8 @@ contains
        !       write(6,*)i,probaR(i),somP
        if (zr.le.somP) then
           iex=i-1
-          rex=(float(iex)+(zr-somPm1)/probaR(i))*zlmin/nrins
+          rex=(float(iex)+(zr-somPm1)/probaR(i))*zlmin/(2*nrins)
+          pins=probaR(i)
           exit loopi
        end if
     end do loopi
@@ -2909,7 +2916,13 @@ contains
        end if
     end do
     vec(:,1)=postest(:)
-    pins=1/(1+exp(fdfactmcgc*(rex-R0mcgc)))
+!!$    select case (ins-typ)
+!!$    case(1)
+!!$       pins=1/(1+exp(fdfactmcgc*(rex-R0mcgc)))
+!!$    case(11)
+!!$       pins=exp(-0.5*beta*k_string*(r**2))
+!!$    end select
+
     !    if (rang==0)then
     !       if (itry.gt.1) write(6,*)'image',parapath%image,'NTRY',itry
     !    end if
@@ -2947,14 +2960,15 @@ contains
 !       write(6,*)i,probaR(i),somP,zt
        if (zt.le.somP) then
           iex=i-1
-          dex= -2*R0mcgc+  (float(iex)/nrins)*4*R0mcgc 
+          dex= -boxmcgc_p%zls2(izlins)+(float(i)/nrins)*boxmcgc_p%zl(izlins)
+          pins=probaR(i)
           exit loopi
        end if
     end do loopi
 
 
 !    write(6,*)'IEX',iex,dex,zt,r0mcgc
-    frac=zlcenter+dex/norm2(boxmcgc_p%as(:,izlins))
+    frac=zlcenter(izlins)+dex/norm2(boxmcgc_p%as(:,izlins))
     poscenter=0
     do i=1,3
        if (i.ne.izlins) then
@@ -2975,7 +2989,7 @@ contains
        end if
     end do
     vec(:,1)=postest(:)
-    pins=1/(1+exp(fdfactmcgc*(dex-R0mcgc)))
+!
     !    if (rang==0)then
     !       if (itry.gt.1) write(6,*)'image',parapath%image,'NTRY',itry
     !    end if
@@ -2983,6 +2997,71 @@ contains
     rd=abs(dex*1d8)
     return
   end subroutine atom_supp_sl
+
+
+  subroutine  atom_supp_line(vec,pins,rd) ! r
+
+    real(double),intent(out)::vec(:,:),pins ,rd! at this point vec should always be (3,1)
+    real(double)::poscenter(3,1),postest(3),xins(3),zx(3)
+    real(double)::zt,rex,somP,somPm1,dist,dex,zr,frac,angle
+    integer::itry,i,iex,ic,iloop
+    !choose vecteur
+    itry=0
+222  continue
+    itry=itry+1
+    if (itry.gt.1000) then
+       write(6,*)'ITRY 1000'
+       call arret_ndm
+    end if
+
+    call random_number(zx(1))
+    call random_number(zx(2))
+    call random_number(zx(3))
+    !    write(6,*)'atom_supp_sph', rang,zf,zt,zr
+
+    !    zx(1)  to get the distance from lien zx(2) to get the angle around the line zx(3) to get the position along the line
+    angle=2*pi*zx(2)
+    somP=0.
+    somPm1=0
+    loopi:do i=1,nrins
+       somPm1=somP
+       somP=somP+probaR(i)
+!       write(6,*)i,probaR(i),somP,zt
+       if (zx(1).le.somP) then
+          iex=i-1
+          dex= (float(iex)+(zx(1)-somPm1)/probaR(i))*0.5*zlmin/nrins
+          exit loopi
+       end if
+    end do loopi
+    iloop=0
+    do ic=1,3
+       if (ic==izlins)then 
+          poscenter(ic,1)=zx(3)*boxmcgc_p%at(ic,ic)
+       else
+          if (iloop==0) then
+             poscenter(ic,1)=zlcenter(ic)*boxmcgc_p%at(ic,ic)+dex*cos(angle)
+             iloop=1
+          else
+             poscenter(ic,1)=zlcenter(ic)*boxmcgc_p%at(ic,ic)+dex*sin(angle)
+          end if
+       end if
+    end do
+    
+    postest(:)=poscenter(:,1)
+!    write(6,*)'postest',poscenter(:,1)
+    do i=1,atconf_n%im
+       call distat(postest(:),atconf_n%xp(:,i),boxmcgc_p,dist)
+       if (dist.le.distminat) then
+
+          !          write(6,*)'iex TOO close'
+          goto 222
+       end if
+    end do
+    vec(:,1)=postest(:)
+    pins=probaR(iex)
+    rd=abs(dex*1d8)
+    return
+  end subroutine atom_supp_line
 
 
   subroutine init_instyp
@@ -2994,46 +3073,59 @@ contains
     zlm2 = distmin(boxmcgc_p%at(:,2),boxmcgc_p%at(:,3))
     zlmin = min(zlmin,zlm2)
     fdfactmcgc=fdfactmcgc*1d8
+
+    somP=0.
     select case(ins_typ)
     case(1)
-
-       somP=0.
        do i=0,nrins
-          r=float(i)*zlmin/nrins
+          r=float(i)*zlmin/(2*nrins)
           
           probaR(i)=r*r/(1+exp(fdfactmcgc*(r-R0mcgc)))
           !       write(6,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i),probaR(i)/(r*r)
           somP=somP+probaR(i)    
        end do
-       probaR(:)=probaR(:)/somP
-    
-    case(3)
-       somP=0
-       do i=1,nrins
-          dist=abs(-2*R0mcgc+((float(i)-0.5)/nrins)*4*R0mcgc)
-          probaR(i)=1/(1+exp(fdfactmcgc*(dist-R0mcgc)))
-!          write(6,'(A,i4,4G15.7)')'R0 ',i,r0mcgc,dist,fdfactmcgc,probar(i)
+
+    case(11)
+
+   !    somP=0.
+       do i=0,nrins
+          r=float(i)*zlmin/(2*nrins)
+          
+          probaR(i)=r*r*exp(-0.5*beta*k_string*(r**2))
+          !       write(6,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i),probaR(i)/(r*r)
           somP=somP+probaR(i)    
        end do
-       probaR(:)=probaR(:)/somP
-      
-    end select
+  !     probaR(:)=probaR(:)/somP
     
+    case(3)
+       do i=1,nrins
+          dist=abs(-boxmcgc%zls2(izlins)+(float(i)/nrins)*boxmcgc%zl(izlins))
+          probaR(i)=1/(1+exp(fdfactmcgc*(dist-R0mcgc)))
+          somP=somP+probaR(i)    
+       end do
+    case(33)
+       do i=1,nrins
+          dist=abs(-boxmcgc%zls2(izlins)+(float(i)/nrins)*boxmcgc%zl(izlins))
+          probaR(i)=exp(-0.5*beta*k_string*(dist**2))
+          somP=somP+probaR(i)    
+       end do
+      
+    case(44)
+       do i=1,nrins
+          dist=i*0.5*zlmin/nrins
+          probaR(i)=dist*exp(-0.5*beta*k_string*(dist**2))
+          somP=somP+probaR(i)    
+       end do
+
+    end select
+
+
+    probaR(:)=probaR(:)/somP    
     
        
-!!$    do i=0,nrins
-!!$       r=float(i)*zlmin/nrins
-!!$       write(6,*)i,r,probaR(i)
-!!$    end do
     !    call arret_ndm    
   end subroutine init_instyp
-!!!!!!!!!!!!!!*******************!!!!!!!!!!!!!!!!!!!!!!!*****************!!!!!!!!!!!!!!!
-!!$  subroutine initMCLPR(np1)
-!!$    integer::np1
-!!$
-!!$    ALLOCATE(sp(1:3,1:np1), sdot(1:3,1:np1), sdot_new(1:3,1:np1))
-!!$    return
-!!$  end subroutine initMCLPR
+
   subroutine calcukcell
     integer::i
     Kcell = 0.5d0*boxmcgc_p%wbox*Sum( boxmcgc_p%hDot(1:3,1:3)**2 )
