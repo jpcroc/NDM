@@ -64,7 +64,14 @@ contains
     allocate(inv_ktorho(ntyp))
     ktor=rue/ngrid
     inv_ktor=1.d0/ktor
-    ktorho(:)=(rhomax(:)-rhomin(:))/ngrid
+
+    do iti=1,ntyp
+       if (typ_and_pot(iti,ipotentiel).eqv..false.)then
+          ktorho(iti)=1
+       else
+          ktorho(iti)=(rhomax(iti)-rhomin(iti))/ngrid
+       end if
+    end do
     inv_ktorho(:) = 1.d0/ktorho(:)
     tabdensity(:)=0.
     potisrep=0.
