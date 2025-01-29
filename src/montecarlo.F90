@@ -253,7 +253,7 @@ contains
        end select
        if (rang==0) then
           write(6,*)'***SPRING CALCULATION***'
-          write(6,('A'))'Free energy of the spring to ADD to the calculated chamical potential at the very end (in eV)'
+          write(6,'(A)')'Free energy of the spring to ADD to the calculated chamical potential at the very end (in eV)'
           write(6,*)'FEspring=',FEspring,fe2
        end if
     end if
