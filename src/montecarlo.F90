@@ -19,6 +19,8 @@ module montecarlo_mod
   use paraconfig,only:para_config,commconstr,initparapuresp
   USE Parrinello_Rahman,only:initlpr
   USE init_simple_mod,only:init_simple
+   USE calerf_mod
+
 #ifdef PARA
   use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,&
        &NDM_MPI_REAL_DOUBLE,para_space_config,status,comm_space,mpi_world
@@ -118,8 +120,8 @@ module montecarlo_mod
   real(double)::epotnp1min=1d12,beta
   integer::ins_typ
   real(double),allocatable::rcpath(:)
-  real(double)::k_string
-  logical lstring
+  real(double)::k_spring,FEspring
+  logical lspring
 
 contains 
 
@@ -127,7 +129,7 @@ contains
     class(box_config)::boxndm
     real(double),intent(in)::rv
     logical::linitpot,lcalc
-    integer::ipp,imdm=0
+    integer::ipp,imdm=0,ic
 
     beta = 1.0/(bk*Text)    
     call random_seed(size=seed_size)
@@ -147,7 +149,7 @@ contains
        boxmcgc=boxndm
     end select
     select case (ins_typ)
-    case(1,3)
+    case(1,3,33,44,55,11)
        allocate(rcpath(nparapath))
        rcpath=0
     end select
@@ -184,7 +186,7 @@ contains
           if (idirectionmcgc==0) then
              call init_simple(atconf_n%atom_config_d,cells_n,boxmcgc_p,psc=pscgc,linitpot=linitpot)
              select case(ins_typ)
-             case(1,3)
+             case(1,3,33,44,11,55)
                 call init_instyp
              end select
                 
@@ -193,7 +195,7 @@ contains
           else
              call init_simple(atconf_nplus1%atom_config_d,cells_nplus1,boxmcgc_p,psc=pscgc,linitpot=linitpot)
              select case(ins_typ)
-             case(1,3)
+             case(1,3,33,44,11,55)
                 call init_instyp
              end select
              call initN(ipp) ! initialise la configuration N+1
@@ -214,7 +216,7 @@ contains
     if (rang==0) then
        write(6,*)'***************PATH MONTE-CARLO*****************'
        write(6,'(A,I6,A,I6,A,I4)')'pas_lambda=',pas_lambda_mc,' npath=',n_path,' naparapath=',nparapath
-       write(6,'(A,I3,A)')'ins_typ=',ins_typ, '(0=random; 1=sph 2=switch type, 3=slice)'
+       write(6,'(A,I3,A)')'ins_typ=',ins_typ, ' (0=random; 1=sph 2=switch type, 3=slice, 11 site+spring, 33 sphere+spring, 44 slice+spring), 55 sphere +spring'
        write(6,*)'lbiais_retrait , lbiais_inser ',lbiais_retrait,lbiais_inser
        if (lbiais_inser) then
           select case(ins_typ)
@@ -225,7 +227,38 @@ contains
           end select
        end if
     end if
+    block
+      real(double)::fe2,res,xerf
 
+    if (lspring) then
+       select case(ins_typ)
+       case(11)
+          FEspring=(bk*text*log(boxmcgc_p%volu) -(3*bk*text/2)*log(2*pi*bk*text/k_spring))*erg2ev
+          xerf=0.5*boxmcgc_p%at(1,1)/dsqrt(2*pi*bk*text/k_spring)
+          call calerf(xerf,res,0)
+          fe2= erg2ev*(-3*bk*text*log(dsqrt(2*pi*bk*text/k_spring)*res/boxmcgc_p%zl(1)))
+       case(33)
+          FEspring=(bk*text*log(boxmcgc_p%zl(izlins))-(bk*text/2)*log(2*pi*bk*text/k_spring))*erg2ev
+       case(44)
+          Fespring=0
+          do ic=1,3
+             if (ic.ne.izlins) then 
+                FEspring=Fespring+(bk*text*log(boxmcgc_p%zl(ic)))
+             end if
+          end do
+          FEspring=Fespring-(bk*text)*log(2*pi*bk*text/k_spring)
+          FEspring=Fespring*erg2eV
+       case(55)
+          FEspring=bk*text*log(boxmcgc_p%volu)*erg2ev
+       end select
+       if (rang==0) then
+          write(6,*)'***SPRING CALCULATION***'
+          write(6,('A'))'Free energy of the spring to ADD to the calculated chamical potential at the very end (in eV)'
+          write(6,*)'FEspring=',FEspring,fe2
+       end if
+    end if
+  end block
+          
   end subroutine init_montecarlo
 
   subroutine montecarlo
@@ -493,7 +526,7 @@ contains
                 end if
                 pressF= (sigtot(1,1)+sigtot(2,2)+sigtot(3,3))/3.0
                 select case(ins_typ)
-                   case(1,3)
+                   case(1,3,33,44,11,55)
                       
                       !                   call parapath%mpi_master%sum(rcpath)
                       write(6,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
@@ -692,7 +725,7 @@ contains
 
              !choisir l'at a retirer ou ajouter + preparation des syst N et N+1 pour etre prets pour le langevin (cad decoupage cellules + calcul forces + melange des forces - se fait dans cette sous routine)
              select case (ins_typ)
-             case(0,1,3)
+             case(0,1,3,33,44,55,11)
                 call ajout_retrait(direction,ipp)
              case(2)
                 call type_switch(direction)
@@ -728,7 +761,7 @@ contains
 !!$          call arret_ndm
        end do !boucle nparapath
        select case(ins_typ)
-       case(1,3)
+       case(1,3,33,44,11,55)
           if (lbigmaster)then
              call parapath%mpi_master%sum(rcpath)
           end if
@@ -739,7 +772,7 @@ contains
 
        end if
        select case(ins_typ)
-       case(1,3)
+       case(1,3,33,44,11,55)
           if (lmegamaster) then
              do ipp=1,nparapath
                 write(6,'(A,I2,I4,2F20.10)')'Weff eV dist ', direction,ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
@@ -829,6 +862,13 @@ contains
        !      close(753)
     end if
     !stop
+       if ((rang==0).and.(lspring)) then
+          write(6,*)'***SPRING CALCULATION***'
+          write(6,*)'Free energy of the spring to ADD to the calculated chamical potential at the very end (in eV)'
+          write(6,*)'FEspring=',FEspring
+       end if
+
+    
   end subroutine montecarlo
 
 
@@ -1495,7 +1535,7 @@ contains
              postest(:)=-1*(poscenter(:,1)-atconf_Nplus1%xp(:,atconf_Nplus1%im))
              rcpath(ipp)=sqrt(postest(1)**2+postest(2)**2+postest(3)**2)*1d8
           case(3)
-             
+
           end select
           call calcul_proba_des ! sans doute inutile
           !          do i=1,nbatplus
@@ -1956,7 +1996,7 @@ contains
     dist=0
     select case (ins_typ)
 
-    case(1,11)
+    case(1,11,55)
        call atom_supp_sph(vecteur,pins,rd)
        rcpath(ipp)=rd
 
@@ -1967,6 +2007,7 @@ contains
     case(44)
        call atom_supp_line(vecteur,pins,rd)
        rcpath(ipp)=rd
+
 
     case(0)
        pins=1
@@ -2389,7 +2430,7 @@ contains
 
     else
        if (lbigmaster) then
-          call atom_supp(cart_vec_nplus1,pins,ipp)
+          call atom_supp(cart_vec_nplus1,pins,ipp)  
           call atconf_nplus1%init(atconf_n%im+nbatplus,atconf_n%imm,atconf_n%ltabvois,&
                &im_glob=atconf_n%im_glob+nbatplus,imm_glob=imm_glob)
           atconf_nplus1%ltabvois=atconf_n%ltabvois
@@ -2691,6 +2732,9 @@ contains
     integer::rgcib,rgem,i,iplus
     integer,save::ncalls=0
     logical::lcalcvois
+    real(double)::forcebias(3),potisbias
+
+
 
     ncalls=ncalls+1
     lcalcvois=.false.
@@ -2758,20 +2802,32 @@ contains
 
     if (lbigmaster) then
 
+       if (ins_typ.ne.2) then
+          !Egalisation des forces pour les deux systemes
+          
+          do i=1,nbatplus
+             iplus=atconf_n%im+i
+             if (lspring) then
+                call calcforcespring(atconf_nplus1%xp(:,iplus),forcebias,potisbias)
+             else
+                forcebias(:)=0 ; potisbias=0.
+             end if
+!             write(666,*)'pot',potist_n*erg2ev/atconf_n%im,potisbias*erg2ev
+!             write(666,*)'force',norm2(atconf_nplus1%fp(:,iplus))*erg2ev*1d-8,norm2(forcebias)*erg2ev*1d-8
+             atconf_nplus1%fp(:,iplus) =(1-lambda_mc)*forcebias(:)+ lambda_mc*atconf_nplus1%fp(:,iplus)
+             potist_n=potist_n+potisbias
+          end do
+       end if
        DO i=1,atconf_n%im
           atconf_nplus1%fp(:,i) = (1-lambda_mc)*atconf_n%fp(:,i) + lambda_mc*atconf_nplus1%fp(:,i)
        END DO
-       if (ins_typ.ne.2) then
-          do i=0,nbatplus-1
-             iplus=atconf_nplus1%im+i
-             atconf_nplus1%fp(:,iplus) = lambda_mc*atconf_nplus1%fp(:,iplus)
-          end do
-       end if
-       !Egalisation des forces pour les deux systemes
+       
        DO i=1,atconf_n%im
           atconf_n%fp(:,i) = atconf_nplus1%fp(:,i)
        END DO
+       
        sig(:,:)=(1-lambda_mc)*sig_n(:,:) + lambda_mc*sig_nplus1(:,:)
+       
     end if!end master general
     !write(6,*)'outcfmc',rang,ncalls
   end subroutine calfoMCGC
@@ -2931,6 +2987,7 @@ contains
     return
   end subroutine atom_supp_sph
 
+
   subroutine  atom_supp_sl(vec,pins,rd) ! r
 
     real(double),intent(out)::vec(:,:),pins ,rd! at this point vec should always be (3,1)
@@ -3019,7 +3076,7 @@ contains
     call random_number(zx(3))
     !    write(6,*)'atom_supp_sph', rang,zf,zt,zr
 
-    !    zx(1)  to get the distance from lien zx(2) to get the angle around the line zx(3) to get the position along the line
+    !    zx(1)  to get the distance from line zx(2) to get the angle around the line zx(3) to get the position along the line
     angle=2*pi*zx(2)
     somP=0.
     somPm1=0
@@ -3076,14 +3133,16 @@ contains
 
     somP=0.
     select case(ins_typ)
-    case(1)
+    case(1,55)
        do i=0,nrins
           r=float(i)*zlmin/(2*nrins)
           
           probaR(i)=r*r/(1+exp(fdfactmcgc*(r-R0mcgc)))
+          if (rang==0)                 write(136,*)i,r,probaR(i)
           !       write(6,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i),probaR(i)/(r*r)
           somP=somP+probaR(i)    
        end do
+
 
     case(11)
 
@@ -3091,8 +3150,8 @@ contains
        do i=0,nrins
           r=float(i)*zlmin/(2*nrins)
           
-          probaR(i)=r*r*exp(-0.5*beta*k_string*(r**2))
-          !       write(6,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i),probaR(i)/(r*r)
+          probaR(i)=r*r*exp(-0.5*beta*k_spring*(r**2))
+          if (rang==0) write(136,*)i,r,probaR(i)
           somP=somP+probaR(i)    
        end do
   !     probaR(:)=probaR(:)/somP
@@ -3100,21 +3159,26 @@ contains
     case(3)
        do i=1,nrins
           dist=abs(-boxmcgc%zls2(izlins)+(float(i)/nrins)*boxmcgc%zl(izlins))
-          probaR(i)=1/(1+exp(fdfactmcgc*(dist-R0mcgc)))
+          probaR(i)=dist**2/(1+exp(fdfactmcgc*(dist-R0mcgc)))
           somP=somP+probaR(i)    
+          if (rang==0)                 write(136,*)i,r,probaR(i)
+
        end do
     case(33)
        do i=1,nrins
           dist=abs(-boxmcgc%zls2(izlins)+(float(i)/nrins)*boxmcgc%zl(izlins))
-          probaR(i)=exp(-0.5*beta*k_string*(dist**2))
+          probaR(i)=dist**2*exp(-0.5*beta*k_spring*(dist**2))
           somP=somP+probaR(i)    
+          if (rang==0)                 write(136,*)i,r,probaR(i)
        end do
       
     case(44)
        do i=1,nrins
           dist=i*0.5*zlmin/nrins
-          probaR(i)=dist*exp(-0.5*beta*k_string*(dist**2))
-          somP=somP+probaR(i)    
+          probaR(i)=dist*exp(-0.5*beta*k_spring*(dist**2))
+          somP=somP+probaR(i)   
+          if (rang==0)                 write(136,*)i,r,probaR(i)
+ 
        end do
 
     end select
@@ -3431,4 +3495,54 @@ contains
 
   end subroutine type_switch
 
+
+  subroutine calcdistspring(pos,dist,normout)
+    real(double),intent(in)::pos(3)
+    real(double),intent(out)::dist,normout(3)
+    real(double)::poscenter(3,1),postest(3),posred(3,1)
+    integer::ic
+    posred(:,1)=pos(:)
+    normout(:)=0
+    call cryst_to_cart(1,posred,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
+    select case (ins_typ)
+    case(11,55)
+       poscenter(:,1)=bublcenter(:)
+       call cryst_to_cart(1,poscenter,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
+       postest(:)=pos(:)-poscenter(:,1)
+!       write(6,*)'POSTEST',postest
+       dist=sqrt(postest(1)**2+postest(2)**2+postest(3)**2)
+       normout(:)=postest(:)/dist
+    case(33)
+       dist=abs(boxmcgc_p%at(izlins,izlins)*(posred(izlins,1)-zlcenter(izlins)))
+       normout(izlins)=sign(1.,posred(izlins,1)-zlcenter(izlins))
+    case(44)
+       dist=0
+       do ic=1,3
+          if (ic.ne.izlins) then
+             dist=dist+((posred(ic,1)-zlcenter(ic))*boxmcgc_p%at(ic,ic))**2
+             normout(ic)=(posred(ic,1)-zlcenter(ic))*boxmcgc_p%at(ic,ic)
+          end if
+       end do
+       dist=dsqrt(dist)
+       normout=normout/dist
+    end select
+  end subroutine calcdistspring
+  subroutine calcforcespring(pos,forceb,potisb)
+    real(double),intent(in)::pos(3)
+    real(double),intent(out):: forceb(3),potisb
+    real(double)::dist,normout(3)
+    integer::ic
+    call calcdistspring(pos,dist,normout)
+    if (ins_typ.ne.55) then 
+       potisb=0.5*k_spring*dist**2
+       forceb(:)=-1*k_spring*dist*normout(:)
+!       write(666,*)'DIST',dist
+    else
+       potisb=(1/beta)*log(1+exp(fdfactmcgc*dist))
+       forceb(:)=-1*normout(:)*(fdfactmcgc*exp(fdfactmcgc*dist))/((1+exp(fdfactmcgc*dist))*beta)
+
+    end if
+  end subroutine calcforcespring
+  
+      
 end module montecarlo_mod
