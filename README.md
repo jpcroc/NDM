@@ -74,8 +74,9 @@ examples:
   
   cmake .. -D NDM_PACKAGE_LIST=MILADY
   
-  cmake .. -D CMAKE_BUILD_TYPE=DEBUG
+  cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS_DEBUG="-O0 -g -C -fpe-all=0 -traceback"
 
+in this last example the debug options are passed explicitly (for ifort) 
 
 To specify multiple values, for example for preprocessor definitions or packages, use semicolon separator:
 ```

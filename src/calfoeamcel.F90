@@ -64,7 +64,6 @@ contains
     allocate(inv_ktorho(ntyp))
     ktor=rue/ngrid
     inv_ktor=1.d0/ktor
-
     do iti=1,ntyp
        if (typ_and_pot(iti,ipotentiel).eqv..false.)then
           ktorho(iti)=1

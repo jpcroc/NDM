@@ -43,7 +43,7 @@ contains
     use neb_module,only: lvzeroneb,kspring
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
          &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ,bublcenter,&
-         &typswitch1,typswitch2,izlins,zlcenter
+         &typswitch1,typswitch2,izlins,zlcenter,lspring,k_spring
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
     use Parrinello_Rahman,only:TinitBox
     use constrconf_mod,only: ldecalcor
@@ -96,7 +96,7 @@ contains
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
          &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
-         &noxyzkmin,noxyzkmax,lpartarps
+         &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring
 
 
     !
@@ -376,8 +376,8 @@ contains
     R0mcgc=-1.0
     bublcenter(:)=0.5
     izlins=-1
-    zlcenter=0.5
-    ins_typ=0
+    zlcenter(:)=0.
+    ins_typ=0   ! 0 everywhere, with bias) : 1 in a sphere, 3 in a slice ; with spring : 11 in a site, 33 in a plane , 44 in a line , 55 in a bubble
     typswitch1=0
     typswitch2=0
     ldecalcor=.true.
@@ -389,7 +389,8 @@ contains
     iteprtkin=-1
 
     lspecialinit=.false. ! driver for specail initialization : cascade, press or heat burst etc.
-
+    lspring=.false. ! MCC calculation with a slowly vanishing vabishing string
+    k_spring=1.0 ! spring strenght (1 eV/Ang**2)
     
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
@@ -1547,7 +1548,7 @@ contains
     !condition d'arret du prog si l'utilisateur veut utilise la methode mcgc mais n'a pas defini le pas lambda pour l'integration de la particule    
     if((dmtype == 15).or.(dmtype==151))then
        if (pas_lambda_mc.lt.0) then
-          write(6,*)'Pour utiliser la methode MONTE-CARLO, indiquer une valeur pour le pas lambda d integration'
+          write(6,*)'To use  MONTE-CARLO, indicate pas_lambda (number of insertion steps'
           call arret_ndm
        end if
        !idem dans le cas ou l'utilisatuer utilise le biais sur les retraits sans avoir defini la fonction alpha (fermi dirac) pilotant celui ci
@@ -1559,24 +1560,63 @@ contains
           write(6,*)' methode MCGC avec  le biais sur les retraits: pas possible aev nbatplus>1'
           call arret_ndm
        end if
+       if(((lbiais_retrait).or.(lbiais_inser)).and.(lspring)) then
+          write(6,*)'SPRING OR BIAS not both....'
+       end if
+       if (lspring) then
+          if (rang==0) write(6,*) 'vanishing spring of strenght ', k_spring
+          k_spring=k_spring*1d16/erg2ev
+          if ((ins_typ.ne.55).and.(ins_typ.ne.11).and.(ins_typ.ne.33).and.(ins_typ.ne.44)) then
+             if (rang==0) write(6,*) 'lspring==> ins_typ=11 (site) or 33 (plane)  or 44 (line)  or 55 (bubble) ', ins_typ
+             call arret_ndm
+          end if
+          
+       end if
        select case(ins_typ)
        case(0)
-          if (rang==0) write(6,*)' MCC N-> N+1 dans toute la boite'
-       case(1,3)
+          if (rang==0) write(6,*)' MCC N-> N+1 in all the box'
+       case(1,3,33,44,55,11)
           
-          if (rang==0)then
-             if (ins_typ==1) then
-                write(6,*)'MCC N-> N+1 dans une sphère',r0mcgc,bublcenter
-             else
-                write(6,*)'MCC N-> N+1 dans une tranche ',r0mcgc,izlins,zlcenter
-             end if
-          end if
-          if (R0mcgc.lt.0) then
+          
+             select case (ins_typ)
+             case(1)
+                if (rang==0)      write(6,*)'MCC N-> N+1 in a sphere',r0mcgc,bublcenter
+             case(11)
+                if (rang==0)                write(6,*)'MCC N-> N+1 in a site with spring pos/spring ',bublcenter,kspring
+             case(3)
+                do ic=1,3
+                   if (ic==izlins) cycle
+                   if ((zlcenter(ic).ne.0).or.(izlins==0)) then
+                      if (rang==0)                      write(6,*)'ins_typ,izlins zlcenter inconsitstency ', ins_typ,izlins,zlcenter(:)
+                      call arret_ndm
+                   end if
+                end do
+                if (rang==0)                write(6,*)'MCC N-> N+1 in a slice ',r0mcgc,izlins,zlcenter(izlins)
+             case(33)
+                do ic=1,3
+                   if (ic==izlins) cycle
+                   if ((zlcenter(ic).ne.0).or.(izlins==0)) then
+                      if (rang==0)                      write(6,*)'ins_typ,izlins zlcenter inconsitstency ', ins_typ,izlins,zlcenter(:)
+                      call arret_ndm
+                   end if
+                end do
+                if (rang==0)                write(6,*)'MCC N-> N+1 in a plane with spring norm/pos/spring ',izlins,zlcenter(izlins),kspring
+             case(44)
+                if ((zlcenter(izlins).ne.0).or.(izlins==0)) then
+                   if (rang==0)                   write(6,*)'ins_typ,izlins zlcenter inconsitstency ', ins_typ,izlins,zlcenter(:)
+                   call arret_ndm
+                end if
+                if (rang==0)                write(6,*)'MCC N-> N+1 in a plane with spring norm/pos/spring ',izlins,zlcenter(izlins),kspring
+             case (55)
+                if (rang==0)      write(6,*)'MCC N-> N+1 in a sphere with a spring',r0mcgc,bublcenter, kspring
+             end select
+          
+          if ((R0mcgc.lt.0).and.(lspring.eqv..false.)) then
              if (rang==0) write(6,*)' R0mcgc.lt.0'
              call arret_ndm
           end if
           R0mcgc=R0mcgc*1d-8
-          if (ins_typ==3) then
+          if ((ins_typ==3).or.(ins_typ==33)) then
              if (izlins==-1) then
                 if (rang==0) write(6,*)' izlins 1,2 or 3 ?'
                 call arret_ndm
