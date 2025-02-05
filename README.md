@@ -94,6 +94,16 @@ To set the environment and specify source or build directories you can use the `
 - LAMMPS library name : `LAMMPS_LIBRARY_NAME` (for example `lammps_serial`, `lammps_mpi` or `lammps`)
 - Additional dependencies for LAMMPS: `LAMMPS_EXTRA_LIBRARIES` (for example `gomp` to use open mpi LAMMPS)
 
+examples:
+
+  cmake .. -D NDM_PACKAGE_LIST="LAMMPS"
+  
+  cmake .. -D NDM_PACKAGE_LIST=MILADY
+  
+  cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS_DEBUG="-O0 -g -C -fpe-all=0 -traceback"
+
+in this last example the debug options are passed explicitly (for ifort) 
+
 To specify multiple values, for example for preprocessor definitions or packages, use semicolon separator:
 ```
 cmake .. -D NDM_PACKAGE_LIST="MPI;LAMMPS"

@@ -1,0 +1,12 @@
+ 1023  git add src/mld/ndm_interface.F90
+ 1024  git commit
+ 1025  git pull
+ 1026   git config pull.rebase false
+ 1027  git pull
+ 1028  git status
+ 1030  git add src/mld/ndm_interface.F90
+ 1031  git status
+ 1032  git commit
+ 1033  git status
+ 1034  git push
+ 1035  git log
