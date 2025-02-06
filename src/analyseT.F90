@@ -85,7 +85,7 @@ contains
           if(itesauvinter.gt.0) then
              if (mod(iteration,itesauvinter).eq.0) then
                 write(extension,'(i9.9)') iteration
-                fnamcout = fnam(1:lenfnam)//'.cout.'//extension
+                fnamcout = fnam(1:lenfnam)//'.'//extension//'.cout.'
              else
                 fnamcout = fnam(1:lenfnam)//'.cout'
              endif
@@ -113,7 +113,7 @@ contains
        if (mod(iteration,itesauvposition)==0) then
           formatsauv = 2
           write(extension,'(i9.9)') iteration
-          fnamcout = fnam(1:lenfnam)//'.cout.'//extension
+          fnamcout = fnam(1:lenfnam)//'.'//extension//'.pos.cout.'
           call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
        end if
     endif

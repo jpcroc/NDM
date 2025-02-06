@@ -292,6 +292,16 @@ contains
     end if
     
 #ifdef PARA
+    if (rang==0) then
+       if (ldecoup) then
+          open(123, file='decoup.dat', status='old')
+          read (123, *) npr,ncore
+          close(123)         
+          call  decoupage(npr,ncore,cel2b,psc=psc,lverbose=lprt)
+          call arret_ndm
+       end if
+    end if
+
     ncore=0
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        at2b%imm_glob=imm_glob

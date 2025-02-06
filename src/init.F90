@@ -33,7 +33,7 @@ module init_mod
 
   USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,igen,ilangevin,iteration,iteanapos,iterasmol,&
        &itetimestep,kinemean,lcasca,lperiod,lrestart,pmean,rang,timel,two,&
-       &itmax,tmean,tstep,usdh,lspacendm,latcomp,l2T,lcdp,lspecialinit
+       &itmax,tmean,tstep,usdh,lspacendm,latcomp,l2T,lcdp,lspecialinit,lwgin
   use read_val,only:ltabvois
   use specialinit_mod,only:specialinit
 USE var_pot, ONLY:ipotentiel
@@ -93,14 +93,12 @@ contains
     iteration=0
     !<---------setting the configuration by reading gin / cin file --------------
 
-    select case (ipotentiel)
-    case(10,11,20)
+    if ((ipotentiel==-10).or.(ipotentiel==-11))then
        lrepart=.false.
-    case default
+    else
        lrepart=.true.
-    end select
+    end if
     call constrconf(atdml,boxndm,celndm,lrepart,psc=psc)
-    write(6,*)'TTTTTTTTTT',rang,atdml%xp(1,1)
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
     else
@@ -218,8 +216,9 @@ contains
     if ((lspecialinit).and.(.not.(lrestart))) call specialinit(atdml,boxndm,celndm)
     if (.not.lrestart) then
        if (iterasmol>=0) then
-          itapp=0
+          itapp=-1
           call rasmolT (atdml,boxndm,itapp,latcomp=latcomp)
+          if (lwgin) call rasmolT (atdml,boxndm,itapp,latcomp=latcomp,ivisumol=5)
        end if
     end if
 

@@ -36,7 +36,7 @@ module montecarlo_mod
   use var_pot,only:ipotentiel,rumax
   USE parautils,only:initloc,pointer_caltabt_calfo
   USE calctemp_mod,only:calctemp
-  use vect_dist_mod,only:distat
+  use vect_dist_mod,only:distat,closest_at
   USE recips_mod,only:distmin
 #ifdef LAMMPS_VERSION
   use vars_lammps
@@ -114,7 +114,7 @@ module montecarlo_mod
   integer::itypcalc
 
   integer,parameter::nrins=10000
-  real(double)::R0mcgc,fdfactmcgc,probaR(0:nrins),bublcenter(3),zlmin
+  real(double)::R0mcgc,fdfactmcgc,probaR(0:nrins),bublcenter(3),zlmin,Frad(1:nrins),fecalcprob
   real(double)::ZLcenter(3)
   integer::iZLins
   real(double)::epotnp1min=1d12,beta
@@ -249,7 +249,7 @@ contains
           FEspring=Fespring-(bk*text)*log(2*pi*bk*text/k_spring)
           FEspring=Fespring*erg2eV
        case(55)
-          FEspring=bk*text*log(boxmcgc_p%volu)*erg2ev
+          FEspring=Fecalcprob ! bk*text*log(boxmcgc_p%volu)*erg2ev
        end select
        if (rang==0) then
           write(6,*)'***SPRING CALCULATION***'
@@ -2930,10 +2930,25 @@ contains
     integer::itry,i,iex
     !choose vecteur
     itry=0
+    block
+      real(double)::distm2
+      integer::icl
+      poscenter(:,1)=bublcenter(:)
+      call cryst_to_cart(1,poscenter,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
+      call closest_at(poscenter(:,1),atconf_n,cells_nplus1,boxmcgc_p,.true.,dist=distm2,iclose=icl)
+      if (rang==0) then
+         write(6,*)
+         write(6,*)'closest atom',distm2,icl,atconf_n%ityp(icl)
+         write(6,*)'bubl cent',bublcenter
+         write(6,*)'atclose',atconf_n%xp(1,icl)/boxmcgc_p%zl(1),atconf_n%xp(2,icl)/boxmcgc_p%zl(2),atconf_n%xp(3,icl)/boxmcgc_p%zl(3)
+         write(6,*)
+      end if
+    end block
+
 22  continue
     itry=itry+1
-    if (itry.gt.1000) then
-       write(6,*)'ITRY 1000'
+    if (itry.gt.10000) then
+       write(6,*)'ITRY 10000'
        call arret_ndm
     end if
     call random_number(zf)
@@ -2963,14 +2978,14 @@ contains
     poscenter(:,1)=bublcenter(:)
     call cryst_to_cart(1,poscenter,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
     postest(:)=poscenter(:,1)+xins(:)
-    do i=1,atconf_n%im
-       call distat(postest(:),atconf_n%xp(:,i),boxmcgc_p,dist)
-       if (dist.le.distminat) then
 
-          !          write(6,*)'iex TOO close'
-          goto 22
-       end if
-    end do
+      do i=1,atconf_n%im
+         call distat(postest(:),atconf_n%xp(:,i),boxmcgc_p,dist)
+         if (dist.le.distminat) then
+            if (rang==0) write(6,*)'iex TOO close',dist,distminat
+            goto 22
+         end if
+      end do
     vec(:,1)=postest(:)
 !!$    select case (ins-typ)
 !!$    case(1)
@@ -3133,16 +3148,28 @@ contains
 
     somP=0.
     select case(ins_typ)
-    case(1,55)
+    case(1)
        do i=0,nrins
           r=float(i)*zlmin/(2*nrins)
           
           probaR(i)=r*r/(1+exp(fdfactmcgc*(r-R0mcgc)))
           if (rang==0)                 write(136,*)i,r,probaR(i)
           !       write(6,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i),probaR(i)/(r*r)
-          somP=somP+probaR(i)    
+          somP=somP+probaR(i)
        end do
 
+
+    case(55)
+       do i=0,nrins
+          r=float(i)*zlmin/(2*nrins)
+          
+          probaR(i)=4*pi*r*r*form55(fdfactmcgc,r,R0mcgc)! form55=1/(1+exp(fdfactmcgc*(r-R0mcgc)))
+          if (rang==0)                 write(136,*)i,r,probaR(i)
+          !       write(6,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i),probaR(i)/(r*r)
+          somP=somP+probaR(i)
+
+       end do
+       call probaUP(Fecalcprob,Frad,form55,fdfactmcgc,R0mcgc)
 
     case(11)
 
@@ -3544,5 +3571,37 @@ contains
     end if
   end subroutine calcforcespring
   
-      
+  function form55(fd,r,r0) result(pu)
+      USE T_kind_param_m, ONLY:  double
+    real(double),intent(in)::fd,r,r0
+    real(double)::pu
+    pu=1/(1+exp(fd*(r-R0)))
+  end function form55
+
+  subroutine probaUP(fcp,Fradc,form,fdfact,r0mc)
+    interface
+       function myfunc(fd,r,r0) result(pu)
+         USE T_kind_param_m, ONLY:  double
+         real(double),intent(in)::fd,r,r0
+         real(double)::pu
+       end function myfunc
+    end interface
+    procedure (myfunc) :: form
+    real(double)::fcp,fradc(:),fdfact,r0mc
+
+    integer::i
+    real(double)::r,pins_inter,dr,rp05,rm05,Urp05,Urm05
+    pins_inter=0.
+    dr=zlmin/(2*nrins)
+    do i=1,nrins
+       r=float(i)*dr
+       pins_inter=pins_inter+4*pi*r**2*dr*form(fdfact,r,r0mc)
+       rp05=r+dr*0.5;       rm05=r-dr*0.5
+       Urp05=-bk*text*log(form(fdfact,rp05,r0mc))
+       Urm05=-bk*text*log(form(fdfact,rm05,r0mc))
+       Fradc(i)=-(urp05-urm05)/dr
+    end do
+    fcp=-bk*text*log(pins_inter/boxmcgc_p%volu)
+  end subroutine probaUP
+  
 end module montecarlo_mod

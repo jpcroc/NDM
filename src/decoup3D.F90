@@ -59,7 +59,12 @@ contains
     icall=icall+1
     if (present(lverbose))lverb=lverbose
 #ifdef PARA
-    nbr_cpumin=nbr_cpuin
+    if (ldecoup) then
+       nbr_cpumin=2
+       lverb=.true.
+    else
+       nbr_cpumin=nbr_cpuin
+    end if
     if (present(atdec))then
 !    write(6,*)'OHLALA1',imm_glob
 !    write(6,*)'OHLALA2',atdec%imm_glob
@@ -76,17 +81,15 @@ contains
     call arret_ndm
  end if
 #endif
-#ifndef PARA
+
  if (ldecoup) then
     write(6,*)'DECOUP TEST from 2 to ', nbr_cpuIN,' with ',ncore ,' per node'
     write(6,*)'results are in decoup_out, grep MEILLEUR'
- end if
-    
     iudecoup=1023
-    open (unit=1023,file='decoup_out')
-#else
-             iudecoup=6
-#endif
+ else
+    iudecoup=6
+ end if
+    open (unit=1023,file='decoup_out')    
 
  if ((nprocspace.gt.1).or.(ldecoup)) then
        loop1:     do nbr_cpu=nbr_cpumin,nbr_cpuIN
@@ -97,7 +100,7 @@ contains
        nb_sol = 0
 
        if ((rang==0).and.(lverb)) then
-
+          write(6,*)'sur ',nbr_cpu,' cpus',ncore
           write(iudecoup,*)
           write(iudecoup,*)
           write(iudecoup,*)'-----------------------------------------------------------'
@@ -159,8 +162,19 @@ contains
 
           endif
 #ifdef PARA
-          write(iudecoup,*)'!!! Arret du programme !!!'
-          call arret_ndm
+          if(.not.ldecoup) then
+             write(iudecoup,*)'!!! Arret du programme !!!'
+             call arret_ndm
+          else
+          deallocate(decoup)
+          deallocate(specifs)
+
+          deallocate(psc%res_cpu)
+          deallocate(coord_min)
+          deallocate(coord_max)
+
+          cycle loop1
+       end if
 #else
           deallocate(decoup)
           deallocate(specifs)
@@ -280,10 +294,9 @@ contains
        enddo
 
 
-#ifdef PARA
+
        if (rang == 0) then
-          
-#endif
+
 
           if ((icall==1).and.(lverb)) then 
              write(iudecoup,*)'-----------------------------------------------'
@@ -305,32 +318,31 @@ contains
              
              
              
-#ifndef PARA
+
              
              write(iudecoup,*)'Taille des decoupages'
              do ii=0,nbr_cpu-1
                 write(iudecoup,*)'Decoupage',ii,':',psc%res_cpu(ii,1:3)
              enddo
              write(iudecoup,*)'----------------------------------------------'
-             do ii = 0,nbr_cpu-1   
-                write(iudecoup,*)'Debut/Fin en x pour ii',ii,'egal',coord_min(ii,1),coord_max(ii,1)
-                write(iudecoup,*)'Debut/Fin en y pour ii',ii,'egal',coord_min(ii,2),coord_max(ii,2)
-                write(iudecoup,*)'Debut/Fin en z pour ii',ii,'egal',coord_min(ii,3),coord_max(ii,3)
-                write(iudecoup,*)
-             enddo
-             write(iudecoup,*)'-----------------------------------------------'
+!             do ii = 0,nbr_cpu-1   
+!                write(iudecoup,*)'Debut/Fin en x pour ii',ii,'egal',coord_min(ii,1),coord_max(ii,1)
+!                write(iudecoup,*)'Debut/Fin en y pour ii',ii,'egal',coord_min(ii,2),coord_max(ii,2)
+!                write(iudecoup,*)'Debut/Fin en z pour ii',ii,'egal',coord_min(ii,3),coord_max(ii,3)
+!                write(iudecoup,*)
+!             enddo
+!             write(iudecoup,*)'-----------------------------------------------'
              
-#endif
+
           end if
-#ifdef PARA
        endif
-#endif
+
 
 #ifdef PARA
        ! On est dans le code de calcul NDM, on realloue les tableaux sur le
        ! nombre d'atomes en tenant compte des cellules fantomes
-
-       cellules_max=0
+       if (.not.ldecoup) then
+          cellules_max=0
        do ii = 0,nbr_cpu-1
           cellules_max = max(cellules_max,(psc%res_cpu(ii,1)+2) * (psc%res_cpu(ii,2)+2)* (psc%res_cpu(ii,3)+2))
        enddo
@@ -361,17 +373,18 @@ contains
        psc%nb_cell_x= psc%cell_finx - psc%cell_debx + 1
        psc%nb_cell_y= psc%cell_finy - psc%cell_deby + 1
        psc%nb_cell_z= psc%cell_finz - psc%cell_debz + 1
+    end if
 #endif
 !#endif
 
-#ifndef PARA
+
        deallocate(decoup)
        deallocate(specifs)
 
        deallocate(psc%res_cpu)
        deallocate(coord_min)
        deallocate(coord_max)
-#endif
+
 
     enddo loop1
  end if
