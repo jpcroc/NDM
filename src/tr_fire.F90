@@ -6,7 +6,7 @@ MODULE FireModule
   !       Phys. Rev. Lett. 97, 170201 (2006).
   use gen_com_m,only:iteration
   USE T_kind_param_m, ONLY:  double
-  use atomconfig,only:atom_config_d
+  use atomconfig,only:atom_config_e
   ! --- Paramètres de l'algorithme fire -----------------------
   real(double), parameter :: finc=1.1
   real(double), parameter :: fdec=0.5
@@ -44,7 +44,7 @@ subroutine trempe_fire(atdml, dt, nstep, alph)
 
   USE var_pot, ONLY:ntyp,cm
   implicit none
-  class(atom_config_d)::atdml
+  class(atom_config_e)::atdml
     integer::im
   REAL(double), intent(inout) :: dt
   INTEGER, intent(inout) :: nstep
@@ -60,13 +60,17 @@ subroutine trempe_fire(atdml, dt, nstep, alph)
   ! 1/ Intégration de l'équation de mouvement
   aux(:ntyp) = dt**2/(2.d0*cm(:ntyp))
   usdh = 1.d0/(2.d0*dt)
-  DO i=1, im
-     xprov(:) = atdml%xp(:,i) + atdml%vp(:,i)*dt + atdml%fp(:,i)*aux(atdml%iTyp(i))   
-     atdml%vp(:,i) = (xprov(:) - atdml%xpp(:,i))*usdh
-     atdml%xpp(:,i) = atdml%xp(:,i)
-     atdml%xp(:,i) = xprov(:)
-  END DO
-
+!  select type (atdml)
+!  class is (atom_config_e)
+!     if (atdml%lxpp) then 
+        DO i=1, im
+           xprov(:) = atdml%xp(:,i) + atdml%vp(:,i)*dt + atdml%fp(:,i)*aux(atdml%iTyp(i))   
+           atdml%vp(:,i) = (xprov(:) - atdml%xpp(:,i))*usdh
+           atdml%xpp(:,i) = atdml%xp(:,i)
+           atdml%xp(:,i) = xprov(:)
+        END DO
+!     end if
+!  end select
   ! 2/ Renormalisation des vitesses par l'algorithme fire
   ! Puissance dissipée
   pScal = Sum( atdml%vp(:,1:im)*atdml%fp(:,1:im) )

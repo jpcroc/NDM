@@ -81,7 +81,7 @@ contains
     if (itloopmax==0) itetemp=0
     if (itesauv.GT.0) then
        if (mod(iteration,itesauv)==0) then 
-          formatsauv = 3
+          formatsauv = 5
           if(itesauvinter.gt.0) then
              if (mod(iteration,itesauvinter).eq.0) then
                 write(extension,'(i9.9)') iteration

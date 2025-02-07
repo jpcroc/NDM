@@ -286,12 +286,8 @@ contains
      call cryst_to_cart (atcf%imm, atcf%xp,  box%bg,  -1) !cart vers cryst
 !        call atcf%print (unit=10)
      select type (atcf)
-     class is (atom_config_d)
-        call cryst_to_cart (atcf%imm, atcf%xpp, box%bg,  -1)
-     end select
-     select type (atcf)
      class is (atom_config_e)
-
+        if (atcf%lxpp)call cryst_to_cart (atcf%imm, atcf%xpp, box%bg,  -1)
 !        call cryst_to_cart (atcf%imm, atcf%xpp, box%bg,  -1)
         if(atcf%lax)      call cryst_to_cart (atcf%imm, atcf%ax,  box%bg,  -1)
      end select
@@ -308,12 +304,8 @@ contains
                  else
                     cpp  = Dble(Floor(atcf%xp(ic,i)))
                     select type (atcf)
-                    class is (atom_config_d)
-                       atcf%xpp(ic,i) = atcf%xpp(ic,i) - cpp
-                    end select
-                    select type (atcf)
                     class is (atom_config_e)
-!                       atcf%xpp(ic,i) = atcf%xpp(ic,i) - cpp
+                       if (atcf%lxpp)  atcf%xpp(ic,i) = atcf%xpp(ic,i) - cpp!                       atcf%xpp(ic,i) = atcf%xpp(ic,i) - cpp
                        if(atcf%lax)   atcf%ax (ic,i) = atcf%ax(ic,i)  - cpp
                     end select
                     atcf%xp (ic,i) = xpici     - cpp
@@ -350,12 +342,9 @@ contains
      end do loopdir
      call cryst_to_cart (atcf%imm, atcf%xp , box%at,  1)  !cryst vers cart
      select type (atcf)
-     class is (atom_config_d)
-        call cryst_to_cart (atcf%imm, atcf%xpp , box%at,  1)  !cryst vers cart
-     end select
-     select type (atcf)
      class is (atom_config_e)
 !        call cryst_to_cart (atcf%imm, atcf%xpp , box%at,  1)  !cryst vers cart
+        if (atcf%lxpp)        call cryst_to_cart (atcf%imm, atcf%xpp , box%at,  1)  !cryst vers cart
         if(atcf%lax) call cryst_to_cart (atcf%imm, atcf%ax , box%at,  1)  !cryst vers cart
      end select
    end subroutine periodbox

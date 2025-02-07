@@ -73,6 +73,7 @@ contains
 !       call arret_ndm
 !    end if
  end if
+
 #else
     if (ldecoup) then
        nbr_cpumin=2
@@ -377,14 +378,14 @@ contains
 #endif
 !#endif
 
-
+#ifndef PARA
        deallocate(decoup)
        deallocate(specifs)
 
        deallocate(psc%res_cpu)
        deallocate(coord_min)
        deallocate(coord_max)
-
+#endif
 
     enddo loop1
  end if

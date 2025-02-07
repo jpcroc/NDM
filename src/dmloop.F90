@@ -128,9 +128,15 @@ contains
        case(1)
           call dyn  (atdml)
        case (21)
-          call trempe (atdml)
+          select type (atdml)
+          class is (atom_config_e)
+             call trempe (atdml)
+          end select
        case(23)
-          call trempe_fire (atdml,tstep, fire_nstep, fire_alph)
+          select type (atdml)
+          class is (atom_config_e)
+             call trempe_fire (atdml,tstep, fire_nstep, fire_alph)
+          end select
        case default
           write (6, *) 'ne sait pas quoi faire stop'
           call arret_ndm

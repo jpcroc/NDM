@@ -40,7 +40,7 @@ module Parrinello_Rahman_Nose
   USE Mat_utils_mod,only:  matinv
   USE recips_mod,only: recips,calcvol
   USE boxconfig,only:box_config,updatebox!,box_config_lpr
-  use atomconfig,only:atom_config_d
+  use atomconfig,only:atom_config_d,atom_config_e
   use cellconfig,only:cell_config
 #ifdef PARA
   USE Tpara,only:COMM_space,nprocspace,para_space_config
@@ -246,7 +246,10 @@ end if
 
     ! Coordonnées réduites des atomes
     sp(1:3,1:atpr%imm) = MatMul(invh(1:3,1:3), atpr%xp(1:3,1:atpr%imm) )
-    sold(1:3,1:atpr%imm) = MatMul( invhold(1:3,1:3), atpr%xpp(1:3,1:atpr%imm) )
+    select type (atpr)
+    class is (atom_config_e)
+       if (atpr%lxpp)    sold(1:3,1:atpr%imm) = MatMul( invhold(1:3,1:3), atpr%xpp(1:3,1:atpr%imm) )
+    end select
     ! snew est le propagé de s avec seulement fp unc==uncorrected
     do ia = 1,atpr%im
        snew(1:3,ia) = -sold(1:3,ia) + 2.d0*sp(1:3,ia) &
@@ -403,8 +406,10 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 !!$    boxndm%volu = calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
 
     atpr%xp(1:3,1:atpr%imm) = MatMul(h(1:3,1:3), sp(1:3,1:atpr%imm) )
-    atpr%xpp(1:3,1:atpr%imm) = MatMul(hold(1:3,1:3), sold(1:3,1:atpr%imm) )
-
+    select type (atpr)
+    class is (atom_config_e)
+       if (atpr%lxpp)    atpr%xpp(1:3,1:atpr%imm) = MatMul(hold(1:3,1:3), sold(1:3,1:atpr%imm) )
+    end select
     ! Total energy of the cell
     EcellPR = Kcell + Ucell
 

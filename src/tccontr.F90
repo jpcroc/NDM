@@ -1,7 +1,7 @@
 module tccontr
   USE T_kind_param_m
   use cryst_to_cart_mod,only:cryst_to_cart
-  USE atomconfig,only:atom_config_d
+  USE atomconfig,only:atom_config_d,atom_config_e
   use cellconfig,only: cell_config,caltabtC
   use boxconfig,only:box_config,periodbox
   use gen_com_m,only:lperiod,tfcou,epcou,couxyz
@@ -21,7 +21,7 @@ contains
     class(box_config)::boxcf
 !    real(double)::epcou
     integer :: i, im,imm,ic
-    type(atom_config_d)::atcou
+    type(atom_config_e)::atcou
     type(cell_config):: celcou
     real(double),allocatable::xpnp(:,:)
     real(double)::epc(3),kinecou,tempcou
@@ -66,8 +66,10 @@ contains
 !!$    end do
 
 !    do i=1,atcou%im
-!       if (atcf%lgul(i)) then
-          atcou%xpp(:,:)=atcou%xp(:,:)-(atcou%xp(:,:)-atcou%xpp(:,:))*sqrt(tfcou/tempcou)
+    !       if (atcf%lgul(i)) then
+    
+          if (atcou%lxpp)          atcou%xpp(:,:)=atcou%xp(:,:)-(atcou%xp(:,:)-atcou%xpp(:,:))*sqrt(tfcou/tempcou)
+    
           atcou%vp(:,:)=atcou%vp(:,:)*sqrt(tfcou/tempcou)
 !       end if
 !    end do

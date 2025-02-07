@@ -62,7 +62,13 @@ contains
     type is (atom_config)
        formatsauv=2
     class is (atom_config_d)
-           formatsauv=3
+       formatsauv=5
+    class is (atom_config_e)
+       if (atdml%lxpp)then
+          formatsauv=3
+       else
+          formatsauv=5
+       end if
     end select
           
     call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp)     ! Modif E. Clouet: sauvegarde seulement si voulu

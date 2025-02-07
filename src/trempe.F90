@@ -34,20 +34,25 @@ contains
     !
     im=atdml%im
     aux(:ntyp) = tstep**2/cm(:ntyp)
-    do i = 1, im
-       do ic = 1, 3
-          if (atdml%vp(ic,i)*atdml%fp(ic,i)>0) then
-             xprov = atdml%xp(ic,i)-atdml%xpp(ic,i)+atdml%xp(ic,i)+aux(atdml%ityp(i))*atdml%fp(ic,i)
-          else
-             xprov = atdml%xp(ic,i)+atdml%fp(ic,i)*aux(atdml%ityp(i))
-          endif
-          atdml%vp(ic,i) = (xprov-atdml%xpp(ic,i))*usdh
-          atdml%xpp(ic,i) = atdml%xp(ic,i)
-          atdml%xp(ic,i) = xprov
-       end do
+    select type (atdml)
+    class is (atom_config_e)
+       if (atdml%lxpp) then 
+          do i = 1, im
+             do ic = 1, 3
+                if (atdml%vp(ic,i)*atdml%fp(ic,i)>0) then
+                   xprov = atdml%xp(ic,i)-atdml%xpp(ic,i)+atdml%xp(ic,i)+aux(atdml%ityp(i))*atdml%fp(ic,i)
+                else
+                   xprov = atdml%xp(ic,i)+atdml%fp(ic,i)*aux(atdml%ityp(i))
+                endif
+                atdml%vp(ic,i) = (xprov-atdml%xpp(ic,i))*usdh
+                atdml%xpp(ic,i) = atdml%xp(ic,i)
+                atdml%xp(ic,i) = xprov
+             end do
+             
 
-    end do
-
+          end do
+       end if
+    end select
 
 
 

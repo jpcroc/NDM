@@ -217,11 +217,12 @@ contains
     nb_var_dbl = 6  !  xp,fp
     select type (atmp)
     class is (atom_config_d)
-       nb_var_dbl=nb_var_dbl+6 !vp xpp
+       nb_var_dbl=nb_var_dbl+3 !vp xpp
     end select
     select type (atmp)
     class is (atom_config_e)
 !       nb_var_dbl=nb_var_dbl+6 !vp xpp
+       if (atmp%lxpp)        nb_var_dbl=nb_var_dbl+3 !eat
        if (atmp%lprteat)        nb_var_dbl=nb_var_dbl+1 !eat
        if (atmp%lsigat)        nb_var_dbl=nb_var_dbl+9 !eat
        if (atmp%llangevin)        nb_var_dbl=nb_var_dbl+3 !eat
@@ -304,19 +305,19 @@ contains
                    send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(1,i_at)
                    send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(2,i_at)
                    send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(3,i_at)
-                   send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
-                   send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
-                   send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
                 end select
-                ival=12
+                ival=9
                 select type (atmp)
                 class is (atom_config_e)
 !!$                   send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(1,i_at)
 !!$                   send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(2,i_at)
 !!$                   send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(3,i_at)
-!!$                   send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
-!!$                   send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
-!!$                   send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
+                   if (atmp%lxpp) then
+                      do ic3=1,3
+                         ival =ival+1; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(ic3,i_at)
+                      end do
+                   end if
+
                    if (atmp%lprteat)then
                       ival =ival+1; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%eat(i_at)
                    end if
@@ -444,19 +445,19 @@ contains
              atmp%vp(1,atmp%im) = recv_buff_dbl(7,i_at,ind_recv) 
              atmp%vp(2,atmp%im) = recv_buff_dbl(8,i_at,ind_recv) 
              atmp%vp(3,atmp%im) = recv_buff_dbl(9,i_at,ind_recv)
-             atmp%xpp(1,atmp%im) = recv_buff_dbl(10,i_at,ind_recv) 
-             atmp%xpp(2,atmp%im) = recv_buff_dbl(11,i_at,ind_recv) 
-             atmp%xpp(3,atmp%im) = recv_buff_dbl(12,i_at,ind_recv)
           end select
-          ival=12
+          ival=9
           select type (atmp)
           class is (atom_config_e)
 !!$             atmp%vp(1,atmp%im) = recv_buff_dbl(7,i_at,ind_recv) 
 !!$             atmp%vp(2,atmp%im) = recv_buff_dbl(8,i_at,ind_recv) 
 !!$             atmp%vp(3,atmp%im) = recv_buff_dbl(9,i_at,ind_recv)
-!!$             atmp%xpp(1,atmp%im) = recv_buff_dbl(10,i_at,ind_recv) 
-!!$             atmp%xpp(2,atmp%im) = recv_buff_dbl(11,i_at,ind_recv) 
-!!$             atmp%xpp(3,atmp%im) = recv_buff_dbl(12,i_at,ind_recv)
+             if (atmp%lxpp) then
+                do ic3=1,3
+                   ival =ival+1;atmp%xpp(ic3,atmp%im)= recv_buff_dbl(ival,i_at,ind_recv)
+                end do
+             end if
+
              if (atmp%lprteat)then
                 ival =ival+1
                 atmp%eat(atmp%im)=recv_buff_dbl(ival,i_at,ind_recv)
@@ -581,13 +582,11 @@ contains
 
              select type (atmp)
              class is (atom_config_d)
-                atmp%xpp(:,i_new) = atmp%xpp(:,i_at)
                 atmp%vp(:,i_new)  = atmp%vp(:,i_at)
              end select
              select type (atmp)
              class is (atom_config_e)
-!                atmp%xpp(:,i_new) = atmp%xpp(:,i_at)
-!                atmp%vp(:,i_new)  = atmp%vp(:,i_at)
+                if (atmp%lxpp)        atmp%xpp(:,i_new)  = atmp%xpp(:,i_at)
                 if (atmp%lprteat)    atmp%eat(i_new)  = atmp%eat(i_at)
                 if (atmp%lsigat)        atmp%sigat(:,:,i_new)  = atmp%sigat(:,:,i_at)
                 if (atmp%llangevin)        atmp%glangv(:,i_new)  = atmp%glangv(:,i_at)
@@ -687,12 +686,13 @@ contains
     nb_var_dbl = 6  !! xp,fp
     select type (atmp)
     class is (atom_config_d)
-       nb_var_dbl=nb_var_dbl+6 !vp xpp
+       nb_var_dbl=nb_var_dbl+3 !vp 
     end select
     select type (atmp)
-             
+
     class is (atom_config_e)
-!       nb_var_dbl=nb_var_dbl+6 !vp xpp
+       !       nb_var_dbl=nb_var_dbl+6 !vp xpp
+       if (atmp%lxpp)        nb_var_dbl=nb_var_dbl+3 !eat
        if (atmp%lprteat)        nb_var_dbl=nb_var_dbl+1 !eat
        if (atmp%lsigat)        nb_var_dbl=nb_var_dbl+9 !eat
        if (atmp%llangevin)        nb_var_dbl=nb_var_dbl+3 !eat
@@ -709,7 +709,6 @@ contains
 
            
     end select
-!    write(6,*)'nb_var_dbl2',nb_var_dbl
     allocate(send_nb_val(psc%nbr_proc_voisin))
     allocate(send_buff_int(nb_var_int,nb_at_max,psc%nbr_proc_voisin))
     allocate(send_buff_lgc(nb_var_lgc,nb_at_max,psc%nbr_proc_voisin))
@@ -776,19 +775,19 @@ contains
                 send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(1,i_at)
                 send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(2,i_at)
                 send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(3,i_at)
-                send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
-                send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
-                send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
              end select
-             ival=12
+             ival=9
              select type (atmp)
              class is (atom_config_e)
 !!$                send_buff_dbl(7,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(1,i_at)
 !!$                send_buff_dbl(8,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(2,i_at)
 !!$                send_buff_dbl(9,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(3,i_at)
-!!$                send_buff_dbl(10,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
-!!$                send_buff_dbl(11,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
-!!$                send_buff_dbl(12,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
+                if (atmp%lxpp) then
+                   do ic3=1,3
+                      ival =ival+1; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(ic3,i_at)
+                   end do
+                end if
+                
                 if (atmp%lprteat)then
                    ival =ival+1; send_buff_dbl(ival,send_nb_val(nproc_voisin),nproc_voisin) = atmp%eat(i_at)
                 end if
@@ -988,19 +987,18 @@ contains
              atmp%vp(1,pt_at_ftm) = recv_buff_dbl(7,i_at,ind_recv) 
              atmp%vp(2,pt_at_ftm) = recv_buff_dbl(8,i_at,ind_recv) 
              atmp%vp(3,pt_at_ftm) = recv_buff_dbl(9,i_at,ind_recv)
-             atmp%xpp(1,pt_at_ftm) = recv_buff_dbl(10,i_at,ind_recv) 
-             atmp%xpp(2,pt_at_ftm) = recv_buff_dbl(11,i_at,ind_recv) 
-             atmp%xpp(3,pt_at_ftm) = recv_buff_dbl(12,i_at,ind_recv)
           end select
-          ival=12
+          ival=9
           select type (atmp)
           class is (atom_config_e)
 !!$             atmp%vp(1,pt_at_ftm) = recv_buff_dbl(7,i_at,ind_recv) 
 !!$             atmp%vp(2,pt_at_ftm) = recv_buff_dbl(8,i_at,ind_recv) 
 !!$             atmp%vp(3,pt_at_ftm) = recv_buff_dbl(9,i_at,ind_recv)
-!!$             atmp%xpp(1,pt_at_ftm) = recv_buff_dbl(10,i_at,ind_recv) 
-!!$             atmp%xpp(2,pt_at_ftm) = recv_buff_dbl(11,i_at,ind_recv) 
-!!$             atmp%xpp(3,pt_at_ftm) = recv_buff_dbl(12,i_at,ind_recv)
+             if (atmp%lxpp) then
+                do ic3=1,3
+                   ival =ival+1;atmp%xpp(ic3,pt_at_ftm)= recv_buff_dbl(ival,i_at,ind_recv)
+                end do
+             end if
 
              if (atmp%lprteat)then
                 ival =ival+1
@@ -1569,20 +1567,22 @@ contains
                    nvr=nvr+1
                    send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%vp(3,i_at)
                 end if
-                if(scan('r',caracT).ne.0) then
-                   nvr=nvr+1
-                   send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
-                   nvr=nvr+1
-                   send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
-                   nvr=nvr+1
-                   send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
-
-                end if
              end select
 
 
              select type (atmp)
              class is  (atom_config_e)
+                if (atmp%lxpp) then
+                   if(scan('r',caracT).ne.0) then
+                      nvr=nvr+1
+                      send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(1,i_at)
+                      nvr=nvr+1
+                      send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(2,i_at)
+                      nvr=nvr+1
+                      send_buff_dbl(nvr,send_nb_val(nproc_voisin),nproc_voisin) = atmp%xpp(3,i_at)
+                      
+                   end if
+                end if
                 if (atmp%lprteat)then
                    if(scan('u',caracT).ne.0) then
                       nvr=nvr+1
@@ -1830,17 +1830,20 @@ contains
                       nvr=nvr+1
                       atmp%vp(3,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
                    end if
-                   if(scan('r',caracT).ne.0) then
-                      nvr=nvr+1
-                      atmp%xpp(1,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
-                      nvr=nvr+1
-                      atmp%xpp(2,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
-                      nvr=nvr+1
-                      atmp%xpp(3,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
-                   end if
                 end select
                 select type (atmp)
                 class is  (atom_config_e)
+                   if (atmp%lxpp) then 
+                      if(scan('r',caracT).ne.0) then
+                         nvr=nvr+1
+                         atmp%xpp(1,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                         nvr=nvr+1
+                         atmp%xpp(2,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                         nvr=nvr+1
+                         atmp%xpp(3,iloc) = recv_buff_dbl(nvr,i_at,ind_recv) 
+                      end if
+                   end if
+
                    if (atmp%lprteat)then
                       if(scan('u',caracT).ne.0) then
                          nvr=nvr+1

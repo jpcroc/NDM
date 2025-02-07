@@ -74,7 +74,10 @@ contains
     !step 2  Coordinate update, x(t)-> x(t+dt)
 
     DO i=1, atdml%im
-       atdml%xpp(1:3,i)=atdml%xp(1:3,i)
+       select type (atdml)
+       class is (atom_config_e)
+          if (atdml%lxpp) atdml%xpp(1:3,i)=atdml%xp(1:3,i)
+       end select
        atdml%xp(1:3,i) = atdml%xp(1:3,i) + tstep*atdml%vp(1:3,i)
     END DO
     if (atdml%ltabvois.and.mod(iteration,itetabvois)==0) then

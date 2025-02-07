@@ -1475,7 +1475,6 @@ contains
              iplus=i+atconf_n%im
              atconf_nplus1%xp(1:3,iplus) = cart_vec_nplus1(1:3,i)
              atconf_nplus1%fp(1:3,iplus) = 0
-             !             atconf_nplus1%xpp(1:3,iplus) =     atconf_nplus1%xp(1:3,iplus) 
              atconf_nplus1%ityp(iplus) = itypcalc
              atconf_nplus1%ielat(iplus) = -1
              nag=maxval(atconf_Nplus1%num_at_glob(1:iplus-1))
@@ -2215,13 +2214,11 @@ contains
           END DO
           ! step 2  Coordinate update, x(t)-> x(t+dt)
           DO i=1, atconf_Nplus1%im
-             !             atconf_Nplus1%xpp(1:3,i)=atconf_Nplus1%xp(1:3,i)
              atconf_Nplus1%xp(1:3,i) = atconf_Nplus1%xp(1:3,i) + tstep*atconf_Nplus1%vp(1:3,i)
           END DO
 
           !recopier les nouvelles positions dans le syst N
           DO i=1, atconf_N%im
-             !             atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
              atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
              atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
           END DO
@@ -2441,7 +2438,6 @@ contains
              iplus=i+atconf_n%im
              atconf_nplus1%xp(1:3,iplus) = cart_vec_nplus1(1:3,i)
              atconf_nplus1%fp(1:3,iplus) = 0
-             atconf_nplus1%xpp(1:3,iplus) =     atconf_nplus1%xp(1:3,iplus) 
              atconf_nplus1%ityp(iplus) = itypcalc
              atconf_nplus1%num_at_glob(iplus) = iplus
              atconf_Nplus1%proba_ins = pins
@@ -3358,7 +3354,6 @@ contains
           ! Tenseur h à l'instant t+dt
           boxmcgc_p%h(:,:) = boxmcgc_p%h(:,:) + boxmcgc_p%hdot(:,:)*tstep*ihbox0(:,:)
           ! Coordonnées réelles à l'instant t+dt
-          !          atconf_Nplus1%xpp(:,1:atconf_Nplus1%im) = atconf_Nplus1%xp(:,1:atconf_Nplus1%im)
           atconf_Nplus1%xp(:,1:atconf_Nplus1%im) = MatMul( boxmcgc_p%h, sp(:,1:atconf_Nplus1%im) )
           call updatebox(boxmcgc_p,boxmcgc_p%h)
           atconf_Nplus1%vp(:,1:atconf_Nplus1%im) = MatMul( boxmcgc_p%h(:,:), sdot(:,1:atconf_Nplus1%im) ) ! retour à vp car transfert d'atomes  dans scalebox en PARA
@@ -3366,7 +3361,6 @@ contains
 
           !recopier les nouvelles positions dans le syst N
           DO i=1, atconf_N%im
-             !             atconf_N%xpp(1:3,i) = atconf_Nplus1%xpp(1:3,i)
              atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
              atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
           END DO

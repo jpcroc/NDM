@@ -2,6 +2,8 @@ module dyn_mod
   USE gen_com_m, ONLY:cunite,erg2ev,fnemd,iteration,itetconst,lcalcjq,leev,lnemd,lperiod,&
        &ltcon,text,timel,tstep,unite,usdh,bk
   use atomconfig,only:atom_config_d,atom_config_e
+   USE arret_ndm_mod,only:arret_ndm
+
   implicit none
 contains
   ! *************************************************************
@@ -57,43 +59,58 @@ end select
     aux(:ntyp) = tstep**2/cm(:ntyp)
     !      write(6,*)'aux ',aux
 
+!!$     select type (atdml)
+!!$     class is (atom_config_e)
+!!$        write(*,*) 'md_test1',  atdml%xp(1,1), atdml%xpp(1,1), atdml%vp(1,1)
+!!$        write(*,*) 'md_test1',  atdml%xp(1,2), atdml%xpp(1,2), atdml%vp(1,2)
+!!$        write(*,*) 'md_test1',  atdml%xp(1,3), atdml%xpp(1,3), atdml%vp(1,3)
+!!$     end select
+     select type (atdml)
+     class is (atom_config_e)
+        if (.not.atdml%lxpp) then
+           write(6,*)'inconsistency dmtypelxpp'
+           call arret_ndm
+        end if
+        do i = 1, im
+           do ic = 1, 3
+              
+              xprov = (atdml%xp(ic,i)-atdml%xpp(ic,i))+atdml%xp(ic,i)+aux(atdml%ityp(i))*atdml%fp(ic,i)
+              atdml%vp(ic,i) = (xprov-atdml%xpp(ic,i))*usdh
+              atdml%xpp(ic,i) = atdml%xp(ic,i)
+              
+              atdml%xp(ic,i) = xprov
+           end do
+        end do
+!!$        select type (atdml)
+!!$        class is (atom_config_e)
+!!$           write(*,*) 'md_test2',  atdml%xp(1,1), atdml%xpp(1,1), atdml%vp(1,1)
+!!$           write(*,*) 'md_test2',  atdml%xp(1,2), atdml%xpp(1,2), atdml%vp(1,2)
+!!$           write(*,*) 'md_test2',  atdml%xp(1,3), atdml%xpp(1,3), atdml%vp(1,3)
+!!$        end select
+        if (atdml%lsigat) then
+           if (lcalcjq) then
+              eatommoy=0.
+              jqp=jq ; jqk=0.0 !; expvect(:)=0.0
+              do i=1,im
+                 !        eatom(i)=eatom(i)+0.5*cm(ityp(i))*(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)
+                 if(lnemd) eatommoy=eatommoy+atdml%eat(i)/float(atdml%im)
+                 expvect(:)=expvect(:)+atdml%eat(i)*atdml%xpp(:,i)
+                 do ic=1,3              
+                    jqk(ic)=jqk(ic)+atdml%eat(i)*atdml%vp(ic,i)
+                    !               jq(ic)=jq(ic)+eatom(i)*vp(ic,i)
+                 end do
+              end do
+              jq=jqp+jqk
 
-    !debug write(*,*) 'md_test1',  xp(1,1), xpp(1,1), vp(1,1) 
-    do i = 1, im
-       do ic = 1, 3
-          xprov = (atdml%xp(ic,i)-atdml%xpp(ic,i))+atdml%xp(ic,i)+aux(atdml%ityp(i))*atdml%fp(ic,i)
-          atdml%vp(ic,i) = (xprov-atdml%xpp(ic,i))*usdh
-          atdml%xpp(ic,i) = atdml%xp(ic,i)
-          atdml%xp(ic,i) = xprov
-       end do
-    end do
-    !debug write(*,*) 'md_test2',  xp(1,1), xpp(1,1), vp(1,1)
-    select type (atdml)
-    class is (atom_config_e)
-       if (atdml%lsigat) then
-          if (lcalcjq) then
-             eatommoy=0.
-             jqp=jq ; jqk=0.0 !; expvect(:)=0.0
-             do i=1,im
-                !        eatom(i)=eatom(i)+0.5*cm(ityp(i))*(vp(1,i)**2+vp(2,i)**2+vp(3,i)**2)
-                if(lnemd) eatommoy=eatommoy+atdml%eat(i)/float(atdml%im)
-                expvect(:)=expvect(:)+atdml%eat(i)*atdml%xpp(:,i)
-                do ic=1,3              
-                   jqk(ic)=jqk(ic)+atdml%eat(i)*atdml%vp(ic,i)
-                   !               jq(ic)=jq(ic)+eatom(i)*vp(ic,i)
-                end do
-             end do
-             jq=jqp+jqk
 
 
+              write(65,'(I8,3D16.8)')iteration-1,jq(1),jq(2),jq(3)
+              !         write(66,'(I8,3D15.6)')it-1,expvect(1),expvect(2),expvect(3)
+           end if
+        end if
+     end select
 
-       write(65,'(I8,3D16.8)')iteration-1,jq(1),jq(2),jq(3)
-       !         write(66,'(I8,3D15.6)')it-1,expvect(1),expvect(2),expvect(3)
-    end if
- end if
-end select
-
-    return
-  end subroutine dyn
+     return
+   end subroutine dyn
 
 end module dyn_mod

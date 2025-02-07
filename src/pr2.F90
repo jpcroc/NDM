@@ -364,8 +364,10 @@ contains
        !       write(6,*)'IN',atpr%xp(1,1)
        ! Coordonnées réduites des atomes (au cas où elles ont été modifiées à l'extérieur)
        sp(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%xp(:,1:atpr%im) )
-
-       spp(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%xpp(:,1:atpr%im) )
+       select type (atpr)
+       class is (atom_config_e)
+          if (atpr%lxpp)       spp(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%xpp(:,1:atpr%im) )
+       end select
        ! De même pour les vitesses au cas où, par exemple, on utilise le thermostat
        sdot(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%vp(:,1:atpr%im) )
        !       write(6,*)'VEL',sdot(1,1),atpr%vp(1,1)
@@ -433,7 +435,10 @@ contains
 
        !       write(6,*)'MED',atpr%xp(1,1),sp(1,1),sfp(1,1)
        ! Coordonnées réelles à l'instant t+dt
-       atpr%xpp(:,1:atpr%im) = MatMul( boxndm%h, spp(:,1:atpr%im) )
+       select type (atpr)
+       class is (atom_config_e)
+          if (atpr%lxpp)       atpr%xpp(:,1:atpr%im) = MatMul( boxndm%h, spp(:,1:atpr%im) )
+       end select
        atpr%xp(:,1:atpr%im) = MatMul( boxndm%h, sp(:,1:atpr%im) )
        call updatebox(boxndm,boxndm%h)
 
@@ -536,7 +541,10 @@ contains
           boxndm%h(:,:) = boxndm%h(:,:) + boxndm%hdot(:,:)*tstep*ihbox0(:,:)
 
           ! Coordonnées réelles à l'instant t+dt
-          atpr%xpp(:,1:atpr%im) = atpr%xp(:,1:atpr%im)
+          select type (atpr)
+          class is (atom_config_e)
+             if (atpr%lxpp)          atpr%xpp(:,1:atpr%im) = atpr%xp(:,1:atpr%im)
+          end select
           atpr%xp(:,1:atpr%im) = MatMul( boxndm%h, sp(:,1:atpr%im) )
 
           call updatebox(boxndm,boxndm%h)
@@ -642,7 +650,10 @@ contains
        boxndm%h(:,:) = boxndm%h(:,:) + boxndm%hdot(:,:)*tstep*ihbox0(:,:)
 
        ! Coordonnées réelles à l'instant t+dt
-       atpr%xpp(:,1:atpr%im) = atpr%xp(:,1:atpr%im)
+       select type (atpr)
+       class is (atom_config_e)
+          if (atpr%lxpp)       atpr%xpp(:,1:atpr%im) = atpr%xp(:,1:atpr%im)
+       end select
        atpr%xp(:,1:atpr%im) = MatMul( boxndm%h, sp(:,1:atpr%im) )
        call updatebox(boxndm,boxndm%h)
 !!$    invVolu = 1.d0/boxndm%volu

@@ -62,8 +62,7 @@ module atomconfig
      !
   end type atom_config
 
-  type, extends (atom_config):: atom_config_d ! type dynamique des configurations atomiques(+vp/+xpp). vp et xpp seront toujours allouées
-     real(double),allocatable ::xpp(:,:)
+  type, extends (atom_config):: atom_config_d ! type dynamique des configurations atomiques(+vp). vp  seront toujours allouées
      real(double),allocatable::vp(:,:)
    contains
      procedure, pass::copy_atom=>copy_atom_d
@@ -74,6 +73,8 @@ module atomconfig
   end type atom_config_d
   
   type, extends (atom_config_d):: atom_config_e ! type étendu des configurations atomiques avec quantités optionelles Ces quantités seront allouées en fonction dss logical
+     real(double),allocatable ::xpp(:,:)
+     logical ::lxpp
      logical::lprteat
      real(double),allocatable ::eat(:)
      logical::lsigat
@@ -119,14 +120,13 @@ contains
        write(6,*)'atomfigD'
     class is (atom_config_e)
        write(6,*)'atomfigE'
-       write(6,*)'FLAGSFF', atcf%lprteat,atcf%lsigat,atcf%llangevin,atcf%lax
     type is (atom_config_arps)
        write(6,*)'atomfigARPS'
     end select
     select type (atcf)
     class is (atom_config_e)
-       write(6,*)'atomfigE'
-       write(6,*)'FLAGSFF', atcf%lprteat,atcf%lsigat,atcf%llangevin,atcf%lax
+       write(6,*)'FLAGSFF xpp eat sigat langevin ax'
+       write(6,*)'FLAGSFF', atcf%lxpp,atcf%lprteat,atcf%lsigat,atcf%llangevin,atcf%lax
     end select
     write(6,*)'TYPE PRECISE ? SI NON extension'
 
@@ -235,22 +235,24 @@ contains
     select type (atconf)
     class is (atom_config_d)
        if ((lrealloc).and.(allocated(atconf%vp)))then
-          deallocate(atconf%vp); deallocate(atconf%xpp)
+          deallocate(atconf%vp)
        end if
        if (.not.allocated(atconf%vp))then
-          allocate(atconf%vp(3,atconf%imm));allocate(atconf%xpp(3,atconf%imm))
+          allocate(atconf%vp(3,atconf%imm))
        end if
-       atconf%vp=0;atconf%xpp=0
+       atconf%vp=0
     end select
     select type (atconf)
     class is (atom_config_e)
-       !       if ((lrealloc).and.(allocated(atconf%vp)))then
-!          deallocate(atconf%vp); deallocate(atconf%xpp)
-!       end if
-!       if (.not.allocated(atconf%vp))then
-!          allocate(atconf%vp(3,atconf%imm));allocate(atconf%xpp(3,atconf%imm))
-!       end if
-!       atconf%vp=0;atconf%xpp=0
+       if (atconf%lxpp) then 
+          if ((lrealloc).and.(allocated(atconf%xpp)))then
+             deallocate(atconf%xpp)
+          end if
+          if (.not.allocated(atconf%xpp))then
+             allocate(atconf%xpp(3,atconf%imm))
+          end if
+          atconf%xpp=0
+       end if
        if(atconf%lprteat)then
           if ((lrealloc).and.(allocated(atconf%eat)))deallocate(atconf%eat)
           if (.not.allocated(atconf%eat))allocate(atconf%eat(atconf%imm))
@@ -427,7 +429,6 @@ contains
        select type (atsource)
           class is (atom_config_d)
              if(scan('v',carac).ne.0)             atcible%vp(:,j)=atsource%vp(:,i)
-             if(scan('r',carac).ne.0)             atcible%xpp(:,j)=atsource%xpp(:,i)
        end select
     end select
   end subroutine copy_atom_d
@@ -457,6 +458,7 @@ contains
        class is (atom_config_e)
        select type (atsource)
        class is (atom_config_e)
+          if ((atcible%lxpp).and.(atsource%lxpp).and.(scan('r',carac).ne.0))        atcible%xpp(:,j)=atsource%xpp(:,i)
           if ((atcible%lprteat).and.(atsource%lprteat).and.(scan('u',carac).ne.0)) atcible%eat(j)=atsource%eat(i)
           if ((atcible%lsigat).and.(atsource%lsigat).and.(scan('s',carac).ne.0)) atcible%sigat(:,:,j)=atsource%sigat(:,:,i)
           if ((atcible%llangevin).and.(atsource%llangevin).and.(scan('g',carac).ne.0)) atcible%glangv(:,j)=atsource%glangv(:,i)
@@ -687,7 +689,7 @@ contains
 
     call zero_atom(atcf)
     atcf%vp=0.
-    atcf%xpp=0.
+
   end subroutine zero_atom_d
 
   subroutine zero_atom_e (atcf)
@@ -695,8 +697,8 @@ contains
 
     call zero_atom_d(atcf)
 
+    if (atcf%lxpp)    atcf%xpp=0.
     if (atcf%lprteat)then
-
        atcf%eat=0
     end if
     if (atcf%llangevin)then
@@ -783,14 +785,14 @@ contains
 !          write(6,*)'cible',atcible%imm,atcible%im,size(atcible%vp)
 !          write(6,*)'source',atsource%imm,atsource%im,size(atsource%vp)
           atcible%vp(:,1:atsource%imm)=atsource%vp(:,1:atsource%imm)
-          atcible%xpp(:,1:atsource%imm)=atsource%xp(:,1:atsource%imm)
        end select
     end select
     ! atsource et atcible sont _e    
     select type (atsource)
        class is (atom_config_e)
        select type (atcible)
-          class is (atom_config_e)
+       class is (atom_config_e)
+          if((atcible%lxpp).and.(atsource%lxpp))atcible%xpp(1:3,1:atsource%imm)=atsource%xpp(1:3,1:atsource%imm)
           if((atcible%lprteat).and.(atsource%lprteat))atcible%eat(1:atsource%imm)=atsource%eat(1:atsource%imm)
           if((atcible%lsigat).and.(atsource%lsigat))atcible%sigat(:,:,1:atsource%imm)=atsource%sigat(:,:,1:atsource%imm)
           if((atcible%llangevin).and.(atsource%llangevin))atcible%glangv(:,1:atsource%imm)=atsource%glangv(:,1:atsource%imm)
@@ -832,13 +834,14 @@ contains
     class(atom_config_d), intent(inout)::atconf
     call atconf%atom_config%dealloc
     if(allocated(atconf%vp))then
-       deallocate(atconf%vp); deallocate(atconf%xpp)
+       deallocate(atconf%vp)
     end if
   end subroutine dealloc_atom_config_d
   subroutine dealloc_atom_config_e(atconf)
     class(atom_config_e), intent(inout)::atconf
     call atconf%atom_config_d%dealloc
     if(allocated(atconf%eat))deallocate(atconf%eat)
+    if(allocated(atconf%xpp))deallocate(atconf%xpp)
     if(allocated(atconf%sigat))deallocate(atconf%sigat)
     if(allocated(atconf%glangv))deallocate(atconf%glangv)
     if(allocated(atconf%ax))deallocate(atconf%ax)
@@ -1214,18 +1217,17 @@ contains
              if(scan('v',carac).ne.0)then
                    write(unitw,'(A,2i9,3E15.7)')'%vp= ', i,atin%num_at_glob(i),atin%vp(:,i)
              end if
-             if(scan('r',carac).ne.0)then
-                   write(unitw,'(A,2i9,3E15.7)')'%xpp= ', i,atin%num_at_glob(i),atin%xpp(:,i)
-             end if
           class is (atom_config_e)
              write(unitw,*)'prt_e'
              if(scan('v',carac).ne.0)then
                    write(unitw,'(A,2i9,3E15.7)')'%vp= ', i,atin%num_at_glob(i),atin%vp(:,i)
              end if
-             if(scan('r',carac).ne.0)then
+             if (atin%lxpp) then
+                if(scan('r',carac).ne.0)then
                    write(unitw,'(A,2i9,3E15.7)')'%xpp= ', i,atin%num_at_glob(i),atin%xpp(:,i)
+                end if
+                
              end if
-
 
              if (atin%lsigat) then
                 if(scan('g',carac).ne.0)then
@@ -1633,9 +1635,19 @@ contains
                     if(scan('w',carac).ne.0)atcfcomp%iwmax(icomp)=atcfloc%iwmax(iloc)
                  end if
                  select type(atcfloc)
+                 class is (atom_config_d)
+                    select type (atcfcomp)
+                    class is (atom_config_d)
+                       if(scan('v',carac).ne.0) atcfcomp%vp(1:3,icomp)=atcfloc%vp(1:3,iloc)
+                    end select
+                 end select
+                 select type(atcfloc)
                  class is (atom_config_e)
                     select type (atcfcomp)
                     class is (atom_config_e)
+                       if((atcfcomp%lxpp).and.(atcfloc%lxpp))then
+                          if(scan('r',carac).ne.0) atcfcomp%xpp(:,icomp)=atcfloc%xpp(:,iloc)
+                       endif
                        if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
                           if(scan('s',carac).ne.0) atcfcomp%sigat(1:3,1:3,icomp)=atcfloc%sigat(1:3,1:3,iloc)
                        endif
@@ -1813,13 +1825,15 @@ contains
                       select type (atcfcomp)
                       class is (atom_config_d)
                          atcfloc%vp(:,iloc)=atcfcomp%vp(:,i)
-                         atcfloc%xpp(:,iloc)=atcfcomp%xpp(:,i)
                       end select
                    end select
                    select type(atcfloc)
                    class is (atom_config_e)
                       select type (atcfcomp)
                       class is (atom_config_e)
+                         if((atcfcomp%lxpp).and.(atcfloc%lxpp))then
+                            atcfloc%xpp(:,iloc)=atcfcomp%xpp(:,i)
+                         end if
                          if((atcfcomp%lsigat).and.(atcfloc%lsigat))then
                             atcfloc%sigat(:,:,iloc)=atcfcomp%sigat(:,:,i)
                          endif
@@ -1919,7 +1933,7 @@ contains
     end if
 
     size1=nmaskV;size3=3*size1; size9=3*size3
-
+!    call atcf%print_type('in buffersize')
     nvi=0; sizeI=0
     Iposf(:)=0
     nvR=0; sizeR=0
@@ -1986,14 +2000,16 @@ contains
        Rposf(nvR)=Rposf(nvR-1)+size3
           !call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
        end if
-       if(scan('r',carac).ne.0) then
-       nvR=nvR+1
-        Rposf(nvR)=Rposf(nvR-1)+size3
-       !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
-       end if
     end select
     select type (atcf)
     class is  (atom_config_e)
+       if (atcf%lxpp)then
+          if(scan('r',carac).ne.0) then
+             nvR=nvR+1
+             Rposf(nvR)=Rposf(nvR-1)+size3
+             !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
+          end if
+       end if
        if (atcf%lprteat)then
           if(scan('u',carac).ne.0) then
              nvR=nvR+1
@@ -2223,24 +2239,27 @@ contains
           !call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
        end if
 
-       if(scan('r',carac).ne.0) then
-          ivR=ivR+1
-          ip=0
-          do iat=1,atcf%imm
-             if (mask(iat).eqv..true.) then
-                do ic=1,3
-                   ip=ip+1
-                   ib=Rposf(ivR-1)+ip
-                   rbuffer(ib)=atcf%xpp(ic,iat)
-                   csR=csR+1
-                end do
-             end if
-          end do
-       !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
-       end if
     end select
     select type (atcf)
     class is  (atom_config_e)
+       if (atcf%lxpp)then
+          if(scan('r',carac).ne.0) then
+             ivR=ivR+1
+             ip=0
+             do iat=1,atcf%imm
+                if (mask(iat).eqv..true.) then
+                   do ic=1,3
+                      ip=ip+1
+                      ib=Rposf(ivR-1)+ip
+                      rbuffer(ib)=atcf%xpp(ic,iat)
+                      csR=csR+1
+                   end do
+                end if
+             end do
+             !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
+          end if
+       end if
+
        if (atcf%lprteat)then
           if(scan('u',carac).ne.0) then
           ivR=ivR+1
@@ -2475,20 +2494,23 @@ contains
           !call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
        end if
 
-       if(scan('r',carac).ne.0) then
-          ivR=ivR+1
-          do ip=1,size1
-             do ic=1,3
-                ib=Rposf(ivR-1)+3*(ip-1)+ic
-                atcf%xpp(ic,ip)= rbuffer(ib)
-                csR=csR+1
-             end do
-          end do
-          !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
-       end if
     end select
     select type (atcf)
-       class is  (atom_config_e)
+    class is  (atom_config_e)
+       if (atcf%lxpp)then
+          if(scan('r',carac).ne.0) then
+             ivR=ivR+1
+             do ip=1,size1
+                do ic=1,3
+                   ib=Rposf(ivR-1)+3*(ip-1)+ic
+                   atcf%xpp(ic,ip)= rbuffer(ib)
+                   csR=csR+1
+                end do
+             end do
+             !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
+          end if
+       end if
+
        if (atcf%lprteat)then
           if(scan('u',carac).ne.0) then
              ivR=ivR+1
@@ -2703,20 +2725,22 @@ contains
           !call MPI_SEND(atcf%vp, size3, NDM_MPI_REAL_DOUBLE, rgcib,109,comm,ierr)
        end if
 
-       if(scan('r',carac).ne.0) then
-          ivR=ivR+1
-          do ip=1,size1
-             do ic=1,3
-                ib=Rposf(ivR-1)+3*(ip-1)+ic
-                atcf%xpp(ic,inag(nag(ip)))= rbuffer(ib)
-                csR=csR+1
-             end do
-          end do
-          !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
-       end if
     end select
     select type (atcf)
-       class is  (atom_config_e)
+    class is  (atom_config_e)
+       if (atcf%lxpp)then
+          if(scan('r',carac).ne.0) then
+             ivR=ivR+1
+             do ip=1,size1
+                do ic=1,3
+                   ib=Rposf(ivR-1)+3*(ip-1)+ic
+                   atcf%xpp(ic,inag(nag(ip)))= rbuffer(ib)
+                   csR=csR+1
+                end do
+             end do
+             !call MPI_SEND(atcf%xpp, size3, NDM_MPI_REAL_DOUBLE, rgcib,110,comm,ierr)
+          end if
+       end if
        if (atcf%lprteat)then
           if(scan('u',carac).ne.0) then
              ivR=ivR+1

@@ -103,8 +103,10 @@ contains
     integer::iti,imtot
     real(double)::sd,grnd,theta,fhi ! ,decx(2)
 
+
+    
     if (present(lprt))lprint=lprt
-    !    if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed,lvpread
+!    if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed,lvpread
     if(present(latcomp))latc=latcomp
 !    if (rang==0) write(6,*)
 !    write(6,*)'ISEED initspeed',iseed
@@ -113,8 +115,12 @@ contains
     case(3,30,5,11,31,32,33,21,22,23,24,2)
        atcf%vp = 0.0
        if (mdcg_noise==0) then 
-          atcf%vp=0.0;          atcf%xpp=atcf%xp
-              else
+          atcf%vp=0.0;
+          select type (atcf)
+          class is (atom_config_e)
+             if (atcf%lxpp)atcf%xpp=atcf%xp
+          end select
+       else
           atcf%vp=0.0 
           call bruit_xp(bruitmd,atcf%im)
           atcf%xp(1:3,1:atcf%im) = atcf%xp(1:3,1:atcf%im) + bruitmd(1:3,1:atcf%im)
@@ -126,9 +132,11 @@ contains
     if (lvpread) then
        !       oldtstep=1.0d-15
        tempsauv=tempinstT(atcf)
-!      if (myidsp==0) write(6,*)'tempsauv ',tempsauv
-
-       atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*tstep/oldtstep
+      if (myidsp==0) write(6,*)'tempsauv ',tempsauv
+       select type (atcf)
+       class is (atom_config_e)
+          if (atcf%lxpp)       atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*tstep/oldtstep
+       end select
        !     vp(:,:im)=vp(:,:im)*tstep/oldtstep
 
        if (tinit<=0) then
@@ -144,7 +152,10 @@ contains
              lvpread=.false. ; goto 1
           end if
           vv = sqrt(tinit/tempsauv)
-          atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*vv
+       select type (atcf)
+       class is (atom_config_e)
+          if (atcf%lxpp) atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*vv
+       end select
           atcf%vp(:,:atcf%im) = atcf%vp(:,:atcf%im)*vv
        endif
 
@@ -156,9 +167,14 @@ contains
              atcf%vp(1,:atcf%im) = 0.0
              atcf%vp(2,:atcf%im) = 0.0
              atcf%vp(3,:atcf%im) = 0.0
+       select type (atcf)
+       class is (atom_config_e)
+          if (atcf%lxpp) then
              atcf%xpp(1,:atcf%im) = atcf%xp(1,:atcf%im)
              atcf%xpp(2,:atcf%im) = atcf%xp(2,:atcf%im)
              atcf%xpp(3,:atcf%im) = atcf%xp(3,:atcf%im)
+          end if
+       end select
        if ((rang==0).and.(lprint))  write (6,*) 'ZERO VELOCITY '
        else
           !  a starting temperature is given
@@ -378,16 +394,19 @@ contains
              !      Initialisation of the previous position for Verlet
 
           end if
-
+       end if
+       
+    endif
+    !     write(6,*)'sortie initspeed'
+    select type (atcf)
+    class is (atom_config_e)
+       if (atcf%lxpp) then 
           atcf%xpp(1,:atcf%im) = atcf%xp(1,:atcf%im)-atcf%vp(1,:atcf%im)*tstep
           atcf%xpp(2,:atcf%im) = atcf%xp(2,:atcf%im)-atcf%vp(2,:atcf%im)*tstep
           atcf%xpp(3,:atcf%im) = atcf%xp(3,:atcf%im)-atcf%vp(3,:atcf%im)*tstep
-
-       endif
-
-    endif
-    !     write(6,*)'sortie initspeed'
-
+       end if
+    end select
+    
     tempsauv=tempinstT(atcf)
     if (rang==0) write(6,*)'temperature fin initspeed ',tempsauv
 
@@ -418,8 +437,12 @@ contains
              call gaussianrand(grnd)
              !                        write(6,*)grnd
              atcf%xp(ic,i)=atcf%xp(ic,i)+sd*grnd
-             atcf%xpp(ic,i)=atcf%xpp(ic,i)+sd*grnd
-             !             decx(ityp(i))=decx(ityp(i))+(sd*grnd)**2
+             select type (atcf)
+             class is (atom_config_e)
+                if (atcf%lxpp) then
+                   atcf%xpp(ic,i)=atcf%xpp(ic,i)+sd*grnd
+                end if
+             end select!             decx(ityp(i))=decx(ityp(i))+(sd*grnd)**2
           end do
        end do
        call periodbox (boxndm,atcf)
@@ -458,10 +481,11 @@ contains
   end subroutine  gaussianrand
 
 
-  subroutine init_speed_1at(vp, temp,xpp,xp,iti)
+  subroutine init_speed_1at(vp, temp,xp,iti,xpp)
     real(double),intent(in)::temp,xp(3)
     integer,intent(in)::iti
-    real(double),intent(out)::vp(3),xpp(3)
+    real(double),intent(out)::vp(3)
+    real(double),intent(out), optional ::xpp(3)
     
     real(double) :: v0, v1, z1, z2, z3, z4
 
@@ -479,7 +503,7 @@ contains
     vp(1) = v1*v0*sqrt((-log(z1)))*cos(2.0*pi*z3)
     vp(2) = v1*v0*sqrt((-log(z1)))*sin(2.0*pi*z3)
     vp(3) = v1*v0*sqrt((-log(z2)))*cos(2.0*pi*z4)
-    xpp(:) =xp(:)-vp(:)*tstep
+    if (present(xpp) )xpp(:) =xp(:)-vp(:)*tstep
   end subroutine init_speed_1at
 
     
