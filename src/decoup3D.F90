@@ -123,6 +123,7 @@ write(6,*)'lverb',lverb
              enddo
           enddo
        enddo
+       if (allocated(decoup))deallocate(decoup)
        if (.not.allocated(decoup))allocate(decoup(nb_sol,3))
        nb_sol = 0
        do ii=1,nbr_cpu
@@ -142,8 +143,10 @@ write(6,*)'lverb',lverb
              enddo
           enddo
        enddo
+       if (allocated( psc%res_cpu)) then
+          deallocate(specifs); deallocate(psc%res_cpu);deallocate(coord_min); deallocate(coord_max)
+       end if
        if (.not.allocated(specifs))allocate(specifs(nb_sol,7))
-
        if (.not.allocated(psc%res_cpu))allocate(psc%res_cpu(0:nbr_cpu-1,3))
        if (.not.allocated(coord_min))allocate(coord_min(0:nbr_cpu-1,3))
        if (.not.allocated(coord_max))allocate(coord_max(0:nbr_cpu-1,3))
@@ -258,7 +261,6 @@ write(6,*)'lverb',lverb
           do jj=1,decoup(solution,2)
              do kk=1,decoup(solution,3)
                 num_cpu = ii-1 + (jj-1)*decoup(solution,1) + (kk-1) * decoup(solution,1)*decoup(solution,2)
-
                 coord_min(num_cpu,1) = (ii-1)*tailleminx +1
                 if (ii>1) coord_min(num_cpu,1) = coord_min(num_cpu,1) + min(ii-1,restex)
                 coord_max(num_cpu,1) = coord_min(num_cpu,1) + tailleminx -1
