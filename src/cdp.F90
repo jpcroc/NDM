@@ -5,7 +5,7 @@ module cdp_mod
        &timel,timeloopmax,timemax,lrestart,fnam,lenfnam,text
   USE arret_ndm_mod,only: arret_ndm
   USE var_pot,only:ntyp
-  USE atomconfig,only : atom_config,atom_config_d
+  USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE boxconfig,only:box_config
   USE cellconfig, only:cell_config,caltabtC
   use rasmolT_mod,only:rasmolT
@@ -178,7 +178,7 @@ contains
     integer :: iclose
     logical::l2close,lcloseP
     integer::numproc,iatint
-    integer::formatsauv=3
+    integer::formatsauv=5
     integer::jint,iinttot,numcell,imt,iold
     logical::lsuiv,lcrea0
     character::fnamcout*80
@@ -564,13 +564,31 @@ contains
                             atdml%num_at_glob(atdml%im)=natgM+1
 
                             select type(atdml)
-                            class is (atom_config_d)
+                            type is (atom_config_d)
                                if (text.gt.0) then
-                                  call init_speed_1at(atdml%vp(:,atdml%im),text,atdml%xpp(:,atdml%im),&
+                                  call init_speed_1at(atdml%vp(:,atdml%im),text,&
                                        &atdml%xp(:,atdml%im),atdml%ityp(atdml%im))
                                else
                                   atdml%vp(:,atdml%im)=0
-                                  atdml%xpp(:,atdml%im)=atdml%xp(:,atdml%im)
+                               end if
+                            end select
+                            select type (atdml)
+                            class is (atom_config_e)
+                               if( atdml%lxpp) then 
+                                  if (text.gt.0) then
+                                     call init_speed_1at(atdml%vp(:,atdml%im),text,&
+                                          &atdml%xp(:,atdml%im),atdml%ityp(atdml%im),atdml%xpp(:,atdml%im))
+                                  else
+                                     atdml%vp(:,atdml%im)=0
+                                     atdml%xpp(:,atdml%im)=atdml%xp(:,atdml%im)
+                                  end if
+                               else
+                                  if (text.gt.0) then
+                                     call init_speed_1at(atdml%vp(:,atdml%im),text,&
+                                          &atdml%xp(:,atdml%im),atdml%ityp(atdml%im))
+                                  else
+                                     atdml%vp(:,atdml%im)=0
+                                  end if
                                end if
                             end select
                             !#ifdef PARA

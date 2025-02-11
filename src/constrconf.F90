@@ -175,10 +175,6 @@ contains
        call periodbox (boxrcf,atrcf)
 
        select type(atrcf)
-       class is (atom_config_d)
-          atrcf%xpp(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
-       end select
-       select type(atrcf)
        class is (atom_config_e)
 !          atrcf%xpp(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
           if (atrcf%lax) then
@@ -535,7 +531,7 @@ contains
     if (present(fmtcin))fmt_cin=fmtcin
     if ((rang==0).and.(lprt)) then
        write(6,*)
-       write(6,*)' *-*-*-*-*-*LECTURE DE CIN*-*-*-*-*-*-'
+       write(6,*)' *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-'
        write(6,*)' *-*-*-*-*- LRESTART =',lrestart!, '*** itread',itread
     endif
 
@@ -544,8 +540,8 @@ contains
 
     read (lucin, err=456) icintype
 
-    if ((rang==0).and.(lprt))  write (6, *) 'config type de fichier .cin : ', icintype
-    if (icintype>3.or.icintype<0) then
+    if ((rang==0).and.(lprt))  write (6, *) 'config type of  .cin file : ', icintype
+    if (icintype>5.or.icintype<0) then
        write (6, *) rang, 'wrong icintype'
        call arret_ndm
     endif
@@ -610,14 +606,13 @@ contains
        select type(atcinr)
        type is (atom_config)
           if (icintypemod==1) then
-             read (lucin, err=456) buffer                     !xpp
+             if (icintype==3)read (lucin, err=456) buffer                     !xpp
              read (lucin, err=456) buffer                     !vp
           end if
           lvpread=.false.
-       class is (atom_config_d)
+       type is (atom_config_d)
           if (icintypemod==1) then
-             read (lucin, err=456) buffer                     !xpp
-             atcinr%xpp(:,1:im_gr)=buffer(:,1:im_gr)
+             if (icintype==3) read (lucin, err=456) buffer                     !xpp
              read (lucin, err=456) buffer                     !vp
              atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
              !             read (lucin, err=456) buffer                     !former positions
@@ -628,18 +623,26 @@ contains
        select type(atcinr)
        class is (atom_config_e)
           if (icintypemod==1) then
+
+             if (icintype==3) then
+                read (lucin, err=456) buffer                     !xpp
+             end if
+
 !!$             read (lucin, err=456) buffer                     !xpp
 !!$             atcinr%xpp(:,1:im_gr)=buffer(:,1:im_gr)
 !!$             write(6,*)'xpp_e'
-!!$             read (lucin, err=456) buffer                     !vp
-!!$             atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
-!!$             write(6,*)'vp_e'
+             read (lucin, err=456) buffer                     !vp
+             atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
+             write(6,*)'vp_e'
              !             read (lucin, err=456) buffer                     !former positions
              !             atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
+
              read (lucin, err=456) buffer                     !ax utile peut-être
-             if (lrestart) then 
-                if (atcinr%lax) then
-                   atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
+             if ((icintype==3).or.(icintype==7)) then 
+                if (lrestart) then 
+                   if (atcinr%lax) then
+                      atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
+                   end if
                 end if
              end if
           else
@@ -687,6 +690,8 @@ contains
        atcinr%num_at_glob(1:im_gr)=ibuffer(1:im_gr)
 
     case(3)
+       write(6,*)'pas programmé stop'
+       call arret_ndm
        if (.not.present(atcinr))then
           write(6,*)'atcin pas present et itread=3'
           call arret_ndm
@@ -716,15 +721,15 @@ contains
 
        select type(atcinr)
        type is (atom_config)
-          read (lucin, err=456) buffer                     !xpp
+          if (icintype==3)read (lucin, err=456) buffer                     !xpp
           read (lucin, err=456) buffer                     !vp
           lvpread=.false.
        class is (atom_config_d)
           if (icintypemod==1) then
-             read (lucin, err=456) buffer                     !xpp
-             do i_loc=1,imic
-                atcinr%xpp(:,i_loc)=buffer(:,icible(i_loc))
-             enddo
+             if (icintype==3)             read (lucin, err=456) buffer                     !xpp
+!             do i_loc=1,imic
+!                atcinr%xpp(:,i_loc)=buffer(:,icible(i_loc))
+!             enddo
              read (lucin, err=456) buffer                     !vp
              do i_loc=1,imic
                 atcinr%vp(:,i_loc)=buffer(:,icible(i_loc))

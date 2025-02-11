@@ -2,7 +2,7 @@ module deftimestep_mod
   USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m, ONLY:bk,depmaxts,dmtype,iko,iteration,itetimestep,lcasca,lperiod,oldtstep,&
        &rang,timel,tsmin,tstep,two,usdh,vmax,l2T,lspaceNDM,erg2ev
-  use atomconfig, only : atom_config_d
+  use atomconfig, only : atom_config_d,atom_config_e
   USE boxconfig,only:box_config,periodbox
         implicit none
         contains
@@ -234,11 +234,18 @@ endif
            if (iteration==0) then
               atcf%fp(:,:atcf%im) = 0.D0
            endif
-           do i = 1, atcf%im
-              atcf%xp(:,i) = atcf%xpp(:,i)+tstep*atcf%vp(:,i)+tstep**2/cm(atcf%ityp(i))/two*atcf%fp(:,i)
-           end do
+
+           select type (atcf)
+           class is (atom_config_e)
+              if (atcf%lxpp) then
+                 do i = 1, atcf%im
+                    atcf%xpp(:,i) = atcf%xp(:,i)-tstep*atcf%vp(:,i)-tstep**2/cm(atcf%ityp(i))/two*atcf%fp(:,i)
+                 end do
+              end if
+           end select
            call periodbox (box,atcf)
-        endif
+
+        end if
      else                                       ! cad si tstep >= 2.10-15s
         tstep = oldtstep
 !        if (rang==0) write (6, *) 'tstep maintenu',tstep
@@ -260,9 +267,6 @@ endif
            if (iteration==0) then
               atcf%fp(:,:atcf%im) = 0.D0
            endif
-           do i = 1,atcf%im
-              atcf%xp(:,i) = atcf%xpp(:,i)+tstep*atcf%vp(:,i)+tstep**2/cm(atcf%ityp(i))/two*atcf%fp(:,i)
-           end do
            call periodbox (box,atcf)
            
         else                                       ! cad si tstep >= 2.10-15s

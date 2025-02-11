@@ -238,7 +238,7 @@ contains
     end if
     if (lcasca) then
        fnamcout = fnam(1:lenfnam)//'.0.cout'
-       formatsauv=3
+       formatsauv=5
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
     else
        fnamcout = fnam(1:lenfnam)//'.cout'
@@ -246,7 +246,7 @@ contains
        type is (atom_config)
           formatsauv=2
        class is (atom_config_d)
-          formatsauv=3
+          formatsauv=5
        end select
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
     end if

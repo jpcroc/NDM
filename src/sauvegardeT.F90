@@ -46,7 +46,7 @@ contains
     integer :: next_pt
     integer :: i_proc
     integer :: proc_source
-    integer :: im_temp
+    integer :: im_temp,formatsauvw
 
 
 #endif
@@ -59,6 +59,14 @@ contains
     end if
 
     lucout = 87
+    select type(atdml)
+       class is (atom_config_e)
+          if (atdml%lax)then
+             if (formatsauv>=5) formatsauvw=7
+          else
+             formatsauvw=formatsauv
+          end if
+       end select
 #ifdef PARA
     if (.not.latcomp) then 
        if (myidsp==0) then
@@ -108,14 +116,6 @@ contains
              lwax=.false.
              select type(atdml)
              class is (atom_config_d)
-                buffer(:,1:im) = atdml%xpp(:,1:im)
-                if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-                   do i_proc=1,nprocspace-1
-                      call comm_space%recv(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),i_proc,11015)
-                   enddo
-                end if
-
-                write (lucout) buffer   ! Ecriture xpp
                 buffer(:,1:im) = atdml%vp(:,1:im)
                 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
                    do i_proc=1,nprocspace-1
@@ -124,14 +124,6 @@ contains
                 end if
                 write (lucout) buffer   ! Ecriture vp
              class is (atom_config_e)
-                buffer(:,1:im) = atdml%xpp(:,1:im)
-                if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-                   do i_proc=1,nprocspace-1
-                      call comm_space%recv(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),i_proc,11005)
-                   enddo
-                end if
-                write (lucout) buffer   ! Ecriture xpp
-
                 buffer(:,1:im) = atdml%vp(:,1:im)
                 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
                    do i_proc=1,nprocspace-1
@@ -139,7 +131,7 @@ contains
                    enddo
                 end if
                 write (lucout) buffer   ! Ecriture vp
-                if (atdml%lax)then
+                if (formatsauvw==7 )then
                    lwax=.true.
                    buffer(:,1:im) = atdml%ax(:,1:im)
                    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -150,16 +142,8 @@ contains
                    write (lucout) buffer   ! Ecriture ax
                 end if
              end select
-             if (.not.lwax)then
-                buffer(:,1:im) = atdml%xp(:,1:im)
-                if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-                   do i_proc=1,nprocspace-1
-                      call comm_space%recv(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),i_proc,11008)
-                   enddo
-                end if
-                write (lucout) buffer   ! Ecriture xpp
+             
 
-             end if
           end if
           write (lucout) tstep
           write (lucout) tmean, pmean, iteration, timel
@@ -178,12 +162,11 @@ contains
                 lwax=.false.
                 select type (atdml)
                 class is (atom_config_d)
-                   call comm_space%send(atdml%xpp(1:3,1:im),0,11015)
                    call comm_space%send(atdml%vp(1:3,1:im),0,11016)
                 class is (atom_config_e)
-                   call comm_space%send(atdml%xpp(1:3,1:im),0,11005)
                    call comm_space%send(atdml%vp(1:3,1:im),0,11006)
-                   if (atdml%lax)then
+                   if ((atdml%lxpp).and.(formatsauv==3)) call comm_space%send(atdml%xpp(1:3,1:im),0,11015)
+                   if (formatsauvw==7)then
                       lwax=.true.
                       call comm_space%send(atdml%ax(1:3,1:im),0,11007)
                    end if
@@ -205,14 +188,14 @@ contains
           lwax=.false.
           select type (atdml)
           class is (atom_config_d)
-             write (lucout) atdml%xpp
              write (lucout) atdml%vp
           end select
           select type (atdml)
           class is (atom_config_e)
 !             write (lucout) atdml%xpp
 !             write (lucout) atdml%vp
-             if (atdml%lax)then
+             if (atdml%lxpp)             write (lucout) atdml%xpp
+             if (formatsauvw==7)then
                 write (lucout) atdml%ax
                 lwax=.true.
              end if
@@ -248,14 +231,14 @@ contains
        lwax=.false.
        select type (atdml)
        class is (atom_config_d)
-          write (lucout) atdml%xpp
           write (lucout) atdml%vp
        end select
        select type (atdml)
        class is (atom_config_e)
 !          write (lucout) atdml%xpp
 !          write (lucout) atdml%vp
-          if (atdml%lax)then
+          if (atdml%lxpp)          write (lucout) atdml%xpp
+          if (formatsauvw==7)then
              write (lucout) atdml%ax
              lwax=.true.
           end if

@@ -179,6 +179,11 @@ contains
 
     if (lupdate)   call driver_caltabt_para(atcalc,cellcalc,box,psc,lperiod,lcalcv)
     CALL CalFo(sig,potist,atcalc,cellcalc,box,t_sigma=.true.,psc=psc)
+!    if (rang==0) then
+!       call atcalc%print_type('atcalc')
+!       call atloc%print_type('atloc')
+!       call atcomp%print_type('atcomp')
+!    end if
 #ifdef PARA
     if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
        call atloc%vers_master(atcomp,div)

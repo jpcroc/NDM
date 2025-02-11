@@ -261,7 +261,6 @@ contains
                 atcr%xp(3,i)=atcr%xp(3,i)-deltz*1d-8
              end do
           end if
-          !          if (lperiod)         call period (imm,xp,xpp,ax)
 
        end if
        !       if (lperiod) then
@@ -472,7 +471,6 @@ contains
 !!$                atcr%xp(3,i)=atcr%xp(3,i)-deltz*1d-8
 !!$             end do
 !!$          end if
-!!$!          if (lperiod)         call period (imm,xp,xpp,ax)
 !!$          
 !!$       end if
 !!$ !       if (lperiod) then
@@ -708,7 +706,6 @@ contains
     !calcul du nombre de voisins par atome
 
     call caltabtC(celcf,atcf,lperiod,boxcf)
-    !    call config2ndm(atdml,im,imm,xp,fp,vp,xpp,ityp,ielat,num_at_glob,ltabvois,iwmax=iwmax,indi=indi,vp=vp,xpp=xpp)
 
 
 

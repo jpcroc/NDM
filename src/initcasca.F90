@@ -166,10 +166,14 @@ contains
           atcf%vp(1,ipka) = atcf%vp(1,ipka)+z1*aux1
           atcf%vp(2,ipka) = atcf%vp(2,ipka)+z2*aux1
           atcf%vp(3,ipka) = atcf%vp(3,ipka)+z3*aux1
-          atcf%xpp(1,ipka) = atcf%xp(1,ipka)-atcf%vp(1,ipka)*tstep
-          atcf%xpp(2,ipka) = atcf%xp(2,ipka)-atcf%vp(2,ipka)*tstep
-          atcf%xpp(3,ipka) = atcf%xp(3,ipka)-atcf%vp(3,ipka)*tstep
-
+       select type (atcf)
+       class is (atom_config_e)
+          if (atcf%lxpp) then
+             atcf%xpp(1,ipka) = atcf%xp(1,ipka)-atcf%vp(1,ipka)*tstep
+             atcf%xpp(2,ipka) = atcf%xp(2,ipka)-atcf%vp(2,ipka)*tstep
+             atcf%xpp(3,ipka) = atcf%xp(3,ipka)-atcf%vp(3,ipka)*tstep
+          end if
+       end select
           !                                                !Conditions periodiques
        end if
        ! correction de la derive par ajout d'une impulsion inverse sur les autres atomes
@@ -193,8 +197,13 @@ contains
           do i=1,atcf%im
              if(atcf%num_at_glob(i)==iko)cycle
              atcf%vp(:,i)=atcf%vp(:,i)+vpi(:)
-             atcf%xpp(:,i)=atcf%xpp(:,i)-vpi(:)*tstep
-          end do
+             select type (atcf)
+             class is (atom_config_e)
+                if (atcf%lxpp)then 
+                atcf%xpp(:,i)=atcf%xpp(:,i)-vpi(:)*tstep
+             end if
+          end select
+       end do
        end if
        if (lperiod)       call periodbox  (boxndm,atcf)
 
@@ -244,7 +253,10 @@ contains
 
              call cryst_to_cart (atcfcasc%imm, atcfcasc%xp, boxndm%bg, -1)    !cart vers cryst
 !             call cryst_to_cart (atcfcasc%imm, atcfcasc%ax, boxndm%bg, -1)    !cart vers cryst
-             call cryst_to_cart (atcfcasc%imm, atcfcasc%xpp, boxndm%bg, -1)    !cart vers cryst
+             select type (atcf)
+             class is (atom_config_e)
+                if (atcf%lxpp)          call cryst_to_cart (atcfcasc%imm, atcfcasc%xpp, boxndm%bg, -1)    !cart vers cryst
+             end select
              if (.not.atcf%lax) then
                 write(6,*) 'no ax and casca stop'
                 call arret_ndm
@@ -256,9 +268,14 @@ contains
              t3 = atcfcasc%xp(3,iko)-zz0
 
              write(6,*)'t1 t2 t3 zl', t1,t2,t3
-             atcfcasc%xpp(1,:atcfcasc%im) = atcfcasc%xpp(1,:atcfcasc%im)-t1
-             atcfcasc%xpp(2,:atcfcasc%im) = atcfcasc%xpp(2,:atcfcasc%im)-t2
-             atcfcasc%xpp(3,:atcfcasc%im) = atcfcasc%xpp(3,:atcfcasc%im)-t3
+             select type (atcf)
+             class is (atom_config_e)
+                if (atcf%lxpp) then 
+                   atcfcasc%xpp(1,:atcfcasc%im) = atcfcasc%xpp(1,:atcfcasc%im)-t1
+                   atcfcasc%xpp(2,:atcfcasc%im) = atcfcasc%xpp(2,:atcfcasc%im)-t2
+                   atcfcasc%xpp(3,:atcfcasc%im) = atcfcasc%xpp(3,:atcfcasc%im)-t3
+                end if
+             end select
              atcfcasc%xp(1,:atcfcasc%im) = atcfcasc%xp(1,:atcfcasc%im)-t1
              atcfcasc%xp(2,:atcfcasc%im) = atcfcasc%xp(2,:atcfcasc%im)-t2
              atcfcasc%xp(3,:atcfcasc%im) = atcfcasc%xp(3,:atcfcasc%im)-t3
@@ -267,7 +284,10 @@ contains
 !!$             atcfcasc%ax(3,:atcfcasc%im) = atcfcasc%ax(3,:atcfcasc%im)-t3
 
              call cryst_to_cart (atcfcasc%imm, atcfcasc%xp, boxndm%at, 1)     !cryst vers cart
-             call cryst_to_cart (atcfcasc%imm, atcfcasc%xpp, boxndm%at, 1)     !cryst vers cart
+             select type (atcf)
+             class is (atom_config_e)
+                if (atcf%lxpp)             call cryst_to_cart (atcfcasc%imm, atcfcasc%xpp, boxndm%at, 1)     !cryst vers cart
+             end select
 !!             call cryst_to_cart (atcfcasc%imm, atcfcasc%ax, boxndm%at, 1)     !cryst vers cart
              call periodbox  (boxndm,atcfcasc)
              atcfcasc%ax=atcfcasc%xp
@@ -321,10 +341,14 @@ contains
           atcfcasc%vp(1,iko) = atcfcasc%vp(1,iko)+z1*aux1
           atcfcasc%vp(2,iko) = atcfcasc%vp(2,iko)+z2*aux1
           atcfcasc%vp(3,iko) = atcfcasc%vp(3,iko)+z3*aux1
-          atcfcasc%xpp(1,iko) = atcfcasc%xp(1,iko)-atcfcasc%vp(1,iko)*tstep
-          atcfcasc%xpp(2,iko) = atcfcasc%xp(2,iko)-atcfcasc%vp(2,iko)*tstep
-          atcfcasc%xpp(3,iko) = atcfcasc%xp(3,iko)-atcfcasc%vp(3,iko)*tstep
-
+          select type (atcf)
+          class is (atom_config_e)
+             if (atcf%lxpp)then
+                atcfcasc%xpp(1,iko) = atcfcasc%xp(1,iko)-atcfcasc%vp(1,iko)*tstep
+                atcfcasc%xpp(2,iko) = atcfcasc%xp(2,iko)-atcfcasc%vp(2,iko)*tstep
+                atcfcasc%xpp(3,iko) = atcfcasc%xp(3,iko)-atcfcasc%vp(3,iko)*tstep
+             end if
+          end select
           !                                                !Conditions periodiques
 
 
@@ -339,7 +363,10 @@ contains
              do i=1,atcfcasc%im
                 if(i==iko)cycle
                 atcfcasc%vp(:,i)=atcfcasc%vp(:,i)+vpi(:)
-                atcfcasc%xpp(:,i)=atcfcasc%xpp(:,i)-vpi(:)*tstep
+                select type (atcf)
+                class is (atom_config_e)
+                   if (atcf%lxpp)                atcfcasc%xpp(:,i)=atcfcasc%xpp(:,i)-vpi(:)*tstep
+                end select
              end do
           end if
 
@@ -416,9 +443,14 @@ contains
           if (dmtype==1) then
              if (tstep/=oldtstep) then
                 do i = 1, atcfcasc%im
-                   atcfcasc%xpp(1,i) = atcfcasc%xp(1,i)-atcfcasc%vp(1,i)*tstep
-                   atcfcasc%xpp(2,i) = atcfcasc%xp(2,i)-atcfcasc%vp(2,i)*tstep
-                   atcfcasc%xpp(3,i) = atcfcasc%xp(3,i)-atcfcasc%vp(3,i)*tstep
+                   select type (atcf)
+                   class is (atom_config_e)
+                      if (atcf%lxpp)then
+                         atcfcasc%xpp(1,i) = atcfcasc%xp(1,i)-atcfcasc%vp(1,i)*tstep
+                         atcfcasc%xpp(2,i) = atcfcasc%xp(2,i)-atcfcasc%vp(2,i)*tstep
+                         atcfcasc%xpp(3,i) = atcfcasc%xp(3,i)-atcfcasc%vp(3,i)*tstep
+                      end if
+                   end select
                 end do
              endif
           endif

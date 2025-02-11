@@ -109,8 +109,10 @@ contains
     select case(dmtype)
     case(41,42)
        atdml=>atdmarps
+       atdmarps%lxpp=.false.
        if ((lax).or.(lsigat).or.(lprteat).or.(llangevin)) then
           atdmarps%lax=lax
+
           atdmarps%lsigat=lsigat
           atdmarps%lprteat=lprteat
           if (llangevin) then
@@ -120,8 +122,13 @@ contains
           end if
        end if
     case default
-       if ((lax).or.(lsigat).or.(lprteat).or.(llangevin).or.(l2t))then
+       if ((lax).or.(lsigat).or.(lprteat).or.(llangevin).or.(l2t).or.(dmtype==1).or.(dmtype==21)&
+            &.or.(dmtype==22).or.(dmtype==23).or.(dmtype==24).or.(dmtype==9))then
+!          allocate (atdml,source=atom_config_e)
           atdml=>atdme
+          atdme%lxpp=.false.
+       if ((dmtype==1).or.(dmtype==21)&
+            &.or.(dmtype==22).or.(dmtype==23).or.(dmtype==24).or.(dmtype==9))atdme%lxpp=.true.
           atdme%lax=lax
           atdme%lsigat=lsigat
           atdme%lprteat=lprteat
@@ -138,6 +145,7 @@ contains
           end select
        end if
     end select
+ 
     im=0 ; nvois=0
     atdml%imm_glob=imm
     imm_glob=imm

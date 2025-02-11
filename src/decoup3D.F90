@@ -73,6 +73,7 @@ contains
 !       call arret_ndm
 !    end if
  end if
+
 #else
     if (ldecoup) then
        nbr_cpumin=2

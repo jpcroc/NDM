@@ -12,7 +12,7 @@ module neb_module
   USE rasmolT_mod,only: rasmolT
   use var_pot,only:ntyp,ipotentiel,cm,rumax
   !-----------------------------------------------
-  USE atomconfig,only:atom_config,atom_config_d
+  USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config,caltabtc
 !  USE constrconf_mod,only : config2data
 !  USE read_conf, only:read_cin,read_gin
@@ -37,7 +37,7 @@ module neb_module
   use config2data_mod,only:config2data  
   implicit none
 
-  type, extends (atom_config_d):: atom_config_neb
+  type, extends (atom_config_e):: atom_config_neb
      real(double),allocatable,dimension(:,:)::s_path,force_neb
   end type atom_config_neb
   
@@ -101,8 +101,9 @@ contains
 !    if (rvois.gt.0) then
        rv=rvois
 !    end if
-    do ipath=1,npath
-       call atneb(ipath)%atom_config_d%init(im,imm,ltabvois,nv,rv)
+       do ipath=1,npath
+          atneb(ipath)%lxpp=.true.
+       call atneb(ipath)%init(im,imm,ltabvois,nv,rv)
 !       atneb(ipath)%vp=0
        allocate(atneb(ipath)%s_path(3,imm),atneb(ipath)%force_neb(3,imm))
     end do
@@ -120,7 +121,7 @@ contains
 
   ! **************************************************************
   subroutine into_path(iph, i_dir_path, &                         
-       xp, xpp, vp,  fp, ielat, iwmax, ityp,num_at_glob,imm)
+       xp,  vp,  fp, ielat, iwmax, ityp,num_at_glob,imm)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -139,7 +140,6 @@ contains
     integer  :: num_at_glob(imm)
     integer  :: ityp(imm)
     real(double)  :: xp(3,imm)
-    real(double)  :: xpp(3,imm)
     real(double)  :: vp(3,imm)
     real(double)  :: fp(3,imm)
     integer::imm
@@ -155,7 +155,6 @@ contains
        atneb(iph)%ityp(:) = ityp(:)
        atneb(iph)%xp(:,:) = xp(:,:)
        atneb(iph)%vp(:,:) = 0
-       atneb(iph)%xpp(:,:) = xpp(:,:)
        atneb(iph)%fp(:,:) = fp(:,:) 
        atneb(iph)%num_at_glob(:) =num_at_glob   (:) 
     else 
@@ -164,7 +163,6 @@ contains
        num_at_glob   (:)      = atneb(iph)%num_at_glob(:)
        ityp    (:)      = atneb(iph)%ityp(:)
        xp (1:3,:)        = atneb(iph)%xp(:,:)
-       xpp(1:3,:)       =atneb(iph)%xpp(:,:)
        vp(1:3,:) = 0.d0
        fp (1:3,:)      = atneb(iph)%fp(:,:)
 end if
@@ -213,7 +211,7 @@ end if
           write(extension,'(i9.9)') iph
           fnamneb=fnam(1:lenfnam)//'.coutposition.'//extension
           itread=1
-          call read_cin(boxneb,itread,atneb(iph)%atom_config_d,imm,fnamneb) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
+          call read_cin(boxneb,itread,atneb(iph),imm,fnamneb) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
        ELSE IF (lPathFromGin) THEN
                ! read initial path in gin files *.1.gin, *.2.gin, ...
 
@@ -263,7 +261,7 @@ end if
           IF (ok ) THEN
              ! Load NEB image ip in file *.<ip>.gin
           if(rang==0)write(6,*)'FNAMneb  ',iph,ginfile
-          call gin2ndm(atneb(iph)%atom_config_d,cellneb(iph),boxneb,ginfile,rumax,lrepartition=.false.,psc=pscneb)
+          call gin2ndm(atneb(iph),cellneb(iph),boxneb,ginfile,rumax,lrepartition=.false.,psc=pscneb)
             do i=1,im
                atneb(iph)%num_at_glob(i)=i
             end do
@@ -280,7 +278,6 @@ end if
 !           call rasmolT(atneb(iph),boxneb,iph)
          
        END IF
-       atneb(iph)%xpp(:,:)= atneb(iph)%xp(:,:)
        atneb(iph)%vp=0
        atneb(iph)%im_glob=atneb(1)%im_glob
        !if ((iph.ne.1).and.(iph.ne.npath))
@@ -459,7 +456,6 @@ end if
 !    integer  :: iwmax(imm)
     integer  :: ityp(imm)
     real(double)  :: xp(3,imm)
-!    real(double)  :: xpp(3,imm)
     real(double)  :: vp(3,imm)
     real(double)  :: fp(3,imm)      
     !-----------------------------------------------
@@ -549,23 +545,21 @@ end if
              write(extension,'(i9.9)') ip
              fnamneb=fnam(1:lenfnam)//'.coutposition.'//extension
              if (rang==0) write(6,'(2a)')'image = ',fnamneb
-             call read_cin(boxneb,itread,atneb(ip)%atom_config_d,imm,fnamneb,lrestart,fmt_cin)
+             call read_cin(boxneb,itread,atneb(ip),imm,fnamneb,lrestart,fmt_cin)
              atneb(ip)%ielat(:)=0 !ielat(:)
              atneb(ip)%iwmax(:)=0 !iwmax(:)
              atneb(ip)%fp(:,:)= 0 !fp(:,:)
              atneb(ip)%vp(:,:)=0 !vp(:,:)
-             atneb(ip)%xpp(:,:)=atneb(ip)%xp(:,:) !xpp(:,:)
              call setnox(boxneb,cellneb(ip),rumax)
              !          CALL fin allocation CELL et FIN DIVID
              !             close(lucin)
-             call setcellconf(cellneb(1),atneb(1)%atom_config_d,boxneb,rumax)
+             call setcellconf(cellneb(1),atneb(1),boxneb,rumax)
           end do
        else ! pas restart
           fnamneb='deb_'//fnam(1:lenfnam)//'.cin'
           if(rang==0)write(6,*)'FNAMneb 1 ',fnamneb
-          call read_cin(boxneb,itread,atneb(1)%atom_config_d,imm,fnamneb,lrestart,fmt_cin)
+          call read_cin(boxneb,itread,atneb(1),imm,fnamneb,lrestart,fmt_cin)
           atneb(:)%im=atneb(1)%im
-          atneb(1)%xpp=atneb(1)%xp
           atneb(1)%ielat=0
           atneb(1)%fp(:,:)= 0 !fp(:,:)
           atneb(1)%vp(:,:)=0 !vp(:,:)
@@ -575,30 +569,28 @@ end if
              atneb(1)%indi=0
           end if
           call setnox(boxneb,cellneb(1),rumax)
-          call setcellconf(cellneb(1),atneb(1)%atom_config_d,boxneb,rumax)
+          call setcellconf(cellneb(1),atneb(1),boxneb,rumax)
           if (rang==0)then
              formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout.'
-             call sauvegardeT(atneb(1)%atom_config_d,cellneb(1),boxneb,formatsauv,fnamcout,latcomp=latcomp)
-             call rasmolT(atneb(1)%atom_config_d,boxneb,1,latcomp=latcomp)
+             call sauvegardeT(atneb(1),cellneb(1),boxneb,formatsauv,fnamcout,latcomp=latcomp)
+             call rasmolT(atneb(1),boxneb,1,latcomp=latcomp)
           endif
 
           fnamneb='fin_'//fnam(1:lenfnam)//'.cin'
-          call read_cin(boxneb,itread,atneb(npath)%atom_config_d,imm,fnamneb,lrestart,fmt_cin)
-          atneb(npath)%xpp=atneb(npath)%xp
+          call read_cin(boxneb,itread,atneb(npath),imm,fnamneb,lrestart,fmt_cin)
           atneb(npath)%ielat=0
           atneb(npath)%fp(:,:)= 0 !fp(:,:)
           atneb(npath)%vp(:,:)=0 !vp(:,:)
-          !       atneb(npath)%xpp(:,:)=0 !xpp(:,:)
           if (atneb(npath)%ltabvois) then
              atneb(npath)%iwmax=0 !iwmax(:)
              atneb(npath)%indi=0
           end if
           call setnox(boxneb,cellneb(npath),rumax)
-          call setcellconf(cellneb(npath),atneb(npath)%atom_config_d,boxneb,rumax)
+          call setcellconf(cellneb(npath),atneb(npath),boxneb,rumax)
           if (rang==0)then
              formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout.'
-             call sauvegardeT(atneb(npath)%atom_config_d,cellneb(npath),boxneb,formatsauv,fnamcout,latcomp=latcomp)
-             call rasmolT(atneb(npath)%atom_config_d,boxneb,npath,latcomp=latcomp)
+             call sauvegardeT(atneb(npath),cellneb(npath),boxneb,formatsauv,fnamcout,latcomp=latcomp)
+             call rasmolT(atneb(npath),boxneb,npath,latcomp=latcomp)
           endif
 
        end if
@@ -606,11 +598,10 @@ end if
        fnamneb='deb_'//fnam(1:lenfnam)//'.gin'
        if (rang==0) write(6,*)'FNAMneb 1 ',fnamneb,nprocspace,atneb(1)%imm_glob
        lsecondpath=.false.
-       call gin2ndm(atneb(1)%atom_config_d,cellneb(1),boxneb,fnamneb,rumax,lrepartition=.false.,psc=pscneb)
+       call gin2ndm(atneb(1),cellneb(1),boxneb,fnamneb,rumax,lrepartition=.false.,psc=pscneb)
 
 
        atneb(:)%im=atneb(1)%im
-       atneb(1)%xpp=atneb(1)%xp
        atneb(1)%ielat=0
        atneb(1)%fp(:,:)= 0 !fp(:,:)
        atneb(1)%vp(:,:)=0 !vp(:,:)
@@ -621,8 +612,8 @@ end if
 
        if (rang==0)then
           formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout'
-          call sauvegardeT(atneb(1)%atom_config_d,cellneb(1),boxneb,formatsauv,fnamcout,latcomp=.true.)
-          call rasmolT(atneb(1)%atom_config_d,boxneb,1,latcomp=.true.)
+          call sauvegardeT(atneb(1),cellneb(1),boxneb,formatsauv,fnamcout,latcomp=.true.)
+          call rasmolT(atneb(1),boxneb,1,latcomp=.true.)
        endif
 
        fnamneb='fin_'//fnam(1:lenfnam)//'.gin'
@@ -632,9 +623,8 @@ end if
 #endif
 
        lsecondpath=.true.
-       call gin2ndm(atneb(npath)%atom_config_d,cellneb(npath),boxneb,fnamneb,rumax,lrepartition=.false.,psc=pscneb)
+       call gin2ndm(atneb(npath),cellneb(npath),boxneb,fnamneb,rumax,lrepartition=.false.,psc=pscneb)
        atneb(:)%im=atneb(npath)%im
-       atneb(npath)%xpp=atneb(npath)%xp
        atneb(npath)%ielat=0
        atneb(npath)%fp(:,:)= 0 !fp(:,:)
        atneb(npath)%vp(:,:)=0 !vp(:,:)
@@ -645,8 +635,8 @@ end if
 
        if (rang==0)then
           formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.npath.cout.'
-          call sauvegardeT(atneb(npath)%atom_config_d,cellneb(npath),boxneb,formatsauv,fnamcout,latcomp=.true.)
-          call rasmolT(atneb(npath)%atom_config_d,boxneb,npath,latcomp=.true.)
+          call sauvegardeT(atneb(npath),cellneb(npath),boxneb,formatsauv,fnamcout,latcomp=.true.)
+          call rasmolT(atneb(npath),boxneb,npath,latcomp=.true.)
        endif
 
 
