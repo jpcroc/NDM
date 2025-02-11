@@ -1587,7 +1587,7 @@ contains
                 do ic=1,3
                    if (ic==izlins) cycle
                    if ((zlcenter(ic).ne.0).or.(izlins==0)) then
-                      if (rang==0)                      write(6,*)'ins_typ,izlins zlcenter inconsitstency ', ins_typ,izlins,zlcenter(:)
+                      if (rang==0)                      write(6,*)'ins_typ,izlins zlcenter inconsitstency 3', ins_typ,izlins,zlcenter(:)
                       call arret_ndm
                    end if
                 end do
@@ -1596,14 +1596,14 @@ contains
                 do ic=1,3
                    if (ic==izlins) cycle
                    if ((zlcenter(ic).ne.0).or.(izlins==0)) then
-                      if (rang==0)                      write(6,*)'ins_typ,izlins zlcenter inconsitstency ', ins_typ,izlins,zlcenter(:)
+                      if (rang==0)                      write(6,*)'ins_typ,izlins zlcenter inconsitstency 33', ins_typ,izlins,zlcenter(:)
                       call arret_ndm
                    end if
                 end do
                 if (rang==0)                write(6,*)'MCC N-> N+1 in a plane with spring norm/pos/spring ',izlins,zlcenter(izlins),kspring
              case(44)
-                if ((zlcenter(izlins).ne.0).or.(izlins==0)) then
-                   if (rang==0)                   write(6,*)'ins_typ,izlins zlcenter inconsitstency ', ins_typ,izlins,zlcenter(:)
+                if ((zlcenter(izlins)==0).or.(izlins==0)) then
+                   if (rang==0)                   write(6,*)'ins_typ,izlins zlcenter inconsitstency 44 ', ins_typ,izlins,zlcenter(:)
                    call arret_ndm
                 end if
                 if (rang==0)                write(6,*)'MCC N-> N+1 in a plane with spring norm/pos/spring ',izlins,zlcenter(izlins),kspring

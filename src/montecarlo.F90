@@ -130,6 +130,7 @@ contains
     real(double),intent(in)::rv
     logical::linitpot,lcalc
     integer::ipp,imdm=0,ic
+    real(double)::fe2,res,xerf
 
     beta = 1.0/(bk*Text)    
     call random_seed(size=seed_size)
@@ -227,10 +228,11 @@ contains
           end select
        end if
     end if
-    block
-      real(double)::fe2,res,xerf
+
+
 
     if (lspring) then
+       fe2=0
        select case(ins_typ)
        case(11)
           FEspring=(bk*text*log(boxmcgc_p%volu) -(3*bk*text/2)*log(2*pi*bk*text/k_spring))*erg2ev
@@ -253,11 +255,11 @@ contains
        end select
        if (rang==0) then
           write(6,*)'***SPRING CALCULATION***'
-          write(6,'(A)')'Free energy of the spring to ADD to the calculated chamical potential at the very end (in eV)'
+          write(6,'(A)')'Free energy of the spring to ADD to the calculated chamical potential at the very end (in eV) (second value is better if non zero)'
           write(6,*)'FEspring=',FEspring,fe2
        end if
     end if
-  end block
+
           
   end subroutine init_montecarlo
 
@@ -3185,18 +3187,19 @@ contains
     
     case(3)
        do i=1,nrins
-          dist=abs(-boxmcgc%zls2(izlins)+(float(i)/nrins)*boxmcgc%zl(izlins))
+          dist=abs(-boxmcgc_p%zls2(izlins)+(float(i)/nrins)*boxmcgc_p%zl(izlins))
           probaR(i)=dist**2/(1+exp(fdfactmcgc*(dist-R0mcgc)))
           somP=somP+probaR(i)    
-          if (rang==0)                 write(136,*)i,r,probaR(i)
+          if (rang==0)                 write(136,*)i,dist,probaR(i)
 
        end do
     case(33)
        do i=1,nrins
-          dist=abs(-boxmcgc%zls2(izlins)+(float(i)/nrins)*boxmcgc%zl(izlins))
-          probaR(i)=dist**2*exp(-0.5*beta*k_spring*(dist**2))
+          dist=abs(-boxmcgc_p%zls2(izlins)+(float(i)/nrins)*boxmcgc_p%zl(izlins))
+          probaR(i)=exp(-0.5*beta*k_spring*(dist**2))
+!          if (rang==0)write(6,*)i,dist,-0.5*beta*k_spring*(dist**2),probaR(i)
           somP=somP+probaR(i)    
-          if (rang==0)                 write(136,*)i,r,probaR(i)
+          if (rang==0)                 write(136,*)i,dist,probaR(i)
        end do
       
     case(44)
@@ -3204,7 +3207,7 @@ contains
           dist=i*0.5*zlmin/nrins
           probaR(i)=dist*exp(-0.5*beta*k_spring*(dist**2))
           somP=somP+probaR(i)   
-          if (rang==0)                 write(136,*)i,r,probaR(i)
+          if (rang==0)                 write(136,*)i,dist,probaR(i)
  
        end do
 

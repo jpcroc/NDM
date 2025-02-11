@@ -73,7 +73,6 @@ contains
 !       call arret_ndm
 !    end if
  end if
-write(6,*)'lverb',lverb
 #else
     if (ldecoup) then
        nbr_cpumin=2
@@ -143,8 +142,12 @@ write(6,*)'lverb',lverb
              enddo
           enddo
        enddo
-       if (allocated( psc%res_cpu)) then
-          deallocate(specifs); deallocate(psc%res_cpu);deallocate(coord_min); deallocate(coord_max)
+       if (allocated( psc%res_cpu))deallocate(psc%res_cpu)
+       if (allocated(coord_min))deallocate(coord_min)
+       if(allocated(coord_max))deallocate(coord_max)
+       
+       if (allocated( specifs)) then
+          deallocate(specifs)
        end if
        if (.not.allocated(specifs))allocate(specifs(nb_sol,7))
        if (.not.allocated(psc%res_cpu))allocate(psc%res_cpu(0:nbr_cpu-1,3))
