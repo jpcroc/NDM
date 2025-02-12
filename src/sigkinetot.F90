@@ -3,7 +3,7 @@ module sigkinetot_mod
   USE arret_ndm_mod,only:arret_ndm
 
   USE atomconfig,only : atom_config_d
-  USE gen_com_m, ONLY:lspaceNDM,lpcube
+  USE gen_com_m, ONLY:lspaceNDM,lpcube,rang
   USE boxconfig,only:box_config_lpr,box_config
   USE var_pot, ONLY:cm
     
@@ -35,12 +35,13 @@ contains
     enddo
     sigkine(1:3,1:3) =sigkine(1:3,1:3)/box%Volu
     
-#ifdef PARA
-
-    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-       call comm_space%sum(sigkine)
-    end if
-#endif
+!!$#ifdef PARA
+!!$    write(6,*)'MCCDBG61 ', rang
+!!$    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+!!$       call comm_space%sum(sigkine)
+!!$    end if
+!!$#endif
+!!$    write(6,*)'MCCDBG62 ', rang
           if (lpcube) then
              pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
              sigkine=0

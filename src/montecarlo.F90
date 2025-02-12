@@ -217,7 +217,7 @@ contains
     if (rang==0) then
        write(6,*)'***************PATH MONTE-CARLO*****************'
        write(6,'(A,I6,A,I6,A,I4)')'pas_lambda=',pas_lambda_mc,' npath=',n_path,' naparapath=',nparapath
-       write(6,'(A,I3,A)')'ins_typ=',ins_typ, ' (0=random; 1=sph 2=switch type, 3=slice, 11 site+spring, 33 sphere+spring, 44 slice+spring), 55 sphere +spring'
+       write(6,'(A,I3,A)')'ins_typ=',ins_typ, ' (0=random; 1=sph 2=switch type, 3=slice, 11 site+spring, 33 slice +spring, 44 line+spring), 55 sphere +spring'
        write(6,*)'lbiais_retrait , lbiais_inser ',lbiais_retrait,lbiais_inser
        if (lbiais_inser) then
           select case(ins_typ)
@@ -503,7 +503,7 @@ contains
              call lambda(direction, nstep = 0, protocol_name = 'MCP') !initialisation du lambda a 0 pour le premier melange des forces
              iloc=1;lchange=.false.;ldistrib=.true.
              call calfoMCGC(iloc,lchange,ldistrib)
-
+!             write(6,*)'MCCDBG1 ', rang
              !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation
 
              if (lprahman) then
@@ -732,7 +732,7 @@ contains
              case(2)
                 call type_switch(direction)
              end select
-
+!             write(6,*)'MCCDBG2 ', rang
              ! pas de langevin
              if (lprahman) then
                 call langevinLPR(direction, protocol = 'MCP')
@@ -2193,7 +2193,7 @@ contains
           Ek_n_plus1 = 0.0  
           Ek_n_1s4 = 0.0
           Ek_n_3s4 = 0.0
-          !          write(6,*) 'lambda_mc ' ,lambda_mc,rang
+!                    write(6,*) 'lambda_mc ' ,lambda_mc,rang
           ! faire le pas de langevin (velocity verlet) pour determiner les nouvelles forces et positions
 
           ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
@@ -2243,16 +2243,19 @@ contains
        end if
 #endif        
        iloc=0;ldistrib=.false.;lchange=.true.
+!       write(6,*)'MCCDBG3 ', rang
        call calfoMCGC(iloc,lchange,ldistrib)
-
+!       write(6,*)'MCCDBG4 ', rang
        if (lbigmaster) then
+!          write(6,*)'MCCDBG401 ', rang
           call sigkinetotMC(atconf_n,atconf_nplus1,boxmcgc_p,lambda_mc,sig,sigkine,sigtot)
+!          write(6,*)'MCCDBG402 ', rang
           !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
           U_l_n = (1.0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
           !write(*,*) potist_n, potist_nplus1
           !affichage temperature
           iteration = iteration +1
-
+!          write(6,*)'MCCDBG41 ', rang
           call noise(Gl,atconf_nplus1%im)
           DO i=1, atconf_Nplus1%im
              do ic=1,3
@@ -2270,13 +2273,16 @@ contains
           DO i=1, atconf_N%im
              atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i) 
           END DO
+!          write(6,*)'MCCDBG42 ', rang
           call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc_p)
           call caltabtC(cells_n,atconf_n,lperiod,boxmcgc_p)
+!          write(6,*)'MCCDBG43 ', rang
           call calctemp (tempN,kineN,atconf_N,cells_n,latcomp=.true.)
           call calctemp (tempNP1,kineNP1,atconf_Nplus1,cells_nplus1,latcomp=.true.)
        end if !master general
 
        if (lbigmaster) then !master general
+!          write(6,*)'MCCDBG44 ', rang
           !calcul des energies et travail et chaleur efficaces
           U_l_n_m1 = U_l_n
           H_l_n_m1 = H_l_n
@@ -2299,7 +2305,7 @@ contains
              !            & U_l_n, 'H_l_n', H_l_n, 'Work', Work, 'dWork', dWork
           end if
        end if
-
+!       write(6,*)'MCCDBG5 ', rang
     END DO
 
 
@@ -2812,6 +2818,8 @@ contains
              end if
 !             write(666,*)'pot',potist_n*erg2ev/atconf_n%im,potisbias*erg2ev
 !             write(666,*)'force',norm2(atconf_nplus1%fp(:,iplus))*erg2ev*1d-8,norm2(forcebias)*erg2ev*1d-8
+!             write(6,*)'pot',potist_n*erg2ev/atconf_n%im,potisbias*erg2ev
+!             write(6,*)'force',norm2(atconf_nplus1%fp(:,iplus))*erg2ev*1d-8,norm2(forcebias)*erg2ev*1d-8
              atconf_nplus1%fp(:,iplus) =(1-lambda_mc)*forcebias(:)+ lambda_mc*atconf_nplus1%fp(:,iplus)
              potist_n=potist_n+potisbias
           end do
@@ -2980,7 +2988,7 @@ contains
       do i=1,atconf_n%im
          call distat(postest(:),atconf_n%xp(:,i),boxmcgc_p,dist)
          if (dist.le.distminat) then
-            if (rang==0) write(6,*)'iex TOO close',dist,distminat
+!            if (rang==0) write(6,*)'iex TOO close',dist,distminat
             goto 22
          end if
       end do
@@ -3010,9 +3018,10 @@ contains
     !choose vecteur
     itry=0
 22  continue
+!       write(6,*)'ITRY',itry
     itry=itry+1
     if (itry.gt.1000) then
-       write(6,*)'ITRY 1000'
+
        call arret_ndm
     end if
 
@@ -3027,10 +3036,12 @@ contains
     loopi:do i=1,nrins
        somPm1=somP
        somP=somP+probaR(i)
-!       write(6,*)i,probaR(i),somP,zt
+
        if (zt.le.somP) then
           iex=i-1
           dex= -boxmcgc_p%zls2(izlins)+(float(i)/nrins)*boxmcgc_p%zl(izlins)
+  !     write(6,*)i,probaR(i),somP,zt
+ !         write(6,*)'DEX',dex
           pins=probaR(i)
           exit loopi
        end if
@@ -3052,9 +3063,9 @@ contains
 !    write(6,*)'postest',poscenter(:,1)
     do i=1,atconf_n%im
        call distat(postest(:),atconf_n%xp(:,i),boxmcgc_p,dist)
+!       write(6,*)'DIST',i,dist
        if (dist.le.distminat) then
-
-          !          write(6,*)'iex TOO close'
+!          write(6,*)'iex TOO close',dist
           goto 22
        end if
     end do
@@ -3079,8 +3090,8 @@ contains
     itry=0
 222  continue
     itry=itry+1
-    if (itry.gt.1000) then
-       write(6,*)'ITRY 1000'
+    if (itry.gt.10000) then
+       write(6,*)'ITRY 10000'
        call arret_ndm
     end if
 
@@ -3303,8 +3314,9 @@ contains
        !incrémentation de lambda
        call lambda(direc,ip, protocol)
        !       lambda_mc = 0
-       call sigkinetotMC(atconf_n,atconf_nplus1,boxmcgc_p,lambda_mc,sig,sigkine,sigtot)
+
        if (lbigmaster) then ! Master général
+       call sigkinetotMC(atconf_n,atconf_nplus1,boxmcgc_p,lambda_mc,sig,sigkine,sigtot)
           Ek_n = 0.0
           Ek_n_plus1 = 0.0  
           Ek_n_1s4 = 0.0
@@ -3398,8 +3410,9 @@ contains
        iloc=0;ldistrib=.false.;lchange=.true.
 
        call calfoMCGC(iloc,lchange,ldistrib)
-       call sigkinetotMC(atconf_n,atconf_nplus1,boxmcgc_p,lambda_mc,sig,sigkine,sigtot)
+
        if (lbigmaster) then
+       call sigkinetotMC(atconf_n,atconf_nplus1,boxmcgc_p,lambda_mc,sig,sigkine,sigtot)
           tempx= tempinstT(atconf_n)
           Kcell = 0.5d0*boxmcgc_p%wbox*Sum( boxmcgc_p%hDot(1:3,1:3)**2 )
           Tempcell=Kcell*2./(sum(ihbox0)*bk)
@@ -3527,7 +3540,10 @@ contains
     integer::ic
     posred(:,1)=pos(:)
     normout(:)=0
-    call cryst_to_cart(1,posred,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
+    call cryst_to_cart(1,posred,boxmcgc_p%bg,-1) 
+!    write(6,*)'POS', pos
+!    write(6,*)'POSres', posred
+    
     select case (ins_typ)
     case(11,55)
        poscenter(:,1)=bublcenter(:)
@@ -3538,6 +3554,7 @@ contains
        normout(:)=postest(:)/dist
     case(33)
        dist=abs(boxmcgc_p%at(izlins,izlins)*(posred(izlins,1)-zlcenter(izlins)))
+!       write(6,*)'decd ',boxmcgc_p%at(izlins,izlins),posred(izlins,1),zlcenter(izlins)
        normout(izlins)=sign(1.,posred(izlins,1)-zlcenter(izlins))
     case(44)
        dist=0
@@ -3560,7 +3577,7 @@ contains
     if (ins_typ.ne.55) then 
        potisb=0.5*k_spring*dist**2
        forceb(:)=-1*k_spring*dist*normout(:)
-!       write(666,*)'DIST',dist
+!       write(6,*)'DIST',dist,potisb*erg2ev
     else
        potisb=(1/beta)*log(1+exp(fdfactmcgc*dist))
        forceb(:)=-1*normout(:)*(fdfactmcgc*exp(fdfactmcgc*dist))/((1+exp(fdfactmcgc*dist))*beta)
