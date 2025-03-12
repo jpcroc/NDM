@@ -12,14 +12,14 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     use Tpara,only:nprocs,mpi_world
-    USE gen_com_m, ONLY:a2cm,debyetemp,deltarmax,deltax,depmaxts,dfpred,gamprfact,&
+    USE gen_com_m, ONLY:a2cm,debyetemp,deltax,depmaxts,dfpred,gamprfact,&
          &epcou,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,couxyz,&
-         &igen,ilangevin,iseed,itab,iteanaposneb,itederive,&
+         &igen,ilangevin,iseed,itab,itederive,&
          &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,&
          &landerscou,lcdp,lconstrtot,lcorrelvp,lderive,lfire,&
-         &ljqbh,lpathfromgin,lpcon2,lPcube,lrctest,lrestart,ltandersen,&
-         &ltcon,lvpread,maxneb,mdcg_noise_scale,neb_noise,neb_noise_scale,nebrelaxation,&
-         &nebtype,nhoover,nitmax,npath,nuandersen,pext,&
+         &ljqbh,lpcon2,lPcube,lrctest,lrestart,ltandersen,&
+         &ltcon,lvpread,mdcg_noise,&
+         &nhoover,nitmax,nuandersen,pext,&
          &rskin,rulayer,sigext,sigstop,tbox,tempdeplainit,tempstop,tempstopcel,tgc,&
          &timemax,tinit,tsfact,tsmin,two,units_lammps,usdh,utemps,wboxf,wnose,&
          &ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
@@ -27,7 +27,7 @@ contains
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,iteprtsigma,itetemp,itetemp2,itmax,ivisu,l2t,lcalcjq,&
          &lcasca,lcontr,ldemitab,leev,leparat,lfilm,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
-         &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,mdcg_noise,nfda,h0,&
+         &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,nfda,h0,&
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou,iteprtkin&
          &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart&
          &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit
@@ -40,7 +40,8 @@ contains
     USE jqmod
     USE eloss, ONLY : tcelec,ecelec,ibrake,ngrdel
     USE arret_ndm_mod,only: arret_ndm
-    use neb_module,only: lvzeroneb,kspring
+    use neb_module,only: lvzeroneb,kspring,lclimb,nwclimb,nebrelaxation,npath,lpathfromgin,iteanaposneb,&
+         &neb_noise,neb_noise_scale,mdcg_noise_scale,maxneb,deltarmax,nebtype,i_neb_drag
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
          &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ,bublcenter,&
          &typswitch1,typswitch2,izlins,zlcenter,lspring,k_spring
@@ -92,11 +93,11 @@ contains
          neb_noise,neb_noise_scale,lsuivinonpbc,lposmoy,gammas,gammav,lanaposart,&
          eatref,mdcg_noise_scale, mdcg_noise, lforcetabulate,ivisu,idirectionmcgc,nbatplus,&
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
-         itesauvinter,units_lammps,lWgin,lvzeroneb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
+         itesauvinter,units_lammps,lWgin,lvzeroneb,lclimb,nwclimb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
          &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
-         &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring
+         &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag
 
 
     !
@@ -149,6 +150,7 @@ contains
     !                              15 -> montecarlo_mCC
     !                              151 -> montecarlo_mcGC
     !                              112 -> histogramme des distances entre atomes
+    !                              113 -> recherche de la position la plus éloigné des atomes
     lFire = .false.              ! Fire algorithm is USEd for quenching (cf tr_fire.F90)
     tstep = 1.0                 !timestep in 10^-15 sec unit
     itetimestep = -1            !period of check in timestep
@@ -391,6 +393,11 @@ contains
     lspecialinit=.false. ! driver for specail initialization : cascade, press or heat burst etc.
     lspring=.false. ! MCC calculation with a slowly vanishing vabishing string
     k_spring=1.0 ! spring strenght (1 eV/Ang**2)
+
+    lclimb=.false. ! set to true for climbin NEB
+    nwclimb=3 ! starts the climbing at the second evaluation of forces (in VASP =1, in Henkelmann is set to "a few iterations")
+    i_neb_drag=5
+
     
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
@@ -672,10 +679,8 @@ contains
        end if
     case default
        write(6,*)'DMTYPE',dmtype
-       if (rang==0) write(6,*) 'FATAL: VERSION PARALLELE seulement avec ',&
+       if (rang==0) write(6,*) 'WARNING : VERSION PARALLELE seulement avec ',&
 & 'dmtype=21,22,4,3,9,15,151,1,30,31,32,33,34,19,35,23,24,41'
-       if (rang==0) write(*,*) 'Stop in readdm'
-       call arret_ndm
     end select
 #endif
 
@@ -1232,6 +1237,8 @@ contains
 
     case(112)
        write(6,*)'simple test de distance entre atomes'
+    case(113)
+       write(6,*)'recvherche de la position la plus éloignée des atomes'
 
     case default
        if (rang==0) write (6, *) 'mauvais type de calcul dmtype=TTT',dmtype

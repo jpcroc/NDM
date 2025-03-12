@@ -6,8 +6,9 @@ module initspeed_mod
   USE tempinstT_mod,only: tempinstT
   USE arret_ndm_mod,only: arret_ndm
   USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,iseed,lcalcjq,lperiod,ltpcel,&
-       &lvpread,oldtstep,one,rang,tempdeplainit,tinit,tstep,iseed,mdcg_noise_scale,&
-       neb_noise_scale,bk,mdcg_noise,lspacendm
+       &lvpread,oldtstep,one,rang,tempdeplainit,tinit,tstep,iseed,&
+       bk,lspacendm,mdcg_noise
+  use neb_module, only : neb_noise_scale,mdcg_noise_scale
   USE var_pot, ONLY:ntyp,cm
 #ifdef PARA
   USE Tpara,only:COMM_space,nprocs,nprocspace,myidsp

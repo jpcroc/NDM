@@ -1,8 +1,8 @@
 module neb_module
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:iseed,neb_noise_scale,lrestart,npath,deltarmax,lpathfromgin,&
-       &lrestart,nebtype, fnam,pi,rang,lenfnam,rang,zero,lcontr,&
+  USE gen_com_m, ONLY:iseed,lrestart,&
+       &lrestart, fnam,pi,rang,lenfnam,rang,zero,lcontr,&
        &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat,firsttime_lammps,&
        &latcomp,imm_glob,lperiod,lspacendm
   use read_val,only:rvois,ltabvois
@@ -44,16 +44,24 @@ module neb_module
   integer, save                                  :: dragtest
   integer,dimension(:),allocatable,save          :: nebtest,icontrainte !irelax,
   real(double), dimension(:),allocatable, save   :: enePATH,enePATHev,norms,reaction_coord
+  logical,allocatable, save   :: limgclimb(:)
   real(double), dimension(:,:,:), allocatable, save :: sigPATH  ! Stress tensor
   real(double), dimension(:,:,:),allocatable,save:: s_path,force_neb,bruitneb 
   real(double)                                   :: forctot,formax,formaxperp,formaxparl,masstot,kspring
   logical:: lvzeroneb
+  logical::lclimb
+  integer:: nwclimb
   type(atom_config_neb),allocatable,save,target::atneb(:)
   type(cell_config),allocatable,save,target:: cellneb(:)
   type(box_config)::boxneb
   type(para_config),target::paraneb
   type(para_space_config)::pscneb
-
+  !---inNEB
+  integer  :: ipath, npath,nebtype,nebrelaxation,maxneb,iteanaposneb, &
+              neb_noise
+  REAL(double) :: deltaRmax,neb_noise_scale,mdcg_noise_scale
+  LOGICAL :: lPathFromGin      !if T : read initial path in gin files *.1.gin, *.2.gin, ... (NEB calculaion)
+  integer::i_neb_drag
 contains
   
 
@@ -109,7 +117,8 @@ contains
     end do
 
     allocate (icontrainte(imm),reaction_coord(npath))
-    allocate  (enePATH(npath),enePATHev(npath),norms(npath),nebtest(npath))
+    allocate  (enePATH(npath),enePATHev(npath),norms(npath),nebtest(npath),limgclimb(npath))
+    limgclimb(:)=.false.
     allocate  (sigPATH(3,3,npath))    ! Stress tensor for each image
 
 !    allocate  (s_path(3,imm,npath),force_neb(3,imm,npath))
@@ -301,18 +310,25 @@ end if
 
   !-------------------------------------------------------
 
-  subroutine build_s_path_neb(im,imm)
+  subroutine build_s_path_neb(im,imm,intneb)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     implicit none
-    integer  :: ip,ia,im,imm
+    integer  :: ip,ia,im,imm,intneb
     real(double) :: e_i,e_i_p,e_i_m,dE_max, dE_min,      &
          Rtemp_p,Rtemp_m, temp_m,temp_p
     real(double), dimension(3) :: tg_p(3),tg_m(3),Rtemp(3)
-
-
-
+    integer::indmaxE
+!    write(6,*)lclimb,intneb,nwclimb
+    if (lclimb) then 
+       if (intneb==nwclimb) then
+!          indmaxE=maxloc(enepath(2:npath-1))
+          indmaxE = maxloc(enepath(2:npath-1), dim=1) + 1
+          limgclimb(indmaxE)=.true.
+          if (rang==0) write(6,*)'CLIMBING IS TURNED ON, climbing image is number: ', indmaxE
+       end if
+    end if
     do ip=2,npath-1
        e_i  =enePATH(ip)
        e_i_p=enePATH(ip+1)
@@ -482,7 +498,7 @@ end if
 
   end subroutine force_projection
 
-  subroutine force_projection_neb(ipath,xp, vp,  fp,  ityp,imm,im)
+  subroutine force_projection_neb(ipath,xp, vp,  fp,  ityp,imm,im,limgclb)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -491,6 +507,7 @@ end if
     !   D u m m y   A r g u m e n t s
     !-----------------------------------------------
     integer::imm,im
+    logical::limgclb
     integer  :: ityp(imm)
     real(double)  :: xp(3,imm)
     real(double)  :: vp(3,imm)
@@ -499,24 +516,46 @@ end if
     integer       :: ia,ipath
     real(double)  :: lbd
     !-----------------------------------------------
-
+    
     lbd=0
     do ia=1,im      
        if (atneb(ipath)%lgul(ia)) then
           lbd = lbd + DOT_PRODUCT(atneb(ipath)%s_path(:,ia),fp(:,ia))
        end if
     end do
-    do ia=1,im
+    if (lclimb) then
+       if (limgclb) then
+          do ia=1,im
+             if (atneb(ipath)%lgul(ia)) then
+                !
+                fp(:,ia) =fp(:,ia) -  2*atneb(ipath)%s_path(:,ia)*lbd/norms(ipath)  
+                ! 	
+             end if
+          end do
 
-       if (atneb(ipath)%lgul(ia)) then
-          !
-          fp(:,ia) =fp(:,ia) -  atneb(ipath)%s_path(:,ia)*lbd/norms(ipath)  &
-               + atneb(ipath)%force_neb(:,ia)*atneb(ipath)%s_path(:,ia) / dsqrt(norms(ipath))
-          ! 	
+       else
+          do ia=1,im
+             if (atneb(ipath)%lgul(ia)) then
+                !
+                fp(:,ia) =fp(:,ia) -  atneb(ipath)%s_path(:,ia)*lbd/norms(ipath)  &
+                     + atneb(ipath)%force_neb(:,ia)*atneb(ipath)%s_path(:,ia) / dsqrt(norms(ipath))
+                ! 	
+             end if
+          end do
        end if
-
-    end do
-
+    else
+    
+       do ia=1,im
+          
+          if (atneb(ipath)%lgul(ia)) then
+             !
+             fp(:,ia) =fp(:,ia) -  atneb(ipath)%s_path(:,ia)*lbd/norms(ipath)  &
+                  + atneb(ipath)%force_neb(:,ia)*atneb(ipath)%s_path(:,ia) / dsqrt(norms(ipath))
+             ! 	
+          end if
+          
+       end do
+    end if
 
     return
 

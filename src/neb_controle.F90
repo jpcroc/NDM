@@ -1,6 +1,6 @@
 module neb_controle_mod
   USE recips_mod,only: recips
-  USE gen_com_m, ONLY:fpstop,fsumstop,tempstop,nebtype,temp,rang,potist,leev,itetimestep,itetemp,&
+  USE gen_com_m, ONLY:fpstop,fsumstop,tempstop,temp,rang,potist,leev,itetimestep,itetemp,&
        &angst,erg2ev
   implicit none
 contains
@@ -17,7 +17,7 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-    USE neb_module,only: forctot,formax,nebtest,dragtest
+    USE neb_module,only: forctot,formax,nebtest,dragtest,nebtype
 
     implicit none
     !-----------------------------------------------

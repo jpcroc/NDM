@@ -7,13 +7,14 @@ module posana
   !  USE period_mod,only: period
   USE recips_mod,only: recips
   use cryst_to_cart_mod,only:cryst_to_cart
-  USE gen_com_m, ONLY: fnam,rang,lperiod,pi,npath,dmtype,lenfnam,iteration,timel,ivisu,unit6P
+  USE gen_com_m, ONLY: fnam,rang,lperiod,pi,dmtype,lenfnam,iteration,timel,ivisu,unit6P
   USE atomconfig,only:atom_config
   use cellconfig,only: cell_config,caltabtC
   use boxconfig,only:box_config,periodbox
   use rasmolT_mod,only:rasmolT
   USE constrconf_mod,only:gin2ndm,read_cin
   use vect_dist_mod,only:vect_dist
+  use neb_module, only : npath
   use newunit_mod,only:newunit
   use read_val,only:ipbc
   implicit none

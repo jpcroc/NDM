@@ -168,11 +168,8 @@ module gen_com_m
   logical :: lsuivinonpbc
 
 
-  !---inNEB
-  integer  :: ipath, npath,nebtype,nebrelaxation,maxneb,iteanaposneb, &
-              neb_noise,mdcg_noise
-  REAL(double) :: deltaRmax,neb_noise_scale,mdcg_noise_scale
-  LOGICAL :: lPathFromGin      !if T : read initial path in gin files *.1.gin, *.2.gin, ... (NEB calculaion)
+
+  integer  ::mdcg_noise
 
   ! selection des atomes distordus
 

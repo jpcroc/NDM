@@ -2,10 +2,10 @@ module neb_mod
   USE calfo_mod,only: calfo
   USE trempe_mod,only: trempe
   USE neb_controle_mod,only:neb_controle
-  USE gen_com_m, ONLY:iteanaposneb,itesauvforce,itesauvposition,lfire,maxneb,neb_noise,nebrelaxation,cunitp,&
-       &erg2ev,itesauv,lpkbar,nebtype,sig,unitp,potist,angst,itetabvois,rang,&
-       &fnam,lenfnam,lfire,itesauv,itetabvois,iteanaposneb,maxneb,&
-       &nebrelaxation,lperiod,lspacendm,latcomp
+  USE gen_com_m, ONLY:itesauvforce,itesauvposition,lfire,cunitp,&
+       &erg2ev,itesauv,lpkbar,sig,unitp,potist,angst,itetabvois,rang,&
+       &fnam,lenfnam,lfire,itesauv,itetabvois,&
+       &lperiod,lspacendm,latcomp
 
   use Tpara,only:para_space_config,ierr
 
@@ -15,9 +15,9 @@ module neb_mod
   use var_pot,only:rumax,ipotentiel
   use rasmolT_mod,only:rasmolT
   use sauvegardeT_mod,only:sauvegardet
-  use neb_module,only:cellneb,atneb,sigpath,boxneb,npath,enepath,nebtype,enepathev,reaction_coord,&
-       &lvzeroneb,dragtest,nebtest,force_neb,formax,init_neb,find_relax,bruit_neb,build_s_path_drag,&
-       &force_projection,build_s_path_neb,force_projection_neb,paraneb,pscneb
+  use neb_module,only:cellneb,atneb,sigpath,boxneb,npath,enepath,nebtype,enepathev,reaction_coord,nebrelaxation,&
+       &lvzeroneb,dragtest,nebtest,force_neb,formax,init_neb,find_relax,bruit_neb,build_s_path_drag,i_neb_drag,&
+       &force_projection,build_s_path_neb,force_projection_neb,paraneb,pscneb,iteanaposneb,neb_noise,maxneb,limgclimb
   USE parautils,only:initloc,pointer_caltabt_calfo
 
 #ifdef PARA
@@ -308,7 +308,7 @@ contains
 #endif
        if (rang==0) then
           do ii= 2,npath-1
-             !             write(*,*) 'NEB: THIS IS THE DRAG IMAGE=====================', ii
+
              write(*,*) 'NEB: THIS IS THE DRAG IMAGE=====================', ii,iter(ii)
              write(*,*) 'NEB: THE ENERGY OF THIS IMAGE===================', enePATHev(ii)
              WRITE(6,'(3a)') 'NEB: stress tensor in Voigt notation (units: ', cunitP,' ):'
@@ -319,7 +319,7 @@ contains
           end do
        end if
 
-    case(2)
+    case(2)  ! NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB 
        if (rang==0) write(6,*)'NEB: -------this is NEB--V2-------'
        if (rang==0) write(6,*)'NEB: The MAX steps in NEB        :',maxneb
        nebtest(:)=0
@@ -331,19 +331,21 @@ contains
           end if
           iteration=0
           !   
-          call build_s_path_neb(atneb(1)%im,atneb(1)%imm)
+          call build_s_path_neb(atneb(1)%im,atneb(1)%imm,ineb)
           ! 
           if (rang==0) write(6,*)'("NEB:===============================================")'
           if (rang==0) write(6,*)'("NEB:pas-neb image    force      force_NEB          energie      statut    energie/stable")'
+!          write(6,*)rang,limgclimb
           do ii=2,npath-1
 #ifdef PARA
              if (ii==paraneb%image+2) then
-                enepath(2:npath-1)=0; enepathev(2:npath-1)=0
+!                enepath(2:npath-1)=0; enepathev(2:npath-1)=0
 #endif
                 it_neb_inter=0  
 
-                do while (it_neb_inter<=5)   ! drag-ize me that 5 steps while we keep NEB "attraction"
+                do while (it_neb_inter<=i_neb_drag)   ! drag-ize me that 5 steps while we keep NEB "attraction"
                    !
+!                   if (rang==0)                   write(6,*)
                    it_neb_inter=it_neb_inter+1
                    iteration=it_neb_inter
 
@@ -357,8 +359,12 @@ contains
                         &boxneb,atnebloc,cellnebloc,paraneb,lperiod,&
                         &lupdate=.true.,psc=pscneb,lcalcvois=lcalcvois)
                    if (lmaster) then
+                      enePATH(ii)=potist
+                      enePATHev(ii)=potist*erg2eV       
+                      sigPATH(:,:,ii) = sig(:,:)      ! Contrainte
+!                      write(6,*)'STEP',ineb,it_neb_inter, enepath, 'IMG', ii,limgclimb(ii)
                       call force_projection_neb(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ityp,&
-                           &atneb(ii)%imm,atneb(ii)%im)
+                           &atneb(ii)%imm,atneb(ii)%im,limgclimb(ii))
 
                       IF (lFire) THEN
                          ! CRC nettoyer ces appels !                   !
@@ -378,6 +384,7 @@ contains
                    sigPATH(:,:,ii) = sig(:,:)      ! Contrainte
 
 #ifdef PARA
+
                    if (paraneb%mpi_master%rank.lt.paraneb%nimage-1) then
                       call paraneb%mpi_master%send(enepath(ii),paraneb%mpi_master%rank+1,10001)
                    end if

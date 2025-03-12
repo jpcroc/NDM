@@ -5,11 +5,46 @@ module d_at_at_mod
   USE boxconfig,only:box_config
   USE gen_com_m, ONLY: lperiod
   use vect_dist_mod,only:vect_dist
+  use montecarlo_mod,only:bublcenter
+  use vect_dist_mod,only:closest_at
+    USE cryst_to_cart_mod, ONLY: cryst_to_cart
   implicit none 
 contains
-  ! boucle de DM pour velocity Verlet
-  ! ************************************************
 
+  subroutine best_at_pos(atdml,celndm,boxndm)
+    implicit none
+    type(box_config)::boxndm
+    class(atom_config)::atdml
+    type(cell_config):: celndm
+
+    integer::i,ic,j,k,nstp(3),idec(3),imin,icl
+    real(double),parameter::step=0.1d-8
+    real(double)::decxyz(3),post(3,1),posopt(3,1),distmax,distcl
+    nstp(:)=boxndm%zl(:)/step
+    write(6,*)'NSTP',nstp
+    distmax=-1000.0
+    do i=1,nstp(1)
+       do j=1,nstp(2)
+          do k=1,nstp(3)
+             idec(1)=i;idec(2)=j;idec(3)=k
+             decxyz(:)=float(idec(:))/nstp(:)
+             post(:,1)=decxyz(1)*boxndm%at(:,1)+decxyz(2)*boxndm%at(:,2)+decxyz(3)*boxndm%at(:,3)
+             call closest_at(post(:,1),atdml,celndm,boxndm,.true.,dist=distcl)
+!             write(6,*)'distmax= ',distmax,i,j,k,post
+             if (distmax.lt.distcl) then
+                distmax=distcl
+                posopt(:,1)=post(:,1)
+                write(6,*)'distmax= ',distmax,i,j,k,post
+             end if
+          end do
+       end do
+    end do
+    call cryst_to_cart(1,posopt,boxndm%bg,-1)
+    
+    write(6,*)'POSopt', posopt
+    write(6,*)'distmax', distmax*1d8
+  end subroutine best_at_pos
+  
   subroutine d_at_at(atdml,celndm,boxndm)
 
    
