@@ -27,15 +27,15 @@ lperiod=.false. That allows the atomic positions to "get out" of the box. This i
 
 
 ## Thermalization/equilibration/NVE/NPH/NPT runs
-###DMTYPE
+### DMTYPE
 In the din file specify one of the below values of dmtype. I suggest dmtype = 4  
    1 -> Standard Verlet  algorithm
    4 -> Velocity Verlet  algorithm
 
-###NVE
+### NVE
 NVE runs : no additional variable.
 
-###NVT
+### NVT
 NVT runs :
 In the din file  
 Text=300.0  the external temperature, mandatory for cst temperature algorithms  
@@ -63,7 +63,7 @@ lpcony = .FALSE.  T: the relaxation is allowed only along the  Y  axis
 lpconz = .FALSE.  T:  the relaxation is allowed only along the  Z axis  
 lpcube=.false. !  T: volume relaxation only  
 
-###NPT
+### NPT
 Combine lpr and a cst temperature algo. Any combincation should work (hopefully).
 Example:  
 dmtype=4  
