@@ -234,7 +234,7 @@ contains
           case(112)
              call d_at_at(atdml,celndm,boxndm) ! simple calculations of intzeratomic distance...
           case(113)
-             call best_at_pos(atdml,celndm,boxndm) ! simple calculations of intzeratomic distance...
+             call best_at_pos(atdml,celndm,boxndm) ! outputs the positions the furthest away from atoms (uses a grid)
           case(111)
              call arret_ndm
           case(11) ! one iteration

@@ -654,10 +654,10 @@ contains
 !!$          end if
 !!$          call arret_ndm
 !!$       end if
-       if (igen.ne.0) then
-          write(6,*)'IGEN MUST BE ZERO (dont know why) stop'
-          call arret_ndm
-       end if
+!       if (igen.ne.0) then
+!          write(6,*)'IGEN MUST BE ZERO (dont know why) stop'
+!          call arret_ndm
+!       end if
        if (itypcalc.lt.0) then
           write(6,*)'itypcalc<0'
           call arret_ndm

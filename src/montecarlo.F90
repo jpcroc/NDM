@@ -121,6 +121,7 @@ module montecarlo_mod
   integer::ins_typ
   real(double),allocatable::rcpath(:)
   real(double)::k_spring,FEspring
+
   logical lspring
 
 contains 
@@ -289,7 +290,7 @@ contains
     real(double), dimension(2,22):: pot_cumul ! pour le calcul du pot chimique
 
 
-    real(double) :: travail_prec
+    real(double) :: travail_prec,qeff
     integer :: dir_prec
     !########################################################################################################################
     !                                             Initialisation
@@ -509,8 +510,9 @@ contains
              if (lprahman) then
                 call langevinLPR(direction, protocol = 'MCP')
              else
-                call langevin(direction, protocol = 'MCP')
+                call langevin(direction, protocol = 'MCP',qeff=qeff,work=work)
              end if
+             !if (lbigmaster) write(6,'(A,I2,3G15.7)')'potist', direction,Weff*erg2ev,Qeff*erg2ev,work*erg2ev
              ! if LPR call langevinPc
              if (idirectionmcgc == 0) then 
                 weff_npp(ipp)= +Weff
@@ -737,10 +739,10 @@ contains
              if (lprahman) then
                 call langevinLPR(direction, protocol = 'MCP')
              else
-                call langevin(direction, protocol = 'MCP')
+                call langevin(direction, protocol = 'MCP',qeff=qeff,work=work)
              end if
              ! if LPR call langevinPc
-             !             if (lbigmaster) write(6,*)'potist', ipp,potist_n,potist_nplus1
+             !if (lbigmaster) write(6,'(A,I2,3G15.7)')'potist', direction,Weff*erg2ev,Qeff*erg2ev,work*erg2ev
              if (direction == 0) then
                 Weff_npp(ipp)= +weff
                 pot_npp(ipp)= potist_nplus1
@@ -1535,8 +1537,9 @@ contains
              call cryst_to_cart(1,poscenter,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
              postest(:)=-1*(poscenter(:,1)-atconf_Nplus1%xp(:,atconf_Nplus1%im))
              rcpath(ipp)=sqrt(postest(1)**2+postest(2)**2+postest(3)**2)*1d8
-          case(3)
-
+          case(3,33)
+             rcpath(ipp)=abs(atconf_Nplus1%xp(izlins,atconf_Nplus1%im)-zlcenter(izlins)*boxmcgc%at(izlins,izlins))*1d8
+             
           end select
           call calcul_proba_des ! sans doute inutile
           !          do i=1,nbatplus
@@ -2111,13 +2114,13 @@ contains
   end subroutine noise
 
 
-  subroutine langevin( direc, protocol) !LANGEVIN
+  subroutine langevin( direc, protocol,qeff,work) !LANGEVIN
     implicit none
 
     character(len=3), intent(in) :: protocol
     integer :: direc 
     integer :: i,ic, ip
-    real(double) :: Ek_n, Ek_n_plus1, Ek_n_1s4, Ek_n_3s4, dQeff, Qeff,&
+    real(double) :: Ek_n, Ek_n_plus1, Ek_n_1s4, Ek_n_3s4, dQeff,qeff,&
          &dWeff, dWork
     real(double) :: U_0, U_1, U_l_n_m1, U_l_n, H_l_n, H_l_n_m1, H_l_ini,work
 
@@ -2159,6 +2162,7 @@ contains
 
        call lambda(direc, ip, protocol)
        !       lambda_mc = 0
+       !write(6,*)'DIRECI',direc, ip,protocol,lambda_mc
        U_l_n = (1.d0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
 
        H_l_ini = Ek_n + U_l_n 
@@ -2186,6 +2190,7 @@ contains
     DO ip = 1, pas_lambda_mc
        !incrémentation de lambda
        call lambda(direc,ip, protocol)
+       !if (rang==0)write(6,*)'DIRECR',rang,direc, ip,protocol,lambda_mc
        !lambda_mc = dble(ip)/dble(pas_lambda_mc)
 
        if (lbigmaster) then ! Master général
@@ -2295,7 +2300,7 @@ contains
           dWEff  = H_l_n - H_l_n_m1 - dQEff
           WEff   = WEff + dWEff
           work=work+dwork
-          !          write(6,*)'WEFF dW dH dQ',Weff*erg2ev,dweff*erg2ev,( H_l_n - H_l_n_m1)*erg2ev,dqeff*erg2ev
+       !   if (rang==0)  write(6,'(A,3G15.7)')'WEFF dW dH dQ',dweff*erg2ev,dqeff*erg2ev,dwork*erg2ev
           if (protocol == 'MCP') then
              !write(15,'(6A15)') '#lambda_mc ', 'Ek_n_plus1', 'U_l_n',&
              !         &'H_l_n', 'WEff',  'dWEff'
@@ -3553,6 +3558,7 @@ contains
        dist=sqrt(postest(1)**2+postest(2)**2+postest(3)**2)
        normout(:)=postest(:)/dist
     case(33)
+       
        dist=abs(boxmcgc_p%at(izlins,izlins)*(posred(izlins,1)-zlcenter(izlins)))
 !       write(6,*)'decd ',boxmcgc_p%at(izlins,izlins),posred(izlins,1),zlcenter(izlins)
        normout(izlins)=sign(1.,posred(izlins,1)-zlcenter(izlins))
@@ -3567,6 +3573,7 @@ contains
        dist=dsqrt(dist)
        normout=normout/dist
     end select
+
   end subroutine calcdistspring
   subroutine calcforcespring(pos,forceb,potisb)
     real(double),intent(in)::pos(3)
@@ -3577,7 +3584,7 @@ contains
     if (ins_typ.ne.55) then 
        potisb=0.5*k_spring*dist**2
        forceb(:)=-1*k_spring*dist*normout(:)
-!       write(6,*)'DIST',dist,potisb*erg2ev
+!       write(6,'(A,5G17.5)')'DIST',dist,potisb*erg2ev,forceb
     else
        potisb=(1/beta)*log(1+exp(fdfactmcgc*dist))
        forceb(:)=-1*normout(:)*(fdfactmcgc*exp(fdfactmcgc*dist))/((1+exp(fdfactmcgc*dist))*beta)
