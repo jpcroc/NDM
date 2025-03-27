@@ -123,7 +123,7 @@ module montecarlo_mod
   real(double)::k_spring,FEspring
 
   logical lspring
-
+  character*3::protocol_mcc
 contains 
 
   subroutine init_montecarlo(boxndm,rv)
@@ -435,7 +435,7 @@ contains
        end if !bigmaster
 
        !recalculer les forces
-       call lambda(direction, nstep = 0, protocol_name = 'MCP') !initialisation dulambda a 0 pour le premier melange des forces
+       call lambda(direction, nstep = 0, protocol_name = protocol_mcc) !initialisation dulambda a 0 pour le premier melange des forces
        iloc=1;lchange=.false.;ldistrib=.true.
        call calfoMCGC(iloc,lchange,ldistrib)
        ! a la fin de lrestart, tous les procs ont N et N+1 courants pareil + old0 et old1 sont connus + Wprec + direction 
@@ -501,16 +501,16 @@ contains
 
              direction = idirectionmcgc ! direction = 0 on ajoute un atome, = 1 on retire un atome
 
-             call lambda(direction, nstep = 0, protocol_name = 'MCP') !initialisation du lambda a 0 pour le premier melange des forces
+             call lambda(direction, nstep = 0, protocol_name = protocol_mcc) !initialisation du lambda a 0 pour le premier melange des forces
              iloc=1;lchange=.false.;ldistrib=.true.
              call calfoMCGC(iloc,lchange,ldistrib)
 !             write(6,*)'MCCDBG1 ', rang
              !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation
 
              if (lprahman) then
-                call langevinLPR(direction, protocol = 'MCP')
+                call langevinLPR(direction, protocol = protocol_mcc)
              else
-                call langevin(direction, protocol = 'MCP',qeff=qeff,work=work)
+                call langevin(direction, protocol = protocol_mcc,qeff=qeff,work=work)
              end if
              !if (lbigmaster) write(6,'(A,I2,3G15.7)')'potist', direction,Weff*erg2ev,Qeff*erg2ev,work*erg2ev
              ! if LPR call langevinPc
@@ -649,7 +649,11 @@ contains
           end if
        end if
 
-    end if !if sur lrestart
+    end if !if sur lrestart**************************************************************************************
+!    if sur lrestart**************************************************************************************
+!       if sur lrestart**************************************************************************************
+!          if sur lrestart**************************************************************************************
+             
 
     if (lmegamaster) then
        if (dmtype==15) then
@@ -737,9 +741,9 @@ contains
 !             write(6,*)'MCCDBG2 ', rang
              ! pas de langevin
              if (lprahman) then
-                call langevinLPR(direction, protocol = 'MCP')
+                call langevinLPR(direction, protocol = protocol_mcc)
              else
-                call langevin(direction, protocol = 'MCP',qeff=qeff,work=work)
+                call langevin(direction, protocol = protocol_mcc,qeff=qeff,work=work)
              end if
              ! if LPR call langevinPc
              !if (lbigmaster) write(6,'(A,I2,3G15.7)')'potist', direction,Weff*erg2ev,Qeff*erg2ev,work*erg2ev
@@ -2300,15 +2304,15 @@ contains
           dWEff  = H_l_n - H_l_n_m1 - dQEff
           WEff   = WEff + dWEff
           work=work+dwork
-       !   if (rang==0)  write(6,'(A,3G15.7)')'WEFF dW dH dQ',dweff*erg2ev,dqeff*erg2ev,dwork*erg2ev
-          if (protocol == 'MCP') then
+     !     if (rang==0)  write(6,'(A,I6, 5G15.7)')'WEFF dW dH dQ',ip,lambda_mc,Weff*erg2ev, dweff*erg2ev,dqeff*erg2ev,dwork*erg2ev
+!          if (protocol == 'MCP') then
              !write(15,'(6A15)') '#lambda_mc ', 'Ek_n_plus1', 'U_l_n',&
              !         &'H_l_n', 'WEff',  'dWEff'
              !             write(6,'(9G25.16E3)') lambda_mc, Ek_n_plus1*erg2ev,&
              !                       & U_l_n*erg2ev, H_l_n*erg2ev, WEff*erg2ev, work*erg2ev, dWEff*erg2ev,dWORK*erg2eV, dQeff*erg2ev
              !write(*,*) 'lambda_mc ' ,lambda_mc, 'Ek_n_plus1', Ek_n_plus1, 'U_l_n',&
              !            & U_l_n, 'H_l_n', H_l_n, 'Work', Work, 'dWork', dWork
-          end if
+!          end if
        end if
 !       write(6,*)'MCCDBG5 ', rang
     END DO
@@ -2328,14 +2332,25 @@ contains
     !alpha = 1.0 !1.5 !doit etre superieur a 1 pou avoir insertion lente au debut et rapide vers lambda =1
 
     !dans le cas d'un ajout ou d'un retrait, lambda varie de 0 à 1 ou l'inverse
-    if (protocol_name == "MCP") then
+    select case (protocol_name)
+    case("MCP")
+!    if (protocol_name == "MCP") then
        lambda_mc = abs(dble(dir)-(dble(nstep)/dble(pas_lambda_mc)))
        !lambda_mc = (abs(dble(dir)-(dble(nstep)/dble(pas_lambda_mc))))**alpha
        !dans le cas d'un équilibrage, on laisse lambda constant à 0
-    elseif (protocol_name == "eql") then
+    case("eql")!    elseif (protocol_name == "eql") then
        lambda_mc = 0.0
-    end if
-
+    case("cos")
+       if (dir==1) then
+          lambda_mc=1-sin(pi*nstep/(2*pas_lambda_mc))
+       else
+          lambda_mc=1-cos(pi*nstep/(2*pas_lambda_mc))
+       end if
+    case default
+       if (rang==0) write(6,*)"ERROR in protoccol_mcc variable : choose 'MCP' (case sensitive) or 'cos'"
+       call arret_ndm
+    end select
+!    if (rang==0) write(6,*)'LAMBDA',nstep, lambda_mc
   end subroutine lambda
 
 

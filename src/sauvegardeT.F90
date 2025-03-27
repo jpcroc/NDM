@@ -35,7 +35,7 @@ contains
     character::fnamcout*80
     logical, intent(in):: latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
 
-    integer :: lucout, formatsauvmod,formatsauv,im
+    integer :: lucout, formatsauvmod,formatsauv,im,formatsauvw
     logical :: lwax
 
 #ifdef PARA
@@ -46,7 +46,7 @@ contains
     integer :: next_pt
     integer :: i_proc
     integer :: proc_source
-    integer :: im_temp,formatsauvw
+    integer :: im_temp
 
 
 #endif

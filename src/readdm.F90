@@ -44,7 +44,7 @@ contains
          &neb_noise,neb_noise_scale,mdcg_noise_scale,maxneb,deltarmax,nebtype,i_neb_drag
     USE montecarlo_mod, ONLY: pas_lambda_mc,distminat,n_path,lparapath, nparapath,idirectionmcgc, &
          &lbiais_retrait,lbiais_inser, fdmc_1, fdmc_2,nbatplus,itypcalc,R0mcgc,fdfactmcgc,ins_typ,bublcenter,&
-         &typswitch1,typswitch2,izlins,zlcenter,lspring,k_spring
+         &typswitch1,typswitch2,izlins,zlcenter,lspring,k_spring,protocol_mcc
     use ForceMatrix_mod,only: ndecal,decal,lparafm,nparafm,lwritefreq,lwfm
     use Parrinello_Rahman,only:TinitBox
     use constrconf_mod,only: ldecalcor
@@ -97,7 +97,7 @@ contains
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
          &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
-         &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag
+         &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag,protocol_mcc
 
 
     !
@@ -374,6 +374,8 @@ contains
     beta35=1d-10
     gammas=0.999
     gammav=0.9
+
+    protocol_mcc="MCP"
     fdfactmcgc=18.0
     R0mcgc=-1.0
     bublcenter(:)=0.5
@@ -1203,7 +1205,7 @@ contains
              call arret_ndm
           end if
           if (rang==0) then
-             write(6,*)'MCGC starts in direction, idirectionmcgc ', idirectionmcgc
+             write(6,*)'MCGC starts in direction, idirectionmcgc ', idirectionmcgc, " protocol=", protocol_mcc
           end if
 !       end if
 #ifdef PARA

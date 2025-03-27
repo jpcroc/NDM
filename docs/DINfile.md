@@ -281,6 +281,7 @@ lbiais_inser = .false.biais ou non sur les retraits dans le montecarlo
 fdmc_1 = -1000.0param de fermi dirac A DEF PAR UTILISATEUR pour la fct discriminante du biais dans MC
 fdmc_2 = -1000.0valeur devant etre changee
 
+protocl_mcc= "mcp" ! mcp = linear icnrease of the insertion, "cos"= non linear (1-cos ) insertion; (1-sin) desinsertion  
 fdfactmcgc=18.0
 R0mcgc=-1.0
 bublcenter(:)=0.5
