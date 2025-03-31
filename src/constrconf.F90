@@ -5,7 +5,7 @@ module constrconf_mod
 #endif
   USE read_val,only:imm,ipbc,nox,noy,noz
   USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,imm_glob,ldecoup,lperiod,lrestart,rang,&
-       &lvpread,zero,low_limit,lspacendm,rang,dmtype
+       &lvpread,zero,low_limit,lspacendm,rang,dmtype,pseudosc,itypsc
   USE var_pot, ONLY:ntyp,rumax,ipotentiel
   use cryst_to_cart_mod,only:cryst_to_cart
   USE arret_ndm_mod,only: arret_ndm
@@ -272,6 +272,12 @@ contains
     do ic=1,3
        atg(:,ic)=boxrgin%at(:,ic)*lat(ic)
     end do
+    if(itypsc==1) then
+       do ic=1,3
+          atg(:,ic)=boxrgin%at(:,ic)*lat(ic)*pseudosc(ic)
+       end do
+    end if
+
     call box2b%init(atg,ipbc)
 
     call setnox(box2b,cel2b,rum,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
@@ -402,12 +408,19 @@ contains
     integer,intent(in)::lat(3)
     integer,intent(in),optional::immread
 
-    integer::i,ia,ib,ic,icell,imloc,immr
+    integer::i,ia,ib,ic,icell,imloc,immr,ix,iy,iz
 
     real(double)::rvN
     logical :: lprteattrf
+    logical::liniint
     !imtot=lat(1)*lat(2)*lat(3)*atrgin%im
     imloc=lat(1)*lat(2)*lat(3)*atrgin%im
+    if(itypsc==1)then
+       do ic=1,3
+          imloc=imloc*pseudosc(ic)
+       end do
+    end if
+   
     immr=imm_glob
     if (present(immread)) immr=immread
     if (imloc>immread) then
@@ -434,22 +447,82 @@ contains
     end if
 
     !    imtot=imloc
-    i=0
-    do ia = 1,lat(1)
-       do ib = 1,lat(2)
-          do ic = 1,lat(3)
-             do icell = 1, atrgin%im
-                i  = i + 1
-                atrcf%xp(1,i) = (atrgin%xp(1,icell)+float(ia-1))/float(lat(1))
-                atrcf%xp(2,i) = (atrgin%xp(2,icell)+float(ib-1))/float(lat(2))
-                atrcf%xp(3,i) = (atrgin%xp(3,icell)+float(ic-1))/float(lat(3))
-                atrcf%num_at_glob(i)=i
-                atrcf%ityp(i)=atrgin%ityp(icell)
+    select case (itypsc)
+    case(1)
+    !if (any(pseudosc.ne.1)) then
+       call atrcf%lgcheck("from constrconf to build pseudosc")
+       
+       i=0
+      atrcf%lgul(:)=.false.
+       do ix=1, pseudosc(1)
+          do iy=1,pseudosc(2)
+             do iz=1,pseudosc(3)
+                if((ix==1).and.(iy==1).and.(iz==1)) then
+                   liniint=.true.
+                else
+                   liniint=.false.
+                end if
+                do ia = 1,lat(1)
+                   do ib = 1,lat(2)
+                      do ic = 1,lat(3)
+                         do icell = 1, atrgin%im
+                            i  = i + 1
+                            atrcf%xp(1,i) = (atrgin%xp(1,icell)+float(ia-1)+(ix-1)*lat(1))/float(lat(1)*pseudosc(1))
+                            atrcf%xp(2,i) = (atrgin%xp(2,icell)+float(ib-1)+(iy-1)*lat(2))/float(lat(2)*pseudosc(2))
+                            atrcf%xp(3,i) = (atrgin%xp(3,icell)+float(ic-1)+(iz-1)*lat(3))/float(lat(3)*pseudosc(1))
+                            atrcf%num_at_glob(i)=i
+                            atrcf%ityp(i)=atrgin%ityp(icell)
+                            if (liniint)  atrcf%lgul(i)=.true.
+                         end do
+                      end do
+                   end do
+                end do
              end do
           end do
        end do
-    end do
-
+    case(0) 
+       i=0
+       do ia = 1,lat(1)
+          do ib = 1,lat(2)
+             do ic = 1,lat(3)
+                do icell = 1, atrgin%im
+                   i  = i + 1
+                   atrcf%xp(1,i) = (atrgin%xp(1,icell)+float(ia-1))/float(lat(1))
+                   atrcf%xp(2,i) = (atrgin%xp(2,icell)+float(ib-1))/float(lat(2))
+                   atrcf%xp(3,i) = (atrgin%xp(3,icell)+float(ic-1))/float(lat(3))
+                   atrcf%num_at_glob(i)=i
+                   atrcf%ityp(i)=atrgin%ityp(icell)
+                end do
+             end do
+          end do
+       end do
+    case(2)
+       call atrcf%lgcheck("from constrconf to build pseudosc")
+       if (rang==0) write(6,*)'ITYPSC ', itypsc,pseudosc,lat
+       i=0
+       atrcf%lgul(:)=.false.
+       do ia = 1,lat(1)
+          do ib = 1,lat(2)
+             do ic = 1,lat(3)
+                if ((ia.le.pseudosc(1)).and.(ib.le.pseudosc(2)).and.(ic.le.pseudosc(3))) then
+                liniint=.true.
+             else
+                liniint=.false.
+             end if
+                do icell = 1, atrgin%im
+                   i  = i + 1
+                   atrcf%xp(1,i) = (atrgin%xp(1,icell)+float(ia-1))/float(lat(1))
+                   atrcf%xp(2,i) = (atrgin%xp(2,icell)+float(ib-1))/float(lat(2))
+                   atrcf%xp(3,i) = (atrgin%xp(3,icell)+float(ic-1))/float(lat(3))
+                   atrcf%num_at_glob(i)=i
+                   atrcf%ityp(i)=atrgin%ityp(icell)
+                   if (liniint)  atrcf%lgul(i)=.true.
+                end do
+             end do
+          end do
+       end do
+       
+    end select
     return
   end subroutine constr_2gin
 

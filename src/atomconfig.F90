@@ -32,12 +32,14 @@ module atomconfig
      integer,allocatable:: indi(:) ! indice de tous les voisins
      logical, allocatable:: lgul(:)
      integer,allocatable::num_at_glob(:)
+     logical :: lglock
 #ifdef PARA
      integer,allocatable::proc_at(:) ! tableau de taille im_glob total indiquant le numéro du proc qui gère l'atome
      integer::imf=0 ! indice du dernier atome fantome (atomes fantomes entre im+1 et imf
 #endif     
    contains
      procedure, pass::init=>init_atom_config
+     procedure, pass::lgcheck
      procedure, pass::Eegal
      procedure, pass::copy_atom=>copy_atom_b
      procedure, pass::dealloc=>dealloc_atom_config
@@ -301,6 +303,7 @@ contains
     end select
 
     atconf%icaltabt=0
+    atconf%lglock=.false.
   end subroutine init_atom_config
 
   !copie d'un élément
@@ -2826,8 +2829,15 @@ contains
 
   end subroutine distribnag
   
-
-  
+  subroutine lgcheck(atconf,message)
+    class(atom_config)::atconf
+    character(*)::message
+    if (atconf%lglock) then
+       write(6,*)' lgul is already used correct code',rang
+       write(6,*) message
+       call arret_ndm
+    end if
+  end subroutine lgcheck
 end module atomconfig
 
 

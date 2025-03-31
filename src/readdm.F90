@@ -29,7 +29,7 @@ contains
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,nfda,h0,&
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou,iteprtkin&
-         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart&
+         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart,pseudosc,itypsc&
          &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit
 #ifdef LAMMPS_VERSION
      USE gen_com_m, ONLY: energy_conversion_lammps, position_conversion_lammps, pressure_conversion_lammps
@@ -96,7 +96,7 @@ contains
          itesauvinter,units_lammps,lWgin,lvzeroneb,lclimb,nwclimb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
-         &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
+         &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,pseudosc,itypsc,kmin,kmax,iteprtkin,lspecialinit,&
          &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag,protocol_mcc
 
 
@@ -363,7 +363,8 @@ contains
     nparafm=nprocs
     lwfm=.false.
     lwritefreq=.true.
-
+    pseudosc(1:3)=1
+    itypsc=0
 
     ndir=50   !nombre de direction dans steepest descent
     nstep=50  ! nombre de pas dans la minimisation sur une ligne en steepes descent
@@ -1168,6 +1169,13 @@ contains
           write (6,'(a)') '      FORCE Matrix calculation '
           if (ltabvois) write (6,'(a)') '  BE SURE THAT RVOIS>RUE+DECAL'
        end if
+       if (itypsc.ne.0 ) then
+          if (rang==0) then
+             write(6,*)'ITYPSC=',itypsc
+             write (6,'(a,3I3)') '  Pseudo super cell calculation ', pseudosc(:)
+             write (6,'(a,3I3)') ' Be sure imm is large enough and igen equals 0 !'
+          end if
+       end if
 #ifndef MKL
        if (rang==0)then
           write(6,*)"dmtype=19 works with lapack or MKL"
@@ -1591,7 +1599,7 @@ contains
              case(1)
                 if (rang==0)      write(6,*)'MCC N-> N+1 in a sphere',r0mcgc,bublcenter
              case(11)
-                if (rang==0)                write(6,*)'MCC N-> N+1 in a site with spring pos/spring ',bublcenter,kspring
+                if (rang==0) write(6,*)'MCC N-> N+1 in a site with spring pos/spring ',bublcenter,kspring
              case(3)
                 do ic=1,3
                    if (ic==izlins) cycle

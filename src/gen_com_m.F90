@@ -2,7 +2,7 @@ module gen_com_m
   USE T_kind_param_m
   implicit none
 
-
+  integer:: pseudosc(3),itypsc
   integer,target :: rang, rangph, rangml, rangmab, ja_phondy, ja_ml
 !  logical :: parallele
 

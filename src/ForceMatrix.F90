@@ -1,6 +1,7 @@
 module ForceMatrix_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m,only:  lperiod,lenfnam,lspaceNDM,rang,erg2ev,fnam,fnamcout,imm_glob,fnam,lenfnam,iteration
+  USE gen_com_m,only:  lperiod,lenfnam,lspaceNDM,rang,erg2ev,fnam,fnamcout,imm_glob,fnam,lenfnam,iteration,&
+       &pseudosc,lwgin,itypsc
   USE atomconfig,only:atom_config
   USE cellconfig, only:cell_config, caltabtC
   USE var_pot,only:ntyp,cm,gamlt
@@ -89,7 +90,6 @@ contains
     do idecal=-ndecal,ndecal
        if (idecal==0) cycle ! pas de calcul pour décalage=0
        write(6,*)'decal rang ideb ifin',idecal,rang,ideb,ifin
-          write(6,*)lmaster,rang,i,idecal,ideb,ifin
        do i=ideb,ifin
           do ic=1,3
              atfm%xp(ic,i)= atfm%xp(ic,i)+idecal*decal
