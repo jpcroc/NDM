@@ -200,8 +200,8 @@ contains
        do iti=1,ntyp
           if (rhomax(iti)==0.)then
 !             if(rang==0)       write(6,*)'calpoeam Minrho MaxrhoBB ',minrho,maxrho
-!             rhomax(iti)=maxrho*14 ; rhomin(iti)=minrho*14
-             rhomax(iti)=maxrho*34 ; rhomin(iti)=minrho*14
+             rhomax(iti)=maxrho*14 ; rhomin(iti)=minrho*14
+!             rhomax(iti)=maxrho*44 ; rhomin(iti)=minrho*14
           end if
        end do
     case(11)
@@ -224,7 +224,7 @@ contains
        do iti=1,ntyp
           if (rhomax(iti)==0.)then
 !             if(rang==0)       write(6,*)'calpoeam Minrho MaxrhoBB ',minrho,maxrho
-             rhomax(iti)=maxrho*34 ; rhomin(iti)=minrho*14
+             rhomax(iti)=maxrho*14 ; rhomin(iti)=minrho*14
           end if
        end do
        if (rang==0)write(6,*)'rhomm',rhomin,rhomax
@@ -273,7 +273,7 @@ contains
        do iti=1,ntyp
           if (rhomax(iti)==0.)then
              !             if(rang==0)       write(6,*)'calpoeam Minrho MaxrhoBB ',minrho,maxrho
-             rhomax(iti)=maxrho*34 ; rhomin(iti)=minrho*14
+             rhomax(iti)=maxrho*14 ; rhomin(iti)=minrho*14
           end if
        end do
     case default
@@ -338,7 +338,7 @@ contains
        rhomin=0
        do iti=1,ntyp
           if (typ_and_pot(iti,ipotentiel).eqv..false.) cycle
-          !     if (rang==0) write(6,*)'type ',iti
+         ! if (rang==0) write(6,*)'type ',iti,rhomin(iti),rhomax(iti)
           ktorho(iti)=rhomax(iti)/ngrid
           do k=1,ngrid
              rhok=(k*ktorho(iti)) 
