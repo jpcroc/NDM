@@ -218,7 +218,8 @@ contains
     if (rang==0) then
        write(6,*)'***************PATH MONTE-CARLO*****************'
        write(6,'(A,I6,A,I6,A,I4)')'pas_lambda=',pas_lambda_mc,' npath=',n_path,' naparapath=',nparapath
-       write(6,'(A,I3,A)')'ins_typ=',ins_typ, ' (0=random; 1=sph 2=switch type, 3=slice, 11 site+spring, 33 slice +spring, 44 line+spring), 55 sphere +spring'
+       write(6,'(A,I3,A)')'ins_typ=',ins_typ, &
+            &' (0=random; 1=sph 2=switch type, 3=slice, 11 site+spring, 33 slice +spring, 44 line+spring), 55 sphere +spring'
        write(6,*)'lbiais_retrait , lbiais_inser ',lbiais_retrait,lbiais_inser
        if (lbiais_inser) then
           select case(ins_typ)
@@ -256,7 +257,8 @@ contains
        end select
        if (rang==0) then
           write(6,*)'***SPRING CALCULATION***'
-          write(6,'(A)')'Free energy of the spring to ADD to the calculated chamical potential at the very end (in eV) (second value is better if non zero)'
+          write(6,'(A)')'Free energy of the spring to ADD to &
+&the calculated chamical potential at the very end (in eV) (second value is better if non zero)'
           write(6,*)'FEspring=',FEspring,fe2
        end if
     end if
@@ -1590,7 +1592,8 @@ contains
        rd=sqrt(postest(1)**2+postest(2)**2+postest(3)**2)
        pinser= rd**2/(1+exp(fdfactmcgc*(rd-R0mcgc)))
     case(3)
-       distzl=abs(ZLcenter(izlins)-dot_product(xpt,boxmcgc_p%as(:,izlins))/norm2(boxmcgc_p%as(:,izlins)))*norm2(boxmcgc_p%as(:,izlins))
+       distzl=abs(ZLcenter(izlins)-dot_product(xpt,boxmcgc_p%as(:,izlins))&
+            &/norm2(boxmcgc_p%as(:,izlins)))*norm2(boxmcgc_p%as(:,izlins))
        pinser=1/(1+exp(fdfactmcgc*(distzl-R0mcgc)))
        
     case default
@@ -2430,9 +2433,9 @@ contains
     character :: extension*4
     logical ::lc2d
 
-#ifdef LAMMPS_VERSION
+
      character*80::namef
-#endif
+
  
     logical::lwrite
     real(double)::pins
@@ -2514,9 +2517,10 @@ contains
        else
           if (ipp==1) lc2d=.true.
        end if
+
        if (lc2d) then
           call atconf_nplus1%send2all(0,paramcgc%mpi_orig)
-          if (lbigmaster) then
+          if (lmaster) then
              !           write(6,*)'write configuration N+1  to confNP1.XXX.lmp'
              lwrite=.true.
           else
@@ -2524,8 +2528,44 @@ contains
           end if
           write(extension,'(i4.4)') ipp
 
-          call config2data (atconf_nplus1%imm,atconf_nplus1%im,&
-               atconf_nplus1%xp,atconf_nplus1%ityp,boxmcgc_p%at,ntyp,lwrite,filename='confNP1.'//extension//'.lmp') ! PARAPATH CHANGER LE NOM AVEC INDICE DE LA BOITE
+
+
+
+          if (lparapath) then
+             !          if(parapath%image+1=ipp) then ! assuré par lc2d
+             if(paramcgc%image==0) then !procs N
+
+
+                write(extension,'(i4.4)') ipp
+                namef='confN.'//extension//'.lmp'
+                call config2data (atconf_n%imm,atconf_n%im,&
+               atconf_n%xp,atconf_n%ityp,boxmcgc_p%at,ntyp,lwrite,filename=namef) ! PARAPATH CHANGER LE NOM AVEC INDICE DE LA BOITE
+
+                !              call init_lammps('in.lammps.N')
+             else !procs N+1
+                write(extension,'(i4.4)') ipp
+                namef='confNP1.'//extension//'.lmp'
+                call config2data (atconf_nplus1%imm,atconf_nplus1%im,&
+               atconf_nplus1%xp,atconf_nplus1%ityp,boxmcgc_p%at,ntyp,lwrite,filename=namef) ! PARAPATH CHANGER LE NOM AVEC INDICE DE LA BOITE
+
+             end if
+             !          end if
+          else
+             !           write(6,*)'COUCOU',rang
+             if(paramcgc%image==0) then !procs N
+                call config2data (atconf_n%imm,atconf_n%im,&
+               atconf_n%xp,atconf_n%ityp,boxmcgc_p%at,ntyp,lwrite,filename='confN.lmp') ! PARAPATH CHANGER LE NOM AVEC INDICE DE LA BOITE
+
+             else !procs N+1
+                call config2data (atconf_nplus1%imm,atconf_nplus1%im,&
+               atconf_nplus1%xp,atconf_nplus1%ityp,boxmcgc_p%at,ntyp,lwrite,filename='confNP1.lmp') ! PARAPATH CHANGER LE NOM AVEC INDICE DE LA BOITE
+
+             end if
+          end if
+
+
+
+          
 
 
 #ifdef PARA
@@ -2966,7 +3006,8 @@ contains
          write(6,*)
          write(6,*)'closest atom',distm2,icl,atconf_n%ityp(icl)
          write(6,*)'bubl cent',bublcenter
-         write(6,*)'atclose',atconf_n%xp(1,icl)/boxmcgc_p%zl(1),atconf_n%xp(2,icl)/boxmcgc_p%zl(2),atconf_n%xp(3,icl)/boxmcgc_p%zl(3)
+         write(6,*)'atclose',atconf_n%xp(1,icl)/boxmcgc_p%zl(1),&
+              &atconf_n%xp(2,icl)/boxmcgc_p%zl(2),atconf_n%xp(3,icl)/boxmcgc_p%zl(3)
          write(6,*)
       end if
     end block
@@ -3576,7 +3617,7 @@ contains
        
        dist=abs(boxmcgc_p%at(izlins,izlins)*(posred(izlins,1)-zlcenter(izlins)))
 !       write(6,*)'decd ',boxmcgc_p%at(izlins,izlins),posred(izlins,1),zlcenter(izlins)
-       normout(izlins)=sign(1.,posred(izlins,1)-zlcenter(izlins))
+       normout(izlins)=sign(1d0,posred(izlins,1)-zlcenter(izlins))
     case(44)
        dist=0
        do ic=1,3

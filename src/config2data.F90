@@ -140,8 +140,10 @@ contains
           !             & q(ityp(i)), xp(1,i)/position_conversion_lammps,xp(2,i)/position_conversion_lammps,xp(3,i)/position_conversion_lammps
        end do
     end select
-    if (lwrite)    close (63)
-
+    if (lwrite)then
+       call flush
+       close (63)
+    end if
   end subroutine config2data
 
 

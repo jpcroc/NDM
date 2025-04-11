@@ -123,7 +123,7 @@ contains
           end if
           call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
           ncore=0
-          call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
+!          call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
           !          CALL fin allocation CELL et FIN DIVID
 
        end if

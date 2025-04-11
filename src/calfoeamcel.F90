@@ -130,7 +130,7 @@ contains
 
            call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp,indcv=i1, lperiod=boxcf%lperiod,rum=rue,linter=linter,dist=r)
            if(.not.linter) cycle
-             k=Int(r*inv_ktor)
+             k=min(ngrid,Int(r*inv_ktor))
              gradij(1:3) = dxp(1:3)/r
              drk=r-k*ktor
              !             rhoj = eamrho(1,itj,k) + drk*( eamrho(2,itj,k) + drk*( eamrho(3,itj,k) + drk*eamrho(4,itj,k) ) )  !rho de j sur i
@@ -198,14 +198,21 @@ contains
     loop2at1: do i=1,atcf%im
        if (typ_and_pot(atcf%ityp(i),ipotentiel).eqv..false.)cycle
        iti=atcf%ityp(i)
-       k=Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti))
+    
+!       k=Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti))
+       k=min(ngrid,Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti)))
+!       if (tabdensity(i).gt.rhmax) then
+!          rhmax=tabdensity(i)
+!          imax=i; kmax=k ; itimax=iti
+!       end if
+       
 !       write(6,*)i,iti,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
 !       write(110,'(2I8,3G17.8)')i,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
-       if(k.gt.ngrid) then
-          write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
-          write(6,*)'densityi',k,ngrid,densityi
-          call arret_ndm
-       end if
+!       if(k.gt.ngrid) then
+!          write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo OU MAX DENS POUR CRG '
+!          write(6,*)'densityi',k,ngrid,tabdensity(i)
+!          call arret_ndm
+!       end if
        drk=tabdensity(i)-(rhomin(iti)+k*ktorho(iti))
        Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
 !       write(120,'(2I8,4G17.8)')i,k, eamglue(1,iti,k) , eamglue(2,iti,k),eamglue(3,iti,k),eamglue(4,iti,k)
@@ -220,7 +227,8 @@ contains
 
        tabdensity(i) = eamglue(2,iti,k) + drk*( 2.0*eamglue(3,iti,k) + 3.0*drk*eamglue(4,iti,k) )
     end do loop2at1
-    
+!    write(6,'(A,2I2,I4,G17.5,I7)')'rhm', rang, itimax,imax,rhmax,kmax
+!  end block
 
 
 #ifdef PARA

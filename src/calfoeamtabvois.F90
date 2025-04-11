@@ -99,7 +99,8 @@ contains
 
           if (r.eq.zero) & 
                write(*,*) '1. WARNING IN calfoeamtabvois TWO ATOMS VERY CLOSE i ,j , dist(angst)', i ,j , r*angst
-          k=Int(r*inv_ktor)
+!          k=Int(r*inv_ktor)
+          k=min(ngrid,Int(r*inv_ktor))
           drk=r-k*ktor
 
           !densites sur i et j
@@ -119,7 +120,8 @@ contains
     ! calcul et stockage de Eembi et dEembi
     loop2at1: do i=1,atcf%im
        iti=atcf%ityp(i)
-       k=Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti))
+!       k=Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti))
+       k=min(ngrid,Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti)))
        if(k.gt.ngrid) then
           write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
           write(6,*)'densityi',k,ngrid,tabdensity(i), rhomin(iti), inv_ktorho(iti), densityi

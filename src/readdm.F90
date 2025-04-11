@@ -1597,33 +1597,33 @@ contains
           
              select case (ins_typ)
              case(1)
-                if (rang==0)      write(6,*)'MCC N-> N+1 in a sphere',r0mcgc,bublcenter
+ if (rang==0)      write(6,*)'MCC N-> N+1 in a sphere',r0mcgc,bublcenter
              case(11)
                 if (rang==0) write(6,*)'MCC N-> N+1 in a site with spring pos/spring ',bublcenter,kspring
              case(3)
                 do ic=1,3
                    if (ic==izlins) cycle
                    if ((zlcenter(ic).ne.0).or.(izlins==0)) then
-                      if (rang==0)                      write(6,*)'ins_typ,izlins zlcenter inconsitstency 3', ins_typ,izlins,zlcenter(:)
+  if (rang==0)         write(6,*)'ins_typ,izlins zlcenter inconsitstency 3', ins_typ,izlins,zlcenter(:)
                       call arret_ndm
                    end if
                 end do
-                if (rang==0)                write(6,*)'MCC N-> N+1 in a slice ',r0mcgc,izlins,zlcenter(izlins)
+  if (rang==0)    write(6,*)'MCC N-> N+1 in a slice ',r0mcgc,izlins,zlcenter(izlins)
              case(33)
                 do ic=1,3
                    if (ic==izlins) cycle
                    if ((zlcenter(ic).ne.0).or.(izlins==0)) then
-                      if (rang==0)                      write(6,*)'ins_typ,izlins zlcenter inconsitstency 33', ins_typ,izlins,zlcenter(:)
+       if (rang==0)  write(6,*)'ins_typ,izlins zlcenter inconsitstency 33', ins_typ,izlins,zlcenter(:)
                       call arret_ndm
                    end if
                 end do
-                if (rang==0)                write(6,*)'MCC N-> N+1 in a plane with spring norm/pos/spring ',izlins,zlcenter(izlins),kspring
+ if (rang==0)          write(6,*)'MCC N-> N+1 in a plane with spring norm/pos/spring ',izlins,zlcenter(izlins),kspring
              case(44)
                 if ((zlcenter(izlins)==0).or.(izlins==0)) then
-                   if (rang==0)                   write(6,*)'ins_typ,izlins zlcenter inconsitstency 44 ', ins_typ,izlins,zlcenter(:)
+      if (rang==0)     write(6,*)'ins_typ,izlins zlcenter inconsitstency 44 ', ins_typ,izlins,zlcenter(:)
                    call arret_ndm
                 end if
-                if (rang==0)                write(6,*)'MCC N-> N+1 in a plane with spring norm/pos/spring ',izlins,zlcenter(izlins),kspring
+ if (rang==0)   write(6,*)'MCC N-> N+1 in a plane with spring norm/pos/spring ',izlins,zlcenter(izlins),kspring
              case (55)
                 if (rang==0)      write(6,*)'MCC N-> N+1 in a sphere with a spring',r0mcgc,bublcenter, kspring
              end select
