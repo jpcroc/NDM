@@ -34,19 +34,12 @@
 
 using namespace LAMMPS_NS;
 
-#ifdef PARA
 void lammps_open_fortran_wrapper (int argc, char **argv,
       MPI_Fint communicator, void **ptr)
 {
    MPI_Comm C_communicator = MPI_Comm_f2c (communicator);
    lammps_open (argc, argv, C_communicator, ptr);
 }
-#else
-void lammps_open_fortran_wrapper (int argc, char **argv,
-      MPI_Fint communicator, void **ptr)
-{
-}
-#endif
 
 int lammps_get_ntypes (void *ptr)
 {

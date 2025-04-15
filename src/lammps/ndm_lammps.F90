@@ -81,10 +81,10 @@ subroutine init_lammps(inplammps,iopt)
     call MPI_comm_create(MPI_COMM_WORLD, grp_space,MPI_COMM_lammps,ierr)
     call MPI_COMM_SIZE( MPI_COMM_lammps, npl, ierr )
      call lammps_open('lmp -log none -screen none', MPI_COMM_lammps, lmp)
-     write(*,*) "LAMMPS OPEN_MPI_",rang, INPUT_LAMMPS_FILE
+     if (rang==0)write(*,*) "LAMMPS OPEN_MPI_",rang, INPUT_LAMMPS_FILE
      call lammps_file (lmp, INPUT_LAMMPS_FILE)
      num=lammps_get_natoms(lmp)
-     write(6,*)'NATOM LAMMPS',  INPUT_LAMMPS_FILE,num
+     write(6,*)'NATOM LAMMPS',  rang,num
 
 !!$  end if
 #else

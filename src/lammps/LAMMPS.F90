@@ -344,9 +344,11 @@ module LAMMPS
 
       function lammps_get_natoms (ptr) result (natoms) &
       bind (C, name='lammps_get_natoms')
-         import :: C_ptr, C_int
+!GATSBY         import :: C_ptr, C_int
+         import :: C_ptr, C_double
          type (C_ptr), value :: ptr
-         integer (C_int) :: natoms
+!GATSBY         integer (C_int) :: natoms
+         real (C_double) :: natoms
       end function lammps_get_natoms
 
       function lammps_actual_set_variable (ptr, name, str) result (err) &
