@@ -34,3 +34,7 @@ General driving file for the MD calculation
 This file is a fortran namelist with a few mandatory and many optional variables.
 See specific help file 
 
+### .potin file (e.g. CRG.potin, eamtab.potin, etc.)
+Potential file. Eah potential form has its own input format.  
+See specific help file : potential.potin.md.  
+

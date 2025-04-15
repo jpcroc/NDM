@@ -78,7 +78,7 @@ timemax=1d25 maximum simulated time in fs
 4=Morelon UO2,  
 5  Morse term,  
 6=Stillinger Weber a  la Vashista  
- **7 tabulated pair (with or withoit charge)   **    
+ **7 tabulated pair (with or without charge)   **    
  **10 EAM;**  
  12 ZrC JuLi(+Tersoff Doan)  ;  
  13 Tersoff coupure COS;  
