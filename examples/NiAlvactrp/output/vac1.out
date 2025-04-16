@@ -1,0 +1,163 @@
+ Process            0  of            1  is alive
+ nom fichier din=
+ NiAlvac1.din                                                                   
+  
+ 
+ coordinates can get out of  0-1
+ along  a
+ along  b
+ along  c
+ 
+ -------- caracteristiques du run DM--------23
+     FIRE Quenching Vcst
+ generation du crystal ; puis run
+ 
+      ANALYSES 
+ itetemp=         100  iteprtsigma=           1
+ 
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=        1000 timemax=    10000000000.0000       itab=           1 
+  itetimestep=          -1
+tinit=      -1.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+ 
+ 
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+ rang readdm iseed            0  1827743111
+ 
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+ 
+ 
+ POTENTIEL EAM
+ 
+ NTYP NPAIR            2           3
+ Types d_atomes pour ce potentiel:
+ CM, masse,type, NUMERO DU TYPE D ATOME
+   1   56.693   28.000  Ni 
+   2   26.982   13.000  Al 
+ nb de read pairs           3
+ nptmax in the max number of points on grid          6300
+ EAM           1           1
+ EAM number of points in potin and the step        6300  7.957506165079365E-004
+ dens           1           1
+ RHO potin points and the step:         6300  1.000000000000000E-003
+ EAM           2           2
+ EAM number of points in potin and the step        6300  7.957506165079365E-004
+ dens           2           2
+ RHO potin points and the step:         6300  1.000000000000000E-003
+ paire eam ; paire complete           1           1
+ rep
+ paire eam ; paire complete           2           2
+ rep
+ paire eam ; paire complete           3           3
+ rep
+ 
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+ imm,imm_glob,nprocspace        1050        1050           1
+ 
+ **********construction du reseau************
+ repetition de mailles           1           1           1
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.2220E-06/  0.6300E-07) = 3
+  noy = Int(   0.2220E-06/  0.6300E-07) = 3
+  noz = Int(   0.2220E-06/  0.6300E-07) = 3
+celsizes   0.7399905E-07  0.7399905E-07  0.7399905E-07
+NiAlvac1.gin                                                                    volume= 0.10940628D-19 cm3  0.10940628D+05 Ang3
+ natperc im/noxyz         111          37
+ ltabvois F
+ 
+ -------- boite de simulation ------
+ nombre d atomes =        1023
+vecteur  1      22.199716       0.000000       0.000000
+vecteur  2       0.000000      22.199716       0.000000
+vecteur  3       0.000000       0.000000      22.199716
+         511  atomes de type           1
+         512  atomes de type           2
+ 
+  -------------------------------------------------------------------
+              2nd step of potential initialization , dependancy on box size
+ calpoeam ktorho and the inverse:   2.506216566691746E-004
+  2.506216566691746E-004   3990.07816519232        3990.07816519232     
+ calpoeam ktorho and the inverse:   2.506216566691746E-004
+  2.506216566691746E-004   3990.07816519232        3990.07816519232     
+ ***** FIRST PREMIERE ITERATION  ***        1000   10000000000.0000     
+TR: force max, energy     1    0.326650724090595E+00   -0.458995087844341E+04
+TR: force max, energy     2    0.326045527337358E+00   -0.458995136053353E+04
+TR: force max, energy     3    0.325186340698392E+00   -0.458995208137071E+04
+TR: force max, energy     4    0.323797253319685E+00   -0.458995315796467E+04
+TR: force max, energy     5    0.322065409619467E+00   -0.458995452510990E+04
+TR: force max, energy     6    0.320031346910169E+00   -0.458995620634824E+04
+TR: force max, energy     7    0.317601501085196E+00   -0.458995817909967E+04
+TR: force max, energy     8    0.314473961764593E+00   -0.458996071711697E+04
+TR: force max, energy     9    0.310529533524216E+00   -0.458996381591046E+04
+TR: force max, energy    10    0.305740333777714E+00   -0.458996763036816E+04
+TR: force max, energy    11    0.299727260503697E+00   -0.458997225052317E+04
+TR: force max, energy    12    0.292441186198017E+00   -0.458997780920494E+04
+TR: force max, energy    13    0.283689355380185E+00   -0.458998442195583E+04
+TR: force max, energy    14    0.273000694916854E+00   -0.458999220412002E+04
+TR: force max, energy    15    0.260032105661064E+00   -0.459000124340956E+04
+TR: force max, energy    16    0.244917686375681E+00   -0.459001158884082E+04
+TR: force max, energy    17    0.226676803375517E+00   -0.459002322002327E+04
+TR: force max, energy    18    0.205446160093668E+00   -0.459003602306512E+04
+TR: force max, energy    19    0.202104561308153E+00   -0.459004975785441E+04
+TR: force max, energy    20    0.209026594063714E+00   -0.459006404135268E+04
+TR: force max, energy    21    0.214696690403248E+00   -0.459007834149703E+04
+TR: force max, energy    22    0.217948789885071E+00   -0.459009201395321E+04
+TR: force max, energy    23    0.216854235008604E+00   -0.459010437964715E+04
+TR: force max, energy    24    0.208948282840943E+00   -0.459011486442772E+04
+TR: force max, energy    25    0.191959166936321E+00   -0.459012315513529E+04
+TR: force max, energy    26    0.163134046256512E+00   -0.459012929882952E+04
+TR: force max, energy    27    0.120068421706736E+00   -0.459013361889948E+04
+TR: force max, energy    28    0.950165478285990E-01   -0.459013644665510E+04
+TR: force max, energy    29    0.961450688565094E-01   -0.459013777005791E+04
+TR: force max, energy    30    0.836436251725776E-01   -0.459013705454665E+04
+TR: force max, energy    31    0.154500956616600E+00   -0.459013361918331E+04
+TR: force max, energy    32    0.151554646468291E+00   -0.459013453096375E+04
+TR: force max, energy    33    0.150846066896499E+00   -0.459013474743907E+04
+TR: force max, energy    34    0.148240469726027E+00   -0.459013550719385E+04
+TR: force max, energy    35    0.145705850498357E+00   -0.459013618382612E+04
+TR: force max, energy    36    0.142390526531890E+00   -0.459013706547506E+04
+TR: force max, energy    37    0.138659563928748E+00   -0.459013798749635E+04
+TR: force max, energy    38    0.134376097111586E+00   -0.459013900550355E+04
+TR: force max, energy    39    0.129083513945452E+00   -0.459014018592806E+04
+TR: force max, energy    40    0.122579156479313E+00   -0.459014149561884E+04
+TR: force max, energy    41    0.114700213119856E+00   -0.459014293728720E+04
+TR: force max, energy    42    0.105802350493660E+00   -0.459014447634437E+04
+TR: force max, energy    43    0.948028379949500E-01   -0.459014607230660E+04
+TR: force max, energy    44    0.822758240313865E-01   -0.459014766125925E+04
+TR: force max, energy    45    0.681154347291391E-01   -0.459014916277964E+04
+TR: force max, energy    46    0.521881374302828E-01   -0.459015048349055E+04
+TR: force max, energy    47    0.346387503294355E-01   -0.459015152416831E+04
+TR: force max, energy    48    0.160813587598797E-01   -0.459015220087169E+04
+TR: force max, energy    49    0.173062824463746E-01   -0.459015246048005E+04
+TR: force max, energy    50    0.219161519623804E-01   -0.459015230077847E+04
+TR: force max, energy    51    0.382921483990130E-01   -0.459015178181975E+04
+TR: force max, energy    52    0.378948131501669E-01   -0.459015184093958E+04
+TR: force max, energy    53    0.378371559535250E-01   -0.459015185522331E+04
+TR: force max, energy    54    0.374135557627781E-01   -0.459015190531047E+04
+TR: force max, energy    55    0.370102924571200E-01   -0.459015195036783E+04
+TR: force max, energy    56    0.364091462427892E-01   -0.459015200942376E+04
+TR: force max, energy    57    0.357323102331562E-01   -0.459015207195489E+04
+TR: force max, energy    58    0.350864362056275E-01   -0.459015214197538E+04
+TR: force max, energy    59    0.341313451547737E-01   -0.459015222489714E+04
+TR: force max, energy    60    0.329091399313195E-01   -0.459015231862069E+04
+TR: force max, energy    61    0.314991199474376E-01   -0.459015242389968E+04
+TR: force max, energy    62    0.297454244765724E-01   -0.459015253952646E+04
+TR: force max, energy    63    0.277877304098708E-01   -0.459015266336931E+04
+TR: force max, energy    64    0.254219596582211E-01   -0.459015279290904E+04
+TR: force max, energy    65    0.225214142796130E-01   -0.459015292125012E+04
+TR: force max, energy    66    0.190767117940221E-01   -0.459015304236290E+04
+TR: force max, energy    67    0.150906919314742E-01   -0.459015314686770E+04
+TR: force max, energy    68    0.108243883057997E-01   -0.459015322673786E+04
+TR: force max, energy    69    0.565199885367875E-02   -0.459015327405137E+04
+ *******Derniere iteration **** 
+ 
+ 
+ ####### END OF RUN  ######## =           69   time =   0.000000000000000E+000

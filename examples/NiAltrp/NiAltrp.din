@@ -1,0 +1,19 @@
+ &input
+	ipotentiel=10 ! eam
+	imm=1050 ! array size
+	igen=0  !gin
+	dmtype=3!,lpcube=.true. !  Fire volume relaxtion
+	lpr=.true.,lpcon2=.true. ! damping on volume oscillation
+	itmax=1000 !max number of iterations
+	fpstop=0.01 ! force stopping criterion eV/Ang
+	sigstop = 0.1 ! stress stopping criterion	
+	itetemp=10,itesauv=1000
+	itesigma=10,tinit=600.0
+	iterasmol=0,ivisu=4
+	lwgin=.true.
+	lperiod=.true.
+ &end
+	itetabvois=10000
+	ltabvois=.true. ,	rvois=6.1
+	ltabvois=.true.,rvois=7.
+	rvois=7.9

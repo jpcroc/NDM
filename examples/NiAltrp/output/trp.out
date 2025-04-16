@@ -1,0 +1,116 @@
+ Process            0  of            1  is alive
+ nom fichier din=
+ NiAltrp.din                                                                    
+  
+ 
+ -------- caracteristiques du run DM-------- 3
+     GRADIENT CONJUGUE STANDARD 
+ generation du crystal ; puis run
+ 
+      ANALYSES 
+ itetemp=          10  iteprtsigma=          10
+ 
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=        1000 timemax=    10000000000.0000       itab=           1 
+  itetimestep=          -1
+tinit=     600.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+ 
+ 
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+ rang readdm iseed            0  1866501615
+ 
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+ 
+ 
+ POTENTIEL EAM
+ 
+ NTYP NPAIR            2           3
+ Types d_atomes pour ce potentiel:
+ CM, masse,type, NUMERO DU TYPE D ATOME
+   1   56.693   28.000  Ni 
+   2   26.982   13.000  Al 
+ nb de read pairs           3
+ nptmax in the max number of points on grid          6300
+ EAM           1           1
+ EAM number of points in potin and the step        6300  7.957506165079365E-004
+ dens           1           1
+ RHO potin points and the step:         6300  1.000000000000000E-003
+ EAM           2           2
+ EAM number of points in potin and the step        6300  7.957506165079365E-004
+ dens           2           2
+ RHO potin points and the step:         6300  1.000000000000000E-003
+ paire eam ; paire complete           1           1
+ rep
+ paire eam ; paire complete           2           2
+ rep
+ paire eam ; paire complete           3           3
+ rep
+ 
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+ imm,imm_glob,nprocspace        1050        1050           1
+ 
+ **********construction du reseau************
+ repetition de mailles           8           8           8
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.2220E-06/  0.6300E-07) = 3
+  noy = Int(   0.2220E-06/  0.6300E-07) = 3
+  noz = Int(   0.2220E-06/  0.6300E-07) = 3
+celsizes   0.7400000E-07  0.7400000E-07  0.7400000E-07
+NiAltrp.gin                                                                     volume= 0.10941048D-19 cm3  0.10941048D+05 Ang3
+ natperc im/noxyz         111          37
+ ltabvois F
+ 
+ -------- boite de simulation ------
+ nombre d atomes =        1024
+vecteur  1      22.200000       0.000000       0.000000
+vecteur  2       0.000000      22.200000       0.000000
+vecteur  3       0.000000       0.000000      22.200000
+         512  atomes de type           1
+         512  atomes de type           2
+ 
+  -------------------------------------------------------------------
+              2nd step of potential initialization , dependancy on box size
+ calpoeam ktorho and the inverse:   2.506216566691746E-004
+  2.506216566691746E-004   3990.07816519232        3990.07816519232     
+ calpoeam ktorho and the inverse:   2.506216566691746E-004
+  2.506216566691746E-004   3990.07816519232        3990.07816519232     
+ 
+******CONJUGATE GRADIENT *** beta init 0.10000000E-05
+  FPSTOP=  1.000000000000000E-002 -0.100000001490116     
+ NCALLS      ENERGY (eV)       FORCTOT         FORMAX        FORCESIGMA(eV/Ang)       SIGMA(kbar)   ***      energy gain eV]
+   1  -0.45962946165E+04   0.11031118568E-11   0.52235586439E-13   0.55665947102E-02   0.11294932859E+03 ****   0.00000000000E+00
+ NO NEED TO RELAX
+ 
+******CONJUGATE GRADIENT VARIABLE VOLUME *** beta init 0.33333333E-06
+  SIGSTOP=>FPSTOP=  0.100000000000000       4.928409001023423E-006
+ NCALLS      ENERGY (eV)       FORCTOT         FORMAX            FORCESIGMA(eV/Ang)         SIGMA(kbar)   ***      energy gain eV]
+   2  -0.45962946165E+04   0.11031118568E-11   0.52235586439E-13   0.55665947102E-02   0.11294932859E+03
+   3  -0.46113518724E+04   0.18297953864E-11   0.10201749466E-12   0.31450668441E-02   0.62761630728E+02 ****   0.15057255949E+02
+   4  -0.46166036887E+04   0.19641531251E-11   0.98641843967E-13   0.17601466589E-02   0.34767614185E+02 ****   0.52518162401E+01
+   5  -0.46190425378E+04   0.25229773345E-11   0.12616414049E-12   0.31967400034E-03   0.62115460884E+01 ****   0.24388491527E+01
+   6  -0.46086673299E+04   0.26370020141E-11   0.11683231531E-12   0.33219156281E-02   0.62872567474E+02
+   7  -0.46166036890E+04   0.34463874423E-11   0.15183042132E-12   0.17601465018E-02   0.34767611047E+02
+   8  -0.46170772166E+04   0.37408297190E-11   0.19324005501E-12   0.14994585001E-02   0.28843445104E+02
+   9  -0.46189604202E+04   0.45573740606E-11   0.27791731000E-12   0.44628425804E-03   0.87261336483E+01
+  10  -0.46185922132E+04   0.47682636263E-11   0.29823105294E-12   0.77794823873E-03   0.15058010246E+02
+  11  -0.46191312131E+04   0.48493657260E-11   0.30652401535E-12   0.35479885905E-04   0.69105362754E+00 ****   0.88675269095E-01
+  12  -0.46191123470E+04   0.45873336698E-11   0.28798344879E-12   0.15345881038E-03   0.29933877111E+01
+  13  -0.46191146395E+04   0.48199360149E-11   0.29021218655E-12   0.14157487439E-03   0.27549861695E+01
+  14  -0.46191307580E+04   0.47541791335E-11   0.26297882925E-12   0.39780074805E-04   0.77524709644E+00
+  15  -0.46191274845E+04   0.42102595614E-11   0.22299508437E-12   0.74778617193E-04   0.14559805470E+01
+  16  -0.46191320625E+04   0.39758443325E-11   0.22173171548E-12   0.16492608696E-05   0.32130129151E-01 ****   0.84938691148E-03
+ >>> minimization idirection; lOVER; LDIROK; beta   1 T F    0.8196601362E-06
+ RELAXED AFTER            1  DIRECTIONS and           16  force calculations
+ MINIMUM REACHED after           16  force calculations
+ *****************ENERGY erg eV  -7.400664670722740E-009  -4619.13206247926     
+ 
+ 
+ ####### END OF RUN  ######## =           16   time =   0.000000000000000E+000

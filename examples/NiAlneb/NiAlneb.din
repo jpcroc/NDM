@@ -1,0 +1,18 @@
+ &input
+	ipotentiel=10 ! eam
+	imm=1050 ! array size
+	igen=0  !gin
+	dmtype=9 ! NEB
+!	itmax=1000 !max number of iterations
+	fpstop=0.03 ! force stopping criterion eV/Ang
+	iterasmol=0,ivisu=4
+	lwgin=.true.
+	lperiod=.false.
+	nebtype=2
+	maxneb=100
+	npath=11,lclimb=.true.
+ &end
+	itetabvois=10000
+	ltabvois=.true. ,	rvois=6.1
+	ltabvois=.true.,rvois=7.
+	rvois=7.9

@@ -12,6 +12,8 @@ Initial and Final  configurations are in deb_neb.gin and fin_neb.gin respectivel
 One thus needs the following files :
 neb.din, deb_neb.gin, fin_neb.gin, "potential".potin files (lammps potential files), name.in.  
 
+Be careful to respect a soncistent order of atoms between deb and fin structures !  
+
 ### din file
 The din file must contain  
 dmtype=9 !this triggers NEB calculation  

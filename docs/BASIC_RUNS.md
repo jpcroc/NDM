@@ -66,6 +66,7 @@ lpconx = .FALSE.  T: the relaxation is allowed only along the X axis
 lpcony = .FALSE.  T: the relaxation is allowed only along the  Y  axis  
 lpconz = .FALSE.  T:  the relaxation is allowed only along the  Z axis  
 lpcube=.false. !  T: volume relaxation only (a cube remains a cube).  
+sigstop= 0.05 kbar is tbe consergence criterion for stress.  
 
 ### NPT
 Combine lpr and a cst temperature algo. Any combination should work (hopefully).
