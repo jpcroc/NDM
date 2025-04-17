@@ -194,8 +194,8 @@ contains
           !        do k=1,ngrid 
           !           write(712,*)xsp(k),eamrho(1,iti,k),eamrho(2,iti,k)
           !        end do
-          if (rang==0) write(*,*) 'calpoeam RHO MIN: ', minrho
-          if (rang==0) write(*,*) 'calpoeam RHO MAX: ', maxrho
+!          if (rang==0) write(*,*) 'calpoeam RHO MIN: ', minrho
+!          if (rang==0) write(*,*) 'calpoeam RHO MAX: ', maxrho
        end do
        do iti=1,ntyp
           if (rhomax(iti)==0.)then
@@ -286,7 +286,7 @@ contains
     !glue
     select case(ipotentiel)
     case default
-       if(rang==0)       write(6,*)'calpoeam Rhomin Rhomax ',rhomin,rhomax
+!       if(rang==0)       write(6,*)'calpoeam Rhomin Rhomax ',rhomin,rhomax
        ktorho=(rhomax-rhomin)/ngrid
        do iti=1,ntyp
           if (typ_and_pot(iti,ipotentiel).eqv..false.) cycle

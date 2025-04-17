@@ -179,8 +179,8 @@ contains
        npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
        nb_paire_a_lire=npair
        call  alloc_typ
-       typ_pot_pair(1:ntyp)=ipotentiel
-
+       typ_pot_pair(1:npair)=ipotentiel
+       if (rang==0) write(6,*)'NTYP NPAIR ',ntyp,npair
     end if
     
     rhomin(:)=1d30;rhomax(:)=0
@@ -283,7 +283,7 @@ contains
     else
        nb_paire_a_lire=npair
     end if
-    if (rang==0) write(6,*)'nb de paires grille',  nb_paire_a_lire
+    if (rang==0) write(6,*)'nb of readed pairs',  nb_paire_a_lire
     if (ipotrep==1) then
        do lect_paire=1,nb_paire_a_lire
           if (npotentiel.gt.1) then
@@ -320,48 +320,48 @@ contains
     end if
 
     do iti=1,ntyp
-       allocate(embtyp(iti)%xg(nptmax)) 
-       allocate(embtyp(iti)%feam(nptmax)) 
-       allocate(SPembtyp(iti)%beam(nptmax)) 
-       allocate(SPembtyp(iti)%ceam(nptmax)) 
-       allocate(SPembtyp(iti)%deam(nptmax)) 
+       allocate(embtyp(iti)%xg(0:nptmax)) 
+       allocate(embtyp(iti)%feam(0:nptmax)) 
+       allocate(SPembtyp(iti)%beam(0:nptmax)) 
+       allocate(SPembtyp(iti)%ceam(0:nptmax)) 
+       allocate(SPembtyp(iti)%deam(0:nptmax)) 
 
        if (lforcetabulate) then
-          allocate(embtyp_d(iti)%xg(nptmax)) 
-          allocate(embtyp_d(iti)%feam(nptmax)) 
-          allocate(SPembtyp_d(iti)%beam(nptmax)) 
-          allocate(SPembtyp_d(iti)%ceam(nptmax)) 
-          allocate(SPembtyp_d(iti)%deam(nptmax))
+          allocate(embtyp_d(iti)%xg(0:nptmax)) 
+          allocate(embtyp_d(iti)%feam(0:nptmax)) 
+          allocate(SPembtyp_d(iti)%beam(0:nptmax)) 
+          allocate(SPembtyp_d(iti)%ceam(0:nptmax)) 
+          allocate(SPembtyp_d(iti)%deam(0:nptmax))
        end if
 
-       allocate(rhotyp(iti)%xd(nptmax)) 
-       allocate(rhotyp(iti)%rho(nptmax)) 
-       allocate(SPrhotyp(iti)%brho(nptmax)) 
-       allocate(SPrhotyp(iti)%crho(nptmax)) 
-       allocate(SPrhotyp(iti)%drho(nptmax)) 
+       allocate(rhotyp(iti)%xd(0:nptmax)) 
+       allocate(rhotyp(iti)%rho(0:nptmax)) 
+       allocate(SPrhotyp(iti)%brho(0:nptmax)) 
+       allocate(SPrhotyp(iti)%crho(0:nptmax)) 
+       allocate(SPrhotyp(iti)%drho(0:nptmax)) 
 
        if (lforcetabulate) then
-          allocate(rhotyp_d(iti)%xd(nptmax)) 
-          allocate(rhotyp_d(iti)%rho(nptmax)) 
-          allocate(SPrhotyp_d(iti)%brho(nptmax)) 
-          allocate(SPrhotyp_d(iti)%crho(nptmax)) 
-          allocate(SPrhotyp_d(iti)%drho(nptmax)) 
+          allocate(rhotyp_d(iti)%xd(0:nptmax)) 
+          allocate(rhotyp_d(iti)%rho(0:nptmax)) 
+          allocate(SPrhotyp_d(iti)%brho(0:nptmax)) 
+          allocate(SPrhotyp_d(iti)%crho(0:nptmax)) 
+          allocate(SPrhotyp_d(iti)%drho(0:nptmax)) 
        end if
     end do
     do ipr=1,npair
-       allocate(reppair(ipr)%xr(nptmax)) 
-       allocate(reppair(ipr)%potr(nptmax)) 
-       allocate(SPreppair(ipr)%bpotr(nptmax)) 
-       allocate(SPreppair(ipr)%cpotr(nptmax)) 
-       allocate(SPreppair(ipr)%dpotr(nptmax)) 
+       allocate(reppair(ipr)%xr(0:nptmax)) 
+       allocate(reppair(ipr)%potr(0:nptmax)) 
+       allocate(SPreppair(ipr)%bpotr(0:nptmax)) 
+       allocate(SPreppair(ipr)%cpotr(0:nptmax)) 
+       allocate(SPreppair(ipr)%dpotr(0:nptmax)) 
 
 
        if (lforcetabulate) then
-          allocate(reppair_d(ipr)%xr(nptmax)) 
-          allocate(reppair_d(ipr)%potr(nptmax)) 
-          allocate(SPreppair_d(ipr)%bpotr(nptmax)) 
-          allocate(SPreppair_d(ipr)%cpotr(nptmax)) 
-          allocate(SPreppair_d(ipr)%dpotr(nptmax)) 
+          allocate(reppair_d(ipr)%xr(0:nptmax)) 
+          allocate(reppair_d(ipr)%potr(0:nptmax)) 
+          allocate(SPreppair_d(ipr)%bpotr(0:nptmax)) 
+          allocate(SPreppair_d(ipr)%cpotr(0:nptmax)) 
+          allocate(SPreppair_d(ipr)%dpotr(0:nptmax)) 
        end if
     end do
 
@@ -405,6 +405,9 @@ contains
              end if
 
           end do
+          embtyp(iti)%xg(0)=0
+          embtyp(iti)%feam(0)=0
+          if (lforcetabulate) embtyp_d(iti)%feam(0)=0
           call checkround(embtyp(iti)%xg(1),embtyp(iti)%deltaEAM,lok)
             if (lok.eqv..false.) then
                write(6,*) 'error in glue grid  EAM stop', embtyp(iti)%xg(1), embtyp(iti)%xg(2),embtyp(iti)%deltaEAM
@@ -455,6 +458,9 @@ contains
              end if
 
           end do
+          rhotyp(iti)%xd(0)= 0
+          rhotyp(iti)%rho(0)= 0
+          if(lforcetabulate) rhotyp_d(iti)%rho(0)=0
           call checkround(rhotyp(iti)%xd(1),rhotyp(iti)%deltaRHO,lok)
           if (lok.eqv..false.) then
              write(6,*) 'error in dens grid  EAM stop', rhotyp(iti)%xd(1), rhotyp(iti)%xd(2),rhotyp(iti)%deltaRHO
@@ -519,7 +525,9 @@ contains
 
              end if
           end do
-
+          reppair(ipr)%xr(0)= 0  
+          reppair(ipr)%potr(0)= 0
+          if (lforcetabulate) reppair_d(ipr)%potr(0)=0
           call checkround(reppair(iti)%xr(1),reppair(iti)%deltaREP,lok)
           if (lok.eqv..false.) then
              write(6,*) 'error in glue grid  EAM stop', reppair(iti)%xr(1),reppair(iti)%xr(2),reppair(iti)%deltaREP

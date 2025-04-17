@@ -58,7 +58,7 @@ contains
     logical:: lreturn
 
 
-    if (rang==0) write (6, *) '***** PREMIERE ITERATION  VERLET STD ***',itloopmax,timeloopmax
+    if (rang==0) write (6, *) '***** FIRST ITERATION  ***',itloopmax,timeloopmax
     ! Initialization
     IF (dmtype.EQ.23) THEN
        CALL init_trempe_fire(tstep, fire_nstep, fire_alph)
