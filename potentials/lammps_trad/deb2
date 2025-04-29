@@ -1,0 +1,12 @@
+ 3 ! nb de types
+   5.650000000       ! rayon de coupure en Ang
+56.693 28 'Ni'
+26.982 13 'Al'
+1.008 1 'H'	
+  -1.0 -1.5  ! raccordement Ziegler (en Ang)
+  -1.0 -1.5  ! raccordement Ziegler (en Ang)
+  -1.0 -1.5  ! raccordement Ziegler (en Ang)
+  -1.0 -1.5  ! raccordement Ziegler (en Ang)
+  -1.0 -1.5  ! raccordement Ziegler (en Ang)
+  -1.0 -1.5  ! raccordement Ziegler (en Ang)
+1000
