@@ -324,7 +324,7 @@ end if
     if (lclimb) then 
        if (intneb==nwclimb) then
 !          indmaxE=maxloc(enepath(2:npath-1))
-          indmaxE = maxloc(enepath(2:npath-1), dim=1) + 1
+          indmaxE = maxloc(enepath(2:npath-1), dim=1) 
           limgclimb(indmaxE)=.true.
           if (rang==0) write(6,*)'CLIMBING IS TURNED ON, climbing image is number: ', indmaxE
        end if
