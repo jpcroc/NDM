@@ -66,8 +66,8 @@ program alloy2eamtab
      write(6,*)ip
      do j=1,nlr
         k=1+5*(j-1)
-        read(10,*,iostat=ios)rep(iti,2,k),rep(iti,2,k+1),rep(iti,2,k+2),rep(iti,2,k+3),rep(iti,2,k+4)
-!        write(6,*)rep(iti,2,k),rep(iti,2,k+4)
+        read(10,*,iostat=ios)rep(ip,2,k),rep(ip,2,k+1),rep(ip,2,k+2),rep(ip,2,k+3),rep(ip,2,k+4)
+!        write(6,*)rep(ip,2,k),rep(ip,2,k+4)
      end do
   end do
 
@@ -88,10 +88,11 @@ program alloy2eamtab
      do j=i,ntyp
         ip=ipolmp(i,j)
         ip2=ip2+1
-        write(11,*)ip2, ip
+        write(11,*)ip2
+        write(6,*)i,j,ip2,ip
         write(11,*)nr,dr
         do k=1,nr
-           write(11,*)rep(ip,1,k),rep(ip,2,k)
+           write(11,*)rep(ip,1,k),rep(ip,2,k)/rep(ip,1,k)
         end do
      end do
   end do
