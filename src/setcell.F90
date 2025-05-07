@@ -21,11 +21,11 @@ contains
     type(cell_config)::celsn
     real(double),intent(in)::rum
     integer,optional::noxr,noyr,nozr
-    integer::nox,noy,noz
+    integer::nox,noy,noz,ic
     integer::izonr
     logical,intent(in),optional::lverbose
     logical::lverb=.true.
-    real(double)::zlmin,zlm2
+    real(double)::zlmin,zlm2,ronz(3)
     if (present(lverbose)) lverb=lverbose
     nox=0;noy=0;noz=0
     if (present(noxr))nox=noxr
@@ -46,6 +46,18 @@ contains
 !    if (lpotentiel(11).eqv..true.) rut=max(rut,2*rue_pot(11))
 !    if (lpotentiel(12).eqv..true.) rut=max(rut,2*rue_pot(12))
     izonr = int(zlmin/rum)
+    ronz(:)=rum/boxsn%nzl(:)
+    if (any(ronz(:).gt.0.5))    celsn%ismall=.true.
+
+    do ic=1,3
+       if (ronz(ic).gt.0.5)then
+          celsn%ismall(ic)=.true.
+!          boxsn%ismall=.true.
+!          celsn%ngx(ic)=1+2*int(zonr(ic))+1
+       end if
+    end do
+
+
     ! MPI
 !    if ((rang==0).and.(lverb)) write (6, *) 'izonr,zlmin,rut', izonr, zlmin*1d8, rut*1d8
     if ((ipotentiel.ne.20).and.(izonr<2)) then

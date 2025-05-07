@@ -307,36 +307,36 @@ module plottpcel_mod
     integer,allocatable::ncs(:)
     
     if (slxyz(1).ne.0) then
-       if (mod(celcf%nox,slxyz(1)).ne.0) then
-          write(6,*)'choose a slxyz(1) which divides nox',celcf%nox
+       if (mod(celcf%nox(1),slxyz(1)).ne.0) then
+          write(6,*)'choose a slxyz(1) which divides nox',celcf%nox(1)
           call arret_ndm
        end if
-       nx(1)=celcf%nox/slxyz(1)
+       nx(1)=celcf%nox(1)/slxyz(1)
     else
        nx(1)=1
     end if
 
     if (slxyz(2).ne.0) then
-       if (mod(celcf%noy,slxyz(2)).ne.0) then
-          write(6,*)'choose a slxyz(2) which divides noy',celcf%noy
+       if (mod(celcf%nox(2),slxyz(2)).ne.0) then
+          write(6,*)'choose a slxyz(2) which divides noy',celcf%nox(2)
           call arret_ndm
        end if
-       nx(2)=celcf%noy/slxyz(2)
+       nx(2)=celcf%nox(2)/slxyz(2)
     else
        nx(2)=1
     end if
     
     if (slxyz(3).ne.0) then
-       if (mod(celcf%noz,slxyz(3)).ne.0) then
-          write(6,*)'choose a slxyz(3) which divides noz',celcf%noz
+       if (mod(celcf%nox(3),slxyz(3)).ne.0) then
+          write(6,*)'choose a slxyz(3) which divides noz',celcf%nox(3)
           call arret_ndm
        end if
-       nx(3)=celcf%noz/slxyz(3)
+       nx(3)=celcf%nox(3)/slxyz(3)
     else
        nx(3)=1
     end if
 
-    ratiox(1)=celcf%nox/nx(1);    ratiox(2)=celcf%noy/nx(2);    ratiox(3)=celcf%noz/nx(3)
+    ratiox(1)=celcf%nox(1)/nx(1);    ratiox(2)=celcf%nox(2)/nx(2);    ratiox(3)=celcf%nox(3)/nx(3)
     natperc=celcf%noxyz*celcf%natperc/nx(1)*nx(2)*nx(3)
 
     call slice%cell_config%init(box,nx(1),nx(2),nx(3),natperc,ltpc=.true.,latomalloc=.false.)
@@ -349,7 +349,7 @@ module plottpcel_mod
     do iko=1,celcf%noxyz
        ixc=celcf%koxyz(iko)
        ixs(:)=int(ixc(:)/float(ratiox(:)))
-       kos=1+ixs(1)+slice%nox*(ixs(2)+slice%noy*ixs(3))
+       kos=1+ixs(1)+slice%nox(1)*(ixs(2)+slice%nox(2)*ixs(3))
        ncs(kos)=ncs(kos)+1
        slice%indc(ncs(kos),kos)=iko
        slice%nato(kos)=slice%nato(kos)+celcf%nato(iko)
@@ -423,18 +423,18 @@ module plottpcel_mod
        write(unitlt,*)iteration,timel
        write(unitlt,*)'TEMP PER CELL'
        write(unitlt,*) '2 0.0 0.0 0.0'
-       write(unitlt,'(I6,3G17.9)')celcf%nox,1d8*boxcf%at(1,1)/celcf%nox,1d8*boxcf%at(2,1)/celcf%nox,1d8*boxcf%at(3,1)/celcf%nox
-       write(unitlt,'(I6,3G17.9)')celcf%noy,1d8*boxcf%at(1,2)/celcf%noy,1d8*boxcf%at(2,2)/celcf%noy,1d8*boxcf%at(3,2)/celcf%noy
-       write(unitlt,'(I6,3G17.9)')celcf%noz,1d8*boxcf%at(1,3)/celcf%noz,1d8*boxcf%at(2,3)/celcf%noz,1d8*boxcf%at(3,3)/celcf%noz
+       write(unitlt,'(I6,3G17.9)')celcf%nox(1),1d8*boxcf%at(1,1)/celcf%nox(1),1d8*boxcf%at(2,1)/celcf%nox(1),1d8*boxcf%at(3,1)/celcf%nox(1)
+       write(unitlt,'(I6,3G17.9)')celcf%nox(2),1d8*boxcf%at(1,2)/celcf%nox(2),1d8*boxcf%at(2,2)/celcf%nox(2),1d8*boxcf%at(3,2)/celcf%nox(2)
+       write(unitlt,'(I6,3G17.9)')celcf%nox(3),1d8*boxcf%at(1,3)/celcf%nox(3),1d8*boxcf%at(2,3)/celcf%nox(3),1d8*boxcf%at(3,3)/celcf%nox(3)
        write(unitlt,'(A)') '1 0.0 0.0 0.0'
        opedg(:)=boxcf%at(:,1)+boxcf%at(:,2)+boxcf%at(:,3)
        write(unitlt,'(A,3G17.9)') '1 ', 1d8*opedg(1:3)
 
        il =0
-       do kx=0,celcf%nox-1
-          do ky=0,celcf%noy-1
-             do kz=0,celcf%noz-1
-                koo = 1+kx+celcf%nox*(ky+celcf%noy*kz)
+       do kx=0,celcf%nox(1)-1
+          do ky=0,celcf%nox(2)-1
+             do kz=0,celcf%nox(3)-1
+                koo = 1+kx+celcf%nox(1)*(ky+celcf%nox(2)*kz)
                 il=il+1
                 write(unitlt,'(G15.7)',advance='no')celcf%tempc(koo)
                 if (mod(il,6)==0 )write(unitlt,*)
@@ -452,18 +452,18 @@ module plottpcel_mod
        write(unitlt,*)iteration,timel
        write(unitlt,*)'PRESS PER CELL'
        write(unitlt,*) '2 0.0 0.0 0.0'
-       write(unitlt,'(I6,3G17.9)')celcf%nox,1d8*boxcf%at(1,1)/celcf%nox,1d8*boxcf%at(2,1)/celcf%nox,1d8*boxcf%at(3,1)/celcf%nox
-       write(unitlt,'(I6,3G17.9)')celcf%noy,1d8*boxcf%at(1,2)/celcf%noy,1d8*boxcf%at(2,2)/celcf%noy,1d8*boxcf%at(3,2)/celcf%noy
-       write(unitlt,'(I6,3G17.9)')celcf%noz,1d8*boxcf%at(1,3)/celcf%noz,1d8*boxcf%at(2,3)/celcf%noz,1d8*boxcf%at(3,3)/celcf%noz
+       write(unitlt,'(I6,3G17.9)')celcf%nox(1),1d8*boxcf%at(1,1)/celcf%nox(1),1d8*boxcf%at(2,1)/celcf%nox(1),1d8*boxcf%at(3,1)/celcf%nox(1)
+       write(unitlt,'(I6,3G17.9)')celcf%nox(2),1d8*boxcf%at(1,2)/celcf%nox(2),1d8*boxcf%at(2,2)/celcf%nox(2),1d8*boxcf%at(3,2)/celcf%nox(2)
+       write(unitlt,'(I6,3G17.9)')celcf%nox(3),1d8*boxcf%at(1,3)/celcf%nox(3),1d8*boxcf%at(2,3)/celcf%nox(3),1d8*boxcf%at(3,3)/celcf%nox(3)
        write(unitlt,*) '1 0.0 0.0 0.0'
        opedg(:)=boxcf%at(:,1)+boxcf%at(:,2)+boxcf%at(:,3)
        write(unitlt,'(A,3G17.9)') '1 ', opedg(1:3)
 
        il =0
-       do kx=0,celcf%nox-1
-          do ky=0,celcf%noy-1
-             do kz=0,celcf%noz-1
-                koo = 1+kx+celcf%nox*(ky+celcf%noy*kz)
+       do kx=0,celcf%nox(1)-1
+          do ky=0,celcf%nox(2)-1
+             do kz=0,celcf%nox(3)-1
+                koo = 1+kx+celcf%nox(1)*(ky+celcf%nox(2)*kz)
                 il=il+1
                 pcell=0.33333333333333333*(celcf%sigc(1,1,koo)+celcf%sigc(2,2,koo)+celcf%sigc(3,3,koo))*unitP
                 write(unitlp,'(G15.7)',advance='no')pcell

@@ -10,7 +10,7 @@ module cellconfig
   !  integer:: incr=20 ! incrément des tailles de tableau 
 
   type cell_config
-     integer:: nox=0,noy=0,noz=0,noxyz=0 
+     integer:: nox(3)=0,noxyz=0 
      integer::natperc !nombre (max) d'atomes par cellule
      integer(long)::icaltabt 
      integer,allocatable::nato (:) ! nombre d'atomes dans la cellule ko
@@ -19,8 +19,10 @@ module cellconfig
      integer,allocatable:: deltadist(:,:,:) !gestion des conditions périodiques entre les cellules (voisinage de bords de boites)
      integer,allocatable:: ncelvois(:) !nombre de cellules voisines de la cellule actuelle (26 pour PBC standard; dépend de la position dans la boite pour les PBC partielles
      logical :: ltpcel
+     logical:: ismall(3)=.false.
      real(double),allocatable::sigc(:,:,:),tempc(:)
      real(double):: celsize(3)
+!     integer:: ngx(3)=0,ngxyz=0 
 #ifdef PARA
      integer,allocatable::proc_cell(:)
      
@@ -60,9 +62,7 @@ contains
     integer:: ic,ic2
     real(double)::flx(3)
     kox=cell%koxyz(ko)
-    flx(1)=float(kox(1))/cell%nox
-    flx(2)=float(kox(2))/cell%noy
-    flx(3)=float(kox(3))/cell%noz
+    flx(:)=float(kox(:))/cell%nox(:)
     edgec=0.
     do ic=1,3
        do ic2=1,3
@@ -77,7 +77,7 @@ contains
 
     integer:: kx,ky,kz,kyz,km1,km2,nox,noy
     !    do ko=1,cell%noxyz
-    nox=cell%nox;noy=cell%noy
+    nox=cell%nox(1);noy=cell%nox(2)
     km1=ko-1
     kx=mod(km1,nox)
     km2=(km1-kx)/nox
@@ -102,7 +102,9 @@ contains
     if (present(latomalloc))lata=latomalloc
     if (present (ltpc))ltpcel=ltpc
     if (present(nox)) then
-       cell%nox=nox; cell%noy=noy; cell%noz=noz;cell%noxyz=nox*noy*noz
+       cell%nox(1)=nox;cell%noxyz=nox*noy*noz
+       cell%nox(2)=noy
+       cell%nox(3)=noz
     end if
     if (present(natperc)) then
        cell%natperc=natperc
@@ -123,12 +125,11 @@ contains
 
   subroutine allocatecelN(cell,latomalloc)
     class(cell_config)::cell
-    !    integer,intent(in)::nox,noy,noz,natperc
     integer::nsize
     logical,optional::latomalloc
     logical::lata=.true.
     if (present(latomalloc))lata=latomalloc
-    cell%noxyz=cell%nox*cell%noy*cell%noz
+    cell%noxyz=cell%nox(1)*cell%nox(2)*cell%nox(3)
     nsize=cell%noxyz
     if (nsize.ne.0) then
        allocate(cell%ncel(nsize,0:26))
@@ -200,10 +201,10 @@ contains
        cell%ncelvois(1)=0
     else
        cell%deltadist(:,:,:) = 0 ! par défaut celldeltadist=0
-       do kz = 1, cell%noz
-          do ky = 1, cell%noy
-             do kx = 1, cell%nox
-                koo = 1+(kx-1)+cell%nox*((ky-1)+cell%noy*(kz-1))
+       do kz = 1, cell%nox(3)
+          do ky = 1, cell%nox(2)
+             do kx = 1, cell%nox(1)
+                koo = 1+(kx-1)+cell%nox(1)*((ky-1)+cell%nox(2)*(kz-1))
                 cell%ncel(koo,0) = koo
                 !                cell%deltadist(:,0,koo) = 0
 !                cell%ncelvois(koo)= min(celcf%noxyz,27)-1
@@ -217,11 +218,11 @@ contains
                          mx = kx+lx
                          my = ky+ly
                          if(box%ipbc(1).ne.1) then
-                            if((mx<1).or.(mx>cell%nox)) then !débordement
+                            if((mx<1).or.(mx>cell%nox(1))) then !débordement
                                cycle loopin
                             end if
                          else
-                            select case(cell%nox)
+                            select case(cell%nox(1))
                             case(1)
                                if ((lx==-1).or.(lx==1)) cycle loopin
                             case(2)
@@ -230,11 +231,11 @@ contains
                          end if
                          
                          if(box%ipbc(2).ne.1) then
-                            if((my<1).or.(my>cell%noy)) then !débordement
+                            if((my<1).or.(my>cell%nox(2))) then !débordement
                                cycle loopin
                             end if
                          else
-                            select case(cell%noy)
+                            select case(cell%nox(2))
                             case(1)
                                if ((ly==-1).or.(ly==1)) cycle loopin
                             case(2)
@@ -243,11 +244,11 @@ contains
                          end if
                          
                          if(box%ipbc(3).ne.1) then
-                            if((mz<1).or.(mz>cell%noz)) then !débordement
+                            if((mz<1).or.(mz>cell%nox(3))) then !débordement
                                cycle loopin
                             end if
                          else
-                            select case(cell%noz)
+                            select case(cell%nox(3))
                             case(1)
                                if ((lz==-1).or.(lz==1)) cycle loopin
                             case(2)
@@ -257,37 +258,37 @@ contains
 
                          l=l+1 ! on est dans une vraie cellule voisine !
                          if (mz<1) then ! on ne peut pas être ici si ipbc(3).ne.1
-                            mz = mz+cell%noz
+                            mz = mz+cell%nox(3)
                             cell%deltadist(3,l,koo) = 1
                          endif
-                         if (mz>cell%noz) then
-                            mz = mz-cell%noz
+                         if (mz>cell%nox(3)) then
+                            mz = mz-cell%nox(3)
                             cell%deltadist(3,l,koo) = -1
                          endif
 
                          if (my<1) then
-                            my = my+cell%noy
+                            my = my+cell%nox(2)
                             cell%deltadist(2,l,koo) = 1
                          endif
-                         if (my>cell%noy) then
-                            my = my-cell%noy
+                         if (my>cell%nox(2)) then
+                            my = my-cell%nox(2)
                             cell%deltadist(2,l,koo) = -1
                          endif
 
                          if (mx<1) then
-                            mx = mx+cell%nox
+                            mx = mx+cell%nox(1)
                             cell%deltadist(1,l,koo) = 1
                          endif
-                         if (mx>cell%nox) then
-                            mx = mx-cell%nox
+                         if (mx>cell%nox(1)) then
+                            mx = mx-cell%nox(1)
                             cell%deltadist(1,l,koo) = -1
                          endif
 
-                         kxy = 1+(mx-1)+cell%nox*((my-1)+cell%noy*(mz-1))
+                         kxy = 1+(mx-1)+cell%nox(1)*((my-1)+cell%nox(2)*(mz-1))
 !                         if (kxy==koo) cycle
                          cell%ncel(koo,l) = kxy
                          !                        write(6,*)koo,lz,ly,lx,l,kxy
-                         !                        if ((kz==cell%noz).and.(lz==1))write(6,*)koo,lz,l,kxy
+                         !                        if ((kz==cellnox(3)).and.(lz==1))write(6,*)koo,lz,l,kxy
                          !                        if ((kz==1).and.(lz==-1))write(6,*)koo,lz,l,kxy
                       end do loopin
                    end do
@@ -302,38 +303,6 @@ contains
 !!$       write(6,*)cell%ncel(kx,:)
 !!$    end do
           
-    !      if (ltranche) then
-    !         do kz = 1, noz
-    !            do ky = 1, noy
-    !               do kx = 1, nox
-    !                  if (kz==noz) then
-    !                     koo = 1+(kx-1)+nox*((ky-1)+noy*(kz-1))
-    !                     ncel(koo,1) = 0
-    !                     ncel(koo,2) = 0
-    !                     ncel(koo,3) = 0
-    !                     ncel(koo,4) = 0
-    !                     ncel(koo,5) = 0
-    !                     ncel(koo,6) = 0
-    !                     ncel(koo,7) = 0
-    !                     ncel(koo,8) = 0
-    !                     ncel(koo,9) = 0
-    !                  endif
-    !                  if (kz/=1) cycle
-    !                  koo = 1+(kx-1)+nox*((ky-1)+noy*(kz-1))
-    !                  ncel(koo,18) = 0
-    !                  ncel(koo,19) = 0
-    !                  ncel(koo,20) = 0
-    !                  ncel(koo,21) = 0
-    !                  ncel(koo,22) = 0
-    !                  ncel(koo,23) = 0
-    !                  ncel(koo,24) = 0
-    !                  ncel(koo,25) = 0
-    !                  ncel(koo,26) = 0
-    ! 
-    !               end do
-    !            end do
-    !         end do
-    !     endif
 
     return
   end subroutine neigcelN
@@ -416,21 +385,18 @@ contains
 
        do i = 1, iml
           !     if  ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xpnp(1,i),xpnp(2,i),xpnp(3,i)
-          aux = xpnp(1,i)*cell%nox
-          auy = xpnp(2,i)*cell%noy
-          auz = xpnp(3,i)*cell%noz
+          aux = xpnp(1,i)*cell%nox(1)
+          auy = xpnp(2,i)*cell%nox(2)
+          auz = xpnp(3,i)*cell%nox(3)
           kx = int(aux)
           ky = int(auy)
           kz = int(auz)
-!!$          write(*,*) i, cell%nox,cell%noy,cell%noz, kx,ky,kz
-!!$          write(*,*) i, aux,auy,auz, xpnp(1,i), xpnp(2,i), xpnp(3,i)
-!!$          write(6,*)
-          kx = Modulo(kx,cell%nox)
-          ky = Modulo(ky,cell%noy)
-          kz = Modulo(kz,cell%noz)
+          kx = Modulo(kx,cell%nox(1))
+          ky = Modulo(ky,cell%nox(2))
+          kz = Modulo(kz,cell%nox(3))
           !          if  ((it.ge.1000).and.(i.lt.20))  write(6,'(I5,3G15.7)')i, kx,ky,kz
           !==============================================================
-          koo = 1+kx+cell%nox*(ky+cell%noy*kz)
+          koo = 1+kx+cell%nox(1)*(ky+cell%nox(2)*kz)
           IF ( (koo.GT.cell%noxyz).OR.(koo.LT.0) ) THEN
              WRITE(0,'(a,i0,a,3g20.12)') &
                   'Problem with atom ', i, ', x,y,z = ', atcf%xp(1:3,i)
@@ -501,104 +467,6 @@ contains
   end subroutine caltabtC
 
 
-!!$  subroutine ndm2cellconfig(celndm,box,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpc,sigc,tempc,proc_cell)
-!!$    type(cell_config), intent(out):: celndm
-!!$    type(box_config)::box
-!!$    integer, intent(in):: nox,noy,noz,natperc,noxyz
-!!$    integer,intent(in)::ncel(noxyz,0:26),nato(noxyz),atincel(natperc,noxyz),deltadist(3,0:26,noxyz)
-!!$    real(double),intent(in)::celsize(3)
-!!$    logical,optional,intent(in)::ltpc
-!!$    real(double),intent(in),optional,allocatable::sigc(:,:,:),tempc(:)
-!!$    logical::ltpcel=.false.
-!!$    integer,optional::proc_cell(:)
-!!$    if (present (ltpc))ltpcel=ltpc
-!!$    if (.not.allocated(celndm%ncel))then
-!!$       call init_cel(celndm,box,nox,noy,noz,natperc,ltpcel)
-!!$    end if
-!!$    !    celndm%nox=nox
-!!$    !    celndm%noy=noy
-!!$    !    celndm%noz=noz
-!!$    !    celndm%natperc=natperc
-!!$    !    celndm%noxyz=nox*noy*noz
-!!$    !    if (ltpcel)then
-!!$    !       celndm%ltpcel=.true.
-!!$    !    end if
-!!$    !    call allocatecelN(celndm)
-!!$!    celndm%icaltabt=0
-!!$    celndm%ncel(1:noxyz,0:26)=ncel(1:noxyz,0:26)
-!!$    celndm%nato(1:noxyz)=nato(1:noxyz)
-!!$    celndm%atincel(1:natperc,1:noxyz)=atincel(1:natperc,1:noxyz)
-!!$    celndm%deltadist(1:3,0:26,1:noxyz)=deltadist(1:3,0:26,1:noxyz)
-!!$    celndm%celsize(1:3)=celsize(1:3)
-!!$    if (ltpcel)then
-!!$       celndm%sigc=sigc
-!!$       celndm%tempc=tempc
-!!$    end if
-!!$#ifdef PARA
-!!$    celndm%proc_cell=proc_cell
-!!$#endif    
-!!$
-!!$  endsubroutine ndm2cellconfig
-!!$
-!!$  subroutine cellconfig2ndm(celndm,noxyz,nox,noy,noz,natperc,nato,ncel,atincel,deltadist,celsize,ltpcel,sigc,tempc,proc_cell)
-!!$    type(cell_config), intent(inout):: celndm
-!!$    integer, intent(inout):: nox,noy,noz,natperc,noxyz
-!!$    integer,intent(inout),allocatable::ncel(:,:),nato(:),atincel(:,:),deltadist(:,:,:)!ncel(0:noxyz,0:26),nato(0:noxyz),atincel(natperc,0:noxyz),deltadist(3,0:26,noxyz)
-!!$    real(double),intent(out)::celsize(3)
-!!$    logical,optional,intent(out)::ltpcel
-!!$    real(double),intent(out),optional,allocatable::sigc(:,:,:),tempc(:)
-!!$    integer,optional,allocatable::proc_cell(:)
-!!$    integer::nsize
-!!$!    if (.not.allocated(ncel))then
-!!$       nox=celndm%nox ;noy=celndm%noy;noz=celndm%noz
-!!$       noxyz=nox*noy*noz;nsize=noxyz
-!!$       natperc=celndm%natperc
-!!$       if(allocated(ncel)) deallocate(ncel)
-!!$       if(allocated(atincel)) deallocate(atincel)
-!!$       if(allocated(deltadist)) deallocate(deltadist)
-!!$       allocate(ncel(1:noxyz,0:26));allocate(atincel(natperc,1:noxyz));allocate(deltadist(3,0:26,1:noxyz))
-!!$       if (allocated(nato)) deallocate(nato)
-!!$       allocate(nato(noxyz))
-!!$#ifdef PARA
-!!$       if (present(proc_cell))then
-!!$          if(allocated(proc_cell)) deallocate(proc_cell)
-!!$          allocate(proc_cell(nsize))
-!!$       end if
-!!$#endif       
-!!$!    else
-!!$!       if ((nox.ne.celndm%nox).or.(noy.ne.celndm%noy).or.(noz.ne.celndm%noz).or.(natperc.ne.celndm%natperc)) then
-!!$!          write(6,*)'incohérence entre noxyz et celndm%noxyz'
-!!$!          write(6,*)nox,celndm%nox,natperc,celndm%natperc
-!!$!#ifdef PARA
-!!$!          call MPI_finalize(ierr)
-!!$!#endif         
-!!$!          call arret_ndm
-!!$!       end if
-!!$!        end if
-!!$    if (celndm%ltpcel)then
-!!$       ltpcel=celndm%ltpcel
-!!$       if (ltpcel) then
-!!$          if (.not.allocated(sigc))allocate (sigc(3,3,celndm%noxyz))
-!!$          if (.not.allocated(tempc))allocate (tempc(celndm%noxyz))
-!!$       end if
-!!$    end if
-!!$!    celndm%icaltabt=0
-!!$    ncel(1:noxyz,0:26)=celndm%ncel(1:noxyz,0:26)
-!!$    nato(1:noxyz)=celndm%nato(1:noxyz)
-!!$    atincel(1:natperc,1:noxyz)=celndm%atincel(1:natperc,1:noxyz)
-!!$    deltadist(1:3,0:26,1:noxyz)=celndm%deltadist(1:3,0:26,1:noxyz)
-!!$    celsize(1:3)=celndm%celsize(1:3)
-!!$    if (celndm%ltpcel)then
-!!$       sigc(:,:,:)=celndm%sigc(:,:,:)
-!!$       tempc(:)=celndm%tempc(:)
-!!$    end if
-!!$!    call celndm%dealloc
-!!$#ifdef PARA
-!!$    if (present(proc_cell))proc_cell=celndm%proc_cell
-!!$#endif    
-!!$  end subroutine cellconfig2ndm
-
-  ! copie d'une config entière vers config de base
 
   subroutine copy (cellsource,cellcible,box,lzeroinit,ltpccible,latomcp)
     class(cell_config)::cellsource
@@ -616,11 +484,11 @@ contains
     else
        ltpcel=cellsource%ltpcel
     end if
-    call cellcible%init(box,cellsource%nox,cellsource%noy,cellsource%noz,cellsource%natperc,ltpc=ltpcel,latomalloc=latcp)
+    call cellcible%init(box,cellsource%nox(1),cellsource%nox(2),cellsource%nox(3),cellsource%natperc,ltpc=ltpcel,latomalloc=latcp)
 
     cellcible%nox=cellsource%nox
-    cellcible%noy=cellsource%noy
-    cellcible%noz=cellsource%noz
+    cellcible%nox(2)=cellsource%nox(2)
+    cellcible%nox(3)=cellsource%nox(3)
     cellcible%noxyz=cellsource%noxyz
     cellcible%natperc=cellsource%natperc
     cellcible%icaltabt=cellsource%icaltabt
@@ -648,7 +516,7 @@ contains
     type(para_space_config),optional::psc    
 
     integer::iko
-    call celcomp%init(box,celloc%nox,celloc%noy,celloc%noz,celloc%natperc,ltpc=celloc%ltpcel,latomalloc=latomcp)
+    call celcomp%init(box,celloc%nox(1),celloc%nox(2),celloc%nox(3),celloc%natperc,ltpc=celloc%ltpcel,latomalloc=latomcp)
 
 #ifdef PARA
     celcomp%celsize=celloc%celsize
@@ -685,7 +553,7 @@ contains
     un=6
     if (present(unit))un=unit
     write(un,*)'in cellprint ',mess
-    write(un,*)'nox noy noz noxyz',cellv%nox,cellv%noy,cellv%noz,cellv%noxyz
+    write(un,*)'nox noy noz noxyz',cellv%nox,cellv%nox(2),cellv%nox(3),cellv%noxyz
     write(un,*)'natperc',cellv%natperc
     write(un,*)'celsize',cellv%celsize
     write(un,*)'icaltabt',cellv%icaltabt
@@ -744,7 +612,7 @@ contains
     if (cell%ltpcel) sizer=sizer+size(cell%sigc)+size(cell%tempc)
 
     allocate (ibuffer(sizeI)) ; allocate (rbuffer(sizeR))
-    ibuffer(1)=cell%nox; ibuffer(2)=cell%noy ; ibuffer(3)=cell%noz
+    ibuffer(1)=cell%nox(1); ibuffer(2)=cell%nox(2) ; ibuffer(3)=cell%nox(3)
     ibuffer(4)=cell%noxyz
     ibuffer(5)=cell%natperc
     ibuffer(6)=int(cell%icaltabt)
@@ -837,7 +705,7 @@ contains
     call mpic%recv(cell%ltpcel,rgem,202)
     call mpic%recv(rbuffer,rgem,203)
     
-    cell%nox=ibuffer(1); cell%noy=ibuffer(2) ; cell%noz=ibuffer(3)
+    cell%nox=ibuffer(1); cell%nox(2)=ibuffer(2) ; cell%nox(3)=ibuffer(3)
     cell%noxyz=ibuffer(4)
     cell%natperc=ibuffer(5)
     cell%icaltabt=ibuffer(6)
@@ -919,7 +787,7 @@ contains
     if (cell%ltpcel) sizer=sizer+size(cell%sigc)+size(cell%tempc)
 !    write(6,*)'sizes',sizer,sizei,cell%ltpcel
     allocate (ibuffer(sizeI)) ; allocate (rbuffer(sizeR))
-    ibuffer(1)=cell%nox; ibuffer(2)=cell%noy ; ibuffer(3)=cell%noz
+    ibuffer(1)=cell%nox(1); ibuffer(2)=cell%nox(2) ; ibuffer(3)=cell%nox(3)
     ibuffer(4)=cell%noxyz
     ibuffer(5)=cell%natperc
     ibuffer(6)=int(cell%icaltabt)
@@ -986,7 +854,7 @@ contains
     call mpic%bcast(rgem,cell%ltpcel)
     call mpic%bcast(rgem,rbuffer)
     ibi=0;ibr=0
-        cell%nox=ibuffer(1); cell%noy=ibuffer(2) ; cell%noz=ibuffer(3)
+        cell%nox(1)=ibuffer(1); cell%nox(2)=ibuffer(2) ; cell%nox(3)=ibuffer(3)
     cell%noxyz=ibuffer(4)
     cell%natperc=ibuffer(5)
     cell%icaltabt=ibuffer(6)

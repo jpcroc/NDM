@@ -133,7 +133,7 @@ contains
        if (ldecoup) then 
           itread=0
           call read_cin(boxrcf,itread,fnamcin=fnamcin)
-    if ((rang==0).and.(lprt)) then
+          if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
           call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
@@ -549,7 +549,7 @@ contains
 
        xt(:)=atcomp%xp(:,icomp)
        iti = atcomp%ityp(icomp)
-       call coord_to_cell(xt,numcell,boxrep%bg,cellrep%nox,cellrep%noy,cellrep%noz)
+       call coord_to_cell(xt,numcell,boxrep%bg,cellrep%nox(1),cellrep%nox(2),cellrep%nox(3))
        numproc=cellrep%proc_cell(numcell)
        atcomp%proc_at(icomp)=numproc
        if (numproc == myidsp) then

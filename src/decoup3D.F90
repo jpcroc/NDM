@@ -55,7 +55,7 @@ contains
     integer :: nbr_cpu,nox,noy,noz,noxyz,imm,im_glob
     integer :: ii,jj,kk,nbr_cpumin,iudecoup !indice de boucle
     integer,save::icall=0
-    nox=celdec%nox;noy=celdec%noy;noz=celdec%noz; noxyz=nox*noy*noz
+    nox=celdec%nox(1);noy=celdec%nox(2);noz=celdec%nox(3); noxyz=nox*noy*noz
     icall=icall+1
     if (present(lverbose))lverb=lverbose
 #ifdef PARA

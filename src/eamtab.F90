@@ -758,9 +758,9 @@ contains
        Erep=0.0
        return
     else
+
        k=Int(r/rep%deltaREP)
        drk=r-k*rep%deltaREP
-
        Erep = ev2erg*(rep%potr(k) +drk*(SPrep%bpotr(k) +drk*(SPrep%cpotr(k) +drk*SPrep%dpotr(k))))
 
     end if
