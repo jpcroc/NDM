@@ -35,7 +35,7 @@ contains
          Rayij,Rayik,inv_Rij,inv_Rik, &
          INTER1j,INTER1k,INTER2exp,INTER2,INTER3j,INTER3k
 
-    real (double), dimension(26*celcf%natperc) :: &
+    real (double), dimension(celcf%ncelvmax*celcf%natperc) :: &
          rtc,xtc, ytc, ztc, indic
 
     logical::linter
@@ -88,7 +88,6 @@ contains
           ! pour chaque cel. voisine
           do i1 = 0, celcf%ncelvois(koo)
 
-             !     DO  I1=0,26
              KO1=celcf%NCEL(KOO,I1)
              DO  I2=1,celcf%NATO(KO1)
                 j=celcf%atincel(i2,ko1)

@@ -31,6 +31,8 @@ contains
     logical,optional::linit
     logical::lini=.false.
     if (present(linit))lini=linit
+!    call celndm%print(unit=100)
+!    stop
     select case (dmtype)
     case(41,42)
        select type(atdml)
