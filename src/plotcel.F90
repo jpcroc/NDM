@@ -203,6 +203,7 @@ module plottpcel_mod
     sphere%vol=0.
     
     do iko=1,celcf%noxyz
+       if ((celcf%nato(iko)==0).or.(celcf%isghost(iko))) cycle
        edge(:)=celcf%edge(iko,box)
        cv(1,:)=edge(:)-posr(:)
        call cryst_to_cart (1, cv, box%bg, -1) !cart vers cryst cryst vers cart sur cv
@@ -222,6 +223,7 @@ module plottpcel_mod
     allocate(sphere%indc(sphere%maxncs,sphere%ndom))
     sphere%ncs=0    
     do iko=1,celcf%noxyz
+       if ((celcf%nato(iko)==0).or.(celcf%isghost(iko))) cycle
        edge(:)=celcf%edge(iko,box)
        cv(1,:)=edge(:)-posr(:)
        call cryst_to_cart (1, cv, box%bg, -1) !cart vers cryst cryst vers cart sur cv
@@ -240,7 +242,7 @@ module plottpcel_mod
        sphere%indc(sphere%ncs(idom),idom)=iko
 
        sphere%nato(idom)=sphere%nato(idom)+celcf%nato(iko)
-       sphere%vol(idom)=sphere%vol(idom)+box%volu/celcf%noxyz
+       sphere%vol(idom)=sphere%vol(idom)+box%volu/celcf%noxyzact
     end do
     
   end subroutine build_sphere
@@ -258,7 +260,7 @@ module plottpcel_mod
        do isc=1,domain%ncs(is)
           ik=domain%indc(isc,is)
           domain%tempc(is)=domain%tempc(is)+ (celcf%tempc(ik)*celcf%nato(ik))/domain%nato(is)
-          Pc=((box%volu/celcf%noxyz)/domain%vol(is))*&
+          Pc=((box%volu/celcf%noxyzact)/domain%vol(is))*&
                &(celcf%sigc(1,1,ik)+celcf%sigc(2,2,ik)+celcf%sigc(3,3,ik))/3.
           domain%Pr(is)=domain%Pr(is)+ Pc
        end do
@@ -337,16 +339,17 @@ module plottpcel_mod
     end if
 
     ratiox(1)=celcf%nox(1)/nx(1);    ratiox(2)=celcf%nox(2)/nx(2);    ratiox(3)=celcf%nox(3)/nx(3)
-    natperc=celcf%noxyz*celcf%natperc/nx(1)*nx(2)*nx(3)
+    natperc=celcf%noxyzact*celcf%natperc/nx(1)*nx(2)*nx(3)
 
     call slice%cell_config%init(box,nx(1),nx(2),nx(3),natperc,ltpc=.true.,latomalloc=.false.)
 
-    slice%ncs=celcf%noxyz/slice%noxyz
+    slice%ncs=celcf%noxyzact/slice%noxyz
     allocate(slice%indc(slice%ncs,slice%noxyz))
     allocate(ncs(slice%noxyz))
     ncs(:)=0
     slice%nato(:)=0
     do iko=1,celcf%noxyz
+       if ((celcf%nato(iko)==0).or.(celcf%isghost(iko))) cycle
        ixc=celcf%koxyz(iko)
        ixs(:)=int(ixc(:)/float(ratiox(:)))
        kos=1+ixs(1)+slice%nox(1)*(ixs(2)+slice%nox(2)*ixs(3))
@@ -483,6 +486,7 @@ module plottpcel_mod
        open(unitlt,file=namef,form='formatted')
      
        do i=1,celcf%noxyz
+          if ((celcf%nato(i)==0).or.(celcf%isghost(i))) cycle
           koxyz=celcF%koxyz(i)
 #ifdef PARA
           select type (celcf)
@@ -515,6 +519,7 @@ module plottpcel_mod
        open(unitlp,file=namef,form='formatted')
        
        do i=1,celcf%noxyz
+          if ((celcf%nato(i)==0).or.(celcf%isghost(i))) cycle
           koxyz=celcF%koxyz(i)
           pcell=0.33333333333333333*(celcf%sigc(1,1,i)+celcf%sigc(2,2,i)+celcf%sigc(3,3,i))*unitP
 #ifdef PARA

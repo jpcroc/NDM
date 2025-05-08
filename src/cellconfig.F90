@@ -20,11 +20,12 @@ module cellconfig
      integer,allocatable:: ncelvois(:) !nombre de cellules voisines de la cellule actuelle (26 pour PBC standard; dépend de la position dans la boite pour les PBC partielles
      logical :: ltpcel
      logical:: ismall(3)=.false.
-     logical,allocatable::isghost(:),copyof(:)
+     logical,allocatable::isghost(:)
+     integer,allocatable::copyof(:)
      integer::ncelvmax ! maximum number of cells neighbouring a cell, for large cells=26, for small nox*noy*noz-1
      real(double),allocatable::sigc(:,:,:),tempc(:)
      real(double):: celsize(3)
-!     integer:: ngx(3)=0,ngxyz=0 
+     integer:: noxyzact
 #ifdef PARA
      integer,allocatable::proc_cell(:)
      
@@ -149,11 +150,13 @@ contains
        end if
     end do
     cell%ncelvmax=cell%ncelvmax-1
+
     if (nsize.ne.0) then
+       allocate (cell%isghost(nsize))
+       cell%isghost(:)=.false.
        if (any(cell%ismall(:)))then
-          allocate (cell%isghost(nsize))
-          cell%isghost(:)=.false.
           allocate (cell%copyof(nsize))
+          cell%copyof(:)=-1
        end if
 
        allocate(cell%ncel(nsize,0:cell%ncelvmax))
@@ -166,6 +169,7 @@ contains
           cell%natotot=0
        end select
        allocate(cell%ncelvois(nsize))
+       cell%ncelvois=0
        allocate(cell%deltadist(3,0:cell%ncelvmax,nsize))
        cell%deltadist=0
             
@@ -219,7 +223,7 @@ contains
     class(box_config),intent(in)::box
     integer :: kx, ky, kz, koo, l, lz, mz, ly, my, lx, mx, kxy!,ldx,lfx,ldy,lfy,ldz,lfz
     integer::midnox(3),mindecx(3),maxdecx(3)
-    integer:: vx,vy,vz,vxyz,ic
+    integer:: vx,vy,vz,vxyz,ic,koxyz(3)
     do ic=1,3
        if (cell%ismall(ic)) then
           midnox(ic)=(cell%nox(ic)+1)/2
@@ -230,7 +234,8 @@ contains
           maxdecx(ic)=1          
        end if
     end do
-    
+    write(6,*)'midecx', mindecx
+    write(6,*)'midecx', maxdecx
     if (cell%noxyz==1) then
        cell%ncel(1,0)=1
        cell%deltadist=0
@@ -248,7 +253,7 @@ contains
                    if((cell%ismall(2)).and.(ky.ne.midnox(2)))then
                       cell%isghost(koo)=.true.
                    end if
-                   if((cell%ismall(3)).and.(kx.ne.midnox(3)))then
+                   if((cell%ismall(3)).and.(kz.ne.midnox(3)))then
                       cell%isghost(koo)=.true.
                    end if
                    if (cell%isghost(koo)) then
@@ -369,7 +374,7 @@ contains
                          end if
 
                          if (cell%ismall(1)) then
-                            cell%deltadist(1,l,koo) = my-midnox(1)
+                            cell%deltadist(1,l,koo) = mx-midnox(1)
                          else
                             if (mx<1) then
                                mx = mx+cell%nox(1)
@@ -395,10 +400,15 @@ contains
           end do
        end do
     end if
-!!$    do kx=1,cell%noxyz
-!!$       write(6,*)'ncelvois', cell%ncelvois(kx)
-!!$       write(6,*)cell%ncel(kx,:)
-!!$    end do
+    cell%noxyzact = COUNT(.NOT. cell%isghost)
+    if (rang==0)write(6,*)cell%noxyzact ,' active cells among ', cell%noxyz
+!    do kx=1,cell%noxyz
+!       koxyz(:)=cell%koxyz(kx)+1
+!       write(6,*)
+!       write(6,*)kx,koxyz(1),koxyz(2),koxyz(3)
+!       write(6,*)kx,'ncelvois', cell%ncelvois(kx)
+!       write(6,*)kx,cell%isghost(kx),cell%copyof(kx)
+!    end do
           
 
     return
@@ -421,14 +431,16 @@ contains
     logical,intent(in),optional::lextr,lcheckfrontier
     logical::lextrait=.false.,lchkftr=.true.
 
-    integer :: i,  kx, ky, kz, koo
-    real(double) :: aux, auy, auz
+    integer :: i,  kx, ky, kz, koo,kxyz(3)
+    real(double) :: auxyz(3)
     real(double), dimension(:,:), allocatable :: xpnp !
     integer(long), save:: icaltabt=0
-    integer::iml
+    integer::iml,midnox(3)
+    integer::indor,ic
     !
     ! --------- Initialisation --------------
     !
+    midnox(:)=(cell%nox(:)+1)/2
     if (present(lextr))lextrait=lextr
     if (present(lcheckfrontier))lchkftr=lcheckfrontier
     if (lextrait) then
@@ -482,24 +494,32 @@ contains
 
        do i = 1, iml
           !     if  ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xpnp(1,i),xpnp(2,i),xpnp(3,i)
-          aux = xpnp(1,i)*cell%nox(1)
-          auy = xpnp(2,i)*cell%nox(2)
-          auz = xpnp(3,i)*cell%nox(3)
-          kx = int(aux)
-          ky = int(auy)
-          kz = int(auz)
-          kx = Modulo(kx,cell%nox(1))
-          ky = Modulo(ky,cell%nox(2))
-          kz = Modulo(kz,cell%nox(3))
+          do ic=1,3
+             if  (cell%ismall(ic)) then
+                kxyz(ic)=midnox(ic)-1
+             else
+                auxyz(ic) = xpnp(ic,i)*cell%nox(ic)
+                kxyz(ic) = int(auxyz(ic))
+                kxyz(ic) = Modulo(kxyz(ic),cell%nox(ic))
+             end if
+          end do
           !          if  ((it.ge.1000).and.(i.lt.20))  write(6,'(I5,3G15.7)')i, kx,ky,kz
           !==============================================================
-          koo = 1+kx+cell%nox(1)*(ky+cell%nox(2)*kz)
+          koo = 1+kxyz(1)+cell%nox(1)*(kxyz(2)+cell%nox(2)*kxyz(3))
           IF ( (koo.GT.cell%noxyz).OR.(koo.LT.0) ) THEN
              WRITE(0,'(a,i0,a,3g20.12)') &
                   'Problem with atom ', i, ', x,y,z = ', atcf%xp(1:3,i)
              WRITE(0,'(2(a,i0))') ' koo = ', koo, ' - noxyz = ', cell%noxyz
-             STOP
+             call arret_ndm
           END IF
+          if (cell%isghost(koo)) then
+             WRITE(0,'(a,i0,a,3g20.12)') &
+                  'Problem with atom ', i, ',in ghost cell x,y,z = ', atcf%xp(1:3,i)
+             WRITE(0,'(2(a,i0))') ' koo = ', koo, ' - noxyz = ', cell%noxyz
+             call arret_ndm
+          end if
+       
+             
           atcf%ielat(i) = koo
           cell%nato(koo) = cell%nato(koo)+1
 !                    write(6,*)'caltabt', koo,i,cell%nato(koo)        ! DEBUG
@@ -538,6 +558,15 @@ contains
        !             end do
        DEALLOCATE(xpnp)   ! MODIF CLOUET
     endif
+    if (any(cell%ismall)) then
+       do koo=1,cell%noxyz
+          if (cell%isghost(koo)) then
+             indor=cell%copyof(koo)
+             cell%atincel(:,koo)=cell%atincel(:,indor)
+             cell%nato(koo)=cell%nato(indor)
+          end if
+       end do
+    end if
     !    do koo=1,cell%noxyz
     !       write(6,*)'nato',koo,cell%nato(koo)
     !    end do
@@ -560,6 +589,7 @@ contains
 
 !    call atcf%print
 !    call cell%print
+!    stop
     return
   end subroutine caltabtC
 

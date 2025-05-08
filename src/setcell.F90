@@ -49,7 +49,7 @@ contains
           celsn%celsize(ic) = boxsn%zl(1)
 !          boxsn%ismall=.true.
 !          celsn%ngx(ic)=
-          nox(ic) =1+2*int(ronz(ic))+1
+          nox(ic) =max(3,1+2*int(ronz(ic)))
           celsn%celsize(ic) = boxsn%zl(ic)
        else
           if (nox(ic).le.0) then 
@@ -63,7 +63,8 @@ contains
        write (6,'(a)') 'nox noy noz and ghost cells from ru'
        do ic=1,3
           if( celsn%ismall(ic)) then
-             WRITE(6,'(a,i3,a,i5,a,g12.4)') ' GHOST DIRECTION',ic,' nox = ', nox(ic), ', =1+2*rum/boxsn%nzl(:))',rum/boxsn%nzl(:)
+             WRITE(6,'(a,i3,a,i5,a,g12.4)') ' GHOST DIRECTION',ic,' nox = ', nox(ic), ', =1+2*rum/boxsn%nzl(:))',rum/boxsn%nzl(ic)
+
           else
              WRITE(6,'(a,i3,a,g12.4,a,g12.4,a)') '  nox = ',nox(ic),' if not specified =Int( ', boxsn%nzl(1),'/',rum,') '
              !          WRITE(6,'(2(a,g12.4),a,i0)') '  noy = Int( ', boxsn%nzl(2),'/',rum,') = ', noy
@@ -88,7 +89,7 @@ contains
     class(box_config),intent(in)::boxcf
     real(double)::rumax
 
-    integer::natperc,izonr2,nvois,nvperat
+    integer::natperc,izonr2,nvois,nvperat,ic
     real(double)::rm2,zlm2,zlmin,voluperat,rvois
     logical,intent(in),optional::lverbose
     logical::lverb=.true.
@@ -104,7 +105,10 @@ contains
     !    IF (natperc.LE.0) THEN        ! MODIF Clouet
     !    write(6,*)'TTTTTTTTTTTTTTTTTTTUUUUUUUUUUUUUUUUUUUUUUUUUUUTTTTTTTTTTTTTTT'
     !    write(6,*)celscf%noxyz
-    natperc= INT(atcf%im_glob/celscf%noxyz)
+    natperc=atcf%im_glob
+    do ic=1,3
+       if (.not.(celscf%ismall(ic)))     natperc= INT(natperc/celscf%nox(ic))
+    end do
     nvat=3*natperc
     natperc=max(int(3*natperc),20)     ! MODIF Clouet
     !    ELSE                          ! MODIF Clouet
