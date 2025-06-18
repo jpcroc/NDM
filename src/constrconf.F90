@@ -75,7 +75,7 @@ contains
     if (igen.ge.1) then
        allocate (ibuffer(imm_glob))
        allocate (buffer(3,imm_glob))
-    if ((rang==0).and.(lprt))  write(6,*)'********** reading configuration from file********'
+       if ((rang==0).and.(lprt))  write(6,*)'********** reading configuration from file********'
        if (lrestart) then
           fnamcin = fnam(1:lenfnam)//'.cout'
        else
@@ -88,7 +88,8 @@ contains
        !    meilleur equilibrage/decoupage
        !  - la deuxieme pour lire uniquement les positions propres au
        !    processeur
-       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart.eqv..true.)) then
+       !       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart.eqv..true.)) then
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 
           itread=1
           call atrcf%deftype(compatrcf)
@@ -103,10 +104,15 @@ contains
           call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
           ncore=0
           atrcf%im_glob=compatrcf%im
-          call  decoupage(nprocspace,ncore,cellrcf,atrcf,psc=psc,lverbose=lprt)
-          
-          allocate(num_at_buff(imm_glob))
-          call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
+          if (lrepart.eqv..true.) then
+             call  decoupage(nprocspace,ncore,cellrcf,atrcf,psc=psc,lverbose=lprt)
+             
+             allocate(num_at_buff(imm_glob))
+             call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
+          else
+             call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
+             call compatrcf%copy_config(atrcf, lrescl=.true.)
+          end if
           !       itread=3
           !       call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin,num_at_buff,atrcf%im) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 num_at_buff masque des atomes locaux
        else
@@ -118,7 +124,7 @@ contains
 !          end if
 !          call atrcf%print
           atrcf%im_glob=atrcf%im
-    if ((rang==0).and.(lprt)) then
+          if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
           call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
@@ -133,7 +139,7 @@ contains
        if (ldecoup) then 
           itread=0
           call read_cin(boxrcf,itread,fnamcin=fnamcin)
-    if ((rang==0).and.(lprt)) then
+          if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
           call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
@@ -148,7 +154,7 @@ contains
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
 
           atrcf%im_glob=atrcf%im
-    if ((rang==0).and.(lprt)) then
+          if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
           call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
@@ -843,7 +849,7 @@ contains
           if (nitmax.ge.0) itmax=iteration+nitmax
           tstep = oldtstep
 
-    if ((rang==0).and.(lprt)) then
+          if ((rang==0).and.(lprt)) then
 
              write (6, *) 'restart parameters'
              write (6, *) 'it =', iteration, ' time =', timel

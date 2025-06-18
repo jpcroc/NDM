@@ -1158,7 +1158,7 @@ contains
     else
        imp=atin%im
     end if
-    write(6,*)'AAAAA',rang,atin%im,atin%imf
+!    write(6,*)'AAAAA',rang,atin%im,atin%imf
 #else
     imp=atin%im
 #endif
