@@ -105,7 +105,7 @@ write_desc=.false.
 desc_forces=.true.
 
 !--> cut-off of the descriptor ...
-r_cut=4.7d0
+r_cut=5.5d0
 r_cut_magnetic=5.3d0
 
 

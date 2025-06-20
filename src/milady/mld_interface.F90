@@ -6,6 +6,7 @@ module mld_interface_mod
     use ndm_interface_mod, only: md_calfo_ml, ndm2mld_var_pot, ndm2mld_gen_comm, mld2ndm_var_pot, copy_fnam, md_config_wrap
     USE NDM_ML,only :rue_ml
     use gen_com_m, only:dmtype
+    use caltabi_mod,only: caltabi
 
     contains
     subroutine mld_init_mpi()
@@ -39,7 +40,11 @@ module mld_interface_mod
                         alpha, lambda, xsi, potisrep, potisglue, potiseam, &
                         kpmex, kpmey, kpmez, kpme, maxorder, iorder, npoint, nfft1, &
                         nfft2, nfft3, nff, nf1, nf2, nf3, ntable, pterm, volterm)
-        call md_calfo_ml(atcf%im,atcf%imm,atcf%ityp,atcf%xp,atcf%fp,boxcf%volu,boxcf%at,boxcf%bg, potistcalfo,sigcalfo,celcf%ncel) ! in ndm_interface
+        
+        ! write(*,*) '!!!!!!!!!! iwmax, indi, distance', atcf%iwmax(atcf%im), atcf%indi(atcf%iwmax(atcf%im)), atcf%distance(atcf%iwmax(atcf%im),1)
+        ! call md_calfo_ml(atcf%im,atcf%imm,atcf%ityp,atcf%xp,atcf%fp,boxcf%volu,boxcf%at,boxcf%bg, potistcalfo,sigcalfo,celcf%ncel) ! in ndm_interface
+        call caltabi(atcf,celcf,boxcf)
+        call md_calfo_ml(atcf%rvois,atcf%iwmax,atcf%indi,atcf%distance,atcf%im,atcf%imm,atcf%ityp,atcf%xp,atcf%fp,boxcf%volu,boxcf%at,boxcf%bg, potistcalfo,sigcalfo,celcf%ncel) ! in ndm_interface
     
     end subroutine mld_calfo
 
