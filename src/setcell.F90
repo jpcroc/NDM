@@ -47,7 +47,7 @@ contains
 !    if (lpotentiel(12).eqv..true.) rut=max(rut,2*rue_pot(12))
     izonr = int(zlmin/rum)
     ! MPI
-!    if ((rang==0).and.(lverb)) write (6, *) 'izonr,zlmin,rut', izonr, zlmin*1d8, rut*1d8
+
     if ((ipotentiel.ne.20).and.(izonr<2)) then
        !write (6, *) 'trop petite boite !!!'
        !cosboite  stop

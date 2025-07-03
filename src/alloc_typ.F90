@@ -36,7 +36,7 @@ contains
        allocate(ty(ntyp))
        allocate(pot(4,npair,0:ngrid+1))
        allocate(pot_d(4,npair,0:ngrid+1))
-
+       pot=0;pot_d=0
        allocate(q(ntyp))
        q(:)=0
 !!$       allocate(rc(ntyp))
@@ -58,12 +58,14 @@ contains
        allocate(lue_trip(ntrip))
        lue_trip(:)=.false.;lue_paire(:)=.false.; lue_typ(:)=.false.
        allocate(ro(npair)); allocate(dip(npair));allocate(pm(npair))
+       dip(:)=0;ro(:)=0
        allocate(roff1(npair));allocate(roff2(npair))
        if (npotentiel.gt.1) then
           roff1=-1;roff2=-2
           typ_pot_pair(:)=0
        end if
        allocate(a_factor(npair));allocate(r8p(npair))
+       a_factor(:)=0;r8p(:)=0
 
        !     if(iterdf.ge.0) then
        !     allocate(coorpart(contmax,ntyp))

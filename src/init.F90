@@ -250,7 +250,6 @@ contains
        end select
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
     end if
-    
     if (itmax==0) call arret_ndm
 
     if (lcdp) call initcdp

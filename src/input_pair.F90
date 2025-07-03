@@ -163,10 +163,16 @@ contains
     case(0,1,3,4,5,7,8,9)
 
        read(lupotin, *) iewald, l3c
+       select case(ipotentiel)
+       case(7,2,6,8)
+          ipotrep=0
+       case(0,1,3,5,4)
+          ipotrep=2
+       end select
        call checkewald(iewald)
       
 #ifdef PARA
-       !if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+       !if ((nprocspace.gt.1).and.(lspaceNDM.eqv..tru.)) then
 
        !              if (iewald==2) then
        !                 iewald=1
@@ -210,12 +216,6 @@ contains
        endif
 
        ! initialisations de ipo3c
-       select case(ipotentiel)
-       case(7,2,6,8)
-          ipotrep=0
-       case(0,1,3,5,4)
-          ipotrep=2
-       end select
        ! MPI
 
 
@@ -643,26 +643,38 @@ contains
              end do
 
 
-          case (1)
+          case(1)
 
              !        if (ipotentiel==5) then ! terme Morse
-             Dmorse(:)=0. ; amorse(:)=0. ; remorse(:)=2.0d-8
              read(lupotin,*)nb_paire_a_lire
-             if (rang==0) write(6,*)'nb de paires MORSE',  nb_paire_a_lire
+             if (rang==0) write(6,*)'nb de paires ',  nb_paire_a_lire
              do lect_paire=1,nb_paire_a_lire
-                read(lupotin,*) tt1,tt2, dmr,amr,rmr
-                l=ipo(tt1,tt2)
+                if (ipotrep==0) then
+                   read(lupotin,*) tt1,tt2, a_factorm, rom, dipm
+                   l=ipo(tt1,tt2)
+                   lu_roff_pair(l)=.false.
+                else
+                   read(lupotin,*) tt1,tt2, rof1m,rof2m, a_factorm, rom, dipm
+                   l=ipo(tt1,tt2)
+                   lu_roff_pair(l)=.true.
+                   roff1(l) = rof1m*1d-8
+                   roff2(l) = rof2m*1d-8
+                end if
                 if(lue_paire(l)) then
-                   if (rang==0)write(6,*)'paire l lue deux fois ', l,tt1,tt2
+                   write(6,*) rang,'paire l lue deux fois ', l,tt1,tt2
                    call arret_ndm
                 endif
-                lue_paire(l)=.TRUE. ; typ_pot_pair(l)=ipotentiel           
+                lue_paire(l)=.TRUE. ; typ_pot_pair(l)=ipotentiel       
                 rue_pair(l)=rue*A2cm
-                dmorse(l)=dmr*ecgs
-                amorse(l)=amr*A2cm
-                remorse(l)=rmr*A2cm
                 if (rang==0) write(6,*)'paire l active  ipotentiel: ',l, ipotentiel
+
+                !        conversions d'unites
+
+                a_factor(l) = a_factorm*ecgs           ! conversion eV --> erg
+                ro(l) = rom*A2cm                     ! conversion A --> cm
+                dip(l) =  dipm*evA62ergcm6              ! conversion eV.A^6 --> erg.cm^6
              end do
+
           end select
 
 

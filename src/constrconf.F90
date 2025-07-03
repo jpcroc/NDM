@@ -93,7 +93,8 @@ contains
 
           itread=1
           call atrcf%deftype(compatrcf)
-          call compatrcf%init(immin=imm_glob,imin=0,ltabvois=compatrcf%ltabvois,rvois=compatrcf%rvois)
+!          write(6,*)'RVOIS',compatrcf%rvois
+          call compatrcf%init(immin=imm_glob,imin=0,ltabvois=compatrcf%ltabvois)
 
 
 !          call atrcf%print
@@ -716,20 +717,21 @@ contains
              !             read (lucin, err=456) buffer                     !former positions
              !             atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
 
-             read (lucin, err=456) buffer                     !ax utile peut-être
-             if ((icintype==3).or.(icintype==7)) then 
-                if (lrestart) then 
-                   if (atcinr%lax) then
-                      atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
-                   end if
-                end if
-             end if
+!             read (lucin, err=456) buffer                     !ax utile peut-être
+!             if ((icintype==3).or.(icintype==7)) then 
+!                if (lrestart) then 
+!                   if (atcinr%lax) then
+!                      atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
+ !                  end if
+ !               end if
+ !                  end if
           else
-             if (atcinr%lax) then
-                atcinr%ax(:,1:im_gr)=atcinr%xp(:,1:im_gr)
-                lvpread=.false.
-             end if
           end if
+          if (atcinr%lax) then
+             atcinr%ax(:,1:im_gr)=atcinr%xp(:,1:im_gr)
+             
+          end if
+
        end select
        if (icintypemod==1) then
           read (lucin, err=456) oldtstep
@@ -827,20 +829,21 @@ contains
 !!$             do i_loc=1,imic
 !!$                atcinr%vp(:,i_loc)=buffer(:,icible(i_loc))
 !!$             enddo
-             read (lucin, err=456) buffer                     !ax utile peut-être
-             if (lrestart) then 
-                if (atcinr%lax) then
-                   do i_loc=1,imic
-                      atcinr%ax(:,i_loc)=buffer(:,icible(i_loc))
-                   enddo
-                end if
-             end if
+!!$             read (lucin, err=456) buffer                     !ax utile peut-être
+!!$             if (lrestart) then 
+!!$                if (atcinr%lax) then
+!!$                   do i_loc=1,imic
+!!$                      atcinr%ax(:,i_loc)=buffer(:,icible(i_loc))
+!!$                   enddo
+!!$                end if
+!!$             end if
           else
+          end if
              if (atcinr%lax) then
                 atcinr%ax(:,1:imic)=atcinr%xp(:,1:imic)
-                lvpread=.false.
+
              end if
-          end if
+
        end select
        read (lucin, err=456) oldtstep
 

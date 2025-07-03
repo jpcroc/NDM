@@ -76,7 +76,8 @@ contains
 !       lrepart=.true.
        !    end if
        call constrconf(atdml,boxndm,celndm,lrepart,filenomIS,psc)
-    call init_pot2(boxndm,atdml%imm)
+
+       call init_pot2(boxndm,atdml%imm)
 
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -91,9 +92,10 @@ contains
     if (.not.lrestart) then
        !    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
        select type(atdml)
-          class is (atom_config_d)
+       class is (atom_config_d)
+
           call initspeed(atdml,boxndm,lprt=lprt)
-          end select
+       end select
     end if
 
 !    if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
