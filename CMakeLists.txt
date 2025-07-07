@@ -110,6 +110,7 @@ option( ${PROJECT_NAME}_OPT_TRACE "trace all variables for cmake debug" OFF )
 option( ${PROJECT_NAME}_OPT_TEST "Prepare tests" ON )
 option( ${PROJECT_NAME}_OPT_COVERAGE "code coverage option" OFF)
 option( ${PROJECT_NAME}_OPT_COMPILE_DOC "Compile documentation" OFF )
+option( ${PROJECT_NAME}_OPT_DK-IO "Dynamics Kit - input/output" ON )
 
 
 ################################################
@@ -195,6 +196,19 @@ endif()
 
 # Defines target to install
 install( TARGETS ${MAIN_LIBRARY_NAME} ${MAIN_EXECUTABLE_NAME})
+
+################################################
+# Dk-io integration
+################################################
+
+if (${PROJECT_NAME}_OPT_DK-IO)
+    add_compile_definitions(DKIO=1)
+    target_link_libraries(${MAIN_LIBRARY_NAME} dk_io dk_core zstd bz2 z)
+    target_link_directories(${MAIN_LIBRARY_NAME} PUBLIC "$ENV{HOME}/workdir/tmp/lib")
+    target_include_directories(${MAIN_LIBRARY_NAME} PUBLIC "$ENV{HOME}/workdir/tmp/lib/modules/gfortran/dk_io" "$ENV{HOME}/workdir/tmp/lib/modules/gfortran/dk_core")
+    target_link_options(${MAIN_EXECUTABLE_NAME} PRIVATE "-fopenmp")
+endif()
+
 
 ################################################
 # Tests and coverage
