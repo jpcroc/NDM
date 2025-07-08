@@ -269,43 +269,43 @@ contains
 !       case(10) ----------------------------------- Soon availible
 !          ! Dk_io Abinit format
 !          end_name='.'
-!          call dk_io_write(nameo,end_name,at,atcomp,STRUCTURE_ABINIT,extension)
+!          call dk_io_write(nameo,end_name,at,bg,atcomp,STRUCTURE_ABINIT,extension)
        case(11)
           ! Dk_io Atomeye's extended CFG format
           end_name='.xfg'
-          call dk_io_write(nameo,end_name,at,atcomp,"xfg",extension)
+          call dk_io_write(nameo,end_name,at,bg,atcomp,"xfg",extension)
        case(12)
           ! Dk_io CASTEP format
           end_name='.cell'
-          call dk_io_write(nameo,end_name,at,atcomp,"castep",extension)
+          call dk_io_write(nameo,end_name,at,bg,atcomp,"castep",extension)
        case(13)
           ! Dk_io CIF format
           end_name='.cif'
-          call dk_io_write(nameo,end_name,at,atcomp,"cif",extension)
+          call dk_io_write(nameo,end_name,at,bg,atcomp,"cif",extension)
        case(14)
           ! Dk_io DL_POLY format
           end_name='.CONFIG'
-          call dk_io_write(nameo,end_name,at,atcomp,"dlpoly",extension)
+          call dk_io_write(nameo,end_name,at,bg,atcomp,"dlpoly",extension)
        case(15)
           ! Dk_io GULP format
           end_name='.gin'
-          call dk_io_write(nameo,end_name,at,atcomp,"gulp",extension)
+          call dk_io_write(nameo,end_name,at,bg,atcomp,"gulp",extension)
        case(16)
           ! Dk_io LAMMPS format
           end_name='.lmp'
-          call dk_io_write(nameo,end_name,at,atcomp,"lammps",extension)
+          call dk_io_write(nameo,end_name,at,bg,atcomp,"lammps",extension)
        case(17)
           ! Dk_io VASP format
           end_name='.POSCAR'
-          call dk_io_write(nameo,end_name,at,atcomp,"vasp",extension)
+          call dk_io_write(nameo,end_name,at,bg,atcomp,"vasp",extension)
        case(18)
           ! Dk_io XYZ format
           end_name='.xyz'
-          call dk_io_write(nameo,end_name,at,atcomp,"xyz",extension)
+          call dk_io_write(nameo,end_name,at,bg,atcomp,"xyz",extension)
        case(19)
-          ! Dk_io XYZ format
+          ! Dk_io CIF format with Bzip2 compression
           end_name='.cif.bz2'
-          call dk_io_write(nameo,end_name,at,atcomp,"cif",extension,"bzip2")
+          call dk_io_write(nameo,end_name,at,bg,atcomp,"cif",extension,"bzip2")
 #endif
        case default
           write(6,*)'wrong ivisu',ivisum,ivisu
@@ -627,22 +627,20 @@ contains
   end subroutine openfilemol
 
 #ifdef DKIO
-  subroutine dk_io_write(nameo,end_name,box,atcomp,format,ext,compression)
+  subroutine dk_io_write(nameo,end_name,box,invbox,atcomp,format,ext,compression)
     !-----------------------------------------------------
     !  Subroutine for interfacing with the dk_io library
     !-----------------------------------------------------
     use dk_structure_io, only: write_structure, TAG_LENGTH
-    use Mat_utils_mod, only: matinv
     use T_kind_param_m, only:  double
     
     character(len=*), intent(in) :: nameo,end_name,format
-    real(double), intent(in) :: box(3,3)
+    real(double), intent(in) :: box(3,3), invbox(3,3)
     class(atom_config) :: atcomp
     character(len=9), intent(in), optional :: ext
     character(*), intent(in), optional :: compression
     character(len=80) :: namef
     character(TAG_LENGTH), dimension(:), allocatable :: tags
-    real(double) :: invbox(3,3)
     integer :: i
 
     if (present(ext)) then
@@ -654,9 +652,8 @@ contains
     allocate(tags(atcomp%im))
 
     ! Convert to fractional coordinates, and get atoms tag
-    call matinv(box, invbox)
+    call cryst_to_cart(atcomp%im, atcomp%xp,  invbox,  -1) !cart vers cryst
     do i=1, atcomp%im
-       atcomp%xp(:,i) = matmul(invbox, atcomp%xp(:,i))
        tags(i) = ty(atcomp%ityp(i))
     end do
 
