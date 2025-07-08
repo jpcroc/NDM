@@ -1,7 +1,7 @@
 module ForceMatrix_mod
   USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m,only:  lperiod,lenfnam,lspaceNDM,rang,erg2ev,fnam,fnamcout,imm_glob,fnam,lenfnam,iteration,&
-       &pseudosc,lwgin,itypsc
+       &lwgin
   USE atomconfig,only:atom_config
   USE cellconfig, only:cell_config, caltabtC
   USE var_pot,only:ntyp,cm,gamlt
