@@ -8,16 +8,16 @@
  
  -------- caracteristiques du run DM--------23
      FIRE Quenching Vcst
- rang readdm iseed            1           1
  generation du crystal ; puis run
  
       ANALYSES 
+ rang readdm iseed            1           1
  itetemp=        1000  iteprtsigma=           1
  
       CONTROLES 
+tstep=  0.100D-14
  rang readdm iseed            2           1
  rang readdm iseed            3           1
-tstep=  0.100D-14
  itmax=       20000 timemax=    10000000000.0000       itab=           1 
   itetimestep=          -1
 tinit=       0.1

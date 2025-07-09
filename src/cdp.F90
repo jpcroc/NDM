@@ -247,6 +247,7 @@ contains
     atomvac%ityp=0
     atomvac%iproc=0
     atomvac%iloc=0
+    atomvac%pos=0
     allocate(atomint%iatpos(ninttot))
     allocate(atomint%ityp(ninttot))
     allocate(atomint%pos(3,ninttot))
@@ -418,7 +419,8 @@ contains
              end do
 
              do ivactot=1,nvactot
-                !#ifdef PARA          
+                !#ifdef PARA
+
                 if (comm_space%rank==atomvac%iproc(ivactot)) then
                    !#endif
                    call atdml%switch_atom(atomvac%iloc(ivactot),atdml%im)
@@ -537,14 +539,14 @@ contains
                       !end if
 !                      call comm_space%bcast(numproc,l2close)
                       !#endif
-
+!                      write(6,*) 'l2close',l2close
                       if (.not.l2close) then ! not too close ==> intertsitiel+1
                          atomint%ityp(iinttot)=iti
                          atomint%pos(:,iinttot)=xpositest(:)
                          natgM=maxval(atdml%num_at_glob(1:atdml%im))
                          !#ifdef PARA
                          if (lspacendm) call comm_space%max(natgM)
-
+!!                         write(6,*) 'lspacendm',myidsp,numproc
                          if (lspacendm) then
                             if (myidsp==numproc)then
                                lsuiv=.true.
@@ -554,10 +556,12 @@ contains
                          else
                             lsuiv=.true.
                          end if
+!                         write(6,*) 'lsuiv',lsuiv
                          if (lsuiv) then
 
                             !#endif                   
                             atdml%im=atdml%im+1
+!                            write(6,*)'testim ', atdml%im
                             atdml%xp(:,atdml%im)=xpositest(:)
                             atdml%ityp(atdml%im)=iti
                             atdml%fp(:,atdml%im)=0
@@ -613,6 +617,7 @@ contains
              end if
 
           end if
+          write(6,*)'IMM',atdml%im_glob,nvactot,ninttot
           atdml%im_glob=atdml%im_glob-nvactot+ninttot
           !#ifdef PARA
 
