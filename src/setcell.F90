@@ -142,9 +142,12 @@ contains
     !    IF (natperc.LE.0) THEN        ! MODIF Clouet
     !    write(6,*)'TTTTTTTTTTTTTTTTTTTUUUUUUUUUUUUUUUUUUUUUUUUUUUTTTTTTTTTTTTTTT'
     !    write(6,*)celscf%noxyz
-    natperc= INT(atcf%im_glob/celscf%noxyz)
+    call setnatperc(celscf,atcf,boxcf,natperc)
+!    write(6,*)'natpercN',natperc,celscf%noxyz
+!    natperc= INT(atcf%im_glob/celscf%noxyz)
+!    write(6,*)'natperc0',natperc
     nvat=3*natperc
-    natperc=max(int(3*natperc),20)     ! MODIF Clouet
+    natperc=max(int(2*natperc),20)     ! MODIF Clouet
     !    ELSE                          ! MODIF Clouet
     !       nvat=10*natperc       ! MODIF Clouet
     !    END IF                        ! MODIF Clouet
@@ -192,4 +195,61 @@ contains
        if (.not.allocated(atcf%iwmax))allocate(atcf%iwmax(atcf%imm))
     end if
   end subroutine setcellconf
+
+  subroutine setnatperc(celcf,atcf,boxcf,natperc)
+    use Tpara,only:mpi_communicator,comm_space
+    USE notperiod_mod,only: notperiod
+    type(cell_config)::celcf
+    class(atom_config)::atcf
+    class(box_config),intent(in)::boxcf
+    integer,intent(out)::natperc
+    integer, allocatable :: natdscel(:)
+    real(double), dimension(:,:), allocatable :: xpnp !
+    integer::iml,i,kx,ky,kz,koo
+    real(double)::aux,auy,auz
+
+    iml=atcf%im
+
+    if (celcf%noxyz==1) then
+       natperc=atcf%imm
+    else
+       ALLOCATE(xpnp(3,iml))
+       allocate (natdscel(celcf%noxyz))
+       natdscel(:)=0
+       call notperiod(iml,atcf%xp,xpnp,boxcf%at,boxcf%bg,lperiod)       
+       call cryst_to_cart (iml, xpnp, boxcf%bg, -1) ! cart vers cryst
+       do i = 1, iml
+          !     if  ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xpnp(1,i),xpnp(2,i),xpnp(3,i)
+          aux = xpnp(1,i)*celcf%nox
+          auy = xpnp(2,i)*celcf%noy
+          auz = xpnp(3,i)*celcf%noz
+          kx = int(aux)
+          ky = int(auy)
+          kz = int(auz)
+          kx = Modulo(kx,celcf%nox)
+          ky = Modulo(ky,celcf%noy)
+          kz = Modulo(kz,celcf%noz)
+          koo = 1+kx+celcf%nox*(ky+celcf%noy*kz)
+
+          IF ( (koo.GT.celcf%noxyz).OR.(koo.LT.0) ) THEN
+             WRITE(0,'(a,i0,a,3g20.12)') &
+                  'Problem with atom ', i, ', x,y,z = ', atcf%xp(1:3,i)
+             WRITE(0,'(2(a,i0))') ' koo = ', koo, ' - noxyz = ', celcf%noxyz
+             STOP
+          END IF
+          natdscel(koo)=natdscel(koo)+1
+
+
+       end do
+!       write(6,*)natdscel
+#ifdef PARA
+       if (lspacendm) then
+          call comm_space%sum(natdscel)
+       end if
+
+#endif
+       natperc=maxval(natdscel)
+    end if
+  end subroutine setnatperc
+
 end module setcell

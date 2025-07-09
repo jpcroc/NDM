@@ -1647,7 +1647,7 @@ contains
        select case(dmtype)
        case(1,4,8)
           itetimestep=1
-       case(2,3,32,33,34,35,21,22)
+       case(2,3,32,33,34,35,21,22,23,24)
           itetimestep=-1
        case default
           if (rang==0) write(6,*)'dmtype inconsistent with creaDP', dmtype

@@ -314,6 +314,8 @@ contains
        else
           call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
        end if
+    else
+       cel2b%proc_cell=0
     end if
     COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
@@ -641,7 +643,7 @@ contains
 !!$             write(6,*)'xpp_e'
              read (lucin, err=456) buffer                     !vp
              atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
-             write(6,*)'vp_e'
+!             write(6,*)'vp_e'
              !             read (lucin, err=456) buffer                     !former positions
              !             atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
 

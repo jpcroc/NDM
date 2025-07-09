@@ -6,7 +6,7 @@
 	imm=150
 	igen=0, tinit=600.0
 	dmtype=4   ! 7 ph ; 3 CG
-	itmax=20000 
+	itmax=5000 
 	itetemp=100,itesigma=100
 	lEev=.true. 
 	lEparat=.true.,

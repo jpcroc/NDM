@@ -87,10 +87,11 @@ contains
     write(6,*)'DECOUP TEST from 2 to ', nbr_cpuIN,' with ',ncore ,' per node'
     write(6,*)'results are in decoup_out, grep MEILLEUR'
     iudecoup=1023
+    open (unit=1023,file='decoup_out')    
  else
     iudecoup=6
  end if
-    open (unit=1023,file='decoup_out')    
+
 
  if ((nprocspace.gt.1).or.(ldecoup)) then
        loop1:     do nbr_cpu=nbr_cpumin,nbr_cpuIN
@@ -394,6 +395,8 @@ contains
 #endif
 
     enddo loop1
+ else ! on ne devrait pas être là!
+    celdec%proc_cell=0
  end if
  if (ldecoup) stop
  return

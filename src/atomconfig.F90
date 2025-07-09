@@ -728,6 +728,7 @@ contains
           atcible%lprteat=atsource%lprteat
           atcible%llangevin=atsource%llangevin
           atcible%lsigat=atsource%lsigat
+          atcible%lxpp=atsource%lxpp
        end select
     end select
     atcible%ltabvois=atsource%ltabvois

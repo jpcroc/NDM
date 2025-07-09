@@ -619,7 +619,7 @@ contains
           imt=atdml%im
           if (lspacendm)call comm_space%sum(imt)
           if(imt.ne.atdml%im_glob) then
-             write(6,*)'imt <> %im_glob'
+             write(6,*)'imt <> %im_glob',imt,atdml%im_glob
              call arret_ndm
           end if
           !#endif
