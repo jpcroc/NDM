@@ -1,0 +1,15 @@
+3 .false.		 !integer input for Ewald summation and three-body terms
+ &ewald
+   rue=11.00
+   alpha=0.420560
+ &end
+2
+ 3.227252 238.03  92.0 'U4'           ! Q, CM, numero atomique (U)
+-1.613626 15.9994 8.0 'O '             ! Q, CM, numero atomique(O)
+3			          ! nombre de paires non standard
+2 2 11272.6 0.1363  134.0 1.4 1.6 ! O-O (# de paire, Aij, ro, Cij, roff1, roff2)
+1 2 566.498 0.42056 0.0   1.4 1.6 ! O-U
+1 1  0.0     1.0     0.0   1.4 1.6 ! U-U
+479.955 -1372.53 1562.223 -881.968 246.435 -27.245 ! ao, a1, a2, a3, a4, a5
+42.7131666141 -55.2905410573 22.9981267646 -3.12123759592 ! b0, b1, b2, b3
+1.2 2.1 2.6 ! rayon de coupure interaction O-O

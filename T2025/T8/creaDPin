@@ -1,0 +1,7 @@
+ &inputcdp
+  nvac=10,nbint=7, nvac=10!,
+  itprep=0
+  itecdp=4
+  typint=1
+  iseed=124
+ &end

@@ -1,0 +1,505 @@
+ Process            0  of            4  is alive
+ Process            3  of            4  is alive
+ Process            1  of            4  is alive
+ Process            2  of            4  is alive
+ >>>>>>>>>>> entree readdm
+ nom fichier din=Febulk.din                                                                      
+
+ -------- caracteristiques du run DM--------21
+     TREMPE RAPIDE Verlet std
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=        1000  iteprtsigma=           1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=       20000 timemax=    10000000000.000002       itab=           1  itetimestep=          -1
+tinit=       0.1
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+ IMM PARA =          720        2400
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM
+
+ Types d_atomes pour ce potentiel:
+ CM, masse,type, NUMERO DU TYPE D ATOME
+   1   55.847   26.000  Fe 
+ nb de paires grille           1
+ nptmax in the max number of points on grid        250000
+ EAM           1           1
+ EAM number of points in potin and the step      250000   6.8178370289999997E-004
+ dens           1           1
+ RHO potin points and the step:       250000   2.4000000000000001E-005
+ paire eam ; paire complete           1           1
+ rep
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+ imm,imm_glob,nprocspace         720        2400           4
+
+ **********construction du reseau************
+ repetition de mailles          10          10          10
+  .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +1e-6
+ izonr,zlmin,rut           4   57.106360000000002        12.000000000000002     
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.2855E-06/  0.6000E-07) = 4
+  noy = Int(   0.2855E-06/  0.6000E-07) = 4
+  noz = Int(   0.2855E-06/  0.6000E-07) = 4
+nox noy noz apres correction = 4 4 4
+celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
+Febulk.gin                                                                      volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            4  cpus           0
+ Nbre de solutions possibles :            6
+LE_MEILLEUR_DECOUPAGE :    4    1    2    2    0.9200
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           2           2
+ Nombre de cellules max echg  par proc :           4          80
+ Taux d'equilibrage :           4   1.0000000000000000     
+ valeur            4  0.92000000000000004     
+ Nbre Min/Max de cel. locales. :          16          16
+ Nbre Min/Max de cel. fantomes. :          80          80
+ locmin/fantomax :           4  0.20000000000000001     
+ natperc im/noxyz          62          31
+ ltabvois F
+
+ -------- boite de simulation ------
+ nombre d atomes =        2000
+vecteur  1      28.553180       0.000000       0.000000
+vecteur  2       0.000000      28.553180       0.000000
+vecteur  3       0.000000       0.000000      28.553180
+        2000  atomes de type           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ calpoeam RHO MIN:    0.0000000000000000     
+ calpoeam RHO MAX:    12.174708979468400     
+ calpoeam Rhomin Rhomax    0.0000000000000000        170.44524392885501     
+ calpoeam ktorho and the inverse:    8.5222621964427502E-003   117.33973643962830     
+ rangspace            1  nbr procs voisins            3
+ rangspace            0  nbr procs voisins            3
+ rangspace            3  nbr procs voisins            3
+ rangspace            2  nbr procs voisins            3
+
+ random velocities at TINIT =   0.10000000000000001      K
+ seed_size           8
+ iseed pour tirage des vitesses           1
+ temperature fin initspeed   0.10317157709772976     
+
+
+ POINT DEFECT CREATION
+ ITECDP    40000000
+
+ NFP VAC INT for all types
+ rang iseed CREADP           0         124
+ ***** PREMIERE ITERATION  VERLET STD ***    40000000   100000000.00000000     
+ RETURN CONTROLE
+ RETURN CONTROLE
+ RETURN CONTROLE
+TR: force max, energy     1    0.2812001067E-13   -0.8238898745E+04
+ RETURN CONTROLE
+ *******return CDP**** 
+ ITER           0    40000000    40000000
+ timeloopmax itloopmax restart   1000000000.0000000         40000000 F
+ ****************************************
+ POINT DEFECT CREATION 
+ iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
+          0       0.0000000          20000      0.10000000E+10     10     10
+ ****************************************
+ ***** PREMIERE ITERATION  VERLET STD ***       20000   1000000000.0000000     
+
+TR: force max, energy     1    0.8685551623E+02   -0.7536414552E+04
+
+TR: force max, energy     2    0.1366747739E+07    0.1130150940E+06
+
+TR: force max, energy     3    0.1357033533E+07    0.8975909830E+05
+
+TR: force max, energy     4    0.1347872829E+07    0.7480545945E+05
+
+TR: force max, energy     5    0.1338498680E+07    0.7544094343E+05
+
+TR: force max, energy     6    0.1328919848E+07    0.7849939177E+05
+
+TR: force max, energy     7    0.1319145447E+07    0.7798680111E+05
+
+TR: force max, energy     8    0.1309184356E+07    0.7821054605E+05
+
+TR: force max, energy     9    0.1299045685E+07    0.7791503751E+05
+
+TR: force max, energy    10    0.1288738483E+07    0.7756848339E+05
+
+TR: force max, energy    11    0.1278271836E+07    0.7717574940E+05
+
+TR: force max, energy    12    0.1267654702E+07    0.7685324051E+05
+
+TR: force max, energy    13    0.1256896298E+07    0.7652773414E+05
+
+TR: force max, energy    14    0.1245446843E+07    0.7617866980E+05
+
+TR: force max, energy    15    0.8729851894E+04    0.3160518366E+04
+
+TR: force max, energy    16    0.3397074334E+04    0.2218997432E+04
+
+TR: force max, energy    17    0.3056073419E+04    0.1538570298E+04
+
+TR: force max, energy    18    0.2746880526E+04    0.1099618598E+04
+
+TR: force max, energy    19    0.1922658571E+04    0.1628609206E+03
+
+TR: force max, energy    20    0.1169925106E+04   -0.8798410127E+03
+
+TR: force max, energy    21    0.7501354969E+03   -0.1806759710E+04
+
+TR: force max, energy    22    0.5363205890E+03   -0.2561291136E+04
+
+TR: force max, energy    23    0.3735789284E+03   -0.3139088941E+04
+
+TR: force max, energy    24    0.2751731598E+03   -0.3564021328E+04
+
+TR: force max, energy    25    0.2051715085E+03   -0.3886454415E+04
+
+TR: force max, energy    26    0.1686922258E+03   -0.4143098938E+04
+
+TR: force max, energy    27    0.1487125295E+03   -0.4354326380E+04
+
+TR: force max, energy    28    0.1334636734E+03   -0.4534907055E+04
+
+TR: force max, energy    29    0.1246791603E+03   -0.4694296590E+04
+
+TR: force max, energy    30    0.1194541900E+03   -0.4839845769E+04
+
+TR: force max, energy    31    0.1145004636E+03   -0.4974753456E+04
+
+TR: force max, energy    32    0.1098437044E+03   -0.5101458314E+04
+
+TR: force max, energy    33    0.1054790280E+03   -0.5220327084E+04
+
+TR: force max, energy    34    0.1017180329E+03   -0.5331451029E+04
+
+TR: force max, energy    35    0.9817038020E+02   -0.5437399173E+04
+
+TR: force max, energy    36    0.9482258160E+02   -0.5539616693E+04
+
+TR: force max, energy    37    0.9165837392E+02   -0.5639215753E+04
+
+TR: force max, energy    38    0.8866470985E+02   -0.5736543134E+04
+
+TR: force max, energy    39    0.8583819090E+02   -0.5832693078E+04
+
+TR: force max, energy    40    0.8315040537E+02   -0.5927292543E+04
+
+TR: force max, energy    41    0.8064498028E+02   -0.6020428586E+04
+
+TR: force max, energy    42    0.7814958006E+02   -0.6111214848E+04
+
+TR: force max, energy    43    0.7565077483E+02   -0.6199804047E+04
+
+TR: force max, energy    44    0.7313546382E+02   -0.6286618588E+04
+
+TR: force max, energy    45    0.7058483139E+02   -0.6371368276E+04
+
+TR: force max, energy    46    0.6798052128E+02   -0.6453561934E+04
+
+TR: force max, energy    47    0.6530780233E+02   -0.6533404782E+04
+
+TR: force max, energy    48    0.6255942920E+02   -0.6610289212E+04
+
+TR: force max, energy    49    0.5972301130E+02   -0.6684390233E+04
+
+TR: force max, energy    50    0.5681405748E+02   -0.6755953841E+04
+
+TR: force max, energy    51    0.5382641738E+02   -0.6825106790E+04
+
+TR: force max, energy    52    0.5130737480E+02   -0.6891718612E+04
+
+TR: force max, energy    53    0.4977909878E+02   -0.6955443809E+04
+
+TR: force max, energy    54    0.4818530095E+02   -0.7015423661E+04
+
+TR: force max, energy    55    0.4653077627E+02   -0.7072282891E+04
+
+TR: force max, energy    56    0.4481637847E+02   -0.7126586520E+04
+
+TR: force max, energy    57    0.4300924458E+02   -0.7177557736E+04
+
+TR: force max, energy    58    0.4115230823E+02   -0.7225776739E+04
+
+TR: force max, energy    59    0.4148253672E+02   -0.7270719272E+04
+
+TR: force max, energy    60    0.4113336671E+02   -0.7310943042E+04
+
+TR: force max, energy    61    0.4078213856E+02   -0.7347276173E+04
+
+TR: force max, energy    62    0.4041968310E+02   -0.7380371267E+04
+
+TR: force max, energy    63    0.4007611068E+02   -0.7410096179E+04
+
+TR: force max, energy    64    0.3866855973E+02   -0.7437957976E+04
+
+TR: force max, energy    65    0.3743020025E+02   -0.7464942226E+04
+
+TR: force max, energy    66    0.3594259578E+02   -0.7489553380E+04
+
+TR: force max, energy    67    0.3429637696E+02   -0.7512638954E+04
+
+TR: force max, energy    68    0.3225932866E+02   -0.7534978691E+04
+
+TR: force max, energy    69    0.3010096887E+02   -0.7556970446E+04
+
+TR: force max, energy    70    0.2824103487E+02   -0.7578689160E+04
+
+TR: force max, energy    71    0.2623010292E+02   -0.7599143329E+04
+
+TR: force max, energy    72    0.2409597866E+02   -0.7618256542E+04
+
+TR: force max, energy    73    0.2202338344E+02   -0.7636018184E+04
+
+TR: force max, energy    74    0.2057639003E+02   -0.7652423054E+04
+
+TR: force max, energy    75    0.2114981647E+02   -0.7667441841E+04
+
+TR: force max, energy    76    0.2160546003E+02   -0.7680709872E+04
+
+TR: force max, energy    77    0.2107063785E+02   -0.7692668126E+04
+
+TR: force max, energy    78    0.2009162091E+02   -0.7703095056E+04
+
+TR: force max, energy    79    0.1901041255E+02   -0.7713174933E+04
+
+TR: force max, energy    80    0.1785329522E+02   -0.7722832477E+04
+
+TR: force max, energy    81    0.1657538843E+02   -0.7732221823E+04
+
+TR: force max, energy    82    0.1521526105E+02   -0.7740641889E+04
+
+TR: force max, energy    83    0.1389973500E+02   -0.7748850250E+04
+
+TR: force max, energy    84    0.1350544713E+02   -0.7756939017E+04
+
+TR: force max, energy    85    0.1391339132E+02   -0.7764681106E+04
+
+TR: force max, energy    86    0.1254956728E+02   -0.7771808747E+04
+
+TR: force max, energy    87    0.1243865169E+02   -0.7778743856E+04
+
+TR: force max, energy    88    0.6973461555E+01   -0.7785986719E+04
+
+TR: force max, energy    89    0.5861055873E+01   -0.7793420025E+04
+
+TR: force max, energy    90    0.1361614980E+02   -0.7801004857E+04
+
+TR: force max, energy    91    0.5279314773E+01   -0.7808686031E+04
+
+TR: force max, energy    92    0.1285441107E+02   -0.7816290358E+04
+
+TR: force max, energy    93    0.6294971300E+01   -0.7824007233E+04
+
+TR: force max, energy    94    0.4179327701E+01   -0.7831552642E+04
+
+TR: force max, energy    95    0.3825322828E+01   -0.7838978125E+04
+
+TR: force max, energy    96    0.1450997068E+02   -0.7846220497E+04
+
+TR: force max, energy    97    0.3545086172E+01   -0.7853266743E+04
+
+TR: force max, energy    98    0.9182229654E+01   -0.7860079847E+04
+
+TR: force max, energy    99    0.8018736672E+01   -0.7866445183E+04
+
+TR: force max, energy   100    0.3052719331E+01   -0.7872373981E+04
+
+TR: force max, energy   101    0.2920878207E+01   -0.7877890728E+04
+
+TR: force max, energy   102    0.1138024197E+02   -0.7883008361E+04
+
+TR: force max, energy   103    0.2718739677E+01   -0.7887792707E+04
+
+TR: force max, energy   104    0.2689916998E+01   -0.7892241225E+04
+
+TR: force max, energy   105    0.2657553184E+01   -0.7896389756E+04
+
+TR: force max, energy   106    0.2619555979E+01   -0.7900386641E+04
+
+TR: force max, energy   107    0.2586415643E+01   -0.7904236466E+04
+
+TR: force max, energy   108    0.2547979656E+01   -0.7907946515E+04
+
+TR: force max, energy   109    0.2504102804E+01   -0.7911526616E+04
+
+TR: force max, energy   110    0.2455855086E+01   -0.7914985808E+04
+
+TR: force max, energy   111    0.2397241106E+01   -0.7918325695E+04
+
+TR: force max, energy   112    0.2350281016E+01   -0.7921545248E+04
+
+TR: force max, energy   113    0.2350041118E+01   -0.7924647860E+04
+
+TR: force max, energy   114    0.2334070505E+01   -0.7927633269E+04
+
+TR: force max, energy   115    0.2302777924E+01   -0.7930497070E+04
+
+TR: force max, energy   116    0.2275164707E+01   -0.7933238646E+04
+
+TR: force max, energy   117    0.2235789342E+01   -0.7935853818E+04
+
+TR: force max, energy   118    0.2194230004E+01   -0.7938338696E+04
+
+TR: force max, energy   119    0.2154665124E+01   -0.7940694463E+04
+
+TR: force max, energy   120    0.2113029292E+01   -0.7942869280E+04
+
+TR: force max, energy   121    0.2068243910E+01   -0.7944924861E+04
+
+TR: force max, energy   122    0.2019261844E+01   -0.7946873478E+04
+
+ RETURN CONTROLE
+ RETURN CONTROLE
+ RETURN CONTROLE
+TR: force max, energy   123    0.1972421038E+01   -0.7948721190E+04
+ RETURN CONTROLE
+ *******return CDP**** 
+ POST itmax,timemax,itecdp,timecdp,iteration,timel
+       20000   10000000000.000002         40000000  -1.0000000000000001E-015         123   0.0000000000000000     
+ ****************************************
+ POINT DEFECT CREATION 
+ iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
+        123       0.0000000          20000      0.10000000E+10     10     10
+ ****************************************
+ ***** PREMIERE ITERATION  VERLET STD ***       20000   1000000000.0000000     
+
+TR: force max, energy   124    0.8485392035E+02   -0.7423468271E+04
+
+TR: force max, energy   125    0.8326374134E+02   -0.7433931812E+04
+
+TR: force max, energy   126    0.8070584802E+02   -0.7450155661E+04
+
+TR: force max, energy   127    0.7772195809E+02   -0.7471776578E+04
+
+TR: force max, energy   128    0.7455322792E+02   -0.7497993043E+04
+
+TR: force max, energy   129    0.7094350455E+02   -0.7528091615E+04
+
+TR: force max, energy   130    0.6706714827E+02   -0.7561350580E+04
+
+TR: force max, energy   131    0.6312118792E+02   -0.7596754284E+04
+
+TR: force max, energy   132    0.5977207921E+02   -0.7633605200E+04
+
+TR: force max, energy   133    0.5627537836E+02   -0.7671248143E+04
+
+TR: force max, energy   134    0.5263701382E+02   -0.7708476804E+04
+
+TR: force max, energy   135    0.4883748222E+02   -0.7744880935E+04
+
+TR: force max, energy   136    0.4501861114E+02   -0.7779532939E+04
+
+TR: force max, energy   137    0.4228102332E+02   -0.7811229923E+04
+
+TR: force max, energy   138    0.3868505312E+02   -0.7839182109E+04
+
+TR: force max, energy   139    0.3503671477E+02   -0.7862181454E+04
+
+TR: force max, energy   140    0.3133257059E+02   -0.7881182495E+04
+
+TR: force max, energy   141    0.2760836763E+02   -0.7895462231E+04
+
+TR: force max, energy   142    0.2393032236E+02   -0.7905702473E+04
+
+TR: force max, energy   143    0.2031922970E+02   -0.7912223019E+04
+
+TR: force max, energy   144    0.1671583600E+02   -0.7916186681E+04
+
+TR: force max, energy   145    0.4561776663E+01   -0.7918027367E+04
+
+TR: force max, energy   146    0.4475066985E+01   -0.7919401185E+04
+
+TR: force max, energy   147    0.4379545564E+01   -0.7920611732E+04
+
+TR: force max, energy   148    0.4262172345E+01   -0.7921773413E+04
+
+TR: force max, energy   149    0.4135153907E+01   -0.7922894017E+04
+
+TR: force max, energy   150    0.4020339084E+01   -0.7923991951E+04
+
+TR: force max, energy   151    0.4039557218E+01   -0.7925080260E+04
+
+TR: force max, energy   152    0.4044852040E+01   -0.7926156505E+04
+
+TR: force max, energy   153    0.4040724022E+01   -0.7927220869E+04
+
+TR: force max, energy   154    0.4027454223E+01   -0.7928279017E+04
+
+TR: force max, energy   155    0.3997039955E+01   -0.7929327653E+04
+
+TR: force max, energy   156    0.3941853403E+01   -0.7930366472E+04
+
+TR: force max, energy   157    0.3859904843E+01   -0.7931394192E+04
+
+TR: force max, energy   158    0.3750639617E+01   -0.7932411310E+04
+
+TR: force max, energy   159    0.3628807897E+01   -0.7933418139E+04
+
+TR: force max, energy   160    0.3510299457E+01   -0.7934413061E+04
+
+TR: force max, energy   161    0.3396629771E+01   -0.7935395175E+04
+
+TR: force max, energy   162    0.3291857922E+01   -0.7936362508E+04
+
+TR: force max, energy   163    0.3195019961E+01   -0.7937314382E+04
+
+TR: force max, energy   164    0.3103730055E+01   -0.7938248825E+04
+
+TR: force max, energy   165    0.3017686109E+01   -0.7939164714E+04
+
+TR: force max, energy   166    0.2933885881E+01   -0.7940063026E+04
+
+TR: force max, energy   167    0.2865813129E+01   -0.7940944185E+04
+
+TR: force max, energy   168    0.2793436002E+01   -0.7941807490E+04
+
+TR: force max, energy   169    0.2695740379E+01   -0.7942657438E+04
+
+TR: force max, energy   170    0.2593602418E+01   -0.7943550949E+04
+
+TR: force max, energy   171    0.2485130972E+01   -0.7944481553E+04
+
+TR: force max, energy   172    0.2410511951E+01   -0.7945443038E+04
+
+TR: force max, energy   173    0.2333387367E+01   -0.7946430205E+04
+
+TR: force max, energy   174    0.2250036504E+01   -0.7947437137E+04
+
+TR: force max, energy   175    0.2160364993E+01   -0.7948458316E+04
+
+TR: force max, energy   176    0.2071913387E+01   -0.7949489548E+04
+
+TR: force max, energy   177    0.2013921763E+01   -0.7950524995E+04
+
+ RETURN CONTROLE
+ RETURN CONTROLE
+ RETURN CONTROLE
+TR: force max, energy   178    0.1956623583E+01   -0.7951560141E+04
+ RETURN CONTROLE
+ *******return CDP**** 
+ POST itmax,timemax,itecdp,timecdp,iteration,timel
+       20000   10000000000.000002         40000000  -1.0000000000000001E-015         178   0.0000000000000000     
