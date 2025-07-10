@@ -20,7 +20,7 @@ module atomconfig
 
   type atom_config ! type minimal des configurations atomiques. Tous les composants seront toujours alloué (im_glob seulement si PARA)
      integer::im=0,imm=0,im_glob,imm_glob ! im nb d'atomes sur le proc, taille des tableaux sur le proc, im_glob nombre d'atomes en tout,imm_glob, taille des tableaux complets
-    integer(long)::icaltabt 
+     integer(long)::icaltabt 
      real(double),allocatable:: xp(:,:)
      real(double),allocatable::fp(:,:)
      integer,allocatable::ityp(:)
@@ -30,6 +30,7 @@ module atomconfig
      integer:: nvois ! taille du tableau des voisins si ltabvois=.true.
      real(double)::rvois ! rayon des voisins
      integer,allocatable:: indi(:) ! indice de tous les voisins
+     real(double),allocatable:: distance(:,:) ! indice de tous les distances
      logical, allocatable:: lgul(:)
      integer,allocatable::num_at_glob(:)
      logical :: lglock
@@ -777,7 +778,7 @@ contains
     atcible%proc_at(1:atsource%imm)=atsource%proc_at(1:atsource%imm)
 #endif    
     
-    if ((atsource%ltabvois).and.(atcible%ltabvois)) then
+    if ((atsource%ltabvois).and.(atcible%ltabvois).and.(atsource%nvois.ne.0)) then
        atcible%iwmax(1:atsource%imm)=atsource%iwmax(1:atsource%imm)
        atcible%indi(1:atsource%nvois)=atsource%indi(1:atsource%nvois)
     end if

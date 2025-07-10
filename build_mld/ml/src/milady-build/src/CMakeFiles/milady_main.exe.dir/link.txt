@@ -1,0 +1,1 @@
+/home/soft/intel/oneapi/mpi/2021.6.0/bin/mpiifort  -O3 -diag-disable=10448 CMakeFiles/milady_main.exe.dir/mld/main.F90.o -o ../bin/milady_main.exe  -Wl,-rpath,/home/anruo/GitHub/NDM.git/build_mld/ml/src/milady-build/lib: ../lib/libMILADY.so -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64 

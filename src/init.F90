@@ -85,7 +85,7 @@ contains
     rang=rangph
 #endif
 
-    call init_pot
+    call init_pot  ! contains calls to MLD
     usdh = 1/(two*tstep)
     if (ibrake.gt.0) then
        call initeloss
@@ -126,7 +126,7 @@ contains
       end if
       !  !This comes with MiLaDy Package
 
-      call mld_init_config(atdml)
+      call mld_init_config(atdml) 
 
     !call init ! mld init
     end if
