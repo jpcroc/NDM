@@ -1,0 +1,14 @@
+#!/bin/bash
+for temp  in  *.F90 *.f Makefil* */*.F90 MAKE/* *.c *.cpp */*.c */*.cpp *.h */*.h
+do 
+	echo $temp
+	rm -f rd
+	diff   /home/croc/NDM/smallbox/src/$temp  $temp >rd
+	diff   /home/croc/NDM/smallbox/src/$temp   $temp
+	if  [ -s  rd ]
+	then
+	meld   $temp /home/croc/NDM/smallbox/src/$temp
+	fi
+	
+
+done
