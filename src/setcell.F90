@@ -1,14 +1,15 @@
 module setcell
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-!  USE read_val,only:nox,noy,noz
+  !  USE read_val,only:nox,noy,noz
   USE arret_ndm_mod,only: arret_ndm
-  USE gen_com_m, ONLY:ldemitab,nvat,pi,rang,lrctest,ltpcel,lspacendm
+  USE gen_com_m, ONLY:ldemitab,nvat,pi,rang,lrctest,ltpcel,lspacendm,lperiod
   USE var_pot, ONLY:lpotentiel,rue_pot,ipotentiel !ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
   USE recips_mod,only:recips,calcvol,distmin
   USE atomconfig,only: atom_config
   USE boxconfig,only:box_config
   USE cellconfig,only:cell_config
+    use cryst_to_cart_mod,only:cryst_to_cart
 #ifdef PARA
   use Tpara,only:nprocspace
 #endif
@@ -31,7 +32,7 @@ contains
     if (present(noxr))nox=noxr
     if (present(noyr))noy=noyr
     if (present(nozr))noz=nozr
-    
+
     zlmin = distmin(boxsn%at(:,1),boxsn%at(:,2))
     zlm2 = distmin(boxsn%at(:,1),boxsn%at(:,3))
     zlmin = min(zlmin,zlm2)
@@ -39,12 +40,12 @@ contains
     zlmin = min(zlmin,zlm2)
     zlmin=zlmin*2
 
-!    if (lpotentiel(10).eqv..true.)      rut=max(rut,2*rue_pot(10))
-!    if (lpotentiel(20).eqv..true.)      rut=max(rut,2*rue_pot(20))
+    !    if (lpotentiel(10).eqv..true.)      rut=max(rut,2*rue_pot(10))
+    !    if (lpotentiel(20).eqv..true.)      rut=max(rut,2*rue_pot(20))
     !     write(6,*)'BIP',rumax,rut,rue_pot(10)
     !  end if
-!    if (lpotentiel(11).eqv..true.) rut=max(rut,2*rue_pot(11))
-!    if (lpotentiel(12).eqv..true.) rut=max(rut,2*rue_pot(12))
+    !    if (lpotentiel(11).eqv..true.) rut=max(rut,2*rue_pot(11))
+    !    if (lpotentiel(12).eqv..true.) rut=max(rut,2*rue_pot(12))
     izonr = int(zlmin/rum)
     ! MPI
 

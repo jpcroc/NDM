@@ -1,3 +1,4 @@
+ Process            0  of            8  is alive
  Process            1  of            8  is alive
  Process            2  of            8  is alive
  Process            3  of            8  is alive
@@ -5,7 +6,6 @@
  Process            5  of            8  is alive
  Process            6  of            8  is alive
  Process            7  of            8  is alive
- Process            0  of            8  is alive
 [32m[INFO    ] mld_mpi_init ! hello world ! from rank 0 of 8 [0m
  nom fichier din=
  vacancy.din                                                                    
@@ -77,9 +77,9 @@ debyetemp=      -1.0
  
  ********** reading configuration from file********
  
-  *-*-*-*-*-*LECTURE DE CIN*-*-*-*-*-*-
+  *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-
   *-*-*-*-*- LRESTART = F
- config type de fichier .cin :            3
+ config type of  .cin file :            3
  types
  xp
  num_at_glob
@@ -91,39 +91,10 @@ nox noy noz calcules a partir de ru
   noy = Int(   0.2220E-06/  0.5500E-07) = 4
   noz = Int(   0.2220E-06/  0.5500E-07) = 4
 celsizes   0.5550000E-07  0.5550000E-07  0.5550000E-07
- 
- 
- -----------------------------------------------------------
- Procedure de decoupage pour une boite de taille  :           4           4
-           4
- sur            8  cpus           0
- Nbre de solutions possibles :            7
-LE_MEILLEUR_DECOUPAGE :    8    2    2    2    0.9143
- -----------------------------------------------
-           FIN DU CALCUL DU DECOUPAGE :         
- 
- Nbre de cellule suivant x :           4
- Nbre de cellule suivant y :           4
- Nbre de cellule suivant z :           4
- 
- Le cas choisit :           2           2           2
- Nombre de cellules max echg  par proc :           8          56
- Taux d'equilibrage :           8  0.999999940395355     
- valeur            8  0.914285654681069     
- Nbre Min/Max de cel. locales. :           8           8
- Nbre Min/Max de cel. fantomes. :          56          56
- locmin/fantomax :           8  0.142857142857143     
- natperc im/noxyz          24           8
+ natperc im/noxyz          26           8
  ltabvois T
  Nvois=        51480         572          60  5.500000000000000E-008
   1.094104800000000E-020  1.912770629370629E-023
- TTTTTTTTTT           1  1.379672664830824E-008
- TTTTTTTTTT           2  1.379672664830824E-008
- TTTTTTTTTT           3  1.379672664830824E-008
- TTTTTTTTTT           4  1.379672664830824E-008
- TTTTTTTTTT           5  1.379672664830824E-008
- TTTTTTTTTT           6  1.379672664830824E-008
- TTTTTTTTTT           7  1.379672664830824E-008
  
  -------- boite de simulation ------
  nombre d atomes =         572
@@ -131,7 +102,6 @@ vecteur  1      22.200000       0.000000       0.000000
 vecteur  2       0.000000      22.200000       0.000000
 vecteur  3       0.000000       0.000000      22.200000
          572  atomes de type           1
- TTTTTTTTTT           0  1.379672664830824E-008
  
   -------------------------------------------------------------------
               2nd step of potential initialization , dependancy on box size
@@ -142,6 +112,7 @@ vecteur  3       0.000000       0.000000      22.200000
 [31m[WARNING ] TODOmd ....[0m
 [31m[WARNING ] md_ini_config_ml: Here should be implemented read of some poscar configuration[0m
 [31m[WARNING ] md_ini_config_ml: For the moment is just gin reading. From disk or HARDGIN  mode[0m
+ tempsauv    689.618720511763     
  scaling read velocities at TINIT =    150.000000000000      K
  temperature fin initspeed    150.000000000000     
  ***** PREMIERE ITERATION  VVERLET****          10   10000000000.0000     

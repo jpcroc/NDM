@@ -3,7 +3,7 @@
 	text=600.0
 	llangevin=.true.
         ipotentiel=10
-	imm=150
+	imm=150,iseed=1
 	igen=0, tinit=600.0
 	dmtype=4   ! 7 ph ; 3 CG
 	itmax=5000 
