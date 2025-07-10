@@ -617,7 +617,7 @@ contains
              end if
 
           end if
-          write(6,*)'IMM',atdml%im_glob,nvactot,ninttot
+
           atdml%im_glob=atdml%im_glob-nvactot+ninttot
           !#ifdef PARA
 

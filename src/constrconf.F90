@@ -2,8 +2,8 @@ module constrconf_mod
   USE arret_ndm_mod,only:arret_ndm
 #ifdef PARA
   USE decoupage_mod,only: decoupage
-#endif
-  USE read_val,only:imm,ipbc,nox,noy,noz
+#endif  
+USE read_val,only:imm,ipbc,nox,noy,noz
   USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,imm_glob,ldecoup,lperiod,lrestart,rang,&
        &lvpread,zero,low_limit,lspacendm,rang,dmtype
   USE var_pot, ONLY:ntyp,rumax,ipotentiel
@@ -20,7 +20,7 @@ module constrconf_mod
   USE Tpara,only:COMM_space,nprocspace
 #endif
   use Tpara,only:para_space_config,nprocspace
-
+  use coord_to_cell_mod
   use config2data_mod,only:config2data
 #ifdef ML
   !use gen_com_m_ml, only: at, im
@@ -106,7 +106,7 @@ contains
           ncore=0
           atrcf%im_glob=compatrcf%im
           if (lrepart.eqv..true.) then
-             call  decoupage(nprocspace,ncore,cellrcf,atrcf,psc=psc,lverbose=lprt)
+             call  decoupage(nprocspace,ncore,cellrcf,atrcf,psc=psc,lverbose=lprt,atcomp=compatrcf,boxrep=boxrcf)
              
              allocate(num_at_buff(imm_glob))
              call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
@@ -120,9 +120,6 @@ contains
           itread=1
           call atrcf%init(immin=imm_glob,imin=0,ltabvois=atrcf%ltabvois,rvois=atrcf%rvois)
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
-!          if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-!             call  decoupage(nprocspace,ncore,cellrcf,psc=psc)
-!          end if
 !          call atrcf%print
           atrcf%im_glob=atrcf%im
           if ((rang==0).and.(lprt)) then
@@ -130,8 +127,6 @@ contains
           end if
           call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
           ncore=0
-!          call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
-          !          CALL fin allocation CELL et FIN DIVID
 
        end if
 #else
@@ -304,23 +299,23 @@ contains
           call arret_ndm
        end if
     end if
+    COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
+    call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
+    call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
+    compatrcf%imm_glob=imm_glob
 
     ncore=0
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        at2b%imm_glob=imm_glob
        if (lrepart) then
           at2b%im_glob=atrgin%im*lat(1)*lat(2)*lat(3)
-          call  decoupage(nprocspace,ncore,cel2b,at2b,psc=psc,lverbose=lprt)
+          call  decoupage(nprocspace,ncore,cel2b,at2b,psc=psc,lverbose=lprt,atcomp=compatrcf,boxrep=box2b)
        else
           call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
        end if
     else
        cel2b%proc_cell=0
     end if
-    COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
-    call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
-    call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
-    compatrcf%imm_glob=imm_glob
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart)) then
        call repartition(COMPatrcf,at2b,box2b,cel2b)
     else
@@ -343,63 +338,6 @@ contains
 
   end subroutine gin2ndm
 
-  subroutine coord_to_cell(tab_coord, cell,bg,nox,noy,noz)
-    !-----------------------------------------------
-    !   M o d u l e s
-    !-----------------------------------------------
-    USE T_kind_param_m, ONLY:  double
-
-
-    implicit none
-
-    !
-    ! Cette routine retourne dans cell le numero de cellule
-    ! contenant les coordonnees tab_coord
-    !
-    !-----------------------------------------------
-    !   D u m m y   A r g u m e n t s
-    !-----------------------------------------------
-    real(double)  :: tab_coord(3),bg(3,3)
-    integer       :: cell,nox,noy,noz
-    !-----------------------------------------------
-    !   L o c a l   V a r i a b l e s
-    !-----------------------------------------------
-    integer :: kx, ky, kz,k
-    real(double) :: aux, auy, auz,cpp,xpici
-    real(double) :: coord_loc(3)   ! permet de ne pas ecraser coord
-    ! lors de l'appel a cryst_to_cart                       
-    !-----------------------------------------------
-
-    coord_loc(:) = tab_coord(:)
-
-
-    call cryst_to_cart (1, coord_loc, bg, -1) !cart vers cryst
-    do k=1,3
-       xpici=coord_loc(k)
-       if ( (xpici < 0.d0 ).OR.( xpici >= 1.d0 ) ) then
-          if ( (xpici > -low_limit).and.(xpici<0.d0) ) then
-             coord_loc(k)=zero
-          else
-             cpp  = Dble(Floor(coord_loc(k)))
-             coord_loc(k) = xpici     - cpp
-          end if
-       end if
-    end do
-
-
-
-    aux = coord_loc(1)*nox
-    auy = coord_loc(2)*noy
-    auz = coord_loc(3)*noz
-
-    kx = int(aux)
-    ky = int(auy)
-    kz = int(auz)
-
-    cell = 1+kx+nox*(ky+noy*kz)
-
-    return
-  end subroutine coord_to_cell
 
   subroutine constr_2gin(atrcf,boxrcf,cellrcf,atrgin,boxrgin,lat,immread)
 

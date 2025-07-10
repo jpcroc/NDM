@@ -5,14 +5,16 @@ module decoupage_mod
   USE cellconfig,only:cell_config
   USE atomconfig,only: atom_config
   USE read_val,only:rvois
+  USE boxconfig,only:box_config
+    use coord_to_cell_mod
   implicit none
   logical::lverb=.true.
 contains
-  subroutine decoupage(nbr_cpuIN,ncore,celdec,atdec,lverbose,psc)
+  subroutine decoupage(nbr_cpuIN,ncore,celdec,atdec,lverbose,psc,atcomp,boxrep)
 
 #ifdef PARA
     USE mpi
-    USE Tpara,only:MPI_COMM_space,ierr,myidsp,NDM_MPI_REAl_DOUBLE,para_space_config!,coord_max,coord_min
+    USE Tpara,only:MPI_COMM_space,ierr,myidsp,NDM_MPI_REAl_DOUBLE,para_space_config,comm_space!,coord_max,coord_min
 !    USE mod_para,only:res_cpu,cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,nb_cell_x,nb_cell_y,nb_cell_z
 #endif
     USE Tpara,only:myidsp,nprocspace,para_space_config
@@ -20,11 +22,11 @@ contains
 
     use read_val,only:ltabvois
         type(para_space_config)::psc
-
+        class(box_config),optional::boxrep
     integer :: nbr_cpuIN !Egal aussi au nombre de zone qu'on d�coupera dans la boite
     integer::ncore ! nb de coeur par noeud
     type(cell_config)::celdec
-    class(atom_config),optional:: atdec
+    class(atom_config),optional:: atdec,atcomp
     logical,optional::lverbose
     integer, allocatable :: coord_min(:,:),coord_max(:,:)	!stocke la "coordonnée" de la premiere cellule du découpage selon x,y,z
     integer:: nnoeuds,imm_loc
@@ -51,9 +53,12 @@ contains
     integer :: solution
     integer :: num_cpu
     integer :: kx,ky,kz,koo
-    integer :: cellules_max
+    integer :: cellules_max,cellules_int
     integer :: nbr_cpu,nox,noy,noz,noxyz,imm,im_glob
-    integer :: ii,jj,kk,nbr_cpumin,iudecoup !indice de boucle
+    integer :: ii,jj,kk,nbr_cpumin,iudecoup
+    integer::natlocm,icomp,numcell,numproc,imm_loc1
+    real(double)::xt(3)
+    integer,allocatable::natloc(:) !indice de boucle
     integer,save::icall=0
     nox=celdec%nox;noy=celdec%noy;noz=celdec%noz; noxyz=nox*noy*noz
     icall=icall+1
@@ -351,27 +356,12 @@ contains
        ! nombre d'atomes en tenant compte des cellules fantomes
        if (.not.ldecoup) then
           cellules_max=0
+          cellules_int=0
        do ii = 0,nbr_cpu-1
           cellules_max = max(cellules_max,(psc%res_cpu(ii,1)+2) * (psc%res_cpu(ii,2)+2)* (psc%res_cpu(ii,3)+2))
+          cellules_int = max(cellules_int,(psc%res_cpu(ii,1)+0) * (psc%res_cpu(ii,2)+0)* (psc%res_cpu(ii,3)+0))
        enddo
        cellules_max = min (cellules_max, noxyz)
-       imm_loc = min( imm_glob, int(1.2 * imm_glob * cellules_max / noxyz) )
-       ! Le processeur maitre recupere la valeur maximale des imm des
-       ! differents processeurs afin de pouvoir receptionner les tableaux
-       ! des autres processeurs lors d'I/O :
-       imm = imm_loc
-       call MPI_REDUCE(imm_loc,imm,1,MPI_INTEGER,MPI_MAX,0,MPI_COMM_space,ierr)
-
-       !     write(iudecoup,*)'test4' 
-       im0=0 ; nvois0=0
-
-       if (present(atdec)) then
-          im_glob=atdec%im_glob
-          call atdec%dealloc
-          call atdec%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob,imm_glob=imm_glob)
-       end if
-       !     write(iudecoup,*)'test4' 
-       ! Initialisation des donnees geometriques qui serviront pour le reste du code :
        psc%cell_debx= coord_min(myidsp,1)
        psc%cell_finx= coord_max(myidsp,1)
        psc%cell_deby= coord_min(myidsp,2)
@@ -381,6 +371,52 @@ contains
        psc%nb_cell_x= psc%cell_finx - psc%cell_debx + 1
        psc%nb_cell_y= psc%cell_finy - psc%cell_deby + 1
        psc%nb_cell_z= psc%cell_finz - psc%cell_debz + 1
+
+
+       
+       !     write(iudecoup,*)'test4' 
+       im0=0 ; nvois0=0
+       if (present(atdec)) then
+          if (present(atcomp)) then
+             allocate (natloc(0:nprocspace-1))
+             natloc=0
+
+             do icomp=1,atcomp%im
+                
+                
+                xt(:)=atcomp%xp(:,icomp)
+                call coord_to_cell(xt,numcell,boxrep%bg,celdec%nox,celdec%noy,celdec%noz)
+                numproc=celdec%proc_cell(numcell)
+
+                if (numproc == myidsp) then
+                   natloc(myidsp)=natloc(myidsp)+1
+                endif
+             end do
+             call comm_space%sum(natloc)
+!             if (rang==0) write(6,*)'natloc',natloc
+             natlocm=maxval(natloc)
+!             write(6,*)'IMLOC1 ',natlocm
+             natlocm=int(natlocm*float(cellules_max)/cellules_int)
+!             write(6,*)'IMLOC2 ',natlocm,imm_glob
+             imm_loc=min( imm_glob, int(1.2 * natlocm))
+             imm = imm_loc
+          else
+             imm_loc = min( imm_glob, int(1.2 * imm_glob * cellules_max / noxyz) )
+             ! Le processeur maitre recupere la valeur maximale des imm des
+             ! differents processeurs afin de pouvoir receptionner les tableaux
+             ! des autres processeurs lors d'I/O :
+             imm = imm_loc
+             call MPI_REDUCE(imm_loc,imm,1,MPI_INTEGER,MPI_MAX,0,MPI_COMM_space,ierr)
+             
+          end if
+          im_glob=atdec%im_glob
+          call atdec%dealloc
+          call atdec%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob,imm_glob=imm_glob)
+       end if
+!       imm_loc1 = min( imm_glob, int(1.2 * imm_glob * cellules_max / noxyz) )
+!       if (rang==0) write(6,*)'loc1 ',imm_glob ,cellules_max , noxyz
+!       if (rang==0) write(6,*)'IMM std nouv ',imm_loc1,imm
+       ! Initialisation des donnees geometriques qui serviront pour le reste du code :
     end if
 #endif
 !#endif
