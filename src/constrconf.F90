@@ -1,7 +1,7 @@
 module constrconf_mod
   USE arret_ndm_mod,only:arret_ndm
 #ifdef PARA
-  USE decoupage_mod,only: decoupage
+  USE decoupage_mod,only: decoupage,decoup2im
 #endif  
 USE read_val,only:imm,ipbc,nox,noy,noz
   USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,imm_glob,ldecoup,lperiod,lrestart,rang,&
@@ -282,7 +282,7 @@ contains
     end if
 
     if (lcs) then ! construction simpple sans repartition en sequentiel
-       call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,immr)
+       call constr_2gin (at2b,atrgin,lat,immr)
        call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
        at2b%im_glob=at2b%im
        call setcellconf(cel2b,at2b,box2b,rum)
@@ -300,18 +300,21 @@ contains
        end if
     end if
     COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
-    call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
+    call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
+    call constr_2gin (COMPatrcf,atrgin,lat,imm_glob)
     call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
     compatrcf%imm_glob=imm_glob
 
     ncore=0
+    at2b%imm_glob=imm_glob
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-       at2b%imm_glob=imm_glob
+
+       write(6,*)'LREPART ',lrepart
        if (lrepart) then
           at2b%im_glob=atrgin%im*lat(1)*lat(2)*lat(3)
-          call  decoupage(nprocspace,ncore,cel2b,at2b,psc=psc,lverbose=lprt,atcomp=compatrcf,boxrep=box2b)
-       else
-          call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
+          call  decoup2im(nprocspace,cel2b,at2b,psc=psc,atcomp=compatrcf,boxrep=box2b)
+!       else
+!          call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
        end if
     else
        cel2b%proc_cell=0
@@ -339,12 +342,10 @@ contains
   end subroutine gin2ndm
 
 
-  subroutine constr_2gin(atrcf,boxrcf,cellrcf,atrgin,boxrgin,lat,immread)
+  subroutine constr_2gin(atrcf,atrgin,lat,immread)
 
     class(atom_config),intent(inout)::atrcf
-    type(cell_config),intent(in)::cellrcf
-    class(box_config),intent(in)::boxrcf    
-    type(box_config)::boxrgin
+
     type(atom_config)::atrgin
     integer,intent(in)::lat(3)
     integer,intent(in),optional::immread
