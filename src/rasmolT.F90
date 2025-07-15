@@ -270,22 +270,34 @@ contains
 !          ! Dk_io Abinit format
 !          end_name='.'
 !          call dk_io_write(nameo,end_name,at,bg,atcomp,STRUCTURE_ABINIT,extension)
-       case(11)
+       case(11,21)
           ! Dk_io Atomeye's extended CFG format
           end_name='.xfg'
-          call dk_io_write(nameo,end_name,at,bg,atcomp,"xfg",extension)
-       case(12)
+          if (ivisum==11) then
+             call dk_io_write(nameo,end_name,at,bg,atcomp,"xfg",extension, with_velocities=.false.)
+          else
+             call dk_io_write(nameo,end_name,at,bg,atcomp,"xfg",extension, with_velocities=.true.)
+          end if
+       case(12,22)
           ! Dk_io CASTEP format
           end_name='.cell'
-          call dk_io_write(nameo,end_name,at,bg,atcomp,"castep",extension)
+          if (ivisum==12) then
+             call dk_io_write(nameo,end_name,at,bg,atcomp,"castep",extension, with_velocities=.false.)
+          else
+             call dk_io_write(nameo,end_name,at,bg,atcomp,"castep",extension, with_velocities=.true.)
+          end if
        case(13)
           ! Dk_io CIF format
           end_name='.cif'
           call dk_io_write(nameo,end_name,at,bg,atcomp,"cif",extension)
-       case(14)
+       case(14,24)
           ! Dk_io DL_POLY format
           end_name='.CONFIG'
-          call dk_io_write(nameo,end_name,at,bg,atcomp,"dlpoly",extension)
+          if (ivisum==14) then
+             call dk_io_write(nameo,end_name,at,bg,atcomp,"dlpoly",extension, with_velocities=.false.)
+          else
+             call dk_io_write(nameo,end_name,at,bg,atcomp,"dlpoly",extension, with_velocities=.true.)
+          end if
        case(15)
           ! Dk_io GULP format
           end_name='.gin'
@@ -303,7 +315,7 @@ contains
           end_name='.xyz'
           call dk_io_write(nameo,end_name,at,bg,atcomp,"xyz",extension)
        case(19)
-          ! Dk_io CIF format with Bzip2 compression
+          ! Dk_io CIF format with Bzip2 compression (For testing purposes)
           end_name='.cif.bz2'
           call dk_io_write(nameo,end_name,at,bg,atcomp,"cif",extension,"bzip2")
 #endif
@@ -312,7 +324,7 @@ contains
           call arret_ndm
        end select
        
-       if (ivisum < 10 .or. ivisum > 20)then
+       if (ivisum < 10 .or. ivisum > 30)then
           if (present(itapp))then
              call openfilemol( luvisu,nameo,end_name,extension)
           else
@@ -627,7 +639,7 @@ contains
   end subroutine openfilemol
 
 #ifdef DKIO
-  subroutine dk_io_write(nameo,end_name,box,invbox,atcomp,format,ext,compression)
+  subroutine dk_io_write(nameo,end_name,box,invbox,atcomp,format,ext,compression,with_velocities)
     !-----------------------------------------------------
     !  Subroutine for interfacing with the dk_io library
     !-----------------------------------------------------
@@ -639,8 +651,10 @@ contains
     class(atom_config) :: atcomp
     character(len=9), intent(in), optional :: ext
     character(*), intent(in), optional :: compression
+    logical, intent(in), optional :: with_velocities
     character(len=80) :: namef
     character(TAG_LENGTH), dimension(:), allocatable :: tags
+    real(double), dimension(:,:), allocatable :: velocities
     integer :: i
 
     if (present(ext)) then
@@ -657,7 +671,17 @@ contains
        tags(i) = ty(atcomp%ityp(i))
     end do
 
-    call write_structure(trim(namef), box, atcomp%xp(:,1:atcomp%im), tags, format=format, compression=compression)
+    if (present(with_velocities) .and. with_velocities) then
+       select type (atcomp)
+       class is (atom_config_d)
+          allocate(velocities(3,atcomp%im))
+          do i=1, atcomp%im
+             velocities(:,i) = atcomp%vp(:,i)*1d8*1d-12
+          end do
+       end select
+    end if
+
+    call write_structure(trim(namef), box, atcomp%xp(:,1:atcomp%im), tags, format=format, compression=compression, velocities=velocities)
 
     deallocate(tags) 
   end subroutine dk_io_write
