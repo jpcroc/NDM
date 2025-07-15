@@ -157,7 +157,7 @@ contains
        end if
 #ifdef PARA
           allocate(cell%proc_cell(nsize))
-          cell%proc_cell=-1
+          cell%proc_cell=0
 #endif       
        end if
     return

@@ -103,7 +103,6 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
      tmaxv = 1./3./bk*cm(ityp_max)*vmax2
      !tmaxv=0
   else
-
      ityp_max=atcf%ityp(imaxT(0))
      tmaxv = 1./3./bk*cm(ityp_max)*vmax2
      vmax2=vmax2T(0)

@@ -539,7 +539,7 @@ contains
                       !end if
 !                      call comm_space%bcast(numproc,l2close)
                       !#endif
-!                      write(6,*) 'l2close',l2close
+!                      write(6,*) 'l2close',l2close,lspacendm,myidsp,numproc
                       if (.not.l2close) then ! not too close ==> intertsitiel+1
                          atomint%ityp(iinttot)=iti
                          atomint%pos(:,iinttot)=xpositest(:)

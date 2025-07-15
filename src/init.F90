@@ -210,7 +210,7 @@ contains
     !
     !end init the speed using Maxwell proba density-----------------
     select type(atdml)
-       class is (atom_config_d)
+    class is (atom_config_d)
        if ((itetimestep>0).and.(.not.lcasca)) call deftimestep(atdml,boxndm)
     end select
     if ((lspecialinit).and.(.not.(lrestart))) call specialinit(atdml,boxndm,celndm)
