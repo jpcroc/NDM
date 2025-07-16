@@ -269,55 +269,51 @@ contains
 !       case(10) ----------------------------------- Soon availible
 !          ! Dk_io Abinit format
 !          end_name='.'
-!          call dk_io_write(nameo,end_name,at,bg,atcomp,STRUCTURE_ABINIT,extension)
+!          call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,STRUCTURE_ABINIT,extension)
        case(11,21)
           ! Dk_io Atomeye's extended CFG format
           end_name='.xfg'
           if (ivisum==11) then
-             call dk_io_write(nameo,end_name,at,bg,atcomp,"xfg",extension, with_velocities=.false.)
+             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"xfg",extension, with_velocities=.false.)
           else
-             call dk_io_write(nameo,end_name,at,bg,atcomp,"xfg",extension, with_velocities=.true.)
+             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"xfg",extension, with_velocities=.true.)
           end if
        case(12,22)
           ! Dk_io CASTEP format
           end_name='.cell'
           if (ivisum==12) then
-             call dk_io_write(nameo,end_name,at,bg,atcomp,"castep",extension, with_velocities=.false.)
+             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"castep",extension, with_velocities=.false.)
           else
-             call dk_io_write(nameo,end_name,at,bg,atcomp,"castep",extension, with_velocities=.true.)
+             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"castep",extension, with_velocities=.true.)
           end if
        case(13)
           ! Dk_io CIF format
           end_name='.cif'
-          call dk_io_write(nameo,end_name,at,bg,atcomp,"cif",extension)
+          call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"cif",extension)
        case(14,24)
           ! Dk_io DL_POLY format
           end_name='.CONFIG'
           if (ivisum==14) then
-             call dk_io_write(nameo,end_name,at,bg,atcomp,"dlpoly",extension, with_velocities=.false.)
+             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"dlpoly",extension, with_velocities=.false.)
           else
-             call dk_io_write(nameo,end_name,at,bg,atcomp,"dlpoly",extension, with_velocities=.true.)
+             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"dlpoly",extension, with_velocities=.true.)
           end if
        case(15)
           ! Dk_io GULP format
           end_name='.gin'
-          call dk_io_write(nameo,end_name,at,bg,atcomp,"gulp",extension)
+          call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"gulp",extension)
        case(16)
           ! Dk_io LAMMPS format
           end_name='.lmp'
-          call dk_io_write(nameo,end_name,at,bg,atcomp,"lammps",extension)
+          call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"lammps",extension)
        case(17)
           ! Dk_io VASP format
           end_name='.POSCAR'
-          call dk_io_write(nameo,end_name,at,bg,atcomp,"vasp",extension)
+          call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"vasp",extension)
        case(18)
           ! Dk_io XYZ format
           end_name='.xyz'
-          call dk_io_write(nameo,end_name,at,bg,atcomp,"xyz",extension)
-       case(19)
-          ! Dk_io CIF format with Bzip2 compression (For testing purposes)
-          end_name='.cif.bz2'
-          call dk_io_write(nameo,end_name,at,bg,atcomp,"cif",extension,"bzip2")
+          call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"xyz",extension)
 #endif
        case default
           write(6,*)'wrong ivisu',ivisum,ivisu
@@ -639,7 +635,7 @@ contains
   end subroutine openfilemol
 
 #ifdef DKIO
-  subroutine dk_io_write(nameo,end_name,box,invbox,atcomp,format,ext,compression,with_velocities)
+  subroutine dk_io_write(nameo,end_name,box,invbox,atcomp,tyw,format,ext,with_velocities)
     !-----------------------------------------------------
     !  Subroutine for interfacing with the dk_io library
     !-----------------------------------------------------
@@ -649,12 +645,13 @@ contains
     character(len=*), intent(in) :: nameo,end_name,format
     real(double), intent(in) :: box(3,3), invbox(3,3)
     class(atom_config) :: atcomp
+    character(len=3), dimension(:), intent(in) :: tyw
     character(len=9), intent(in), optional :: ext
-    character(*), intent(in), optional :: compression
     logical, intent(in), optional :: with_velocities
     character(len=80) :: namef
     character(TAG_LENGTH), dimension(:), allocatable :: tags
     real(double), dimension(:,:), allocatable :: velocities
+    logical :: called = .false.
     integer :: i
 
     if (present(ext)) then
@@ -668,7 +665,7 @@ contains
     ! Convert to fractional coordinates, and get atoms tag
     call cryst_to_cart(atcomp%im, atcomp%xp,  invbox,  -1) !cart vers cryst
     do i=1, atcomp%im
-       tags(i) = ty(atcomp%ityp(i))
+       tags(i) = tyw(i)
     end do
 
     if (present(with_velocities) .and. with_velocities) then
@@ -678,12 +675,17 @@ contains
           do i=1, atcomp%im
              velocities(:,i) = atcomp%vp(:,i)*1d8*1d-12
           end do
+          call write_structure(trim(namef), box, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=velocities)
+          called = .true.
+          deallocate(velocities)
        end select
     end if
 
-    call write_structure(trim(namef), box, atcomp%xp(:,1:atcomp%im), tags, format=format, compression=compression, velocities=velocities)
+    if (.not.called) then
+       call write_structure(trim(namef), box, atcomp%xp(:,1:atcomp%im), tags, format=format)
+    end if
 
-    deallocate(tags) 
+    deallocate(tags)
   end subroutine dk_io_write
 #endif
 end module rasmolT_mod
