@@ -263,7 +263,14 @@ contains
     !*********************************************************************
     lcrea0=.true.
     itinser=0
-    icreadp=0
+    if (lrestart) then
+       if (timecdp.gt.0) then
+          itinser=int(timel/timecdp)
+       else
+          itinser=int(float(iteration)/itecdp)
+       end if
+    end if
+    icreadp=itinser
     do while ((iteration.lt.itmax).and.(timel.lt.timemax))
        if (ncreadp.gt.0)icreadp=icreadp+1
        if (icreadp==ncreadp+1) exit
@@ -432,7 +439,7 @@ contains
              if (myidsp==0) then
                 write(121,*)itinser, iteration,timel,'VAC'
                 do i=1,nvactot
-                   write(121,'(3G15.6,2I6)')atomvac%pos(:,i),atomvac%ityp(i),atomvac%natg(i)
+                   write(121,'(3E15.6,2I6)')atomvac%pos(:,i),atomvac%ityp(i),atomvac%natg(i)
                 end do
                 flush(121)
              end if

@@ -189,6 +189,7 @@ contains
     if (present(Vt)) then
        write (unitgc, *)
        write (unitgc, *) '************ STRESS in ', cunitP
+       ppot=0
        do ic = 1, 3
           write (unitgc, '(I1,3(A,I1),A,3G18.10)') ic,' sigma potentiel (1,', ic, ') (2,', ic, &
                ') (3,', ic, ') =',sig(1:3,ic)*unitP
