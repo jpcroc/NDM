@@ -1,7 +1,7 @@
 module constrconf_mod
   USE arret_ndm_mod,only:arret_ndm
 #ifdef PARA
-  USE decoupage_mod,only: decoupage,decoup2im
+  USE decoupage_mod,only: decoupage,decoup2im,constrandrepart
 #endif  
 USE read_val,only:imm,ipbc,nox,noy,noz
   USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,imm_glob,ldecoup,lperiod,lrestart,rang,&
@@ -301,28 +301,23 @@ contains
     end if
     COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
     call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
-    call constr_2gin (COMPatrcf,atrgin,lat,imm_glob)
-    call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
-    compatrcf%imm_glob=imm_glob
-
     ncore=0
     at2b%imm_glob=imm_glob
-    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+    at2b%im_glob=atrgin%im*lat(1)*lat(2)*lat(3)
 
-       write(6,*)'LREPART ',lrepart
-       if (lrepart) then
-          at2b%im_glob=atrgin%im*lat(1)*lat(2)*lat(3)
-          call  decoup2im(nprocspace,cel2b,at2b,psc=psc,atcomp=compatrcf,boxrep=box2b)
-!       else
-!          call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
-       end if
-    else
-       cel2b%proc_cell=0
-    end if
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart)) then
-       call repartition(COMPatrcf,at2b,box2b,cel2b)
+       call constrandrepart(atrgin,at2b,cel2b,box2b,lat,psc)
+!!$       call constr_2gin (COMPatrcf,atrgin,lat,imm_glob)
+!!$       call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
+!!$       compatrcf%imm_glob=imm_glob
+!!$       call  decoup2im(nprocspace,cel2b,at2b,psc=psc,atcomp=compatrcf,boxrep=box2b)
+!!$       call repartition(COMPatrcf,at2b,box2b,cel2b)
     else
-       call compatrcf%copy_config(at2b, lrescl=.true.)
+       call constr_2gin (at2b,atrgin,lat,imm_glob)
+       call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
+       at2b%imm_glob=imm_glob
+
+!       call compatrcf%copy_config(at2b, lrescl=.true.)
     end if
 #else
     if (ldecoup) then
@@ -353,7 +348,6 @@ contains
     integer::i,ia,ib,ic,icell,imloc,immr
 
     real(double)::rvN
-    logical :: lprteattrf
     logical::liniint
     !imtot=lat(1)*lat(2)*lat(3)*atrgin%im
     imloc=lat(1)*lat(2)*lat(3)*atrgin%im
@@ -369,11 +363,6 @@ contains
     else
        rvn=0
     end if
-    lprteattrf=.false.
-    select type (atrcf)
-    class is (atom_config_e)
-       lprteattrf=atrcf%lprteat
-    end select
     if (present(immread))then
 
        call atrcf%init(imloc,immin=immread,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois,rvois=rvn,im_glob=imloc)

@@ -7,17 +7,23 @@ module decoupage_mod
   USE read_val,only:rvois
   USE boxconfig,only:box_config
   use coord_to_cell_mod
+#ifdef PARA
+    USE mpi
+    USE Tpara,only:MPI_COMM_space,ierr,myidsp,NDM_MPI_REAl_DOUBLE,para_space_config,comm_space,para_space_config,nprocspace    
+#else
+    USE Tpara,only:myidsp,nprocspace    
+#endif
+   !    USE mod_para,only:res_cpu,cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,nb_cell_x,nb_cell_y,nb_cell_z
+
+
+
+    USE gen_com_m, ONLY:imm_glob,rang,ldecoup
+    
   implicit none
   logical::lverb=.true.
 contains
   subroutine decoupage(nbr_cpuIN,ncore,celdec,atdec,lverbose,psc,atcomp,boxrep)
 
-#ifdef PARA
-    USE mpi
-    USE Tpara,only:MPI_COMM_space,ierr,myidsp,NDM_MPI_REAl_DOUBLE,para_space_config,comm_space!,coord_max,coord_min
-    !    USE mod_para,only:res_cpu,cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,nb_cell_x,nb_cell_y,nb_cell_z
-#endif
-    USE Tpara,only:myidsp,nprocspace,para_space_config
     USE gen_com_m, ONLY:imm_glob,rang,ldecoup
 
     use read_val,only:ltabvois
@@ -452,28 +458,19 @@ contains
   end subroutine decoupage
 
 
-  subroutine decoup2im(nbr_cpuIN,ncore,celdec,atdec,psc,atcomp,boxrep)
-
-#ifdef PARA
-    USE mpi
-    USE Tpara,only:MPI_COMM_space,ierr,myidsp,NDM_MPI_REAl_DOUBLE,para_space_config,comm_space!,coord_max,coord_min
-    !    USE mod_para,only:res_cpu,cell_debx,cell_deby,cell_debz,cell_finx,cell_finy,cell_finz,nb_cell_x,nb_cell_y,nb_cell_z
-#endif
-    USE Tpara,only:myidsp,nprocspace,para_space_config
-    USE gen_com_m, ONLY:imm_glob,rang,ldecoup
-
+  subroutine decoup2im(nbr_cpuIN,celdec,atdec,psc,atcomp,boxrep)
+ 
     use read_val,only:ltabvois
     type(para_space_config)::psc
     class(box_config),optional::boxrep
     integer :: nbr_cpuIN !Egal aussi au nombre de zone qu'on d�coupera dans la boite
-    integer::ncore ! nb de coeur par noeud
     type(cell_config)::celdec
     class(atom_config),optional:: atdec,atcomp
     integer, allocatable :: coord_min(:,:),coord_max(:,:)	!stocke la "coordonnée" de la premiere cellule du découpage selon x,y,z
     integer:: nnoeuds,imm_loc
     integer::im0,nvois0
     integer :: cellules_max,cellules_int
-    integer :: nbr_cpu,nox,noy,noz,noxyz,imm,im_glob
+    integer :: nbr_cpu,nox,noy,noz,noxyz,imm,im_glob,ii
     integer ::nbr_cpumin
     integer::natlocm,icomp,numcell,numproc,imm_loc1
     real(double)::xt(3)
@@ -487,29 +484,24 @@ contains
 
     if ((nprocspace.gt.1).or.(ldecoup)) then
        loop1:     do nbr_cpu=nbr_cpumin,nbr_cpuIN
-
-
-
-
-
-
 #ifdef PARA
           ! On est dans le code de calcul NDM, on realloue les tableaux sur le
           ! nombre d'atomes en tenant compte des cellules fantomes
+          cellules_max=0
+          cellules_int=0
+          do ii = 0,nbr_cpu-1
+             cellules_max = max(cellules_max,(psc%res_cpu(ii,1)+2) * (psc%res_cpu(ii,2)+2)* (psc%res_cpu(ii,3)+2))
+             cellules_int = max(cellules_int,(psc%res_cpu(ii,1)+0) * (psc%res_cpu(ii,2)+0)* (psc%res_cpu(ii,3)+0))
+          enddo
+          cellules_max = min (cellules_max, noxyz)
           if (.not.ldecoup) then
-
-
-
              !     write(iudecoup,*)'test4' 
              im0=0 ; nvois0=0
              if (present(atdec)) then
                 if (present(atcomp)) then
                    allocate (natloc(0:nprocspace-1))
                    natloc=0
-
                    do icomp=1,atcomp%im
-
-
                       xt(:)=atcomp%xp(:,icomp)
                       call coord_to_cell(xt,numcell,boxrep%bg,celdec%nox,celdec%noy,celdec%noz)
                       numproc=celdec%proc_cell(numcell)
@@ -571,7 +563,109 @@ contains
 
 
 
+  subroutine constrandrepart(atrgin,atcf,celcf,boxcf,lat,psc)
+    USE gen_com_m, ONLY:imm_glob,rang,ldecoup
+    logical:: ltabvois=.false.
+    type(para_space_config)::psc
+    class(box_config)::boxcf
+    type(cell_config)::celcf
+    class(atom_config):: atcf
+    class(atom_config),intent(in):: atrgin
+    integer::lat(3),i,ia,ib,ic,icell,nvois0,ii,cellules_max,cellules_int,im0,im_glob,imm_loc,imm,ig
 
+    real(double)::rvn,xpcur(3,1),itypcur,rvois=0.
+
+    integer::natlocm,icomp,numcell,numproc,imm_loc1,nox,noy,noz,noxyz,im
+    integer,allocatable::natloc(:) !indice de boucle
+    allocate (natloc(0:nprocspace-1))
+    natloc=0
+
+    nox=celcf%nox;noy=celcf%noy;noz=celcf%noz; noxyz=nox*noy*noz
+    im0=0
+    nvois0=0
+    cellules_max=0
+    cellules_int=0
+    do ii = 0,nprocspace-1
+       cellules_max = max(cellules_max,(psc%res_cpu(ii,1)+2) * (psc%res_cpu(ii,2)+2)* (psc%res_cpu(ii,3)+2))
+       cellules_int = max(cellules_int,(psc%res_cpu(ii,1)+0) * (psc%res_cpu(ii,2)+0)* (psc%res_cpu(ii,3)+0))
+    enddo
+    cellules_max = min (cellules_max, noxyz)
+    
+    if (atcf%rvois.gT.0)then
+       rvn=atcf%rvois
+    else
+       rvn=0
+    end if
+    i=0
+    im_glob=atrgin%im*lat(1)*lat(2)*lat(3)
+    do ia = 1,lat(1)
+       do ib = 1,lat(2)
+          do ic = 1,lat(3)
+             do icell = 1, atrgin%im
+                i  = i + 1
+                xpcur(1,1) = (atrgin%xp(1,icell)+float(ia-1))/float(lat(1))
+                xpcur(2,1) = (atrgin%xp(2,icell)+float(ib-1))/float(lat(2))
+                xpcur(3,1) = (atrgin%xp(3,icell)+float(ic-1))/float(lat(3))
+                itypcur=atrgin%ityp(icell)
+                call cryst_to_cart (1, xpcur, boxcf%at, 1)
+                call coord_to_cell(xpcur(:,1),numcell,boxcf%bg,celcf%nox,celcf%noy,celcf%noz)
+                numproc=celcf%proc_cell(numcell)
+
+                if (numproc == myidsp) then
+                   natloc(myidsp)=natloc(myidsp)+1
+                endif
+               
+             end do
+          end do
+       end do
+    end do
+    call comm_space%sum(natloc)
+    !             if (rang==0) write(6,*)'natloc',natloc
+    natlocm=maxval(natloc)
+    natlocm=int(natlocm*float(cellules_max)/cellules_int)
+    imm_loc=min( imm_glob, int(1.2 * natlocm))
+    imm = imm_loc
+    
+    call atcf%dealloc
+    call atcf%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob,imm_glob=imm_glob)
+
+!REPARTITION
+    i=0;im=0;ig=0
+    do ia = 1,lat(1)
+       do ib = 1,lat(2)
+          do ic = 1,lat(3)
+             do icell = 1, atrgin%im
+                ig=ig+1
+                xpcur(1,1) = (atrgin%xp(1,icell)+float(ia-1))/float(lat(1))
+                xpcur(2,1) = (atrgin%xp(2,icell)+float(ib-1))/float(lat(2))
+                xpcur(3,1) = (atrgin%xp(3,icell)+float(ic-1))/float(lat(3))
+                itypcur=atrgin%ityp(icell)
+                call cryst_to_cart (1, xpcur, boxcf%at, 1)
+                call coord_to_cell(xpcur(:,1),numcell,boxcf%bg,celcf%nox,celcf%noy,celcf%noz)
+                numproc=celcf%proc_cell(numcell)
+!                write(6,*)'np ',i,numproc,MYIDSP
+                if (numproc == myidsp) then
+                   i=i+1
+                   im=im+1
+                   atcf%xp(:,i)=xpcur(:,1)
+                   atcf%ityp(i)=itypcur
+                   atcf%num_at_glob(i)=ig
+                   atcf%proc_at(i)=myidsp
+                endif
+               
+             end do
+          end do
+       end do
+    end do
+    atcf%im=im
+
+ !   call atcf%print
+!    write(6,*)atcf%xp
+
+    
+    
+  end subroutine constrandrepart
+    
 
 
 end module decoupage_mod
