@@ -274,17 +274,17 @@ contains
           ! Dk_io Atomeye's extended CFG format
           end_name='.xfg'
           if (ivisum==11) then
-             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"xfg",extension, with_velocities=.false.)
+             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"xfg",extension, velocities=.false.)
           else
-             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"xfg",extension, with_velocities=.true.)
+             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"xfg",extension, velocities=.true.)
           end if
        case(12,22)
           ! Dk_io CASTEP format
           end_name='.cell'
           if (ivisum==12) then
-             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"castep",extension, with_velocities=.false.)
+             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"castep",extension, velocities=.false.)
           else
-             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"castep",extension, with_velocities=.true.)
+             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"castep",extension, velocities=.true.)
           end if
        case(13)
           ! Dk_io CIF format
@@ -294,9 +294,9 @@ contains
           ! Dk_io DL_POLY format
           end_name='.CONFIG'
           if (ivisum==14) then
-             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"dlpoly",extension, with_velocities=.false.)
+             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"dlpoly",extension, velocities=.false.)
           else
-             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"dlpoly",extension, with_velocities=.true.)
+             call dk_io_write(nameo,end_name,at,bg,atcomp,tyw,"dlpoly",extension, velocities=.true.)
           end if
        case(15)
           ! Dk_io GULP format
@@ -635,7 +635,7 @@ contains
   end subroutine openfilemol
 
 #ifdef DKIO
-  subroutine dk_io_write(nameo,end_name,box,invbox,atcomp,tyw,format,ext,with_velocities)
+  subroutine dk_io_write(nameo,end_name,box,invbox,atcomp,tyw,format,ext,velocities)
     !-----------------------------------------------------
     !  Subroutine for interfacing with the dk_io library
     !-----------------------------------------------------
@@ -647,10 +647,9 @@ contains
     class(atom_config) :: atcomp
     character(len=3), dimension(:), intent(in) :: tyw
     character(len=9), intent(in), optional :: ext
-    logical, intent(in), optional :: with_velocities
+    logical, intent(in), optional :: velocities
     character(len=80) :: namef
     character(TAG_LENGTH), dimension(:), allocatable :: tags
-    real(double), dimension(:,:), allocatable :: velocities
     logical :: called = .false.
     integer :: i
 
@@ -668,16 +667,11 @@ contains
        tags(i) = tyw(i)
     end do
 
-    if (present(with_velocities) .and. with_velocities) then
+    if (present(velocities) .and. velocities) then
        select type (atcomp)
        class is (atom_config_d)
-          allocate(velocities(3,atcomp%im))
-          do i=1, atcomp%im
-             velocities(:,i) = atcomp%vp(:,i)*1d8*1d-12
-          end do
-          call write_structure(trim(namef), box, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=velocities)
+          call write_structure(trim(namef), box, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d-4)
           called = .true.
-          deallocate(velocities)
        end select
     end if
 
