@@ -104,8 +104,8 @@ contains
        write(6,*)
     end if
     if (lrestart) then
-       itprep=0
-       if (rang==0) write(6,*)'LRESTART et CREADP==> itprep put to 0 (no initial equilbration)'
+       itprep=1
+       if (rang==0) write(6,*)'LRESTART et CREADP==> itprep put to 1 (just one step)'
     end if
 
     if (nfp.gt.0) then
@@ -179,7 +179,7 @@ contains
     logical::l2close,lcloseP
     integer::numproc,iatint
     integer::formatsauv=5
-    integer::jint,iinttot,numcell,imt,iold
+    integer::jint,iinttot,numcell,imt,iold,irang,pvactot,dvactot
     logical::lsuiv,lcrea0
     character::fnamcout*80
     character :: extension*5
@@ -196,7 +196,8 @@ contains
 
 !       itinser=0
     !    call atdml%print
-    if (itprep.gT.0) then 
+!    write(6,*)'ITPREP',itprep
+    if (itprep.gT.0) then ! always true
        itloopmax=itprep
        timeloopmax=1d8
 
@@ -323,26 +324,33 @@ contains
           atomint%iatpos=0
           atomint%ityp=0
           atomint%pos=0
+          PVACTOT=0
+          dvactot=0
           if (nvactot.ne.0) then
              ! insérer les lacunes
-             do iti=1,ntyp
+             lty:do iti=1,ntyp
+                if (nvac(iti)==0)cycle lty
+                pvactot=dvactot+1
+                dvactot=dvactot+nvac(iti)
+!                write(6,*)'TTTYYYYYPPPP',rang,iti
+                natyp=0
+                nb_at_typ=0
                 allocate(iatvac(nvac(iti)))
                 iatvac=0
                 last_at_typ(:)=0
                 natyp=count(atdml%ityp(1:atdml%im)==iti)
                 !#ifdef PARA
                 nb_at_typ(comm_space%rank)=natyp
+ !               write(6,*)'typ',rang,natyp,nb_at_typ
                 if (lspacendm) then
                    !                call comm_space%build(natyp,nb_at_typ,torank=0)
                    call comm_space%sum(nb_at_typ)
                    call comm_space%sum(natyp)
                 end if
+                if (natyp==0) cycle lty
                 do iproc=0,comm_space%nproc-1
                    last_at_typ(iproc)=last_at_typ(iproc-1)+nb_at_typ(iproc)
                 end do
-                !#else
-                !             last_at_typ(0)=natyp
-                !#endif
                 if (natyp.lt.nvac(iti)) then
                    write(6,*)'impossible to delete that many atoms of type ',iti,nvac(iti),natyp
                    call arret_ndm
@@ -364,6 +372,7 @@ contains
                          if (iatvac(jvac)==iatvac(ivac)) goto 1
                       end do
                       !#ifdef PARA
+
                       if (lspacendm) then
                          looppr:do iproc=0,comm_space%nproc-1
                             if (last_at_typ(iproc).ge.iatvac(ivac)) then
@@ -376,15 +385,13 @@ contains
                          iproc=0
                          ivacloc=iatvac(ivac)
                       endif
-                      !#else
-                      !                   iproc=0
-                      !                   ivacloc=iatvac(ivac)
-                      !#endif
                    end if
 
-                   !#ifdef PARA
                    call comm_space%bcast(0,iproc)
                    call comm_space%bcast(0,ivacloc)
+                      
+                   do irang=0,npp-1
+                   end do
                    if (lspacendm) then
                       if (myidsp==iproc)then
                          lsuiv=.true.
@@ -401,6 +408,7 @@ contains
                          if (atdml%ityp(i)==iti) then
                             iat=iat+1
                             if (iat==ivacloc) then
+!                               write(700+rang,*)'VACF',ivactot,ivacloc,myidsp
                                atomvac%iproc(ivactot)=myidsp
                                atomvac%pos(:,ivactot)=atdml%xp(:,i)
                                atomvac%ityp(ivactot)= atdml%ityp(i)
@@ -414,27 +422,26 @@ contains
                    end if
                    !#endif
 
+!                   write(220+rang,*)ivac,ivactot,atomvac%iproc(ivactot),atomvac%iloc(ivactot)
                 end do
+
+             
                 !#ifdef PARA
-                call comm_space%sum(atomvac%iproc) ! avant ça seul le proc iproc connaissait ces chiffres
-                call comm_space%sum(atomvac%natg)
-                call comm_space%sum(atomvac%iloc)
-                call comm_space%sum(atomvac%pos)
-                call comm_space%sum(atomvac%ityp)
+                call comm_space%sum(atomvac%iproc(pvactot:dvactot)) ! avant ça seul le proc iproc connaissait ces chiffres
+                call comm_space%sum(atomvac%natg(pvactot:dvactot))
+                call comm_space%sum(atomvac%iloc(pvactot:dvactot))
+                call comm_space%sum(atomvac%pos(:,pvactot:dvactot))
+                call comm_space%sum(atomvac%ityp(pvactot:dvactot))
                 !#endif
                 deallocate (iatvac)
-             end do
+             end do lty
 
-             do ivactot=1,nvactot
-                !#ifdef PARA
-
+                do ivactot=1,nvactot
+                
                 if (comm_space%rank==atomvac%iproc(ivactot)) then
-                   !#endif
                    call atdml%switch_atom(atomvac%iloc(ivactot),atdml%im)
                    atdml%im=atdml%im-1
-                   !#ifdef PARA          
                 end if
-                !#endif
              end do
              if (myidsp==0) then
                 write(121,*)itinser, iteration,timel,'VAC'
@@ -445,10 +452,11 @@ contains
              end if
 
           end if
-          ! insérer les interstitiels       
+!IIIIIIINNNNNNNNNNNNNNNNTTTTTTTTTTTEEEEEEEEEEERRRRRRRRRRRRSSSSSSSSSSSTTTTTTTT
           if (ninttot.ne.0) then
              iinttot=0 
-             do iti=1,ntyp
+             lti:do iti=1,ntyp
+                if(nbint(iti)==0) cycle lti
                 do iint=1,nbint(iti)
                    l2close=.true.
                    ntry=0
@@ -509,7 +517,6 @@ contains
 #else
                       numproc=0
 #endif
-
                       if (dminins.gT.0) then
                          l2close=.false.
                          do iold=1,iinttot-1
@@ -609,7 +616,7 @@ contains
                       
                    end do !boucle l2close
                 end do
-             end do
+             end do lti
 
              if (iinttot.ne.ninttot) then
                 write(6,*)'pb nombre de int',iinttot,ninttot
@@ -624,7 +631,6 @@ contains
              end if
 
           end if
-
           atdml%im_glob=atdml%im_glob-nvactot+ninttot
           !#ifdef PARA
 
@@ -645,7 +651,6 @@ contains
           else
              call rasmolT(atdml,boxndm,itinser,'POST_INSER',latcomp=.true.,ivisumol=ivisu)
           end if
-
        end if
        select type(atdml)
        type is (atom_config)

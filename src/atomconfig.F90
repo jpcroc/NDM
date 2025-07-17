@@ -336,7 +336,8 @@ contains
           imm_min=j-atcible%imm
           call atcible%extend(imm_min)
        else
-          write(6,*)'copy of an atom element is not possible , target size too small' 
+          write(6,*)'PB COPY', rang,j,atcible%imm,i,atsource%imm
+          write(6,*)'copy of an atom element is not possible , target size too small' ,rang
           call arret_ndm
        end if
     end if
