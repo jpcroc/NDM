@@ -391,7 +391,7 @@ contains
 
 
                       xt(:)=atcomp%xp(:,icomp)
-                      call coord_to_cell(xt,numcell,boxrep%bg,celdec%nox,celdec%noy,celdec%noz)
+                      call coord_to_cell(xt,numcell,boxrep,celdec%nox,celdec%noy,celdec%noz)
                       numproc=celdec%proc_cell(numcell)
 
                       if (numproc == myidsp) then
@@ -441,6 +441,7 @@ contains
        celdec%proc_cell=0
     end if
     if (ldecoup) stop
+    call comm_space%barrier
     return
 !!$
 !!$#ifdef PARA
@@ -503,7 +504,7 @@ contains
                    natloc=0
                    do icomp=1,atcomp%im
                       xt(:)=atcomp%xp(:,icomp)
-                      call coord_to_cell(xt,numcell,boxrep%bg,celdec%nox,celdec%noy,celdec%noz)
+                      call coord_to_cell(xt,numcell,boxrep,celdec%nox,celdec%noy,celdec%noz)
                       numproc=celdec%proc_cell(numcell)
 
                       if (numproc == myidsp) then
@@ -608,7 +609,7 @@ contains
                 xpcur(3,1) = (atrgin%xp(3,icell)+float(ic-1))/float(lat(3))
                 itypcur=atrgin%ityp(icell)
                 call cryst_to_cart (1, xpcur, boxcf%at, 1)
-                call coord_to_cell(xpcur(:,1),numcell,boxcf%bg,celcf%nox,celcf%noy,celcf%noz)
+                call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox,celcf%noy,celcf%noz)
                 numproc=celcf%proc_cell(numcell)
 
                 if (numproc == myidsp) then
@@ -641,7 +642,7 @@ contains
                 xpcur(3,1) = (atrgin%xp(3,icell)+float(ic-1))/float(lat(3))
                 itypcur=atrgin%ityp(icell)
                 call cryst_to_cart (1, xpcur, boxcf%at, 1)
-                call coord_to_cell(xpcur(:,1),numcell,boxcf%bg,celcf%nox,celcf%noy,celcf%noz)
+                call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox,celcf%noy,celcf%noz)
                 numproc=celcf%proc_cell(numcell)
 !                write(6,*)'np ',i,numproc,MYIDSP
                 if (numproc == myidsp) then

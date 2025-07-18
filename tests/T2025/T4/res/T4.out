@@ -58,9 +58,6 @@ debyetemp=      -1.0
   *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-
   *-*-*-*-*- LRESTART = F
  config type of  .cin file :            3
- types
- xp
- num_at_glob
 volume= 0.76280474D-18 cm3  0.76280474D+06 Ang3
  nox,noy,noz dans .din =          -1          -1          -1
  calcul de nox noy noz !!!
@@ -98,7 +95,13 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.7649
  Decoupage           2 :           8           7          15
  Decoupage           3 :           7           7          15
  ----------------------------------------------
- natperc im/noxyz          57          19
+volume= 0.76280474D-18 cm3  0.76280474D+06 Ang3
+ config type of  .cin file :            3
+ types
+ XPR
+ num_at_glob
+ VP
+ natperc im/noxyz          70          19
  ltabvois F
  
  -------- boite de simulation ------
@@ -112,9 +115,9 @@ vecteur  3       0.000000       0.000000      91.370176
               2nd step of potential initialization , dependancy on box size
  calpoeam ktorho and the inverse:   8.522228107257609E-003
    117.340205802329     
- rang rangspace            3           3  nbr procs voisins            3
  rang rangspace            1           1  nbr procs voisins            3
  rang rangspace            2           2  nbr procs voisins            3
+ rang rangspace            3           3  nbr procs voisins            3
  rang rangspace            0           0  nbr procs voisins            3
  tempsauv    560.473874886264     
  pas de chgt des vitesses= 
@@ -127,7 +130,7 @@ vecteur  3       0.000000       0.000000      91.370176
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-         0  0.00    *Epot =    -268836.3079803359      eV 
+         0  0.00    *Epot =    -268836.3079803358      eV 
     *energie PAIRE EAM =     11416.9417692      eV 
     *energie GLUE  =    -280253.249750      eV 
          0  0.00    *Ec =     4747.78458011      eV   (560.474 K)

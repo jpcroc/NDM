@@ -494,7 +494,7 @@ contains
                       call comm_space%bcast(0,xpositest)
 
                       if (lspacendm) then
-                         call coord_to_cell(xposItest,numcell,boxndm%bg,celndm%nox,celndm%noy,celndm%noz)
+                         call coord_to_cell(xposItest,numcell,boxndm,celndm%nox,celndm%noy,celndm%noz)
                          numproc=celndm%proc_cell(numcell)
                       else
                          numproc=0

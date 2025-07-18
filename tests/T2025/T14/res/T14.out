@@ -6,12 +6,17 @@
  Febulk.din                                                                     
   
  
+ rang readdm iseed            1           1
+ INITMPIFM
  -------- caracteristiques du run DM--------19
       FORCE Matrix calculation 
   decal, ndecal lparaFM, naparaFM:  1.000000014901161E-009           1 T
            4
  
  generation du crystal ; puis run
+ rang readdm iseed            2           1
+ rang readdm iseed            3           1
+ INITMPIFM
  
       ANALYSES 
  itetemp=           1  iteprtsigma=           1
@@ -20,6 +25,7 @@
 tstep=  0.100D-14
  itmax=           6 timemax=    10000000000.0000       itab=           1 
   itetimestep=          -1
+ INITMPIFM
 tinit=     600.0
 tempdeplainit=      -1.0
 debyetemp=      -1.0
@@ -30,12 +36,6 @@ debyetemp=      -1.0
  ipotentiel          10
  fmt_cin           1
  rang readdm iseed            0           1
- INITMPIFM
- rang readdm iseed            1           1
- INITMPIFM
- rang readdm iseed            2           1
- INITMPIFM
- rang readdm iseed            3           1
  INITMPIFM
  nparafM,nprocspace, nprocs           4           1           4
  
@@ -72,7 +72,7 @@ nox noy noz calcules a partir de ru
   noz = Int(   0.1713E-06/  0.6000E-07) = 2
 celsizes   0.8565954E-07  0.8565954E-07  0.8565954E-07
 Febulk.gin                                                                      volume= 0.50282539D-20 cm3  0.50282539D+04 Ang3
- natperc im/noxyz         162          54
+ natperc im/noxyz         108          54
  ltabvois F
  
  -------- boite de simulation ------
@@ -91,9 +91,9 @@ vecteur  3       0.000000       0.000000      17.131908
  temperature fin initspeed    606.920649061559     
  IN ForceMatrix           0
  IN ForceMatrix           2
- decal rang ideb ifin          -1           1         109         216
- decal rang ideb ifin          -1           0           1         108
  decal rang ideb ifin          -1           3         325         432
+ decal rang ideb ifin          -1           0           1         108
+ decal rang ideb ifin          -1           1         109         216
  decal rang ideb ifin          -1           2         217         324
  decal rang ideb ifin           1           3         325         432
  decal rang ideb ifin           1           2         217         324

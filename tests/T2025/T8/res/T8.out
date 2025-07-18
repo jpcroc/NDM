@@ -85,7 +85,6 @@ vecteur  3       0.000000       0.000000      28.553180
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
           0       0.0000000              4      0.10000000E+10     10      7
  ****************************************
- IMM        2000          10           7
  ***** FIRST ITERATION  ***           4   1000000000.00000     
  
  
@@ -297,7 +296,6 @@ vecteur  3       0.000000       0.000000      28.553180
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
           5      0.35000000E-14          9      0.10000000E+10     10      7
  ****************************************
- IMM        1997          10           7
  ***** FIRST ITERATION  ***           9   1000000000.00000     
  
  
@@ -503,7 +501,6 @@ vecteur  3       0.000000       0.000000      28.553180
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
          10      0.45000000E-14         14      0.10000000E+10     10      7
  ****************************************
- IMM        1994          10           7
  ***** FIRST ITERATION  ***          14   1000000000.00000     
  
  
@@ -709,7 +706,6 @@ vecteur  3       0.000000       0.000000      28.553180
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
          15      0.55000000E-14         19      0.10000000E+10     10      7
  ****************************************
- IMM        1991          10           7
  ***** FIRST ITERATION  ***          19   1000000000.00000     
  
  

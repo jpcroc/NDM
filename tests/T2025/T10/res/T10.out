@@ -5,18 +5,18 @@
  nom fichier din=
  Febulk.din                                                                     
   
+ rang readdm iseed            1           1
  
+ rang readdm iseed            2           1
+ rang readdm iseed            3           1
  -------- caracteristiques du run DM--------23
      FIRE Quenching Vcst
- rang readdm iseed            1           1
  generation du crystal ; puis run
  
       ANALYSES 
  itetemp=        1000  iteprtsigma=           1
  
       CONTROLES 
- rang readdm iseed            2           1
- rang readdm iseed            3           1
 tstep=  0.100D-14
  itmax=       20000 timemax=    10000000000.0000       itab=           1 
   itetimestep=          -1
@@ -127,10 +127,6 @@ TR: force max, energy     1    0.279031190982931E-13   -0.823889874462380E+04
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
           0       0.0000000          20000      0.10000000E+10     10     10
  ****************************************
- IMM        2000          10          10
- IMM        2000          10          10
- IMM        2000          10          10
- IMM        2000          10          10
  ***** FIRST ITERATION  ***       20000   1000000000.00000     
  
 TR: force max, energy     1    0.885240251217510E+02   -0.759908680345626E+04
@@ -237,10 +233,6 @@ TR: force max, energy    48    0.196494898571011E+01   -0.818709431987867E+04
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
          48       0.0000000          20000      0.10000000E+10     10     10
  ****************************************
- IMM        2000          10          10
- IMM        2000          10          10
- IMM        2000          10          10
- IMM        2000          10          10
  ***** FIRST ITERATION  ***       20000   1000000000.00000     
  
 TR: force max, energy    49    0.931213243646967E+02   -0.749756704591407E+04
