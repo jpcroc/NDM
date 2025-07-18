@@ -4,7 +4,6 @@
  nom fichier din=
  neb.din                                                                        
   
- rang readdm iseed            2  1352620440
  
  coordinates can get out of  0-1
  along  a
@@ -13,8 +12,9 @@
  
  -------- caracteristiques du run DM-------- 9
       DRAG OR NEB DYNAMICS 
+ rang readdm iseed            1   801559961
+ rang readdm iseed            2   801559971
  generation du crystal ; puis run
- rang readdm iseed            1  1352620431
  
       ANALYSES 
  itetemp=          -1  iteprtsigma=           1
@@ -32,7 +32,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          11
  fmt_cin           1
- rang readdm iseed            0  1352620421
+ rang readdm iseed            0   801559951
  PARANEB           1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -53,14 +53,14 @@ debyetemp=      -1.0
  nox,noy,noz dans .din =           4           4           4
 celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
 deb_neb.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
- natperc im/noxyz          96          32
+ natperc im/noxyz          66          32
  ltabvois F
  **********construction du reseau************
  repetition de mailles           1           1           1
  nox,noy,noz dans .din =           4           4           4
 celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
 fin_neb.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
- natperc im/noxyz          96          32
+ natperc im/noxyz          72          32
  ltabvois F
  
   -------------------------------------------------------------------
@@ -80,8 +80,8 @@ fin_neb.gin                                                                     
  ("NEB:pas-neb image    force      force_NEB          energie      statut    ene
  rgie/stable")
 NEB:     1    2   0.55069       0.22924E-14    -6881.990120      0 0.15757997    
-NEB:     1    3   0.74561       0.63040E-14    -6881.873259      0 0.27444099    
 NEB:     1    4   0.55107       0.12894E-14    -6881.990033      0 0.15766740    
+NEB:     1    3   0.74561       0.63040E-14    -6881.873259      0 0.27444099    
  ("NEB:===============================================")
  ("NEB:pas-neb image    force      force_NEB          energie      statut    ene
  rgie/stable")

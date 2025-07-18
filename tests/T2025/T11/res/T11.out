@@ -63,7 +63,7 @@ nox noy noz calcules a partir de ru
   noz = Int(   0.2187E-06/  0.1100E-06) = 1
 celsizes   0.2187200E-06  0.2187200E-06  0.2187200E-06
 UO2M.gin                                                                        volume= 0.10463223D-19 cm3  0.10463223D+05 Ang3
- natperc im/noxyz        2304         768
+ natperc im/noxyz        2000         768
  ltabvois F
  
  -------- boite de simulation ------

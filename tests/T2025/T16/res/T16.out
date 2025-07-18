@@ -10,11 +10,11 @@
  run a partir du fichier .cin
  
       ANALYSES 
+ rang readdm iseed            1           1
  itetemp=           1  iteprtsigma=           1
  
       CONTROLES 
 tstep=  0.100D-14
- rang readdm iseed            1           1
  itmax=         200 timemax=    10000000000.0000       itab=           1 
   itetimestep=          -1
 tinit=     600.0
@@ -93,7 +93,7 @@ LE_MEILLEUR_DECOUPAGE :    2    1    1    2    0.9286
  Decoupage           0 :           4           4           2
  Decoupage           1 :           4           4           2
  ----------------------------------------------
- natperc im/noxyz          93          31
+ natperc im/noxyz          76          31
  ltabvois F
  
  -------- boite de simulation ------

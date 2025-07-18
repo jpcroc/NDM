@@ -94,7 +94,7 @@ LE_MEILLEUR_DECOUPAGE :    2    2    1    1    0.9059
  Decoupage           0 :           2           1           1
  Decoupage           1 :           2           1           1
  ----------------------------------------------
- natperc im/noxyz        1440         480
+ natperc im/noxyz         960         480
  ltabvois F
  
  -------- boite de simulation ------
@@ -117,8 +117,8 @@ vecteur  3       0.000000       0.000000      21.872000
  
  
  rang rangspace            0           0  nbr procs voisins            1
- random velocities at TINIT =    300.000000000000      K
  rang rangspace            1           1  nbr procs voisins            1
+ random velocities at TINIT =    300.000000000000      K
  temperature fin initspeed    302.652175213496     
  ***** PREMIERE ITERATION  VVERLET****          20   10000000000.0000     
  

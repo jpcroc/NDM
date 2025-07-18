@@ -21,16 +21,6 @@
  
  -------- caracteristiques du run DM-------- 9
       DRAG OR NEB DYNAMICS 
- rang readdm iseed            1  1352946394
- rang readdm iseed            2  1352946404
- rang readdm iseed            3  1352946414
- rang readdm iseed            4  1352946424
- rang readdm iseed            5  1352946434
- rang readdm iseed            6  1352946444
- rang readdm iseed            7  1352946454
- rang readdm iseed            8  1352946464
- rang readdm iseed           10  1352946484
- rang readdm iseed           11  1352946494
  generation du crystal ; puis run
  
       ANALYSES 
@@ -40,6 +30,16 @@
 tstep=  0.100D-14
  itmax=           1 timemax=    10000000000.0000       itab=           1 
   itetimestep=          -1
+ rang readdm iseed            1   801615031
+ rang readdm iseed            2   801615041
+ rang readdm iseed            3   801615051
+ rang readdm iseed            4   801615061
+ rang readdm iseed            6   801615081
+ rang readdm iseed            7   801615091
+ rang readdm iseed            8   801615101
+ rang readdm iseed            9   801615111
+ rang readdm iseed           10   801615121
+ rang readdm iseed           11   801615131
 tinit=      -1.0
 tempdeplainit=      -1.0
 debyetemp=      -1.0
@@ -49,8 +49,8 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          11
  fmt_cin           1
- rang readdm iseed            0  1352946385
- rang readdm iseed            9  1352946474
+ rang readdm iseed            0   801615022
+ rang readdm iseed            5   801615072
  PARANEB           4
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -109,7 +109,7 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
  Decoupage           2 :           2           2           4
  Decoupage           3 :           2           2           4
  ----------------------------------------------
- natperc im/noxyz          96          32
+ natperc im/noxyz         264          32
  ltabvois F
  **********construction du reseau************
  repetition de mailles           1           1           1
@@ -125,7 +125,7 @@ fin_neb.gin                                                                     
  sur            4  cpus           0
  Nbre de solutions possibles :            6
 LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
- natperc im/noxyz          96          32
+ natperc im/noxyz         288          32
  ltabvois F
  
   -------------------------------------------------------------------

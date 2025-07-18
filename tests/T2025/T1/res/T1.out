@@ -58,7 +58,7 @@ nox noy noz calcules a partir de ru
   noz = Int(   0.2855E-06/  0.6000E-07) = 4
 celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
 Febulk.gin                                                                      volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
- natperc im/noxyz          93          31
+ natperc im/noxyz          70          31
  ltabvois F
  
  -------- boite de simulation ------

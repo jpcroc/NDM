@@ -11,6 +11,7 @@
       ANALYSES 
  itetemp=           2  iteprtsigma=           1
  
+ rang readdm iseed            1          11
       CONTROLES 
 tstep=  0.100D-14
  itmax=          20 timemax=    10000000000.0000       itab=           1 
@@ -26,7 +27,6 @@ debyetemp=      -1.0
  fmt_cin           1
  rang readdm iseed            0          11
  IMM PARA =         1200        2000
- rang readdm iseed            1          11
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
  
@@ -93,7 +93,7 @@ LE_MEILLEUR_DECOUPAGE :    2    2    1    1    0.9059
  Decoupage           0 :           2           1           1
  Decoupage           1 :           2           1           1
  ----------------------------------------------
- natperc im/noxyz        1440         480
+ natperc im/noxyz         960         480
  ltabvois F
  
  -------- boite de simulation ------

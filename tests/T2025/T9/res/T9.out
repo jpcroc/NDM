@@ -6,24 +6,24 @@
  Febulk.din                                                                     
   
  
+ rang readdm iseed            1           1
  -------- caracteristiques du run DM-------- 1
      DYNAMIQUE MOLECULAIRE VERLET STANDARD
  generation du crystal ; puis run
- rang readdm iseed            1           1
- rang readdm iseed            2           1
- rang readdm iseed            3           1
  
       ANALYSES 
  itetemp=           1  iteprtsigma=           1
  
       CONTROLES 
 tstep=  0.100D-14
+ rang readdm iseed            3           1
  itmax=          19 timemax=    10000000000.0000       itab=           1 
   itetimestep=          -1
 tinit=     600.0
 tempdeplainit=      -1.0
 debyetemp=      -1.0
   ----------------------------------
+ rang readdm iseed            2           1
  
  
  nb de potentiels           1
@@ -93,7 +93,7 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
  Decoupage           2 :           2           2           4
  Decoupage           3 :           2           2           4
  ----------------------------------------------
- natperc im/noxyz          93          31
+ natperc im/noxyz          70          31
  ltabvois F
  
  -------- boite de simulation ------
@@ -108,10 +108,10 @@ vecteur  3       0.000000       0.000000      28.553180
  calpoeam ktorho and the inverse:   8.522228107257609E-003
    117.340205802329     
  rang rangspace            0           0  nbr procs voisins            3
+ random velocities at TINIT =    600.000000000000      K
+ rang rangspace            1           1  nbr procs voisins            3
  rang rangspace            2           2  nbr procs voisins            3
  rang rangspace            3           3  nbr procs voisins            3
- rang rangspace            1           1  nbr procs voisins            3
- random velocities at TINIT =    600.000000000000      K
  temperature fin initspeed    605.835925242495     
  
  POINT DEFECT CREATION
@@ -125,10 +125,6 @@ vecteur  3       0.000000       0.000000      28.553180
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
           0       0.0000000              4      0.10000000E+10     10      7
  ****************************************
- IMM        2000          10           7
- IMM        2000          10           7
- IMM        2000          10           7
- IMM        2000          10           7
  ***** FIRST ITERATION  ***           4   1000000000.00000     
  
  
@@ -337,10 +333,6 @@ vecteur  3       0.000000       0.000000      28.553180
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
           5      0.35000000E-14          9      0.10000000E+10     10      7
  ****************************************
- IMM        1997          10           7
- IMM        1997          10           7
- IMM        1997          10           7
- IMM        1997          10           7
  ***** FIRST ITERATION  ***           9   1000000000.00000     
  
  
@@ -549,10 +541,6 @@ vecteur  3       0.000000       0.000000      28.553180
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
          10      0.48000000E-14         14      0.10000000E+10     10      7
  ****************************************
- IMM        1994          10           7
- IMM        1994          10           7
- IMM        1994          10           7
- IMM        1994          10           7
  ***** FIRST ITERATION  ***          14   1000000000.00000     
  
  
@@ -758,10 +746,6 @@ vecteur  3       0.000000       0.000000      28.553180
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
          15      0.58000000E-14         19      0.10000000E+10     10      7
  ****************************************
- IMM        1991          10           7
- IMM        1991          10           7
- IMM        1991          10           7
- IMM        1991          10           7
  ***** FIRST ITERATION  ***          19   1000000000.00000     
  
  

@@ -5,9 +5,6 @@
  nom fichier din=
  Febulk.din                                                                     
   
- rang readdm iseed            1           1
- rang readdm iseed            2           1
- rang readdm iseed            3           1
  
  -------- caracteristiques du run DM-------- 4
       DYNAMIQUE MOLECULAIRE VELOCITY VERLET
@@ -37,6 +34,9 @@ debyetemp=      -1.0
  
  POTENTIEL EAM
  
+ rang readdm iseed            1           1
+ rang readdm iseed            2           1
+ rang readdm iseed            3           1
  NTYP NPAIR            1           1
  Types d_atomes pour ce potentiel:
  CM, masse,type, NUMERO DU TYPE D ATOME
@@ -98,7 +98,7 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.7649
  Decoupage           2 :           8           7          15
  Decoupage           3 :           7           7          15
  ----------------------------------------------
- natperc im/noxyz          57          19
+ natperc im/noxyz          70          19
  ltabvois F
  
  -------- boite de simulation ------
@@ -113,8 +113,8 @@ vecteur  3       0.000000       0.000000      91.370176
  calpoeam ktorho and the inverse:   8.522228107257609E-003
    117.340205802329     
  rang rangspace            3           3  nbr procs voisins            3
- rang rangspace            1           1  nbr procs voisins            3
  rang rangspace            2           2  nbr procs voisins            3
+ rang rangspace            1           1  nbr procs voisins            3
  rang rangspace            0           0  nbr procs voisins            3
  tempsauv    560.473874886264     
  pas de chgt des vitesses= 
