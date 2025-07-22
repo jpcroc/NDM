@@ -1,9 +1,9 @@
 module constrconf_mod
   USE arret_ndm_mod,only:arret_ndm
 #ifdef PARA
-  USE decoupage_mod,only: decoupage
+  USE decoupage_mod,only: decoupage,decoup2im,constrandrepart
 #endif  
-USE read_val,only:imm,ipbc,nox,noy,noz
+  USE read_val,only:imm,ipbc,nox,noy,noz
   USE gen_com_m, ONLY: lenfnam, fnam,fmt_cin,igen,imm_glob,ldecoup,lperiod,lrestart,rang,&
        &lvpread,zero,low_limit,lspacendm,rang,dmtype
   USE var_pot, ONLY:ntyp,rumax,ipotentiel
@@ -48,7 +48,7 @@ contains
     character*80::filenom
     integer :: i, iti
     type(para_space_config)::psc
-    integer,      dimension(:), allocatable   :: num_at_buff
+    !    integer,      dimension(:), allocatable   :: num_at_buff
     integer, dimension(:),allocatable     :: ibuffer
     real(double), dimension(:,:),allocatable    :: buffer
     integer::ncore,ic
@@ -83,44 +83,51 @@ contains
        end if
 
 #ifdef PARA
-       ! En parallele, la lecture du fichier de position se fait en passes
-       !  - la premiere pour lire toutes les positions et determiner le
-       !    meilleur equilibrage/decoupage
-       !  - la deuxieme pour lire uniquement les positions propres au
-       !    processeur
-       !       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart.eqv..true.)) then
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+          itread=0
 
-          itread=1
-          call atrcf%deftype(compatrcf)
-!          write(6,*)'RVOIS',compatrcf%rvois
-          call compatrcf%init(immin=imm_glob,imin=0,ltabvois=compatrcf%ltabvois)
-
-
-!          call atrcf%print
-           call read_cin(boxrcf,itread,COMPatrcf,imm_glob,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
-           if ((rang==0).and.(lprt)) then
+          call read_cin(boxrcf,itread,fnamcin=fnamcin,fmtcin=fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+          if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
           call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
           ncore=0
-          atrcf%im_glob=compatrcf%im
-          if (lrepart.eqv..true.) then
-             call  decoupage(nprocspace,ncore,cellrcf,atrcf,psc=psc,lverbose=lprt,atcomp=compatrcf,boxrep=boxrcf)
-             
-             allocate(num_at_buff(imm_glob))
-             call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
-          else
-             call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
-             call compatrcf%copy_config(atrcf, lrescl=.true.)
+          call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
+
+          !          call atrcf%print(unit=600+rang)
+          !          stop
+
+          !          itread=1
+          !          call atrcf%deftype(compatrcf)
+          !          write(6,*)'RVOIS',compatrcf%rvois
+          !          call compatrcf%init(immin=imm_glob,imin=0,ltabvois=compatrcf%ltabvois)
+
+
+          !          call atrcf%print
+
+          if ((rang==0).and.(lprt)) then
+             write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
-          !       itread=3
-          !       call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin,num_at_buff,atrcf%im) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 num_at_buff masque des atomes locaux
+          !          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
+                    ncore=0
+          !          atrcf%im_glob=compatrcf%im
+          if (lrepart.eqv..true.) then
+             call read_cin2(boxrcf,atrcf,cellrcf,imm_glob,fnamcin,lrestart,fmt_cin,psc) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+             !             call  decoupage(nprocspace,ncore,cellrcf,atrcf,psc=psc,lverbose=lprt,atcomp=compatrcf,boxrep=boxrcf)
+
+             !             allocate(num_at_buff(imm_glob))
+             !             call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
+          else
+             call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+             !             call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
+             !             call compatrcf%copy_config(atrcf, lrescl=.true.)
+          end if
+
        else
           itread=1
           call atrcf%init(immin=imm_glob,imin=0,ltabvois=atrcf%ltabvois,rvois=atrcf%rvois)
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
-!          call atrcf%print
+          !          call atrcf%print
           atrcf%im_glob=atrcf%im
           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
@@ -178,7 +185,7 @@ contains
 
        select type(atrcf)
        class is (atom_config_e)
-!          atrcf%xpp(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
+          !          atrcf%xpp(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
           if (atrcf%lax) then
              atrcf%ax(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
           end if
@@ -204,7 +211,7 @@ contains
           call comm_space%sum(nati)
        end if
 #endif
-    if ((rang==0).and.(lprt)) then
+       if ((rang==0).and.(lprt)) then
           if (nati.ne.0) write (6, *) nati, ' atomes de type', iti
        end if
 
@@ -252,7 +259,7 @@ contains
     integer::immr,npr
     logical::lcs
     logical::lrepart
-    type (atom_config)::COMPatrcf
+    !    type (atom_config)::COMPatrcf
     type(atom_config)::atrgin
     type(box_config)::boxrgin
     real(double)::atg(3,3)
@@ -263,7 +270,7 @@ contains
     if(present(lconstrsimple))lcs=lconstrsimple
     immr=imm_glob
     if (present(immread)) immr=immread
-!    write(6,*)'IMMR',immr,lcs
+    !    write(6,*)'IMMR',immr,lcs
     if (ldecoup) then
        itread=0
     else
@@ -282,13 +289,13 @@ contains
     end if
 
     if (lcs) then ! construction simpple sans repartition en sequentiel
-       call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,immr)
+       call constr_2gin (at2b,atrgin,lat,immr)
        call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
        at2b%im_glob=at2b%im
        call setcellconf(cel2b,at2b,box2b,rum)
        return
     end if
-    
+
 #ifdef PARA
     if (rang==0) then
        if (ldecoup) then
@@ -299,27 +306,25 @@ contains
           call arret_ndm
        end if
     end if
-    COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
-    call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
-    call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
-    compatrcf%imm_glob=imm_glob
-
+    !    COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
+    call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
     ncore=0
-    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-       at2b%imm_glob=imm_glob
-       if (lrepart) then
-          at2b%im_glob=atrgin%im*lat(1)*lat(2)*lat(3)
-          call  decoupage(nprocspace,ncore,cel2b,at2b,psc=psc,lverbose=lprt,atcomp=compatrcf,boxrep=box2b)
-       else
-          call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
-       end if
-    else
-       cel2b%proc_cell=0
-    end if
+    at2b%imm_glob=imm_glob
+    at2b%im_glob=atrgin%im*lat(1)*lat(2)*lat(3)
+
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart)) then
-       call repartition(COMPatrcf,at2b,box2b,cel2b)
+       call constrandrepart(atrgin,at2b,cel2b,box2b,lat,psc)
+!!$       call constr_2gin (COMPatrcf,atrgin,lat,imm_glob)
+!!$       call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
+!!$       compatrcf%imm_glob=imm_glob
+!!$       call  decoup2im(nprocspace,cel2b,at2b,psc=psc,atcomp=compatrcf,boxrep=box2b)
+!!$       call repartition(COMPatrcf,at2b,box2b,cel2b)
     else
-       call compatrcf%copy_config(at2b, lrescl=.true.)
+       call constr_2gin (at2b,atrgin,lat,imm_glob)
+       call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
+       at2b%imm_glob=imm_glob
+
+       !       call compatrcf%copy_config(at2b, lrescl=.true.)
     end if
 #else
     if (ldecoup) then
@@ -339,12 +344,10 @@ contains
   end subroutine gin2ndm
 
 
-  subroutine constr_2gin(atrcf,boxrcf,cellrcf,atrgin,boxrgin,lat,immread)
+  subroutine constr_2gin(atrcf,atrgin,lat,immread)
 
     class(atom_config),intent(inout)::atrcf
-    type(cell_config),intent(in)::cellrcf
-    class(box_config),intent(in)::boxrcf    
-    type(box_config)::boxrgin
+
     type(atom_config)::atrgin
     integer,intent(in)::lat(3)
     integer,intent(in),optional::immread
@@ -352,7 +355,6 @@ contains
     integer::i,ia,ib,ic,icell,imloc,immr
 
     real(double)::rvN
-    logical :: lprteattrf
     logical::liniint
     !imtot=lat(1)*lat(2)*lat(3)*atrgin%im
     imloc=lat(1)*lat(2)*lat(3)*atrgin%im
@@ -368,11 +370,6 @@ contains
     else
        rvn=0
     end if
-    lprteattrf=.false.
-    select type (atrcf)
-    class is (atom_config_e)
-       lprteattrf=atrcf%lprteat
-    end select
     if (present(immread))then
 
        call atrcf%init(imloc,immin=immread,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois,rvois=rvn,im_glob=imloc)
@@ -424,7 +421,7 @@ contains
 
        xt(:)=atcomp%xp(:,icomp)
        iti = atcomp%ityp(icomp)
-       call coord_to_cell(xt,numcell,boxrep%bg,cellrep%nox,cellrep%noy,cellrep%noz)
+       call coord_to_cell(xt,numcell,boxrep,cellrep%nox,cellrep%noy,cellrep%noz)
        numproc=cellrep%proc_cell(numcell)
        atcomp%proc_at(icomp)=numproc
        if (numproc == myidsp) then
@@ -444,8 +441,222 @@ contains
     return
   end subroutine repartition
 
+  subroutine read_cin2(boxcin,atcinr,celcf,immr,fnamcin,lres,fmtcin,psc)
+    USE gen_com_m,only: iteration,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep
+    use Tpara,only:myidsp,nprocspace
+    use read_val,only:ltabvois
+    type(para_space_config)::psc
+    character,intent(in) :: fnamcin*80
+    class(box_config)::boxcin
+    class(atom_config)::atcinr
+    type(cell_config)::celcf
+    integer,intent(in),optional::immr,fmtcin
+    logical,intent(in),optional::lres
+    real(double)::at(3,3),rvois0
+    real(double),allocatable::xpr(:,:)
+    integer,allocatable::itypr(:),proc(:),natgr(:)
+    integer::natlocm,icomp,numcell,numproc,imm_loc1,im,cellules_max,cellules_int,im0,im_glob,imm_loc,imm,ig,&
+         &lucin,icintype,icintypemod,i,nvois0,it,im_gr,ii
+    integer,allocatable::natloc(:) !indice de boucle
+    logical::lprt=.true.
+    lucin = 94
+    open(unit=lucin, file=fnamcin, form='unformatted', status='old', err=431)
 
-  subroutine read_cin(boxcin,itread,atcinr,immr,fnamcin,lres,fmtcin,icible,imic)
+    read (lucin, err=432) icintype
+
+    if ((rang==0).and.(lprt))  write (6, *) 'config type of  .cin file : ', icintype
+    if (icintype>5.or.icintype<0) then
+       write (6, *) rang, 'wrong icintype'
+       call arret_ndm
+    endif
+
+
+
+
+    allocate (natloc(0:nprocspace-1))
+    natloc=0
+
+    allocate(xpr(3,immr))
+    allocate(itypr(immr))
+    allocate(proc(immr))
+    allocate(natgr(immr))
+
+    icintypemod = mod(icintype,2)
+    read (lucin, err=433) at
+    if(dilat(1).ne.0.0)then
+       do i=1,3
+          at(i,:)=at(i,:)*dilat(i)
+       end do
+    end if
+
+    call boxcin%init(at,ipbc)
+
+
+    read (lucin, err=434) im_gr                         !number of atoms in the box
+    if (im_gr>immr) then
+       if(rang==0)                    write (6, *) 'P2 im > imM', im_gr, immr
+       call arret_ndm
+    endif
+    !       call atcinr%init(im_gr,immr,im_glob=im_gr)
+
+    read (lucin, err=435) itypr   !ityp muet
+    if ((rang==0).and.(lprt))  write (6, *) 'types'
+    read (lucin, err=436) xpr    ! xp
+    if ((rang==0).and.(lprt))  write (6, *) 'XPR'
+    !       atcinr%xp(1:3,1:im_gr)=buffer(1:3,1:im_gr)
+
+    cellules_max=0
+    cellules_int=0
+    do ii = 0,nprocspace-1
+       cellules_max = max(cellules_max,(psc%res_cpu(ii,1)+2) * (psc%res_cpu(ii,2)+2)* (psc%res_cpu(ii,3)+2))
+       cellules_int = max(cellules_int,(psc%res_cpu(ii,1)+0) * (psc%res_cpu(ii,2)+0)* (psc%res_cpu(ii,3)+0))
+    enddo
+    cellules_max = min (cellules_max, celcf%noxyz)
+
+    formcin:select case (fmt_cin)
+    case (0) formcin
+       do i=1,im_gr
+          natgr(i) = i
+       enddo
+    case(1) formcin
+       read (lucin, err=437) natgr
+       if ((rang==0).and.(lprt))  write (6, *) 'num_at_glob'
+    case default  formcin
+       if (rang.eq.0) write(6,*) 'precisez le format fmt_cin'
+       call arret_ndm
+    end select formcin
+    !       atcinr%num_at_glob(1:im_gr)=ibuffer(1:im_gr)
+
+    do i=1,im_gr
+       call coord_to_cell(xpr(:,i),numcell,boxcin,celcf%nox,celcf%noy,celcf%noz)
+
+       proc(i)=celcf%proc_cell(numcell)
+       if (proc(i) == myidsp) then
+          natloc(myidsp)=natloc(myidsp)+1
+       endif
+    end do
+
+    call comm_space%sum(natloc)
+    !             if (rang==0) write(6,*)'natloc',natloc
+    natlocm=maxval(natloc)
+    natlocm=int(natlocm*float(cellules_max)/cellules_int)
+    imm_loc=min( imm_glob, int(1.2 * natlocm))
+    imm = imm_loc
+    im0=0;rvois0=0
+    call atcinr%init(im0,imm,ltabvois,nvois0,rvois0,im_glob=im_gr,imm_glob=imm_glob)
+    i=0
+    do it=1,im_gr
+       if (proc(it) == myidsp) then
+          i=i+1
+          atcinr%xp(:,i)=xpr(:,it)
+          atcinr%ityp(i)=itypr(it)
+          atcinr%num_at_glob(i)=natgr(it)
+       endif
+    end do
+    atcinr%im=i
+    !dans la suite xpr est un simple buffer
+    select type(atcinr)
+    type is (atom_config)
+       if (icintypemod==1) then
+          if (icintype==3)read (lucin, err=438) xpr                     !xpp
+          read (lucin, err=439) xpr                     !vp
+
+       end if
+
+       lvpread=.false.
+    type is (atom_config_d)
+       if (icintypemod==1) then
+          if (icintype==3) read (lucin, err=440) xpr                     !xpp
+          read (lucin, err=441) xpr                     !vp
+          if ((rang==0).and.(lprt))  write (6, *) 'VP'
+          i=0
+          do it=1,im_gr
+             if (proc(it) == myidsp) then
+                i=i+1
+                atcinr%vp(:,i)=xpr(:,it)
+             endif
+          end do
+       end if
+    end select
+    select type(atcinr)
+    class is (atom_config_e)
+       if (icintypemod==1) then
+
+          if (icintype==3) then
+             read (lucin, err=442) xpr                     !xpp
+          end if
+
+          read (lucin, err=443) xpr                     !vp
+          if ((rang==0).and.(lprt))  write (6, *) 'VP'
+          i=0
+          do it=1,im_gr
+             if (proc(it) == myidsp) then
+                i=i+1
+                atcinr%vp(:,i)=xpr(:,it)
+             endif
+          end do
+
+       else
+       end if
+       if (atcinr%lax) then
+          i=0
+          do it=1,im_gr
+             if (proc(it) == myidsp) then
+                i=i+1
+                atcinr%ax(:,i)=atcinr%xp(:,i)
+             endif
+          end do
+
+       end if
+
+    end select
+
+
+    if (icintypemod==1) then
+       read (lucin, err=444) oldtstep
+       if (lrestart) then
+          read (lucin, err=445) tmean, pmean, iteration, timel
+          if (nitmax.ge.0) itmax=iteration+nitmax
+          tstep = oldtstep
+
+          if ((rang==0).and.(lprt)) then
+
+             write (6, *) 'restart parameters'
+             write (6, *) 'it =', iteration, ' time =', timel
+             write (6, *) 'pmean', pmean, ' tmean =', tmean
+             write (6, *) 'tstep', tstep
+          endif                                ! fin rang=0
+       end if
+       usdh = 1.0/(two*tstep)
+    endif
+
+
+
+    close (lucin)
+    return
+431 print *,'Erreur 431'
+432 print *,'Erreur 432'
+433 print *,'Erreur 433'
+434 print *,'Erreur 434'
+435 print *,'Erreur 435'
+436 print *,'Erreur 436'
+437 print *,'Erreur 437'
+438 print *,'Erreur 438'
+439 print *,'Erreur 439'
+440 print *,'Erreur 440'
+441 print *,'Erreur 441'
+442 print *,'Erreur 442'
+443 print *,'Erreur 443'
+444 print *,'Erreur 444'
+445 print *,'Erreur 445'
+    call arret_ndm
+
+
+
+
+  end subroutine read_cin2
+
+  subroutine read_cin(boxcin,itread,atcinr,immr,fnamcin,lres,fmtcin)
     !itread 0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
     !immr : imm extrait .cin
     !lres : lrestart,
@@ -460,8 +671,8 @@ contains
     class(atom_config),optional::atcinr
     integer,intent(in),optional::immr,fmtcin
     logical,intent(in),optional::lres
-    integer,allocatable,optional,intent(in)::icible(:)
-    integer,optional,intent(in)::imic
+    !    integer,allocatable,optional,intent(in)::icible(:)
+    !    integer,optional,intent(in)::imic
 
     logical::lrestart=.false.
     integer :: i, ic, icintype, icintypemod , lucin,fmt_cin=1
@@ -472,8 +683,7 @@ contains
     !         integer , dimension(6000,10) :: fv    !Truc_bizarre_jmd
     integer::im_gr,i_loc
     if (present(immr))then
-       allocate (ibuffer(immr))
-       allocate (buffer(3,immr))
+       allocate (ibuffer(immr))      ; allocate (buffer(3,immr))
     endif
     if (present(lres))lrestart=lres
     if (present(fmtcin))fmt_cin=fmtcin
@@ -513,6 +723,7 @@ contains
 
     select case(itread)
     case(0)
+       close (lucin)
        return
     case(1)
        if (.not.present(atcinr))then
@@ -535,16 +746,16 @@ contains
        if ((rang==0).and.(lprt))  write (6, *) 'types'
        read (lucin, err=456) buffer    ! xp
        atcinr%xp(1:3,1:im_gr)=buffer(1:3,1:im_gr)
-           if ((rang==0).and.(lprt))  write (6, *) 'xp'
+       if ((rang==0).and.(lprt))  write (6, *) 'xp'
        formcin:select case (fmt_cin)
        case (0) formcin
           do i=1,im_gr
-             atcinr%num_at_glob(1:im_gr) = i
+             atcinr%num_at_glob(i) = i
           enddo
        case(1) formcin
           read (lucin, err=456) ibuffer
           atcinr%num_at_glob(1:im_gr)=ibuffer(1:im_gr)
-    if ((rang==0).and.(lprt))  write (6, *) 'num_at_glob'
+          if ((rang==0).and.(lprt))  write (6, *) 'num_at_glob'
        case default  formcin
           if (rang.eq.0) write(6,*) 'precisez le format fmt_cin'
           call arret_ndm
@@ -565,7 +776,7 @@ contains
              atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
              !             read (lucin, err=456) buffer                     !former positions
              !             atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
-!             read (lucin, err=456) buffer                     !ax inutile
+             !             read (lucin, err=456) buffer                     !ax inutile
           end if
        end select
        select type(atcinr)
@@ -581,35 +792,37 @@ contains
 !!$             write(6,*)'xpp_e'
              read (lucin, err=456) buffer                     !vp
              atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
-!             write(6,*)'vp_e'
+             !             write(6,*)'vp_e'
              !             read (lucin, err=456) buffer                     !former positions
              !             atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
 
-!             read (lucin, err=456) buffer                     !ax utile peut-être
-!             if ((icintype==3).or.(icintype==7)) then 
-!                if (lrestart) then 
-!                   if (atcinr%lax) then
-!                      atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
- !                  end if
- !               end if
- !                  end if
+             !             read (lucin, err=456) buffer                     !ax utile peut-être
+             !             if ((icintype==3).or.(icintype==7)) then 
+             !                if (lrestart) then 
+             !                   if (atcinr%lax) then
+             !                      atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
+             !                  end if
+             !               end if
+             !                  end if
           else
           end if
           if (atcinr%lax) then
              atcinr%ax(:,1:im_gr)=atcinr%xp(:,1:im_gr)
-             
+
           end if
 
        end select
+
+
        if (icintypemod==1) then
           read (lucin, err=456) oldtstep
           if (lrestart) then
              read (lucin, err=456) tmean, pmean, iteration, timel
              if (nitmax.ge.0) itmax=iteration+nitmax
              tstep = oldtstep
-             
-                 if ((rang==0).and.(lprt)) then
-                
+
+             if ((rang==0).and.(lprt)) then
+
                 write (6, *) 'restart parameters'
                 write (6, *) 'it =', iteration, ' time =', timel
                 write (6, *) 'pmean', pmean, ' tmean =', tmean
@@ -638,97 +851,6 @@ contains
        read (lucin, err=456) ibuffer
        atcinr%num_at_glob(1:im_gr)=ibuffer(1:im_gr)
 
-    case(3)
-       write(6,*)'pas programmé stop'
-       call arret_ndm
-       if (.not.present(atcinr))then
-          write(6,*)'atcin pas present et itread=3'
-          call arret_ndm
-       end if
-
-       read (lucin, err=456) im_gr                         !number of atoms in the box
-       if (im_gr>immr) then
-          if(rang==0)                    write (6, *) 'P3 im > imM', im_gr, immr
-          call arret_ndm
-       endif
-
-       read (lucin, err=456) ibuffer   !ityp
-       do i_loc=1,imic
-          atcinr%ityp(i_loc)=ibuffer(icible(i_loc))
-       enddo
-
-
-    if ((rang==0).and.(lprt))  write (6, *) 'types'
-       read (lucin, err=456) buffer    ! xp muet
-
-       select case (fmt_cin) !num_at_glob muet
-       case (0) 
-       case(1) 
-          read (lucin, err=456) ibuffer
-       end select
-
-
-       select type(atcinr)
-       type is (atom_config)
-          if (icintype==3)read (lucin, err=456) buffer                     !xpp
-          read (lucin, err=456) buffer                     !vp
-          lvpread=.false.
-       class is (atom_config_d)
-          if (icintypemod==1) then
-             if (icintype==3)             read (lucin, err=456) buffer                     !xpp
-!             do i_loc=1,imic
-!                atcinr%xpp(:,i_loc)=buffer(:,icible(i_loc))
-!             enddo
-             read (lucin, err=456) buffer                     !vp
-             do i_loc=1,imic
-                atcinr%vp(:,i_loc)=buffer(:,icible(i_loc))
-             enddo
-!             read (lucin, err=456) buffer                     !ax inutile
-          end if
-       end select
-       select type(atcinr)
-       class is (atom_config_e)
-          if (icintypemod==1) then
-!!$             read (lucin, err=456) buffer                     !xpp
-!!$             do i_loc=1,imic
-!!$                atcinr%xpp(:,i_loc)=buffer(:,icible(i_loc))
-!!$             enddo
-!!$             read (lucin, err=456) buffer                     !vp
-!!$             do i_loc=1,imic
-!!$                atcinr%vp(:,i_loc)=buffer(:,icible(i_loc))
-!!$             enddo
-!!$             read (lucin, err=456) buffer                     !ax utile peut-être
-!!$             if (lrestart) then 
-!!$                if (atcinr%lax) then
-!!$                   do i_loc=1,imic
-!!$                      atcinr%ax(:,i_loc)=buffer(:,icible(i_loc))
-!!$                   enddo
-!!$                end if
-!!$             end if
-          else
-          end if
-             if (atcinr%lax) then
-                atcinr%ax(:,1:imic)=atcinr%xp(:,1:imic)
-
-             end if
-
-       end select
-       read (lucin, err=456) oldtstep
-
-       if (lrestart) then
-          read (lucin, err=456) tmean, pmean, iteration, timel
-          if (nitmax.ge.0) itmax=iteration+nitmax
-          tstep = oldtstep
-
-          if ((rang==0).and.(lprt)) then
-
-             write (6, *) 'restart parameters'
-             write (6, *) 'it =', iteration, ' time =', timel
-             write (6, *) 'pmean', pmean, ' tmean =', tmean
-             write (6, *) 'tstep', tstep
-          endif                                ! fin rang=0
-          usdh = 1.0/(two*tstep)
-       endif
 
     end select
     call cryst_to_cart (atcinr%im, atcinr%xp, boxcin%bg, -1) !cart vers cryst
@@ -742,7 +864,7 @@ contains
        end if
     end do
     call cryst_to_cart (atcinr%im, atcinr%xp, boxcin%at, 1) ! cryst vers cart
-    
+
     close (lucin)
     return
 456 print *,'Erreur dans la lecture du fichier .cin, verifier son format&
@@ -801,7 +923,7 @@ contains
     read (lugin, *) imcell               !number of atoms in UC
     if (itr==0) return
     if (imcell>immr) then
-           if ((rang==0).and.(lprt)) write (6, *) 'trop d_atomes dans la cel. unite',immr,imcell
+       if ((rang==0).and.(lprt)) write (6, *) 'trop d_atomes dans la cel. unite',immr,imcell
        call arret_ndm
     endif
     call atrg%init(imcell)
@@ -834,8 +956,8 @@ contains
           xpd=atrg%xp
        end if
     end if
-          
-    
+
+
     do ic=1,3
        if ((lperiod).or.(ipbc(ic).ne.1)) then
           do i=1,imcell
