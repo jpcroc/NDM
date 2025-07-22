@@ -26,7 +26,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
- rang readdm iseed            0           1
+ all ranks readdm iseed            1
  IMM PARA =        19800       66000
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -34,9 +34,6 @@ debyetemp=      -1.0
  
  POTENTIEL EAM
  
- rang readdm iseed            1           1
- rang readdm iseed            2           1
- rang readdm iseed            3           1
  NTYP NPAIR            1           1
  Types d_atomes pour ce potentiel:
  CM, masse,type, NUMERO DU TYPE D ATOME
@@ -58,9 +55,6 @@ debyetemp=      -1.0
   *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-
   *-*-*-*-*- LRESTART = F
  config type of  .cin file :            3
- types
- xp
- num_at_glob
 volume= 0.76280474D-18 cm3  0.76280474D+06 Ang3
  nox,noy,noz dans .din =          -1          -1          -1
  calcul de nox noy noz !!!
@@ -97,7 +91,14 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.7649
  Decoupage           1 :           7           8          15
  Decoupage           2 :           8           7          15
  Decoupage           3 :           7           7          15
+ Decoupage           4 :           8          15          96
  ----------------------------------------------
+volume= 0.76280474D-18 cm3  0.76280474D+06 Ang3
+ config type of  .cin file :            3
+ types
+ XPR
+ num_at_glob
+ VP
  natperc im/noxyz          70          19
  ltabvois F
  
@@ -127,7 +128,7 @@ vecteur  3       0.000000       0.000000      91.370176
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-         0  0.00    *Epot =    -268836.3079803359      eV 
+         0  0.00    *Epot =    -268836.3079803358      eV 
     *energie PAIRE EAM =     11416.9417692      eV 
     *energie GLUE  =    -280253.249750      eV 
          0  0.00    *Ec =     4747.78458011      eV   (560.474 K)

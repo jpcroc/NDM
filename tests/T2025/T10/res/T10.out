@@ -7,9 +7,6 @@
   
  
  -------- caracteristiques du run DM--------23
- rang readdm iseed            1           1
- rang readdm iseed            2           1
- rang readdm iseed            3           1
      FIRE Quenching Vcst
  generation du crystal ; puis run
  
@@ -29,7 +26,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
- rang readdm iseed            0           1
+ all ranks readdm iseed            1
  IMM PARA =          720        2400
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -92,6 +89,7 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
  Decoupage           1 :           2           2           4
  Decoupage           2 :           2           2           4
  Decoupage           3 :           2           2           4
+ Decoupage           4 :           2           4           0
  ----------------------------------------------
  natperc im/noxyz          70          31
  ltabvois F

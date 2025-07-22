@@ -23,7 +23,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
- rang readdm iseed            0           1
+ all ranks readdm iseed            1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
  
