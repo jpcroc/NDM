@@ -3,7 +3,6 @@
  nom fichier din=
  UO2M.din                                                                       
   
- rang readdm iseed            1          11
  
  -------- caracteristiques du run DM-------- 4
       DYNAMIQUE MOLECULAIRE VELOCITY VERLET
@@ -25,7 +24,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel           4
  fmt_cin           1
- rang readdm iseed            0          11
+ all ranks readdm iseed           11
  IMM PARA =         1200        2000
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -92,6 +91,7 @@ LE_MEILLEUR_DECOUPAGE :    2    2    1    1    0.9059
  Taille des decoupages
  Decoupage           0 :           2           1           1
  Decoupage           1 :           2           1           1
+ Decoupage           2 :           1           1    41007456
  ----------------------------------------------
  natperc im/noxyz         960         480
  ltabvois F

@@ -25,9 +25,8 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
- rang readdm iseed            0           1
+ all ranks readdm iseed            1
  IMM PARA =         1200        2000
- rang readdm iseed            1           1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
  
@@ -89,6 +88,7 @@ LE_MEILLEUR_DECOUPAGE :    2    1    1    2    0.9286
  Taille des decoupages
  Decoupage           0 :           4           4           2
  Decoupage           1 :           4           4           2
+ Decoupage           2 :           4           2           4
  ----------------------------------------------
 volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
  config type of  .cin file :            5

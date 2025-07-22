@@ -53,7 +53,7 @@ contains
 
     integer::nauxw,nauxv,im,imm,im_glob,im_proc
     real(double),allocatable::vauxw(:,:) 
-!    character(len=:),allocatable::charauxw(:)
+    character(len=10),allocatable::charauxw(:)
 
     integer::ivisum
     character*80::nameo,end_name
@@ -75,7 +75,6 @@ contains
     character :: extension*9
     integer::iax
     logical::latc
-
 
     latc=latcomp
     if (nprocs==1) latc=.true.
@@ -121,11 +120,39 @@ contains
           nauxv=nauxv+1
        end if
     end select
+    block
+      integer::jaux,jaux2
+      if (laux) then 
+         allocate (vauxw(nauxw,atmol%im))
+         allocate(charauxw(nauxw))
+         if ((ivisum==41).or.(ivisum==61))then
+            charauxw(1)='VPX';          charauxw(2)='VPX';          charauxw(3)='VPZ'
+            jaux=3
+         else
+            jaux=0
+         end if
+         if (present(naux)) then
+            if (naux.gt.0) then
+               do jaux2=1,naux
+                  jaux=jaux+1
+                  charauxw(jaux)=charaux(jaux2)
+               end do
+            end if
+         end if
+         select type (atmol)
+         class is (atom_config_e)
+            if (atmol%lsigat) then
+               jaux=jaux+1
+               charauxw(jaux)='sigat'
+            end if
+            if (atmol%lprteat) then
+               jaux=jaux+1
+               charauxw(jaux)='Eat'
+            end if
+         end select
+      end if
 
-    if (laux) then 
-       allocate (vauxw(nauxw,atmol%im))
-!       allocate(charauxw(nauxw))
-    end if
+    end block
 
     iaux=0
     if ((ivisum==41).or.(ivisum==61))then
@@ -135,17 +162,16 @@ contains
           call arret_ndm
        class is (atom_config_d)
           laux = .true.
-          nauxw = nauxw + 3
+          !          nauxw = nauxw + 3
           do ic = 1, 3
              iaux = iaux + 1
              do i = 1, atmol%im
                 vauxw(iaux, i) = atmol%vp(ic, i)*1d8*1d-12
              end do
           end do
-       
+
        end select
     end if
-    write(6,*)'iaux1 ',iaux,nauxv
     if (present(naux)) then
        if (naux.gt.0) then
           do iaux2=1,naux
@@ -156,7 +182,6 @@ contains
           end do
        end if
     end if
-    write(6,*)'iaux2 ',iaux,nauxv
     select type (atmol)
     class is (atom_config_e)
        if (atmol%lsigat) then
@@ -166,14 +191,12 @@ contains
              vauxw(iaux,i)=pat
           end do
        end if
-       write(6,*)'iaux3 ',iaux,nauxv
        if (atmol%lprteat) then
           iaux=iaux+1
           do i=1,atmol%im
              vauxw(iaux,i)=atmol%eat(i)*erg2ev
           end do
        end if
-       write(6,*)'iaux4 ',iaux,nauxv
     end select
 
 
@@ -191,7 +214,7 @@ contains
     !    call atmol%deftype(atcomp)
     if (latc.eqv..false.) then
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-          im =atmol%im_glob
+          im_glob =atmol%im_glob
           rgloc=myidsp
        else
           write(6,*)'latc=false et (nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) ??? stop'
@@ -287,37 +310,40 @@ contains
           call openfilemol( luvisu,nameo,end_name)
        end if
 
-!       if (ivisum.ne.5) then
-          !          tyw='000'
-          !    do i=1,im
-          !       write(6,*)i,atmol%ityp(i),ty(atmol%ityp(i))
-          !    end do
-          if (present (rty))then
-             tyw=>rty
-          else
-             allocate(tyw(atmol%im))
-             tyw(1:atmol%im)=ty(atmol%ityp(1:atmol%im))
-          end if
- !      end if
-       select type (atmol)
-       class is (atom_config_arps)
-          do i=1,atmol%im
-             select case (atmol%mov(i))
-             case(0)
-                tyw(i)=' Re'
-             case(1)
-                tyw(i)=' In'             
-             case(2)
-                tyw(i)=' Mo'
-             end select
-          end do
-       end select
-
-       call write_header(ivisum,at,im_glob,luvisu,nauxv,nauxw,charaux,laux,naux, itapp,atmol)
+       !       if (ivisum.ne.5) then
+       !          tyw='000'
+       !    do i=1,im
+       !       write(6,*)i,atmol%ityp(i),ty(atmol%ityp(i))
+       !    end do
+       !       if (naux.gt.0)then
+       call write_header(ivisum,at,im_glob,luvisu, itapp,atmol,nauxv,nauxw,laux,charauxw)
+       !       else
+       !          call write_header(ivisum,at,im_glob,luvisu, itapp,atmol,nauxv,nauxw,laux)
+       !       end if
 
 
     end if
-
+    if (present (rty))then
+       tyw=>rty
+    else
+       allocate(tyw(atmol%imm))
+       tyw(1:atmol%im)=ty(atmol%ityp(1:atmol%im))
+    end if
+    !      end if
+    select type (atmol)
+    class is (atom_config_arps)
+       do i=1,atmol%im
+          select case (atmol%mov(i))
+          case(0)
+             tyw(i)=' Re'
+          case(1)
+             tyw(i)=' In'             
+          case(2)
+             tyw(i)=' Mo'
+          end select
+       end do
+    end select
+    
     if (latc) then
        call writepos(ivisum, im_glob,atmol%xp,tyw,atmol%ityp,atmol%num_at_glob,luvisu,boxmol%at,boxmol%bg,laux,nauxw,vauxw)
     else
@@ -359,7 +385,7 @@ contains
                 call comm_space%recv(aux_proc(1:nauxw,1:im_proc),proc_source,11006)
              end if
              call writepos(ivisum,im_proc,xp_proc,ty_proc,ityp_proc,natg_proc, luvisu,boxmol%at,boxmol%bg,laux,nauxw,aux_proc)
-             
+
 
           enddo
 
@@ -369,11 +395,11 @@ contains
           call comm_space%send(atmol%xp(1:3,1:im_proc),0,11002)
           call comm_space%send(atmol%ityp(1:im_proc),0,11003)
           call comm_space%send(atmol%num_at_glob(1:im_proc),0,11004)
-          call comm_space%send(ty_proc(1:im_proc),proc_source,11005)
+          call comm_space%send(tyw(1:im_proc),0,11005)
           if (laux) then
-             call comm_space%send(vauxw(1:nauxw,1:im_proc),proc_source,11006)
+             call comm_space%send(vauxw(1:nauxw,1:im_proc),0,11006)
           end if
-             
+
        endif
 
 #endif
@@ -390,7 +416,7 @@ contains
        write (luvisu,'(3F15.9)')at(1,3),at(2,3),at(3,3)
        write (luvisu,*) 
     end select
-    if (.not.lappendF) close(luvisu)
+    if ((.not.lappendF).and.(rgloc==0)) close(luvisu)
     return
 
     ! -------------------------------------------------------------
@@ -489,7 +515,7 @@ contains
              end do
           end if
        end if
-       write(luvisu,*)' '
+       write(luvisu,*)
     end do
     call cryst_to_cart (im, xpos,  atw,  1) !cart vers cryst
   end subroutine writegin
@@ -524,7 +550,7 @@ contains
              end do
           end if
        end if
-       write(luvisu,*)' '
+       write(luvisu,*)
     end do
   end subroutine writemol
 
@@ -556,7 +582,7 @@ contains
              end do
           end if
        end if
-       write(luvisu,*)' '
+       write(luvisu,*)
     end do
   end subroutine writexyz
 
@@ -588,7 +614,7 @@ contains
              end do
           end if
        end if
-       write(luvisu,*)' '
+       write(luvisu,*)
 
 
     end do
@@ -623,18 +649,26 @@ contains
              WRITE(luvisu,'(a)') tyw(i)
           end if
        end if
+       write(luvisu, '(3(g18.10,1x))',advance='no') xpos(:,i)
+       if (lvar) then
+          if (nvar.gt.0) then
+             do iax=1,nvar
+                write(luvisu,'(E15.7)',advance='no')auxvar(iax,i)
+             end do
+          end if
+       end if
 
-       write(luvisu,*)' '
+       write(luvisu,*)
 
 
     end do
-
     call cryst_to_cart (im, xpos,  atw,  1) !cart vers cryst
+
   end subroutine write60
 
-  subroutine write_header(ivisum,at,im_g,luvisu,nauxv,nauxw,charaux,laux,naux,itapp,atmol)
+  subroutine write_header(ivisum,at,im_g,luvisu,itapp,atmol,nauxv,nauxw,laux,charaux)
     class (atom_config),intent(in)::atmol
-    integer,intent(in)::ivisum,luvisu,naux,im_g,nauxv,nauxw
+    integer,intent(in)::ivisum,luvisu,im_g,nauxv,nauxw
     integer,optional::itapp
     real(double),intent(in)::at(3,3)
     character(len=*),optional::charaux(:)
@@ -648,12 +682,12 @@ contains
        write (luvisu,'(A)',advance='no')' 1 1 1 !'
        if (laux) then
           if (present(charaux)) then
-             do iax=1,naux
+             do iax=1,nauxw
                 write(luvisu,'(A)',advance='no')trim(charaux(iax))
              end do
           end if
        end if
-       write(luvisu,*)' '
+       write(luvisu,*)
        write (luvisu,'(3F15.9)')at(1,1),at(2,1),at(3,1)
        write (luvisu,'(3F15.9)')at(1,2),at(2,2),at(3,2)
        write (luvisu,'(3F15.9)')at(1,3),at(2,3),at(3,3)
@@ -667,12 +701,12 @@ contains
        end if
        if (laux) then
           if (present(charaux)) then
-             do iax=1,naux
+             do iax=1,nauxw
                 write(luvisu,'(A)',advance='no')trim(charaux(iax))
              end do
           end if
        end if
-       write(luvisu,*)' '
+       write(luvisu,*)
 
        write (luvisu,'(9F12.6)')at(1,1),at(2,1),at(3,1),at(1,2),at(2,2),at(3,2),at(1,3),at(2,3),at(3,3)
     case(3) 
@@ -690,30 +724,23 @@ contains
        end do
        if ((ivisum==40).or.(ivisum==60)) then
           write(luvisu,'(A)')'.NO_VELOCITY.'
-          write(luvisu,'(A,I0)')'entry_count = ', 3+nauxv
-
-       else
-          write(luvisu,'(A,I0)')'entry_count = ', 6+nauxV
+          write(luvisu,'(A,I0)')'entry_count = ', 3+nauxw
           if ((laux).and.(present(charaux))) then
-             do iax=0,naux-1
-                iax2=iax+3
+             do iax=0,nauxw-1
+                iax2=iax
+                write(luvisu,'(A,I0,A,A)')'auxiliary[',iax2,'] = ',trim(charaux(iax+1))
+             end do
+          end if
+       else
+          write(luvisu,'(A,I0)')'entry_count = ', 3+nauxw
+          if ((laux).and.(present(charaux))) then
+             do iax=0,nauxw-1
+                iax2=iax
                 write(luvisu,'(A,I0,A,A)')'auxiliary[',iax2,'] = ',trim(charaux(iax+1))
              end do
           end if
        end if
-       !          write(6,*)'nuaxv nauxtot',nauxv,nauxtot
        iax=nauxV
-       select type (atmol)
-       class is (atom_config_e)
-          if (atmol%lsigat) then
-             iax=iax+1
-             write(luvisu,'(A,I0,A)')'auxiliary[',iax,'] = at_pressure'
-          end if
-          if (atmol%lprteat) then
-             iax=iax+1
-             write(luvisu,'(A,I0,A)')'auxiliary[',iax,'] = at_energy'
-          end if
-       end select
     end select
   end subroutine write_header
 
@@ -743,5 +770,5 @@ contains
        call write60(im,xpos,tyw,itypw,luvisu,atw,bgw,laux,nvar,auxvar)
     end select
   end subroutine writepos
-  
+
 end module rasmolT_mod

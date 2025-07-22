@@ -1,0 +1,25 @@
+ &input
+
+        ipotentiel=10
+	imm=66000 ,lprteat=.true.
+	igen=1 ! 1=cin ; 0=gin
+	dmtype=1   ! 7 ph ; 3 CG
+	itesauv=2
+	tinit=0.0
+	iseed=1,tstep=1.0
+	itmax=1
+	itetemp=1
+	lEev=.true. 
+        lPkbar=.true. 	
+	itesigma=1,
+	iterasmol=0,ivisu=61,itesauv=1
+	ltriclin=.true.
+
+	lperiod=.true.
+	itetabvois=10000
+	ltabvois=.false.
+
+        
+ &end
+
+	rvois=7.9

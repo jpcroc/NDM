@@ -1,30 +1,13 @@
- Process            1  of           27  is alive
+ Process            0  of           27  is alive
  Process            2  of           27  is alive
- Process            5  of           27  is alive
- Process            6  of           27  is alive
- Process            8  of           27  is alive
- Process            9  of           27  is alive
- Process           10  of           27  is alive
- Process           12  of           27  is alive
- Process           14  of           27  is alive
- Process           15  of           27  is alive
- Process           17  of           27  is alive
- Process           18  of           27  is alive
- Process           19  of           27  is alive
- Process           20  of           27  is alive
- Process           21  of           27  is alive
+ Process            3  of           27  is alive
+ Process            4  of           27  is alive
+ Process            1  of           27  is alive
  Process           22  of           27  is alive
  Process           23  of           27  is alive
  Process           24  of           27  is alive
  Process           25  of           27  is alive
  Process           26  of           27  is alive
- Process            0  of           27  is alive
- Process            3  of           27  is alive
- Process            4  of           27  is alive
- Process            7  of           27  is alive
- Process           11  of           27  is alive
- Process           13  of           27  is alive
- Process           16  of           27  is alive
  nom fichier din=
  Febulk.din                                                                     
   
@@ -34,9 +17,6 @@
  run a partir du fichier .cin
  
       ANALYSES 
- rang readdm iseed            3           1
- rang readdm iseed            9           1
- rang readdm iseed           10           1
  itetemp=           1  iteprtsigma=           1
  
       CONTROLES 
@@ -52,22 +32,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
- rang readdm iseed            4           1
- rang readdm iseed            5           1
- rang readdm iseed            6           1
- rang readdm iseed            7           1
- rang readdm iseed            8           1
- rang readdm iseed           15           1
- rang readdm iseed           16           1
- rang readdm iseed           17           1
- rang readdm iseed           18           1
- rang readdm iseed           19           1
- rang readdm iseed           21           1
- rang readdm iseed           22           1
- rang readdm iseed           23           1
- rang readdm iseed           25           1
- rang readdm iseed           26           1
- rang readdm iseed            0           1
+ all ranks readdm iseed            1
  IMM PARA =         2933       66000
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -75,14 +40,6 @@ debyetemp=      -1.0
  
  POTENTIEL EAM
  
- rang readdm iseed            1           1
- rang readdm iseed            2           1
- rang readdm iseed           11           1
- rang readdm iseed           12           1
- rang readdm iseed           13           1
- rang readdm iseed           14           1
- rang readdm iseed           20           1
- rang readdm iseed           24           1
  NTYP NPAIR            1           1
  Types d_atomes pour ce potentiel:
  CM, masse,type, NUMERO DU TYPE D ATOME
@@ -142,21 +99,6 @@ LE_MEILLEUR_DECOUPAGE :   27    3    3    3    0.9573
  Decoupage           3 :           5           5           5
  Decoupage           4 :           5           5           5
  Decoupage           5 :           5           5           5
- Decoupage           6 :           5           5           5
- Decoupage           7 :           5           5           5
- Decoupage           8 :           5           5           5
- Decoupage           9 :           5           5           5
- Decoupage          10 :           5           5           5
- Decoupage          11 :           5           5           5
- Decoupage          12 :           5           5           5
- Decoupage          13 :           5           5           5
- Decoupage          14 :           5           5           5
- Decoupage          15 :           5           5           5
- Decoupage          16 :           5           5           5
- Decoupage          17 :           5           5           5
- Decoupage          18 :           5           5           5
- Decoupage          19 :           5           5           5
- Decoupage          20 :           5           5           5
  Decoupage          21 :           5           5           5
  Decoupage          22 :           5           5           5
  Decoupage          23 :           5           5           5
@@ -185,32 +127,11 @@ vecteur  3       0.000000       0.000000      91.370176
  calpoeam ktorho and the inverse:   8.522228107257609E-003
    117.340205802329     
  rang rangspace            0           0  nbr procs voisins           26
- rang rangspace            1           1  nbr procs voisins           26
- rang rangspace            4           4  nbr procs voisins           26
- rang rangspace            8           8  nbr procs voisins           26
- rang rangspace           11          11  nbr procs voisins           26
- rang rangspace           12          12  nbr procs voisins           26
- rang rangspace           18          18  nbr procs voisins           26
- rang rangspace           20          20  nbr procs voisins           26
- rang rangspace           22          22  nbr procs voisins           26
- rang rangspace           23          23  nbr procs voisins           26
- rang rangspace           24          24  nbr procs voisins           26
+ rang rangspace            2           2  nbr procs voisins           26
  rang rangspace           25          25  nbr procs voisins           26
  rang rangspace           26          26  nbr procs voisins           26
- rang rangspace            2           2  nbr procs voisins           26
- rang rangspace            3           3  nbr procs voisins           26
- rang rangspace            5           5  nbr procs voisins           26
- rang rangspace            6           6  nbr procs voisins           26
- rang rangspace            7           7  nbr procs voisins           26
- rang rangspace            9           9  nbr procs voisins           26
- rang rangspace           10          10  nbr procs voisins           26
- rang rangspace           13          13  nbr procs voisins           26
- rang rangspace           14          14  nbr procs voisins           26
- rang rangspace           15          15  nbr procs voisins           26
- rang rangspace           16          16  nbr procs voisins           26
- rang rangspace           17          17  nbr procs voisins           26
- rang rangspace           19          19  nbr procs voisins           26
- rang rangspace           21          21  nbr procs voisins           26
+ rang rangspace            1           1  nbr procs voisins           26
+ rang rangspace           24          24  nbr procs voisins           26
  tempsauv    560.473874886265     
  pas de chgt des vitesses= 
  temperature fin initspeed    560.473874886265     

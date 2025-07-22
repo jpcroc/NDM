@@ -1208,10 +1208,10 @@ contains
 !       if (mpic%rank==torank) then
 !          call MPI_REDUCE(arraymax, array, nsize, MPI_DOUBLE_PRECISION, MPI_MAX, torank,mpic%comm, ierror)
 !       else
-          call MPI_REDUCE( arraymax, array, nsize, MPI_DOUBLE_PRECISION, MPI_MAX, torank,mpic%comm, ierror)
+          call MPI_REDUCE( array, arraymax, nsize, MPI_DOUBLE_PRECISION, MPI_MAX, torank,mpic%comm, ierror)
 !       end if
     else
-       call MPI_ALLREDUCE( arraymax, array, nsize, MPI_DOUBLE_PRECISION, MPI_MAX, mpic%comm, ierror)
+       call MPI_ALLREDUCE( array, arraymax, nsize, MPI_DOUBLE_PRECISION, MPI_MAX, mpic%comm, ierror)
     end if
 #endif
     if( ierror /= 0 ) then
@@ -1240,10 +1240,10 @@ contains
 !       if (mpic%rank==torank) then
 !          call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER, MPI_MAX, torank,mpic%comm, ierror)
 !       else
-          call MPI_REDUCE( arraymax, array, nsize, MPI_INTEGER, MPI_MAX, torank,mpic%comm, ierror)
+          call MPI_REDUCE( array, arraymax, nsize, MPI_INTEGER, MPI_MAX, torank,mpic%comm, ierror)
 !       end if
     else
-       call MPI_ALLREDUCE( arraymax, array, nsize, MPI_INTEGER, MPI_MAX, mpic%comm, ierror)
+       call MPI_ALLREDUCE( array, arraymax, nsize, MPI_INTEGER, MPI_MAX, mpic%comm, ierror)
     end if
 #endif
     if( ierror /= 0 ) then
@@ -1270,11 +1270,11 @@ contains
 !       if (mpic%rank==torank) then
 !          call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_PRECISION, MPI_MIN,TORANK, mpic%comm, ierror)
 !       else
-          call MPI_REDUCE( arraymin, array, nsize, MPI_DOUBLE_PRECISION, MPI_MIN,TORANK, mpic%comm, ierror)
+          call MPI_REDUCE( array, arraymin, nsize, MPI_DOUBLE_PRECISION, MPI_MIN,TORANK, mpic%comm, ierror)
 !       end if
       
     else
-       call MPI_ALLREDUCE( arraymin, array, nsize, MPI_DOUBLE_PRECISION, MPI_MIN, mpic%comm, ierror)
+       call MPI_ALLREDUCE( array, arraymin, nsize, MPI_DOUBLE_PRECISION, MPI_MIN, mpic%comm, ierror)
     end if
 #endif
     if( ierror /= 0 ) then
@@ -1302,10 +1302,10 @@ contains
 !       if (mpic%rank==torank) then
 !          call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER, MPI_MIN, torank,mpic%comm, ierror)
 !       else
-          call MPI_REDUCE(arraymin, array, nsize, MPI_INTEGER, MPI_MIN, torank,mpic%comm, ierror)
+          call MPI_REDUCE(array, arraymin, nsize, MPI_INTEGER, MPI_MIN, torank,mpic%comm, ierror)
 !       end if
     else
-       call MPI_ALLREDUCE( arraymin, array, nsize, MPI_INTEGER, MPI_MIN, mpic%comm, ierror)
+       call MPI_ALLREDUCE( array, arraymin, nsize, MPI_INTEGER, MPI_MIN, mpic%comm, ierror)
     end if
 #endif
     if( ierror /= 0 ) then
@@ -1313,19 +1313,6 @@ contains
     endif
 
   end subroutine mpic_minval_i
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

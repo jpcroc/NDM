@@ -23,7 +23,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel           4
  fmt_cin           1
- rang readdm iseed            0          11
+ all ranks readdm iseed           11
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
  
@@ -113,9 +113,9 @@ vecteur  3       0.000000       0.000000      21.872000
 *temp instantanee des atomes de type 2 =       294.53
  
  * stress en kbar 
-1 sigma potentiel (1,1) (2,1) (3,1) =   2175.105893      0.1871585846E-13 -0.7212162018E-14
-2 sigma potentiel (1,2) (2,2) (3,2) =  0.2491474152E-13   2175.105893      0.5900859833E-14
-3 sigma potentiel (1,3) (2,3) (3,3) = -0.6377696991E-14  0.6854534149E-14   2175.105893    
+1 sigma potentiel (1,1) (2,1) (3,1) =   2175.105893      0.1239776611E-13 -0.6973743439E-14
+2 sigma potentiel (1,2) (2,2) (3,2) =  0.2241134644E-13   2175.105893     -0.7450580597E-14
+3 sigma potentiel (1,3) (2,3) (3,3) = -0.6616115570E-14 -0.5066394806E-14   2175.105893    
  
 1 sigma cinetique (1,1) (2,1) (3,1) =   0.000000000       0.000000000       0.000000000    
 2 sigma cinetique (1,2) (2,2) (3,2) =   0.000000000       0.000000000       0.000000000    
@@ -139,12 +139,12 @@ vecteur  3       0.000000       0.000000      21.872000
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-         2 0.200E-14*Epot =    -15292.49990458169      eV 
+         2 0.200E-14*Epot =    -15292.49990458167      eV 
     *energie paire 2 corps =     5161.16837842      eV 
     *energie EWALD 2eme terme =    -20488.7549355      eV 
     *energie EWALD RECIP =     35.0866525229      eV 
          2 0.200E-14*Ec =     29.7780909251      eV   (299.971 K)
-         2 0.200E-14*Etot =    -15262.72181365657      eV 
+         2 0.200E-14*Etot =    -15262.72181365656      eV 
  
          2 0.200E-14*Temp instantanee = 299.971
  
@@ -279,7 +279,7 @@ vecteur  3       0.000000       0.000000      21.872000
  
 1 sigma total (1,1) (2,1) (3,1) =   2178.872322      0.4960505530E-01 -0.4468768598E-01
 2 sigma total (1,2) (2,2) (3,2) =  0.4960505530E-01   2178.847379      0.8062377490E-03
-3 sigma total (1,3) (2,3) (3,3) = -0.4468768598E-01  0.8062377490E-03   2179.013978    
+3 sigma total (1,3) (2,3) (3,3) = -0.4468768598E-01  0.8062377491E-03   2179.013978    
  
          8 0.800E-14*Pression =     2178.9    
  pression totale  potentiel = cinetique =
@@ -295,12 +295,12 @@ vecteur  3       0.000000       0.000000      21.872000
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        10 0.100E-13*Epot =    -15286.36472777526      eV 
+        10 0.100E-13*Epot =    -15286.36472777525      eV 
     *energie paire 2 corps =     5166.04053665      eV 
     *energie EWALD 2eme terme =    -20488.7549355      eV 
     *energie EWALD RECIP =     36.3496711050      eV 
         10 0.100E-13*Ec =     23.6501494105      eV   (238.241 K)
-        10 0.100E-13*Etot =    -15262.71457836474      eV 
+        10 0.100E-13*Etot =    -15262.71457836473      eV 
  
         10 0.100E-13*Temp instantanee = 238.241
  
@@ -412,12 +412,12 @@ vecteur  3       0.000000       0.000000      21.872000
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        16 0.160E-13*Epot =    -15280.05904394878      eV 
+        16 0.160E-13*Epot =    -15280.05904394875      eV 
     *energie paire 2 corps =     5171.43183813      eV 
     *energie EWALD 2eme terme =    -20488.7549355      eV 
     *energie EWALD RECIP =     37.2640534476      eV 
         16 0.160E-13*Ec =     17.3504042926      eV   (174.780 K)
-        16 0.160E-13*Etot =    -15262.70863965617      eV 
+        16 0.160E-13*Etot =    -15262.70863965614      eV 
  
         16 0.160E-13*Temp instantanee = 174.780
  
@@ -456,7 +456,7 @@ vecteur  3       0.000000       0.000000      21.872000
     *energie EWALD 2eme terme =    -20488.7549355      eV 
     *energie EWALD RECIP =     37.3858784563      eV 
         18 0.180E-13*Ec =     15.6309098854      eV   (157.459 K)
-        18 0.180E-13*Etot =    -15262.70759756608      eV 
+        18 0.180E-13*Etot =    -15262.70759756607      eV 
  
         18 0.180E-13*Temp instantanee = 157.459
  
@@ -490,12 +490,12 @@ vecteur  3       0.000000       0.000000      21.872000
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        20 0.200E-13*Epot =    -15276.94873328885      eV 
+        20 0.200E-13*Epot =    -15276.94873328886      eV 
     *energie paire 2 corps =     5174.40277366      eV 
     *energie EWALD 2eme terme =    -20488.7549355      eV 
     *energie EWALD RECIP =     37.4034285814      eV 
         20 0.200E-13*Ec =     14.2415889937      eV   (143.464 K)
-        20 0.200E-13*Etot =    -15262.70714429513      eV 
+        20 0.200E-13*Etot =    -15262.70714429514      eV 
  
         20 0.200E-13*Temp instantanee = 143.464
  

@@ -5,7 +5,6 @@
  nom fichier din=
  Febulk.din                                                                     
   
- rang readdm iseed            1           1
  
  -------- caracteristiques du run DM-------- 1
      DYNAMIQUE MOLECULAIRE VERLET STANDARD
@@ -14,10 +13,8 @@
       ANALYSES 
  itetemp=           1  iteprtsigma=           1
  
- rang readdm iseed            3           1
       CONTROLES 
 tstep=  0.100D-14
- rang readdm iseed            2           1
  itmax=          19 timemax=    10000000000.0000       itab=           1 
   itetimestep=          -1
 tinit=     600.0
@@ -29,7 +26,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
- rang readdm iseed            0           1
+ all ranks readdm iseed            1
  IMM PARA =          720        2400
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -92,6 +89,7 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
  Decoupage           1 :           2           2           4
  Decoupage           2 :           2           2           4
  Decoupage           3 :           2           2           4
+ Decoupage           4 :           2           4           0
  ----------------------------------------------
  natperc im/noxyz          70          31
  ltabvois F
@@ -108,10 +106,10 @@ vecteur  3       0.000000       0.000000      28.553180
  calpoeam ktorho and the inverse:   8.522228107257609E-003
    117.340205802329     
  rang rangspace            0           0  nbr procs voisins            3
+ random velocities at TINIT =    600.000000000000      K
  rang rangspace            1           1  nbr procs voisins            3
  rang rangspace            2           2  nbr procs voisins            3
  rang rangspace            3           3  nbr procs voisins            3
- random velocities at TINIT =    600.000000000000      K
  temperature fin initspeed    605.835925242495     
  
  POINT DEFECT CREATION
