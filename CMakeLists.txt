@@ -42,7 +42,7 @@ macro(CONFIG_GNU)
     cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name)     
     set(NDM_PRESET_TITLE "Compile NDM GNU: ${compiler_name}" CACHE STRING "")
     set(CMAKE_Fortran_FLAGS_RELEASE " -O3 -ffree-line-length-512 -funroll-all-loops" CACHE STRING "")
-    set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0 -ffree-line-length-512" CACHE STRING "")
+    set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -ffree-line-length-512" CACHE STRING "")
     set(MKL_MPI "openmpi" CACHE STRING "MPI")
 endmacro(CONFIG_GNU)
 
