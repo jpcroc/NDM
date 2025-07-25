@@ -667,12 +667,14 @@ contains
        tags(i) = tyw(i)
     end do
 
-    if (present(velocities) .and. velocities) then
-       select type (atcomp)
-       class is (atom_config_d)
-          call write_structure(trim(namef), box, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d-4)
-          called = .true.
-       end select
+    if (present(velocities)) then
+       if(velocities) then
+          select type (atcomp)
+          class is (atom_config_d)
+             call write_structure(trim(namef), box, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d-4)
+             called = .true.
+          end select
+       end if
     end if
 
     if (.not.called) then
