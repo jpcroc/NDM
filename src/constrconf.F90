@@ -60,8 +60,10 @@ contains
     integer::itread
     integer::nati
     logical::lwrite
+#ifdef DKIO
     logical :: existe
     character(len=10) :: extensions(8)
+#endif
     !-----------------------------------------------------
     ! READING FROM THE CONFIGURATION FILE
     !---------------------------------------------------
@@ -168,7 +170,7 @@ contains
        deallocate (ibuffer)
        deallocate (buffer)
 
-
+#ifdef DKIO
        !-----------------------------------------------------
        ! BUILDING OF THE CRISTAL FROM DK-IO
        !-----------------------------------------------------
@@ -205,7 +207,7 @@ contains
              atrcf%ax(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
           end if
        end select
-
+#endif
 
        !-----------------------------------------------------
        ! BUILDING OF THE CRISTAL FROM .GIN FILE
@@ -1018,6 +1020,7 @@ contains
     close(lugin)
   end subroutine read_gin
 
+#ifdef DKIO
   subroutine dkio2ndm(at2b,cel2b,box2b,fnam,rum,lrepartition,psc,lconstrsimple,immread)
     !-----------------------------------------------------
     !  Subroutine for interfacing with the dk_io library
@@ -1281,6 +1284,6 @@ contains
        call arret_ndm
     end if
   end function
-
+#endif
   !#endif
 end module constrconf_mod
