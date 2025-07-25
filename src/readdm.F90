@@ -590,7 +590,7 @@ contains
        igen = 1
        if (rang == 0) write (6, *) '****** RESTART FROM FILE **'
     endif
-    if ((igen<-1).or.igen>2) then                    !+1 from file -1 generate then stop 0 generate then run
+    if ((igen<-1).or.igen>2.and.igen.ne.4) then                    !+1 from file -1 generate then stop 0 generate then run
        if (rang==0) write (6, *) rang,'wrong igen stop'
        call arret_ndm
     endif
@@ -1297,6 +1297,8 @@ contains
        if (rang==0) write (6, *) 'écriture de gin à partir du fichier .cin'
     case (3)
        if (rang==0) write (6, *) 'modification du fichier .cin'
+    case (4)
+       if (rang==0) write (6, *) 'generation du crystal a partir de dk_io ; puis run'
     case default
        if (rang==0) write (6, *) 'mauvais igen=', igen
        call arret_ndm

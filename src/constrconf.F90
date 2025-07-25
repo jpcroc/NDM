@@ -1260,6 +1260,7 @@ contains
   end subroutine constr_2dkio
 
   integer function get_ityp(tag)
+    ! Retourne ityp de l'atome 'tag' par correspondance avec les types du fichier .potin
     use dk_structure_io, only: TAG_LENGTH
     USE var_pot, ONLY:ntyp,ty
     character(len=TAG_LENGTH), intent(in) :: tag
@@ -1275,7 +1276,7 @@ contains
 
     if (get_ityp == -1) then
        if ((rang==0).and.(lprt)) then
-          write (6, *) 'Error: no match found between atoms types from .potin file and atome configuration file : ', tag, ty
+          write (6, *) 'Error: no match found between the atom types in the .potin file and the atom in the configuration file: ', tag, ty
        end if
        call arret_ndm
     end if
