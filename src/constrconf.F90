@@ -60,6 +60,8 @@ contains
     integer::itread
     integer::nati
     logical::lwrite
+    logical :: existe
+    character(len=10) :: extensions(8)
     !-----------------------------------------------------
     ! READING FROM THE CONFIGURATION FILE
     !---------------------------------------------------
@@ -72,7 +74,7 @@ contains
        write(6,*)
     endif
 
-    if (igen.ge.1) then
+    if (igen.ge.1 .and. igen.le.3) then
        allocate (ibuffer(imm_glob))
        allocate (buffer(3,imm_glob))
        if ((rang==0).and.(lprt))  write(6,*)'********** reading configuration from file********'
@@ -165,6 +167,45 @@ contains
        call setcellconf(cellrcf,atrcf,boxrcf,rumax)
        deallocate (ibuffer)
        deallocate (buffer)
+
+
+       !-----------------------------------------------------
+       ! BUILDING OF THE CRISTAL FROM DK-IO
+       !-----------------------------------------------------
+    else if (igen.eq.4) then
+
+       lvpread=.false.
+
+       ! find file extension:
+       extensions = ['.xfg   ', '.xyz   ', '.POSCAR', '.lmp   ', '.cell  ', '.cif   ', '.CONFIG', '.gin   ']
+       existe = .false.
+       i=1
+
+       do while (i <= size(extensions) .and. .not.existe)
+          fnamgin = fnam(1:lenfnam)//trim(extensions(i))
+          inquire(file=fnamgin, exist=existe)
+          i=i+1
+       end do
+
+       if (.not.existe) then
+          if ((rang==0).and.(lprt)) then
+             write (6, *) 'Error: input atom configuration file not found'
+             write (6, *) 'With igen=4, the supported file extentions are : ', extensions
+          end if
+          call arret_ndm
+       end if
+
+       call dkio2ndm(atrcf,cellrcf,boxrcf,fnamgin,rumax,lrepart,psc)
+       call periodbox (boxrcf,atrcf)
+
+       select type(atrcf)
+       class is (atom_config_e)
+!          atrcf%xpp(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
+          if (atrcf%lax) then
+             atrcf%ax(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
+          end if
+       end select
+
 
        !-----------------------------------------------------
        ! BUILDING OF THE CRISTAL FROM .GIN FILE
@@ -976,6 +1017,269 @@ contains
     end do
     close(lugin)
   end subroutine read_gin
+
+  subroutine dkio2ndm(at2b,cel2b,box2b,fnam,rum,lrepartition,psc,lconstrsimple,immread)
+    !-----------------------------------------------------
+    !  Subroutine for interfacing with the dk_io library
+    !-----------------------------------------------------
+    use dk_structure_io, only: read_structure, TAG_LENGTH
+
+    type(para_space_config),optional::psc
+    class(atom_config)::at2b
+    type(cell_config)::cel2b
+    class(box_config)::box2b
+    character,intent(in) :: fnam*80
+    real(double),intent(in)::rum
+    logical,optional,intent(in)::lrepartition,lconstrsimple
+    integer,optional::immread
+    integer::immr,npr
+    logical::lcs
+    logical::lrepart
+    type (atom_config)::COMPatrcf
+    real(double) :: boxrin(3,3),deltx
+    real(double), dimension(:,:), allocatable :: atrin
+    character(TAG_LENGTH), dimension(:), allocatable :: tags
+    integer::i,ic,ncore,itread,imcell
+    lrepart=.true.
+    lcs=.false.
+    if(present(lrepartition))lrepart=lrepartition
+    if(present(lconstrsimple))lcs=lconstrsimple
+    immr=imm_glob
+    if (present(immread)) immr=immread
+
+    if (ldecoup) then
+       itread=0
+    else
+       itread=1
+    end if
+    !call read_gin(boxrgin,atrgin,fnamg,lat,itread=itread,immread=immr)
+    call read_structure(trim(fnam),boxrin,atrin,tags)
+    imcell=size(atrin,2)
+
+    if (ldecalcor) then
+       if (any(atrin(1:3,1:imcell)==0)) then
+          if ((rang==0).and.(lprt))  write(6,*)' atom configuration file with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +2e-7'
+          atrin(1:3,1:imcell)=atrin(1:3,1:imcell)+2e-7
+       end if
+       if (any(atrin(1:3,1:imcell)==1)) then
+          if ((rang==0).and.(lprt))  write(6,*)' atom configuration file with 1 coordinates; creates FAILURES,  POSITIONS SHIFTED By -1e-7'
+          atrin(1:3,1:imcell)=atrin(1:3,1:imcell)-1e-7
+       end if
+    end if
+
+    if (dmtype==9) then
+       if (lsecondpath) then
+          !write(6,*)xpd
+          if ((rang==0).and.(lprt))  write(6,*)'TAAAAAAG WTF'
+          do i=1,imcell
+             do ic=1,3
+                deltx=atrin(ic,i)-xpd(ic,i)
+                if (deltx.gt.0.5) atrin(ic,i)=atrin(ic,i)-1.
+                if (deltx.lt.-0.5) atrin(ic,i)=atrin(ic,i)+1.
+             end do
+          end do
+       else
+          allocate (xpd(3,imcell))
+          xpd=atrin
+       end if
+    end if  
+    
+    do ic=1,3
+       if ((lperiod).or.(ipbc(ic).ne.1)) then
+          do i=1,imcell
+             if ( (atrin(ic,i).LT.0.d0).OR.(atrin(ic,i).GE.1.d0) ) then
+                atrin(ic,i)  = atrin(ic,i)  - Dble(Floor(atrin(ic,i)))
+             END if
+          end do
+       end if
+    end do
+
+    if(itypsc==1) then
+       do ic=1,3
+          boxrin(:,ic)=boxrin(:,ic)*pseudosc(ic)
+       end do
+    end if
+
+    boxrin=boxrin*1d-8
+    call box2b%init(boxrin,ipbc)
+    
+    call setnox(box2b,cel2b,rum,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
+    if ((rang==0).and.(lprt)) then
+       write (6, '(2A,D15.8,A,D15.8,A)') fnam,'volume=', box2b%volu,' cm3 ',box2b%volu*1d24,' Ang3'
+    end if
+
+    if (lcs) then ! construction simpple sans repartition en sequentiel
+       call constr_2dkio (at2b,atrin,tags,immr)
+       call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
+       at2b%im_glob=at2b%im
+       call setcellconf(cel2b,at2b,box2b,rum)
+       return
+    end if
+    
+#ifdef PARA
+    if (rang==0) then
+       if (ldecoup) then
+          open(123, file='decoup.dat', status='old')
+          read (123, *) npr,ncore
+          close(123)         
+          call  decoupage(npr,ncore,cel2b,psc=psc,lverbose=lprt)
+          call arret_ndm
+       end if
+    end if
+
+    ncore=0
+    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+       at2b%imm_glob=imm_glob
+       if (lrepart) then
+          at2b%im_glob=imcell
+          call  decoupage(nprocspace,ncore,cel2b,at2b,psc=psc,lverbose=lprt)
+       else
+          call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
+       end if
+    end if
+    COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
+    call constr_2dkio (COMPatrcf,atrin,tags,imm_glob)
+    call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
+    compatrcf%imm_glob=imm_glob
+    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart)) then
+       call repartition(COMPatrcf,at2b,box2b,cel2b)
+    else
+       call compatrcf%copy_config(at2b, lrescl=.true.)
+    end if
+#else
+    if (ldecoup) then
+       open(123, file='decoup.dat', status='old')
+       read (123, *) npr,ncore
+       close(123)         
+       call  decoupage(npr,ncore,cel2b,psc=psc,lverbose=lprt)
+       call arret_ndm
+    end if
+    call constr_2dkio (at2b,atrin,tags,imm)
+    call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
+    at2b%im_glob=at2b%im
+#endif
+    call setcellconf(cel2b,at2b,box2b,rum)
+    if (allocated(atrin)) deallocate(atrin)
+    if (allocated(tags)) deallocate(tags)
+    return
+  end subroutine dkio2ndm
+
+  subroutine constr_2dkio(atrcf,atrin,tags,immread)
+    use dk_structure_io, only: TAG_LENGTH
+
+    class(atom_config),intent(inout)::atrcf 
+    real(double), dimension(:,:), intent(in) :: atrin
+    character(TAG_LENGTH), dimension(:), intent(in) :: tags
+    integer,intent(in),optional::immread
+    integer::i,icell,imloc,immr,ix,iy,iz
+    real(double)::rvn
+    logical :: lprteattrf
+    logical::liniint
+    !imloc=atrgin%im
+    imloc=size(atrin, 2)
+    if(itypsc==1)then
+       do i=1,3
+          imloc=imloc*pseudosc(i)
+       end do
+    end if
+   
+    immr=imm_glob
+    if (present(immread)) immr=immread
+    if (imloc>immread) then
+       write (6, *) rang,'imm trop petit',imloc,immr
+       call arret_ndm
+    endif
+
+    if (atrcf%rvois.gT.0)then
+       rvn=atrcf%rvois
+    else
+       rvn=0
+    end if
+    lprteattrf=.false.
+    select type (atrcf)
+    class is (atom_config_e)
+       lprteattrf=atrcf%lprteat
+    end select
+    if (present(immread))then
+       call atrcf%init(imloc,immin=immread,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois,rvois=rvn,im_glob=imloc)
+    else
+       call atrcf%init(imloc,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois,rvois=rvn,im_glob=imloc)
+    end if
+
+    select case (itypsc)
+    case(1)
+       call atrcf%lgcheck("from constrconf to build pseudosc")
+       i=0
+       atrcf%lgul(:)=.false.
+       do ix=1, pseudosc(1)
+          do iy=1,pseudosc(2)
+             do iz=1,pseudosc(3)
+                if((ix==1).and.(iy==1).and.(iz==1)) then
+                   liniint=.true.
+                else
+                   liniint=.false.
+                end if
+                do icell = 1, size(atrin, 2)
+                   i  = i + 1
+                   atrcf%xp(1,i) = (atrin(1,icell)+float(ix-1))/float(pseudosc(1))
+                   atrcf%xp(2,i) = (atrin(2,icell)+float(iy-1))/float(pseudosc(2))
+                   atrcf%xp(3,i) = (atrin(3,icell)+float(iz-1))/float(pseudosc(3))
+                   atrcf%num_at_glob(i)=i
+                   atrcf%ityp(i)=get_ityp(tags(i))
+                   if (liniint)  atrcf%lgul(i)=.true.
+                end do
+             end do
+          end do
+       end do
+    case(0) 
+       i=0
+       do icell = 1, size(atrin, 2)
+          i  = i + 1
+          atrcf%xp(1,i) = atrin(1,icell)
+          atrcf%xp(2,i) = atrin(2,icell)
+          atrcf%xp(3,i) = atrin(3,icell)
+          atrcf%num_at_glob(i)=i
+          atrcf%ityp(i)=get_ityp(tags(i))
+       end do
+    case(2)
+       call atrcf%lgcheck("from constrconf to build pseudosc")
+       if (rang==0) write(6,*)'ITYPSC ', itypsc,pseudosc,'lat = 1 1 1'
+       i=0
+       atrcf%lgul(:)=.false.
+       do icell = 1, size(atrin, 2)
+          i  = i + 1
+          atrcf%xp(1,i) = atrin(1,icell)
+          atrcf%xp(2,i) = atrin(2,icell)
+          atrcf%xp(3,i) = atrin(3,icell)
+          atrcf%num_at_glob(i)=i
+          atrcf%ityp(i)=get_ityp(tags(i))
+          atrcf%lgul(i)=.true.
+       end do
+    end select
+    return
+  end subroutine constr_2dkio
+
+  integer function get_ityp(tag)
+    use dk_structure_io, only: TAG_LENGTH
+    USE var_pot, ONLY:ntyp,ty
+    character(len=TAG_LENGTH), intent(in) :: tag
+    integer :: i
+
+    get_ityp = -1
+    do i = 1, ntyp
+       if (trim(tag) == trim(ty(i))) then
+          get_ityp = i
+          return
+       end if
+    end do
+
+    if (get_ityp == -1) then
+       if ((rang==0).and.(lprt)) then
+          write (6, *) 'Error: no match found between atoms types from .potin file and atome configuration file : ', tag, ty
+       end if
+       call arret_ndm
+    end if
+  end function
 
   !#endif
 end module constrconf_mod
