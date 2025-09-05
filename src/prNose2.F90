@@ -207,7 +207,7 @@ end if
 
     ! Parameter for Parrinello-Rahman self consistency loop
     REAL(double), parameter :: tol=1.0d-12        ! Tolerance for h convergency
-    INTEGER, parameter :: max_Iter=100            ! Maximal number of iterations in self-consistency loop
+    INTEGER, parameter :: max_Iter=1000            ! Maximal number of iterations in self-consistency loop
 
 
     ! Paramètres du thermostat

@@ -118,11 +118,11 @@ contains
              !             allocate(num_at_buff(imm_glob))
              !             call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
           else
+             itread=1
              call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
              !             call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
              !             call compatrcf%copy_config(atrcf, lrescl=.true.)
           end if
-
        else
           itread=1
           call atrcf%init(immin=imm_glob,imin=0,ltabvois=atrcf%ltabvois,rvois=atrcf%rvois)

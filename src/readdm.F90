@@ -30,7 +30,7 @@ contains
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,nfda,h0,&
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou,iteprtkin&
          &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart&
-         &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit
+         &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit,lmaxvp,vplim
 #ifdef LAMMPS_VERSION
      USE gen_com_m, ONLY: energy_conversion_lammps, position_conversion_lammps, pressure_conversion_lammps
 #endif
@@ -97,7 +97,7 @@ contains
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
          &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
-         &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag,protocol_mcc
+         &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag,protocol_mcc,lmaxvp,vplim
 
 
     !
@@ -400,6 +400,8 @@ contains
     nwclimb=3 ! starts the climbing at the second evaluation of forces (in VASP =1, in Henkelmann is set to "a few iterations")
     i_neb_drag=5
 
+    lmaxvp=.false. ! if true velocities are caped at vplim in pr2.F90 (very crude way of stabilizing dynamics)
+    vplim=5d6 
     
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 

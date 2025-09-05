@@ -362,7 +362,7 @@ contains
                       ntry=0
 1                     continue
                       ntry=ntry+1
-                      if (ntry==100) then
+                      if (ntry==1000) then
                          write(6,*)'VAC NTRY exceeded'
                          call arret_ndm
                       end if
@@ -446,7 +446,7 @@ contains
              if (myidsp==0) then
                 write(121,*)itinser, iteration,timel,'VAC'
                 do i=1,nvactot
-                   write(121,'(3E15.6,2I6)')atomvac%pos(:,i),atomvac%ityp(i),atomvac%natg(i)
+                   write(121,'(3E15.6,2I10)')atomvac%pos(:,i),atomvac%ityp(i),atomvac%natg(i)
                 end do
                 flush(121)
              end if
@@ -470,7 +470,7 @@ contains
                          case(0)
 2                           continue
 
-                            if (ntry==100) then
+                            if (ntry==1000) then
                                call arret_ndm
                             end if
                             call random_number(z1)
@@ -583,30 +583,30 @@ contains
 
                             select type(atdml)
                             type is (atom_config_d)
-                               if (text.gt.0) then
-                                  call init_speed_1at(atdml%vp(:,atdml%im),text,&
-                                       &atdml%xp(:,atdml%im),atdml%ityp(atdml%im))
-                               else
+!                               if (text.gt.0) then
+!                                  call init_speed_1at(atdml%vp(:,atdml%im),text,&
+!                                       &atdml%xp(:,atdml%im),atdml%ityp(atdml%im))
+!                               else
                                   atdml%vp(:,atdml%im)=0
-                               end if
+!                               end if
                             end select
                             select type (atdml)
                             class is (atom_config_e)
                                if( atdml%lxpp) then 
-                                  if (text.gt.0) then
-                                     call init_speed_1at(atdml%vp(:,atdml%im),text,&
-                                          &atdml%xp(:,atdml%im),atdml%ityp(atdml%im),atdml%xpp(:,atdml%im))
-                                  else
+!                                  if (text.gt.0) then
+!                                     call init_speed_1at(atdml%vp(:,atdml%im),text,&
+!                                          &atdml%xp(:,atdml%im),atdml%ityp(atdml%im),atdml%xpp(:,atdml%im))
+!                                  else
                                      atdml%vp(:,atdml%im)=0
                                      atdml%xpp(:,atdml%im)=atdml%xp(:,atdml%im)
-                                  end if
+!                                  end if
                                else
-                                  if (text.gt.0) then
-                                     call init_speed_1at(atdml%vp(:,atdml%im),text,&
-                                          &atdml%xp(:,atdml%im),atdml%ityp(atdml%im))
-                                  else
+ !                                 if (text.gt.0) then
+ !                                    call init_speed_1at(atdml%vp(:,atdml%im),text,&
+ !                                         &atdml%xp(:,atdml%im),atdml%ityp(atdml%im))
+ !                                 else
                                      atdml%vp(:,atdml%im)=0
-                                  end if
+ !                                 end if
                                end if
                             end select
                             !#ifdef PARA

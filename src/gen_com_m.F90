@@ -192,4 +192,7 @@ module gen_com_m
  real(double)::gamprfact
  logical :: latcomp ! masters (myidsp=0) have the complete positions (for sauvegardeT), rasmolT
  logical ::lanaposart ! anapos a la ART : decalage + defauts en WS, concu pour le cas des I dans UO2
+
+ logical :: lmaxvp ! if true velocities are caped at vplim in pr2.F90 (very crude way of stabilizing dynamics)
+ real(double)::vplim
 end module gen_com_m
