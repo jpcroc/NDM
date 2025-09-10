@@ -1462,7 +1462,7 @@ contains
     !-----------------------------------------------
     real(double), allocatable, dimension(:,:) :: cart_vec_nplus1
     integer,allocatable :: indice(:)
-    integer:: i,nag,rgcib,rgem,iloc,i1,i2,j,iplus
+    integer:: i,nag,rgcib,rgem,iloc,i1,i2,j,iplus,icelj,jjj
     logical ::ldistrib,lchange
     real(double)::pins,poscenter(3,1),postest(3)
     allocate (cart_vec_nplus1(3,nbatplus))
@@ -1532,7 +1532,12 @@ contains
                    i1=indice(i)
                    i2=j
                    indice(i)=i2
+                   icelj=atconf_Nplus1%ielat(i2)
                    call atconf_Nplus1%switch_atom(i1,i2)
+                   do jjj=1,cells_nplus1%nato(icelj)
+                      if (cells_nplus1%atincel(jjj,icelj)==i2) cells_nplus1%atincel(jjj,icelj)=i1
+                   end do
+                   
                    exit
                 end if
              end do
@@ -2624,7 +2629,7 @@ contains
     integer,intent(in)::ipp
 
     real(double)::xp_np1(3)
-    integer::i,i1,i2,j,iplus
+    integer::i,i1,i2,j,iplus,icelj,jjj
     integer,allocatable::indice(:)
     character :: extension*4
     logical ::lc2d
@@ -2662,7 +2667,12 @@ contains
                 i1=indice(i)
                 i2=j
                 indice(i)=i2
+                icelj=atconf_Nplus1%ielat(i2)
                 call atconf_Nplus1%switch_atom(i1,i2)
+                do jjj=1,cells_nplus1%nato(icelj)
+                   if (cells_nplus1%atincel(jjj,icelj)==i2) cells_nplus1%atincel(jjj,icelj)=i1
+                end do
+                
                 exit
              end if
           end do
@@ -3553,7 +3563,7 @@ contains
   subroutine type_switch(direction)
     integer,intent(in)::direction
     integer,allocatable::indice(:)
-    integer::i,i1,i2,j
+    integer::i,i1,i2,j,jjj,icelj
 
     allocate(indice(nbatplus))
 
@@ -3585,7 +3595,11 @@ contains
              i1=indice(i)
              i2=j
              indice(i)=i2
+             icelj=atconf_Nplus1%ielat(i2)
              call atconf_Nplus1%switch_atom(i1,i2)
+             do jjj=1,cells_nplus1%nato(icelj)
+                if (cells_nplus1%atincel(jjj,icelj)==i2) cells_nplus1%atincel(jjj,icelj)=i1
+             end do
              exit
           end if
        end do

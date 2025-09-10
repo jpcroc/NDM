@@ -339,7 +339,7 @@ contains
   end subroutine neigcelN
 
 
-  subroutine caltabtC (cell,atcf,lperiod,boxcf,lextr,psc,lcheckfrontier)
+  subroutine caltabtC (cell,atcf,lperiod,boxcf,lextr,psc)
     USE notperiod_mod,only: notperiod
     USE cryst_to_cart_mod,only: cryst_to_cart
     use gen_com_m,only:lspacendm
@@ -352,19 +352,22 @@ contains
     class(box_config),intent(inout)::boxcf
     type(para_space_config),optional::psc    
     logical,intent(in)::lperiod
-    logical,intent(in),optional::lextr,lcheckfrontier
-    logical::lextrait=.false.,lchkftr=.true.
+    logical,intent(in),optional::lextr
+    logical::lextrait=.false.
 
     integer :: i,  kx, ky, kz, koo
     real(double) :: aux, auy, auz
     real(double), dimension(:,:), allocatable :: xpnp !
     integer(long), save:: icaltabt=0
     integer::iml
+    integer :: ntrav,ntravtot,itrav
+    integer,parameter::maxtrav=10
+    integer,allocatable:: indtrav(:),proccib(:)
+    ntrav=0
     !
     ! --------- Initialisation --------------
     !
     if (present(lextr))lextrait=lextr
-    if (present(lcheckfrontier))lchkftr=lcheckfrontier
     if (lextrait) then
        iml=atcf%imm
     else
@@ -437,51 +440,83 @@ contains
              WRITE(0,'(2(a,i0))') ' koo = ', koo, ' - noxyz = ', cell%noxyz
              STOP
           END IF
-          atcf%ielat(i) = koo
-          cell%nato(koo) = cell%nato(koo)+1
-!                    write(6,*)'caltabt', koo,i,cell%nato(koo)        ! DEBUG
-          ! ==== MODIF Clouet =====================
-          IF (cell%nato(koo).GT.cell%natperc) THEN
-             WRITE(0,'(a)') 'caltabtC : You need to increase the maximal number of atoms per cell'
-             WRITE(0,'(a,i0)') 'current value: natperc=', cell%natperc
-             STOP '< CaltabtC >'
-          END IF
-          ! ==== Fin MODIF Clouet =================
-          cell%atincel(cell%nato(koo),koo) = i
-!          write(6,*)i,koo
-#ifdef PARA
-          if ((present(psc)).and.(lspacendm).and.(lchkftr)) then 
+          if ((present(psc)).and.(lspacendm)) then 
              if (cell%proc_cell(koo).ne.myidsp) then
+!                write(6,*)'atout',i,atcf%num_at_glob(i),rang,cell%proc_cell(koo),koo
+
                 if(.not.(any(psc%cell_ftm(:)==koo))) then
-                   write(6,*)'atom', i,atcf%num_at_glob(i),'in cell', koo, ' originally in proc', &
-                        &myidsp, 'now in ', cell%proc_cell(koo),' travelled too far. its cell is not a frontier cell',&
-                        &'RANG actuel = ',rang
-                   call arret_ndm
+                   write(6,'(A,6I7)')'WARNING ::: attrrav:i natg ielat rangem rangf newcell',i,atcf%num_at_glob(i),atcf%ielat(i),rang,cell%proc_cell(koo),koo
+                   write(6,'(A,6I7)')'WARNING ::: travelled from cell to cell ',cell%edge(atcf%ielat(i),boxcf) ,cell%edge(koo,boxcf)
+                   ntrav=ntrav+1
+                   if (ntrav==1) then
+                      allocate(indtrav(maxtrav));allocate(proccib(maxtrav)); proccib=-1
+                   end if
+                   proccib(ntrav)=cell%proc_cell(koo)
+                   indtrav(ntrav)=i
+                   atcf%ielat(i) = koo
+!                   cell%nato(koo) = cell%nato(koo)+1
+!                   cell%atincel(cell%nato(koo),koo) = i                   
+                   IF (cell%nato(koo).GT.cell%natperc) THEN
+                   WRITE(0,'(a)') 'caltabtC : You need to increase the maximal number of atoms per cell'
+                   WRITE(0,'(a,i0)') 'current value: natperc=', cell%natperc
+                   STOP '< CaltabtC >'
+                END IF
+
+
+                   !                   write(6,*)'atom', i,atcf%num_at_glob(i),'in cell', koo, ' originally in proc', &
+                   !                        &myidsp, 'now in ', cell%proc_cell(koo),' travelled too far. its cell is not a frontier cell',&
+                   !                        &'RANG actuel = ',rang
+                   !                   call arret_ndm
+                else
+                   if (cell%proc_cell(koo).ne.myidsp)       write(6,'(A,6I7)')'afrt:i natg ielat rangem rangf newcell',i,atcf%num_at_glob(i),atcf%ielat(i),rang,cell%proc_cell(koo),koo
+                   atcf%ielat(i) = koo
+                   cell%nato(koo) = cell%nato(koo)+1
+                   cell%atincel(cell%nato(koo),koo) = i
                 end if
+                
+             else
+               
+                atcf%ielat(i) = koo
+                cell%nato(koo) = cell%nato(koo)+1
+                IF (cell%nato(koo).GT.cell%natperc) THEN
+                   WRITE(0,'(a)') 'caltabtC : You need to increase the maximal number of atoms per cell'
+                   WRITE(0,'(a,i0)') 'current value: natperc=', cell%natperc
+                   STOP '< CaltabtC >'
+                END IF
+                cell%atincel(cell%nato(koo),koo) = i
              end if
+          else
+             atcf%ielat(i) = koo
+             cell%nato(koo) = cell%nato(koo)+1
+             IF (cell%nato(koo).GT.cell%natperc) THEN
+                WRITE(0,'(a)') 'caltabtC : You need to increase the maximal number of atoms per cell'
+                WRITE(0,'(a,i0)') 'current value: natperc=', cell%natperc
+                STOP '< CaltabtC >'
+             END IF
+             cell%atincel(cell%nato(koo),koo) = i
           end if
 
-#endif
-          
-          
+
+
        end do
-       !debug            call cryst_to_cart (imm, xpnp, at, 1)  !cryst vers cart
 
+       ntravtot=ntrav
+#ifdef PARA
+       call comm_space%sum(ntravtot)
+       if (ntravtot.gt.0) then
+          if (.not.allocated(proccib)) then
+             allocate(proccib(maxtrav))
+             proccib=-1
+          end if
+          call transfer_atoms(atcf,cell,indtrav,ntravtot,ntrav,proccib)
+          
+       end if
+#endif
 
-       !        open(unit=809, file='cell.csv', form='formatted', &
-       !             status='unknown')
-       !             do i=1,noxyz
-       !                write(6,*) i, nato(i) 
-       !             end do
+       
        DEALLOCATE(xpnp)   ! MODIF CLOUET
     endif
-    !    do koo=1,cell%noxyz
-    !       write(6,*)'nato',koo,cell%nato(koo)
-    !    end do
 
-!!$write(6,*)'sortie caltabt'     ! DEBUG
-
-    !      write(6,*)'maxnato', maxval(cell%nato)
 101 continue
     cell%icaltabt=icaltabt
     atcf%icaltabt=icaltabt
@@ -496,7 +531,6 @@ contains
     end select
 
 !    call atcf%print
-!    call cell%print
     return
   end subroutine caltabtC
 
@@ -1053,8 +1087,77 @@ contains
   end subroutine cells2a
 
 
-    
+  subroutine transfer_atoms(atcf,cellcf,indtrav,ntravtot,ntrav,proccib)
+    class(atom_config):: atcf
+    class(cell_config)::cellcf
+    integer,allocatable::indtrav(:),proccib(:)
+    integer::ntravtot,ntrav
 
+    integer::nemp
+    integer,allocatable::procvis(:) !,procem(:)=iproc
+    
+!    integer, allocatable:: indtravtot(:),proccibtot(:),procemtot(:)
+    integer::iproc,nprocs,natem,natrecv
+    integer::iatem,j,i,k,rgcib,itrf,nato,icelj,jjj
+    logical :: lwrk
+    lwrk=.false.
+
+    natem=0;natrecv=0
+    nprocs=comm_space%nproc
+    do iproc=0,nprocs-1
+       if (myidsp==iproc) then
+          if (ntrav.ne.0) then
+             lwrk=.true.
+          else
+             lwrk=.false.
+          end if
+       end if
+       call comm_space%bcast(iproc,lwrk)
+       if (lwrk==.true.) then
+          nemp=ntrav ! ne sert que pour iproc, mais effacé la ligne suivant
+          call comm_space%bcast(iproc,nemp)
+          allocate(procvis(nemp))
+          procvis=0
+          procvis(1:nemp)=proccib(1:nemp) ! ne sert que pour iproc, mais effacé la ligne suivant
+          call comm_space%bcast(iproc,procvis)
+          do iatem=1,nemp
+             if (myidsp==iproc) then  ! on est sur le proc émetteur
+                natem=natem+1
+                rgcib=proccib(iatem)
+                itrf=indtrav(iatem)
+                write(6,*)'em,cib,itrf',iproc,rgcib,itrf
+                icelj=atcf%ielat(atcf%im)
+                call atcf%s1at2p_rm(rgcib,itrf,comm_space)
+                do jjj=1,cellcf%nato(icelj)
+                   if (cellcf%atincel(jjj,icelj)==atcf%im+1) cellcf%atincel(jjj,icelj)=itrf
+                end do
+                
+             end if
+             if (myidsp==procvis(iatem)) then
+                write(6,*)'recpt,em',myidsp,iproc,atcf%im
+                call atcf%recv1at(iproc,comm_space,myidsp)
+                atcf%proc_at(atcf%im)=myidsp
+                write(6,*)'ielat recv',myidsp, atcf%ielat(atcf%im),atcf%im
+                cellcf%nato(atcf%ielat(atcf%im))= cellcf%nato(atcf%ielat(atcf%im))+1
+                nato=cellcf%nato(atcf%ielat(atcf%im))
+                cellcf%atincel(nato,atcf%ielat(atcf%im)) = atcf%im                
+                natrecv=natrecv+1
+             end if
+          end do
+          deallocate(procvis)
+       end if
+    end do
+!    stop
+    call comm_space%sum(natrecv)
+    call comm_space%sum(natem)
+    if (natrecv.ne.natem) then
+       write(6,*)'natrecv<>natem',rang,myidsp,natrecv,natem
+       call arret_ndm
+    end if
+! stop   
+  end subroutine transfer_atoms
+    
+  
 end module cellconfig
 
 

@@ -551,6 +551,10 @@ contains
           atcinr%xp(:,i)=xpr(:,it)
           atcinr%ityp(i)=itypr(it)
           atcinr%num_at_glob(i)=natgr(it)
+#ifdef PARA
+          atcinr%proc_at(i)=myidsp
+#endif
+          
        endif
     end do
     atcinr%im=i

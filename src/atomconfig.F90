@@ -55,9 +55,11 @@ module atomconfig
      procedure, pass::add2conf
      procedure, pass::extend
      procedure, pass::deftype
-     procedure, pass::send2proc=>s2p_atom
      procedure, pass::send2all=>s2a_atom
+     procedure, pass::send2proc=>s2p_atom
      procedure, pass::recv=>rcv_atom
+     procedure, pass::s1at2p_rm
+     procedure, pass::recv1at
      procedure, pass::zero=>zero_atom
      procedure, pass::switch_atom
      procedure, pass::print_type
@@ -506,6 +508,133 @@ contains
     end if
   end subroutine copy_atom_arps
   
+  subroutine recv1at(atcf, rgem,mpic,mypp,caracT)
+    class(atom_config):: atcf
+    type(mpi_communicator),intent(in)::mpic
+    integer,intent(in)::rgem,mypp
+    integer:: size1,size3,size9
+    character(len=*),optional,intent(in)::caracT
+    character(len=26)::carac
+    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,ivi,ivr,ivl,csi,csr,csl
+    integer, dimension (0:26):: Ipos1,Iposf,Rpos1,Rposf,Lpos1,Lposf
+    integer,allocatable:: ibuffer(:)
+    logical,allocatable::lbuffer(:)!,mask(:)
+    real(double),allocatable::rbuffer(:)
+    integer:: cst(3),nmask
+    nmask=1
+!    allocate(mask(atcf%imm))
+!    mask(:)=.false.; mask(iat)=.true.
+
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat    
+    size1=1;size3=3*size1;size9=3*size3
+#ifdef PARA
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvrugasm'
+    else
+       carac=caracT
+    end if
+
+    nvi=0; sizeI=0
+    Ipos1(:)=0;Iposf(:)=0
+    nvR=0; sizeR=0
+    Rpos1(:)=0;Rposf(:)=0
+    nvl=0; sizel=0
+    lpos1(:)=0;lposf(:)=0
+    ivi=0;ivl=0;ivr=0
+
+    call buffersizes(atcf,sizeI,sizeR,sizel,IposF,Rposf,Lposf,carac,nmask)
+    allocate(ibuffer(sizeI));     allocate(Lbuffer(sizeL));     allocate(Rbuffer(sizeR)); 
+    call mpic%recv (cst,rgem,112)
+    if (cst(1).ne.sizeI) then
+       write(6,*)'erreur CST1A ',sizeI,cst(1)
+       call arret_ndm
+    end if
+    if (cst(2).ne.sizel) then
+       write(6,*)'erreur CST2A ',sizel,cst(2)
+       call arret_ndm
+    end if
+    if (cst(3).ne.sizeR) then
+       write(6,*)'erreur CST3A ',sizer,cst(3)
+       call arret_ndm
+   end if
+   
+    if (cst(1).ne.0)call mpic%recv(ibuffer,rgem,314)
+    if (cst(2).ne.0)call mpic%recv(lbuffer,rgem,315)
+    if (cst(3).ne.0)call mpic%recv(Rbuffer,rgem,316)
+
+    call addatim (atcf,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf,atcf%imm)
+    write(6,*)'PATa',    atcf%proc_at(atcf%im)
+    atcf%proc_at(atcf%im)=mypp
+    write(6,*)'PATb',    atcf%proc_at(atcf%im)
+    return
+
+#endif
+
+  end subroutine recv1at
+
+  subroutine s1at2p_rm (atcf, rgcib,iat,mpic,caracT)
+    class(atom_config):: atcf
+    type(mpi_communicator),intent(in)::mpic
+    integer,intent(in)::rgcib,iat! target proc and atom number
+    integer:: size1,size3,size9
+    character(len=*),optional,intent(in)::caracT
+    character(len=26)::carac
+    integer::nvi,nvr,sizeI,sizeR,nvl,sizel,csi,csr,csl
+    integer, dimension (0:26):: Iposf,Rposf,Lposf
+    integer,allocatable:: ibuffer(:)
+    logical,allocatable::lbuffer(:)
+    real(double),allocatable::rbuffer(:)
+    integer:: cst(3),nat
+    logical, allocatable::mask(:)
+    !x=xp;f=fp,n=num_at_glob,,i=ityp,e=ielat,w=iwmax,d=indi,l=lgul p=proc_at   
+    ! v=vp,r=xpp
+    ! u=eat,g=glangv;a=ax;s=sigat; m=mov(arps)   
+    size1=1;size3=3*size1; size9=3*size3
+    allocate(mask(atcf%imm))
+    mask(:)=.false.; mask(iat)=.true.
+#ifdef PARA
+    if (.not.present(caracT)) then
+       carac='xfniewdlpvrugasm'
+    else
+       carac=caracT
+    end if
+   write(6,*)'IAT',rang,iat
+    nvi=0
+    sizeI=0
+    Iposf(:)=0
+    nvR=0; sizeR=0
+    Rposf(:)=0
+    nvl=0
+    sizel=0
+    lposf(:)=0
+    nat=1
+    call buffersizes(atcf,sizeI,sizeR,sizel,IposF,Rposf,Lposf,carac,nat)
+    allocate(ibuffer(sizeI));     allocate(Lbuffer(sizeL));     allocate(Rbuffer(sizeR));
+    call buildbuff(atcf,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf,maskR=mask,nmask=nat)
+    
+    csT(1)=csi
+    csT(2)=csl
+    csT(3)=csR
+    call mpic%send (cst,rgcib,112)
+    if (csi.ne.0)call mpic%send(ibuffer,rgcib,314)
+    if (csl.ne.0)call mpic%send(lbuffer,rgcib,315)
+    if (csR.ne.0)call mpic%send(Rbuffer,rgcib,316)
+    write(6,*)'RM1',rang,atcf%im,atcf%num_at_glob(1)
+    call atcf%print(unit=600+rang,natg1=atcf%num_at_glob(1),natg2=atcf%num_at_glob(1))
+    call atcf%print(unit=600+rang,natg1=atcf%num_at_glob(atcf%im),natg2=atcf%num_at_glob(atcf%im))
+    call atcf%switch_atom(iat,atcf%im)
+    call atcf%print(unit=600+rang,natg1=atcf%num_at_glob(1),natg2=atcf%num_at_glob(1))
+    call atcf%print(unit=600+rang,natg1=atcf%num_at_glob(atcf%im),natg2=atcf%num_at_glob(atcf%im))
+    
+    atcf%im=atcf%im-1
+    write(6,*)'RM2',rang,atcf%im,atcf%num_at_glob(1)
+
+
+#endif
+  end subroutine s1at2p_rm
+  
   subroutine s2p_atom (atcf, rgcib,mpic,caracT)
     class(atom_config):: atcf
     type(mpi_communicator),intent(in)::mpic
@@ -893,8 +1022,8 @@ contains
     call atsource%copy_atom(ind_switch_2,intermediaire,2)
     call intermediaire%copy_atom(2,atsource,ind_switch_1)
     call intermediaire%copy_atom(1,atsource,ind_switch_2)
-    atsource%num_at_glob(ind_switch_1)=nag1
-    atsource%num_at_glob(ind_switch_2)=nag2
+    atsource%num_at_glob(ind_switch_1)=nag2
+    atsource%num_at_glob(ind_switch_2)=nag1
   end subroutine
 
 
@@ -1186,7 +1315,7 @@ contains
     i2l=imp
     if(present(i1))i1l=i1
     if(present(i2))i2l=i2
-    write(6,*)'borders',i1l,i2l,natg1l,natg2l
+    write(unitw,*)'borders',i1l,i2l,natg1l,natg2l
     do i=1,imp
        
        if((i.lt.i1l).or.(i.gt.i2l)) cycle
@@ -2372,6 +2501,188 @@ contains
   end subroutine buildbuff
 
   
+  subroutine addatim(atcf,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf,immax)
+     integer, intent(in)::sizeI,sizel,sizer,immax
+    integer, intent(in),dimension (0:26):: Iposf,Rposf,Lposf
+    class(atom_config),intent(inout)::atcf
+     character(len=26),intent(in)::carac
+    integer,allocatable,intent(in):: ibuffer(:)
+    logical,allocatable,intent(in)::lbuffer(:)
+    integer,intent(out)::csi,csr,csl
+    real(double),allocatable,intent(in)::rbuffer(:)
+
+    integer:: size1,size3,sizeV,size9
+    integer::ivi,ivr,ivl,ibi,ibr,ibl,ic,ic2,ib,imp
+
+
+    size1=1;size3=3*size1; size9=3*size3
+    ibi=0;ibl=0;ibr=0
+    ivi=0;ivl=0;ivR=0
+    csi=0;csl=0;csr=0
+
+    atcf%im=atcf%im+1
+    imp=atcf%im
+    if(scan('n',carac).ne.0)  then
+       ivi=ivi+1
+       ib=Iposf(ivi-1)+1
+       atcf%num_at_glob(imp)=ibuffer(ib)
+       csi=csi+1
+    end if
+    if(scan('i',carac).ne.0) then
+       ivi=ivi+1
+       ib=Iposf(ivi-1)+1
+       atcf%ityp(imp)=ibuffer(ib)
+       csi=csi+1
+    end if
+    if(scan('e',carac).ne.0) then
+       ivi=ivi+1
+       ib=Iposf(ivi-1)+1
+       atcf%ielat(imp)=ibuffer(ib)
+       csi=csi+1
+    end if
+
+#ifdef PARA
+    if(scan('p',carac).ne.0) then
+       ivi=ivi+1
+          ib=Iposf(ivi-1)+1
+          atcf%proc_at(imp)=ibuffer(ib)
+          csi=csi+1
+    end if
+#endif
+    
+    if(scan('l',carac).ne.0)  then
+       ivl=ivl+1
+          ib=Lposf(ivi-1)+1
+          atcf%lgul(imp)=Lbuffer(ib)
+          csl=csl+1
+    end if
+    if(scan('x',carac).ne.0)   then
+       ivR=ivR+1
+          do ic=1,3
+             ib=Rposf(ivR-1)+ic
+             atcf%xp(ic,imp)=rbuffer(ib)
+             csR=csR+1
+       end do
+    end if
+    if(scan('f',carac).ne.0) then
+       ivR=ivR+1
+       do ic=1,3
+          ib=Rposf(ivR-1)+ic
+          atcf%fp(ic,imp)=rbuffer(ib)
+          csR=csR+1
+       end do
+    end if
+
+    if (atcf%ltabvois) then
+       sizeV=size(atcf%indi)
+       if(scan('w',carac).ne.0) then
+          ivi=ivi+1
+          ib=Iposf(ivi-1)+1
+          atcf%iwmax(imp)=ibuffer(ib)
+          csi=csi+1
+       end if
+       if(scan('d',carac).ne.0) then
+          ivi=ivi+1
+             ib=Iposf(ivi-1)+1
+             atcf%indi(imp)=ibuffer(ib)
+             csi=csi+1
+       end if
+    end if
+
+    select type (atcf)
+       class is  (atom_config_d)
+       if(scan('v',carac).ne.0) then
+          ivR=ivR+1
+          do ic=1,3
+             ib=Rposf(ivR-1)+ic
+             atcf%vp(ic,imp)=rbuffer(ib)
+             csR=csR+1
+          end do
+       end if
+
+    end select
+    select type (atcf)
+    class is  (atom_config_e)
+       if (atcf%lxpp)then
+          if(scan('r',carac).ne.0) then
+             ivR=ivR+1
+             do ic=1,3
+                ib=Rposf(ivR-1)+ic
+                atcf%xpp(ic,imp)= rbuffer(ib)
+                csR=csR+1
+                end do
+          end if
+       end if
+
+       if (atcf%lprteat)then
+          if(scan('u',carac).ne.0) then
+             ivR=ivR+1
+             ib=Rposf(ivR-1)+1
+             atcf%eat(imp)=Rbuffer(ib)
+             csR=csR+1
+          end if
+       end if
+       if (atcf%llangevin)then
+          if(scan('g',carac).ne.0) then
+             ivR=ivR+1
+             do ic=1,3
+                ib=Rposf(ivR-1)+ic
+                atcf%glangv(ic,imp)=rbuffer(ib)
+                csR=csR+1
+             end do
+          end if
+       end if
+       if (atcf%lax)then
+          if(scan('a',carac).ne.0) then
+             ivR=ivR+1
+             do ic=1,3
+                ib=Rposf(ivR-1)+ic
+                   atcf%ax(ic,imp)= rbuffer(ib)
+                   csR=csR+1
+                end do
+          end if
+       end if
+       if (atcf%lsigat)then
+          if(scan('s',carac).ne.0) then
+             ivR=ivR+1
+             do ic=1,3
+                do ic2=1,3
+                   ib=Rposf(ivR-1)+(ic-1)*3+ic2
+                   atcf%sigat(ic,ic2,imp)=rbuffer(ib)
+                   csR=csR+1
+                end do
+             end do
+          end if
+       end if
+    end select
+    select type (atcf)
+       class is  (atom_config_arps)
+
+        if(scan('m',carac).ne.0) then
+           !call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
+           ivi=ivi+1
+           ib=Iposf(ivi-1)+1
+           atcf%mov(imp)=ibuffer(ib)
+           csi=csi+1
+        end if
+     end select
+
+    if (csi.ne.sizeI) then
+       write(6,*)'erreur CSI 1 ',sizeI,csi
+!       call endmpi
+       call arret_ndm
+    end if
+    if (csr.ne.sizer) then
+       write(6,*)'erreur CSR ',sizeR,csr
+!       call endmpi
+       call arret_ndm
+    end if
+    if (csl.ne.sizel) then
+       write(6,*)'erreur CSL ',sizel,csl
+!       call endmpi
+       call arret_ndm
+    end if
+  end subroutine addatim
   subroutine copybuff(atcf,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf,immax)
      integer, intent(in)::sizeI,sizel,sizer,immax
     integer, intent(in),dimension (0:26):: Iposf,Rposf,Lposf

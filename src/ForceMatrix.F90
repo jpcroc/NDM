@@ -22,7 +22,6 @@ module ForceMatrix_mod
   USE parautils,only:initloc,pointer_caltabt_calfo
   use config2data_mod,only:config2data
   USE constrconf_mod,only:read_cin
-  USE parautils,only:driver_caltabt_para
 
   
   implicit none

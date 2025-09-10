@@ -177,7 +177,7 @@ contains
     integer,allocatable::nb_at_typ(:),last_at_typ(:),iatvac(:)
     integer :: iclose
     logical::l2close,lcloseP
-    integer::numproc,iatint
+    integer::numproc,iatint,icelj,jjj
     integer::formatsauv=5
     integer::jint,iinttot,numcell,imt,iold,irang,pvactot,dvactot
     logical::lsuiv,lcrea0
@@ -436,11 +436,14 @@ contains
                 deallocate (iatvac)
              end do lty
 
-                do ivactot=1,nvactot
-                
+             do ivactot=1,nvactot
                 if (comm_space%rank==atomvac%iproc(ivactot)) then
+                   icelj=atdml%ielat(atomvac%iloc(ivactot))
                    call atdml%switch_atom(atomvac%iloc(ivactot),atdml%im)
                    atdml%im=atdml%im-1
+                   do jjj=1,celndm%nato(icelj)
+                      if (celndm%atincel(jjj,icelj)==atdml%im+1) celndm%atincel(jjj,icelj)=atomvac%iloc(ivactot)
+                   end do
                 end if
              end do
              if (myidsp==0) then
@@ -450,7 +453,7 @@ contains
                 end do
                 flush(121)
              end if
-
+             
           end if
 !IIIIIIINNNNNNNNNNNNNNNNTTTTTTTTTTTEEEEEEEEEEERRRRRRRRRRRRSSSSSSSSSSSTTTTTTTT
           if (ninttot.ne.0) then
