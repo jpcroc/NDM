@@ -644,7 +644,7 @@ contains
              call arret_ndm
           end if
           !#endif
-          call caltabtC(celndm,atdml,lperiod,boxndm)
+          call caltabtC(celndm,atdml,lperiod,boxndm,lchktrav=.true.)
           if (atdml%ltabvois) call caltabi(atdml,celndm,boxndm)
 #ifdef PARA
           if (lspacendm) call maj_atomes_frt_ftm(atdml,celndm,boxndm,psc=psc)

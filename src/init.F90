@@ -100,9 +100,9 @@ contains
     end if
     call constrconf(atdml,boxndm,celndm,lrepart,psc=psc)
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
+       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc,lchktrav=.true.)
     else
-       call caltabtC(celndm,atdml,lperiod,boxndm)
+       call caltabtC(celndm,atdml,lperiod,boxndm,lchktrav=.false.)
     end if
     call init_pot2(boxndm,atdml%imm)
 #ifdef DECOUP
@@ -164,9 +164,9 @@ contains
 #endif
     !<---------end setting the cell diviion ----------------------
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
+       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc,lchktrav=.true.)
     else
-       call caltabtC(celndm,atdml,lperiod,boxndm)
+       call caltabtC(celndm,atdml,lperiod,boxndm,lchktrav=.false.)
     end if
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)
@@ -224,9 +224,9 @@ contains
 
     if (itmax==0) stop
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
+       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc,lchktrav=.true.)
     else
-       call caltabtC(celndm,atdml,lperiod,boxndm)
+       call caltabtC(celndm,atdml,lperiod,boxndm,lchktrav=.false.)
     end if
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)

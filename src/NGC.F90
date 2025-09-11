@@ -93,8 +93,7 @@ contains
     atcgcomp=atcgin
     cellcgcomp=celcgin
 #endif
-
-    call set_pointers_gc ! initilisations des pointers pour tolstoi et calfo
+       call set_pointers_gc ! initilisations des pointers pour tolstoi et calfo
 #ifdef PARA
     if (gcpara%lmaster.neqv..true.) then
        call tolstoi (WORKER_TAG,gcpara) 

@@ -560,7 +560,7 @@ contains
           tempx= tempinstT(atpr)
 
           CALL ScaleBox(atpr,celndm,boxndm,psc)
-          call caltabtC(celndm,atpr,lperiod,boxndm)
+          call caltabtC(celndm,atpr,lperiod,boxndm,lchktrav=.true.)
 
           ! Calcul des forces et des contraintes à l'instant t+dt
           CALL CalFo(sig,potist,atpr,celndm,boxndm%box_config,t_sigma=.true.,psc=psc)

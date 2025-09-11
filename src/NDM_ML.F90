@@ -2,7 +2,7 @@ module NDM_ML
   USE T_kind_param_m, ONLY:  double
   USE caltabi_mod,only: caltabi
   USE atomconfig,only:atom_config
-  USE cellconfig, only:cell_config,caltabtC
+  USE cellconfig, only:cell_config
   use boxconfig,only: box_config
   use derived_types,only:system_state
   use gen_com_m,only:lperiod,ldemitab,lconstrtot,pi,rang
@@ -191,7 +191,6 @@ contains
           call arret_ndm
        else
           im=atcf%im
-!       call caltabtC(cellcf,atcf,lperiod,boxcf)! ???????????????  UTILE ????????????
        boxcf%lperiod=lperiod
        call caltabi(atcf,cellcf,boxcf,cn2m=cn2m)
        

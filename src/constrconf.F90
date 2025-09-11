@@ -85,7 +85,6 @@ contains
 #ifdef PARA
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           itread=0
-
           call read_cin(boxrcf,itread,fnamcin=fnamcin,fmtcin=fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
@@ -109,7 +108,7 @@ contains
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
           !          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
-                    ncore=0
+          ncore=0
           !          atrcf%im_glob=compatrcf%im
           if (lrepart.eqv..true.) then
              call read_cin2(boxrcf,atrcf,cellrcf,imm_glob,fnamcin,lrestart,fmt_cin,psc) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
@@ -168,7 +167,6 @@ contains
        call setcellconf(cellrcf,atrcf,boxrcf,rumax)
        deallocate (ibuffer)
        deallocate (buffer)
-
        !-----------------------------------------------------
        ! BUILDING OF THE CRISTAL FROM .GIN FILE
        !-----------------------------------------------------
@@ -234,7 +232,6 @@ contains
 
 
     !       end if
-
 
 
 

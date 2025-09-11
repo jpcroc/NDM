@@ -339,7 +339,7 @@ contains
   end subroutine neigcelN
 
 
-  subroutine caltabtC (cell,atcf,lperiod,boxcf,lextr,psc)
+  subroutine caltabtC (cell,atcf,lperiod,boxcf,lextr,psc,lchktrav)
     USE notperiod_mod,only: notperiod
     USE cryst_to_cart_mod,only: cryst_to_cart
     use gen_com_m,only:lspacendm
@@ -353,6 +353,7 @@ contains
     type(para_space_config),optional::psc    
     logical,intent(in)::lperiod
     logical,intent(in),optional::lextr
+    logical::lchktrav
     logical::lextrait=.false.
 
     integer :: i,  kx, ky, kz, koo
@@ -440,7 +441,7 @@ contains
              WRITE(0,'(2(a,i0))') ' koo = ', koo, ' - noxyz = ', cell%noxyz
              STOP
           END IF
-          if ((present(psc)).and.(lspacendm)) then 
+          if ((present(psc)).and.(lspacendm).and.lchktrav) then 
              if (cell%proc_cell(koo).ne.myidsp) then
 !                write(6,*)'atout',i,atcf%num_at_glob(i),rang,cell%proc_cell(koo),koo
 
@@ -468,7 +469,7 @@ contains
                    !                        &'RANG actuel = ',rang
                    !                   call arret_ndm
                 else
-                   if (cell%proc_cell(koo).ne.myidsp)       write(6,'(A,6I7)')'afrt:i natg ielat rangem rangf newcell',i,atcf%num_at_glob(i),atcf%ielat(i),rang,cell%proc_cell(koo),koo
+!                   if (cell%proc_cell(koo).ne.myidsp)       write(6,'(A,6I7)')'afrt:i natg ielat rangem rangf newcell',i,atcf%num_at_glob(i),atcf%ielat(i),rang,cell%proc_cell(koo),koo
                    atcf%ielat(i) = koo
                    cell%nato(koo) = cell%nato(koo)+1
                    cell%atincel(cell%nato(koo),koo) = i
@@ -502,14 +503,15 @@ contains
 
        ntravtot=ntrav
 #ifdef PARA
-       call comm_space%sum(ntravtot)
-       if (ntravtot.gt.0) then
-          if (.not.allocated(proccib)) then
-             allocate(proccib(maxtrav))
-             proccib=-1
+       if (lchktrav) then 
+          call comm_space%sum(ntravtot)
+          if (ntravtot.gt.0) then
+             if (.not.allocated(proccib)) then
+                allocate(proccib(maxtrav))
+                proccib=-1
+             end if
+             call transfer_atoms(atcf,cell,indtrav,ntravtot,ntrav,proccib)
           end if
-          call transfer_atoms(atcf,cell,indtrav,ntravtot,ntrav,proccib)
-          
        end if
 #endif
 

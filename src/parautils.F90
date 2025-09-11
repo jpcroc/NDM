@@ -88,9 +88,9 @@ contains
     end if
     atloc%im_glob=atcomp%im_glob
     if (lspacendm.and.div%mpi_image%nproc.gt.1) then
-       call caltabtC(celloc,atloc,lperiod,box,psc=psc)
+       call caltabtC(celloc,atloc,lperiod,box,psc=psc,lchktrav=.true.)
     else
-       call caltabtC(celloc,atloc,lperiod,box)
+       call caltabtC(celloc,atloc,lperiod,box,lchktrav=.true.)
     end if
     if ((lcalcv).and.(atloc%ltabvois)) call caltabi(atloc,celloc,box)
 #ifdef PARA
@@ -219,7 +219,6 @@ contains
     else
        carac=caracT//'np'       
     end if
-
     if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
        !    if (div%mpi_image%nproc.gt.1) then
        if (lord) then
@@ -236,7 +235,6 @@ contains
              atcdes=> ate
           end select
           call atlocin%vers_master(atcdes,div,carac)
-
           if (div%mpi_image%rank==0) then
 
              do i=1,atcdes%im
@@ -244,22 +242,21 @@ contains
                 call atcdes%copy_atom(i,atcomp,j)
              end do
 
-
-             call caltabtC(cellcomp,atcomp,lperiod,box)
+             call caltabtC(cellcomp,atcomp,lperiod,box,lchktrav=.false.)
           end if
 
        else
           call cellcomp%init(box,cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
           call atlocin%vers_master(atcomp,div,carac)
           if (div%mpi_image%rank==0) then
-             call caltabtC(cellcomp,atcomp,lperiod,box)
+             call caltabtC(cellcomp,atcomp,lperiod,box,lchktrav=.false.)
           end if
 
        end if
     else
        call atlocin%copy_config(atcomp,lrescl=.false.)
        cellcomp=cellocin
-       call caltabtC(cellcomp,atcomp,lperiod,box)
+       call caltabtC(cellcomp,atcomp,lperiod,box,lchktrav=.false.)
        if (atlocin%ltabvois) then
           call caltabi(atcomp,cellcomp,box)
        end if
@@ -349,14 +346,25 @@ contains
     call periodbox (boxcf,atcf)
     ! repartition des atomes dans la nouvelle boite
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       call caltabtC(celcf,atcf,lperiod,boxcf,psc=psc)
+       call caltabtC(celcf,atcf,lperiod,boxcf,psc=psc,lchktrav=.true.)
     else
-       call caltabtC(celcf,atcf,lperiod,boxcf)
+       call caltabtC(celcf,atcf,lperiod,boxcf,lchktrav=.false.)
     end if
     if (atcf%ltabvois.and.(lcalcv)) then
        call caltabi(atcf,celcf,boxcf)
     end if
 #ifdef PARA
+    block
+      integer::iprt
+         iprt=200+rang
+         call atcf%print(i2=1,unit=iprt)
+         iprt=210+rang
+         call atcf%print(i1=atcf%im,i2=atcf%im,unit=iprt)
+         iprt=1200+rang
+         call atcf%print(i1=1,i2=atcf%im,unit=iprt)
+         iprt=800+rang
+         call celcf%print(unit=iprt)
+       end block
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
        call maj_atomes_frt_ftm(atcf,celcf,boxcf,psc)

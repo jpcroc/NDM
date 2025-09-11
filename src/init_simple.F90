@@ -100,7 +100,7 @@ contains
 !    if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 !       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
 !    else
-       call caltabtC(celndm,atdml,lperiod,boxndm)
+       call caltabtC(celndm,atdml,lperiod,boxndm,lchktrav=.false.)
 !    end if
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)

@@ -55,7 +55,7 @@ contains
     end do loopi
 !    call atcf%print(unit=600)
     call atcf%fab(atcou,lback=.true.)
-    call caltabtC(celcou,atcou,lperiod,boxcf)
+    call caltabtC(celcou,atcou,lperiod,boxcf,lchktrav=.false.)
     call calctemp(tempcou,kinecou,atcou,celcou)
 !    write(6,*)'TCOU',tempcou,tfcou,atcou%im,atcf%im
 !!$    do i=1,im

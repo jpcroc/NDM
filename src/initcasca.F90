@@ -460,8 +460,7 @@ contains
        call atcfcasc%send2all(0,Cpara%mpi_image)
        call repartition(atcfcasc,atcf,boxndm,celndm)
 #endif
-       call caltabtC(celndm,atcf,lperiod,boxndm)
-       ! renvoi vers les autres procs
+       call caltabtC(celndm,atcf,lperiod,boxndm,lchktrav=.false.)
 
 
     end if

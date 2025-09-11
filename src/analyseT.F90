@@ -147,7 +147,7 @@ contains
                end where
                if (ALL(atdml%lgul(1:atdml%im).eqv..false.)) cycle
                call atdml%fab(attyp,lback=.false.)
-               call caltabtC(celtyp,attyp,lperiod,boxndm)
+               call caltabtC(celtyp,attyp,lperiod,boxndm,lchktrav=.false.)
                call calctemp(temptyp(iti),kinetyp,attyp,celtyp)
                call celtyp%dealloc ; call attyp%dealloc
 

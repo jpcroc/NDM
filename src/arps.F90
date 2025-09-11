@@ -139,12 +139,12 @@ contains
     !A.2
 #ifdef PARA    
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       call caltabtC(celndm%cell_config,atdml,lperiod,boxndm,psc=psc)
+       call caltabtC(celndm%cell_config,atdml,lperiod,boxndm,psc=psc,lchktrav=.true.)
     else
-       call caltabtC(celndm%cell_config,atdml,lperiod,boxndm)
+       call caltabtC(celndm%cell_config,atdml,lperiod,boxndm,lchktrav=.true.)
     end if
 #else
-    call caltabtC(celndm%cell_config,atdml,lperiod,boxndm)
+    call caltabtC(celndm%cell_config,atdml,lperiod,boxndm,lchktrav=.true.)
 #endif
 
 #ifdef PARA
@@ -279,12 +279,12 @@ contains
        !A.2
 #ifdef PARA    
        if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-          call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
+          call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc,lchktrav=.true.)
        else
-          call caltabtC(celndm,atdml,lperiod,boxndm)
+          call caltabtC(celndm,atdml,lperiod,boxndm,lchktrav=.false.)
        end if
 #else
-       call caltabtC(celndm,atdml,lperiod,boxndm)
+       call caltabtC(celndm,atdml,lperiod,boxndm,lchktrav=.false.)
 #endif
 
 #ifdef PARA

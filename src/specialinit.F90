@@ -131,7 +131,7 @@ contains
 !    if (rang==0)    write(6,*)'atsph',atsph%im_glob
 !    call atsph%print
 !    stop
-    call caltabtC(celsph,atsph,lperiod,boxndm)
+    call caltabtC(celsph,atsph,lperiod,boxndm,lchktrav=.false.)
     call calctemp(tempsph,kinesph,atsph,celsph)
 !    if (rang==0)write(6,*)'tempsph',tempsph
     if(tempheatinit.ge.0) then
