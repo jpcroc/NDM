@@ -66,9 +66,9 @@ contains
     !-----------------------------------------------
     integer :: ludin, lufilm, lufilmpaf,  i,itean, ic,ic2, iThermo,itecompcr,ipotcont
     character :: fnamdin*80
-    logical :: lginread,ltriclin,lpcon,lfissure,tpot,lpr
+    logical :: lginread,ltriclin,lpcon,lfissure,tpot,lpr,lseedcom
     integer::itecfg,np2
-    logical :: lpconx,lpcony,lpconz,lpconxyz,ltest
+    logical :: lpconx,lpcony,lpconz,lpconxyz,ltest,lseecom
     !-----------------------------------------------
     !
     !
@@ -1670,20 +1670,27 @@ contains
           Tinitbox=0.
        end if
     end If
-
+    lseedcom=.false.
 
     if (iseed.le.0) then
-          call system_clock (iseed)
-          iseed =iseed +10*rang
-       end if
-       if (lspacendm.eqv..false.) then
-#ifdef PARA
-          call mpi_world%bcast(0,iseed)
-#endif
-       end if
-       
-       write(6,*)'rang readdm iseed ',rang,iseed
+       call system_clock (iseed)
 
+       iseed =iseed +10*rang
+    else
+       lseecom=.true.
+    end if
+    if (lspacendm.eqv..false.) then
+#ifdef PARA
+       call mpi_world%bcast(0,iseed)
+       lseedcom=.true.
+#endif
+    end if
+    if (lseedcom   ) then
+       if (rang==0)    write(6,*)'all ranks  readdm iseed ',iseed
+    else
+       write(6,*)'rang readdm iseed ',rang,iseed
+    end if
+    
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
     if ((dmtype.ge.41).and.(dmtype.le.42)) then
@@ -1693,5 +1700,5 @@ contains
        end if
     end if
   end subroutine readdm
-
+  
 end module readdm_mod

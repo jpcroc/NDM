@@ -137,6 +137,7 @@ contains
     case (-1)
        formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
+       if (lwgin) call rasmolT (atdml,boxndm,-1,latcomp=latcomp,ivisumol=5)
        if (rang==0) write (6, *) 'generation terminee'
        call arret_ndm
     case (2)
@@ -147,6 +148,7 @@ contains
        call transf(atdml)
        formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
+       if (lwgin) call rasmolT (atdml,boxndm,-1,latcomp=latcomp,ivisumol=5)
        if (rang==0) write (6, *) 'modification terminee'
        call arret_ndm
     case default

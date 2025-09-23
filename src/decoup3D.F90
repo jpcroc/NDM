@@ -340,9 +340,13 @@ contains
 
 
                 write(iudecoup,*)'Taille des decoupages'
-                do ii=0,nbr_cpu-1
+                do ii=0,3
                    write(iudecoup,*)'Decoupage',ii,':',psc%res_cpu(ii,1:3)
                 enddo
+                do ii=nbr_cpu-4,nbr_cpu-1
+                   write(iudecoup,*)'Decoupage',ii,':',psc%res_cpu(ii,1:3)
+                enddo
+
                 write(iudecoup,*)'----------------------------------------------'
                 !             do ii = 0,nbr_cpu-1   
                 !                write(iudecoup,*)'Debut/Fin en x pour ii',ii,'egal',coord_min(ii,1),coord_max(ii,1)
@@ -443,18 +447,6 @@ contains
     if (ldecoup) stop
     call comm_space%barrier
     return
-!!$
-!!$#ifdef PARA
-!!$ do ko=1,celdec%noxyz
-!!$    write(200+rang,*)ko,celdec%proc_cell(ko)
-!!$ end do
-!!$ call mpi_finalize(ierr)
-!!$ stop
-!!$#endif
-
-
-
-
 
   end subroutine decoupage
 
@@ -546,15 +538,6 @@ contains
     end if
     if (ldecoup) stop
     return
-!!$
-!!$#ifdef PARA
-!!$ do ko=1,celdec%noxyz
-!!$    write(200+rang,*)ko,celdec%proc_cell(ko)
-!!$ end do
-!!$ call mpi_finalize(ierr)
-!!$ stop
-!!$#endif
-
 
 
 
@@ -660,8 +643,6 @@ contains
     end do
     atcf%im=im
 
- !   call atcf%print
-!    write(6,*)atcf%xp
 
     
     

@@ -93,40 +93,20 @@ contains
           ncore=0
           call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
 
-          !          call atrcf%print(unit=600+rang)
-          !          stop
-
-          !          itread=1
-          !          call atrcf%deftype(compatrcf)
-          !          write(6,*)'RVOIS',compatrcf%rvois
-          !          call compatrcf%init(immin=imm_glob,imin=0,ltabvois=compatrcf%ltabvois)
-
-
-          !          call atrcf%print
-
           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
-          !          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
           ncore=0
-          !          atrcf%im_glob=compatrcf%im
           if (lrepart.eqv..true.) then
              call read_cin2(boxrcf,atrcf,cellrcf,imm_glob,fnamcin,lrestart,fmt_cin,psc) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
-             !             call  decoupage(nprocspace,ncore,cellrcf,atrcf,psc=psc,lverbose=lprt,atcomp=compatrcf,boxrep=boxrcf)
-
-             !             allocate(num_at_buff(imm_glob))
-             !             call repartition(COMPatrcf,atrcf,boxrcf,cellrcf,num_at_buff)
           else
              itread=1
              call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
-             !             call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
-             !             call compatrcf%copy_config(atrcf, lrescl=.true.)
           end if
        else
           itread=1
           call atrcf%init(immin=imm_glob,imin=0,ltabvois=atrcf%ltabvois,rvois=atrcf%rvois)
           call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
-          !          call atrcf%print
           atrcf%im_glob=atrcf%im
           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'

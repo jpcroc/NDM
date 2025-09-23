@@ -194,9 +194,6 @@ contains
        call random_seed (iseedt(1))
     end if
 
-!       itinser=0
-    !    call atdml%print
-!    write(6,*)'ITPREP',itprep
     if (itprep.gT.0) then ! always true
        itloopmax=itprep
        timeloopmax=1d8

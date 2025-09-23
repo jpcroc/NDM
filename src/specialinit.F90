@@ -128,12 +128,8 @@ contains
 
     call atdml%fab(atsph,lback=.true.)
     imsph=atsph%im_glob
-!    if (rang==0)    write(6,*)'atsph',atsph%im_glob
-!    call atsph%print
-!    stop
     call caltabtC(celsph,atsph,lperiod,boxndm,lchktrav=.false.)
     call calctemp(tempsph,kinesph,atsph,celsph)
-!    if (rang==0)write(6,*)'tempsph',tempsph
     if(tempheatinit.ge.0) then
        tempfin=tempheatinit
     else
@@ -166,9 +162,6 @@ contains
 !    real(double)::tempfin,tempdec,temppr,temppr2
     real(double)::xproj,norma,dx(3),x0(3),dxn
 
-!    lgs=atdml%lgul
-!    atdml%lgul=.false.
-!    celpr=celndm
     x0=0
     do i=1,3
        do ic=1,3
@@ -182,7 +175,6 @@ contains
 
           call distat(atdml%xp(:,i),box=boxndm,x0red=centre,linter=linpr,rum=rpressinit,dist=dxn)
           
-          !         atdml%lgul(i)=linpr
           if (linpr) then
              impr=impr+1
              dx(:)=atdml%xp(:,i)-x0(:)
@@ -197,21 +189,12 @@ contains
        
        do i=1,atdml%im
           xproj=(dot_product(atdml%xp(:,i),boxndm%at(:,1))/norma)-norma/2.
-!          write(6,*)i,xproj,rheatinit
-          if(abs(xproj).le.rheatinit) then !atdml%lgul(i)=.true.
+          if(abs(xproj).le.rheatinit) then 
              impr=impr+1
              atdml%xp(1,i)=atdml%xp(1,i)+abs(xproj/rheatinit)*sign(deltapressinit,xproj)
           end if
        end do
     end select
-    
-
-!    call atdml%fab(atpr,lback=.true.)
-
-
-    
-!    atdml%lgul=lgs
-
     
   end subroutine initsppress
   

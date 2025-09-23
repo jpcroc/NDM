@@ -41,7 +41,6 @@ subroutine deftimestep(atcf,box)
 
 
   !-----------------------------------------------
-!  call atcf%print
   ! changement de pas en temps.
   ! le pas en temps optimal est le plus grand tel que
   ! le deplacement maximal entre deux iteration

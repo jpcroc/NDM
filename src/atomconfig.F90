@@ -621,15 +621,9 @@ contains
     if (csi.ne.0)call mpic%send(ibuffer,rgcib,314)
     if (csl.ne.0)call mpic%send(lbuffer,rgcib,315)
     if (csR.ne.0)call mpic%send(Rbuffer,rgcib,316)
-    write(6,*)'RM1',rang,atcf%im,atcf%num_at_glob(1)
-    call atcf%print(unit=600+rang,natg1=atcf%num_at_glob(1),natg2=atcf%num_at_glob(1))
-    call atcf%print(unit=600+rang,natg1=atcf%num_at_glob(atcf%im),natg2=atcf%num_at_glob(atcf%im))
     call atcf%switch_atom(iat,atcf%im)
-    call atcf%print(unit=600+rang,natg1=atcf%num_at_glob(1),natg2=atcf%num_at_glob(1))
-    call atcf%print(unit=600+rang,natg1=atcf%num_at_glob(atcf%im),natg2=atcf%num_at_glob(atcf%im))
     
     atcf%im=atcf%im-1
-    write(6,*)'RM2',rang,atcf%im,atcf%num_at_glob(1)
 
 
 #endif

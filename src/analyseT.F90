@@ -134,7 +134,6 @@ contains
     endif
     if (itetemp>0) then
        if (mod(iteration,itetemp)==0) then
-          !          call atdml%print
           call calctemp (temp,kine,atdml,celndm)
           block
             logical:: lgs(atdml%imm)

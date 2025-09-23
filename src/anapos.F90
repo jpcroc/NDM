@@ -545,10 +545,6 @@ contains
     write(6,*)'rcm ', rcm
 
     call setnoxsimple(atcf,boxcf,celcf,rcm)
-!!$    call atcf%print
-!!$    call celcf%print
-!!$    call boxcf%print
-!!$    write(6,*)'POST '
     allocate(nvi(atcf%im))
     allocate(nvityp(atcf%im,ntyp))
     natvi(:)=0
@@ -1252,12 +1248,7 @@ contains
     if (lvac) then 
 
        nvac=0 ;nint=0;nremp=0;nas=0
-       !    do j=1,atr%im
-       !       write(6,*)j,natsit(j),indatsit(j,:natsit(j))
-       !    end do
-       !    call atc%print
        iloop1: do j=1,atr%im
-          !          write(6,*)j,natsit(j),indatsit(j,:natsit(j))
           select case (natsit(j))
           case(0) 
              nvac=nvac+1
@@ -1794,7 +1785,6 @@ contains
           namemolperf=trim(namemol)//'perf'
           call rasmolT(atperf,boxcr,namefr=namemolperf,latcomp=.true.,ivisumol=5)
 
-          !       call celcf%print
 
           if (lpsp) then          
              call celcf%copy(celperf,boxcf)

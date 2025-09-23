@@ -52,11 +52,7 @@ contains
     write (6, *) '####### END OF RUN  ######## = ', iteration, '  time = ', timel
  endif
 
-! if (lWgin.eqv..true.) call cin2gin
  IF (iteSauv.GE.0) then
-    !    call boxndm%print
-    !    call celndm%print
-    !     call atdml%print
     fnamcout= fnam(1:lenfnam)//'.cout'
     select type(atdml)
     type is (atom_config)

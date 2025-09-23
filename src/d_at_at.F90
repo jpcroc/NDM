@@ -64,7 +64,6 @@ contains
 
     dmin=1e10
     dmax=-100
-!    call celndm%print
     do i=1,atdml%im
        koo = atdml%ielat(i)                          ! Numero de la cellule
 

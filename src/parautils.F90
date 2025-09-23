@@ -179,11 +179,6 @@ contains
 
     if (lupdate)   call driver_caltabt_para(atcalc,cellcalc,box,psc,lperiod,lcalcv)
     CALL CalFo(sig,potist,atcalc,cellcalc,box,t_sigma=.true.,psc=psc)
-!    if (rang==0) then
-!       call atcalc%print_type('atcalc')
-!       call atloc%print_type('atloc')
-!       call atcomp%print_type('atcomp')
-!    end if
 #ifdef PARA
     if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
        call atloc%vers_master(atcomp,div)
@@ -354,17 +349,6 @@ contains
        call caltabi(atcf,celcf,boxcf)
     end if
 #ifdef PARA
-    block
-      integer::iprt
-         iprt=200+rang
-         call atcf%print(i2=1,unit=iprt)
-         iprt=210+rang
-         call atcf%print(i1=atcf%im,i2=atcf%im,unit=iprt)
-         iprt=1200+rang
-         call atcf%print(i1=1,i2=atcf%im,unit=iprt)
-         iprt=800+rang
-         call celcf%print(unit=iprt)
-       end block
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        ! Mise a jour des atomes (locaux/frontieres/fantomes) sur tous les processeurs
        call maj_atomes_frt_ftm(atcf,celcf,boxcf,psc)

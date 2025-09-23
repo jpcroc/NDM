@@ -710,8 +710,6 @@ contains
 
        end if !if lbigmaster
        do ipp=1,nparapath
-          !write(200+rang,*)'IPPP2',ipp
-          !call boxmcgcpath(ipp)%print(unit=200+rang)
 #ifdef PARA
           if (lparapath) then
              call boxmcgc_p%master2slave(0,paramcgc%mpi_master)
