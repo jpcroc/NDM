@@ -971,7 +971,7 @@ contains
           end if
        end if
        call comm_space%bcast(iproc,lwrk)
-       if (lwrk==.true.) then
+       if (lwrk.eqv..true.) then
           nemp=ntrav ! ne sert que pour iproc, mais effacé la ligne suivant
           call comm_space%bcast(iproc,nemp)
           allocate(procvis(nemp))
