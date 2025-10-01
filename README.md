@@ -36,7 +36,7 @@ Following are environment setup examples for some known clusters:
 |   Cluster         |        NDM           | NDM + LAMMPS   |
 |--------------------|----------------------|----------------|
 | Topaze/Irene INTEL | <pre>module load fortran/inteloneapi/24.0.0<br>module load mpi/intelmpi/24.0.0</pre> | x |
-| Topaze/Irene MIX | <pre>module load fortran/inteloneapi/24.0.0<br>module load mpi/openmpi/4.1.6.4</pre> | <pre>module load fortran/inteloneapi/24.0.0<br>module load mpi/openmpi/4.1.6.4<br>module load mkl<br>module load lammps/2Aug2023</pre> |
+| Topaze/Irene MIX | <pre>module load fortran/inteloneapi/24.0.0<br>module load mpi/openmpi/4.1.6.4<br>module load mkl</pre> | <pre>module load fortran/inteloneapi/24.0.0<br>module load mpi/openmpi/4.1.6.4<br>module load mkl<br>module load lammps/2Aug2023</pre> |
 | Topaze/Irene GNU   | <pre>module load fortran/gcc/13.2.0<br>module load mpi/openmpi/4.1.4</pre> | x |
 | Gatsby GNU   | <pre>module load openmpi/gcc/4.0.2<br>module load gcc/11.2.0<br>module load mkl</pre>| x |
 | Gatsby INTEL   | <pre>module load mpi<br>module load compiler<br>module load mkl</pre> | <pre>module load lammps/29Sep2021-u2</pre> |

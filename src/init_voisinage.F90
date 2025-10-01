@@ -37,7 +37,6 @@ subroutine init_voisinage (cellv,psc,lwrite)
   ! intialisations preliminaires
   if( allocated(psc%proc_voisin)) deallocate(psc%proc_voisin)
   allocate(psc%proc_voisin(min(nprocspace,26)))
-!  call cellv%print
   psc%proc_voisin(:)=-1
   psc%nbr_proc_voisin = 0
   psc%nbr_cell_ftm  = 0
@@ -143,17 +142,7 @@ subroutine init_voisinage (cellv,psc,lwrite)
      endif ! la cellule est locale
 
   enddo
-  if (lwrt) write(6,*)'rang rangspace ',rang, myidsp,' nbr procs voisins ', psc%nbr_proc_voisin
-!!$  do ip=1,psc%nbr_proc_voisin
-!!$     write(10+myidsp,*)'procvoisin',ip,psc%proc_voisin(ip),'nbcell', psc%nbr_cell_frontiere(ip)     
-!!$     do i=1,psc%nbr_cell_frontiere(num_proc_vois)
-!!$        write(10+myidsp,*)'cell du procvoisin',i,psc%cell_frontiere(ip,i)
-!!$     end do
-!!$  end do
-!!$  write(10,*)'nb cell fantomes',psc%nbr_cell_ftm
-!!$  do i=1,psc%nbr_cell_ftm
-!!$     write(10+myidsp,*)'cell fantome',psc%cell_ftm(i)
-!!$  end do
+  if ((myidsp.le.2).or.(rang.ge.nprocspace-2))write(6,*)'rang rangspace ',rang, myidsp,' nbr procs voisins ', psc%nbr_proc_voisin
 end subroutine init_voisinage
 end module init_vois_mod
 #endif

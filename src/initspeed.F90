@@ -111,7 +111,6 @@ contains
     if(present(latcomp))latc=latcomp
 !    if (rang==0) write(6,*)
 !    write(6,*)'ISEED initspeed',iseed
-!    call atcf%print
     select case (dmtype)
     case(3,30,5,11,31,32,33,21,22,23,24,2)
        atcf%vp = 0.0
@@ -129,9 +128,7 @@ contains
        goto 66
     end select
 1   continue
-    !      write(6,*)'vp',vp(1,1)
     if (lvpread) then
-       !       oldtstep=1.0d-15
        tempsauv=tempinstT(atcf)
       if (myidsp==0) write(6,*)'tempsauv ',tempsauv
        select type (atcf)

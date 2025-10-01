@@ -40,7 +40,9 @@ module Parrinello_Rahman
   USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lthoover,nhoover,sigext,ucell,erg2ev,&
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
        &potist,sig,sigtot,text,tstep,iteration,potist,rang,sig,text,sigkine,lpcube,&
-       &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype,usdh,llangevin,gamlg,gamprfact,unitP
+       &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype,usdh,llangevin,gamlg,gamprfact,unitP,&
+       & lmaxvp,vplim
+  
   use FireModule,only:alph_start,f_alph,fdec,finc,nstepmin,tstep_mm,tstep0,init_trempe_fire
 
   USE var_pot, ONLY:cm,ntyp,gamlt
@@ -353,12 +355,15 @@ contains
     !real(double) , external ::  calcvol
     ! Parameter for Parrinello-Rahman self consistency loop
     REAL(double), parameter :: tol=1.0d-12        ! Tolerance for h convergency
-    INTEGER, parameter :: max_Iter=100            ! Maximal number of iterations in self-consistency loop
+    INTEGER, parameter :: max_Iter=1000            ! Maximal number of iterations in self-consistency loop
     real(double)::T1,kin1,tstepN,u1,u2,rga,rgah
     real(double), dimension(1:3) :: xprov
     real(double):: norme_de_fp, norme_de_vp, pscal,tempcell,pint,gs3
     real(double), dimension(ntyp) :: aux
     integer,save::nstep=0
+    real(double)::maxvploc,maxvp,nrmvp
+    integer::ib
+
     select case(dmtype)
     case(24)
        !       write(6,*)'IN',atpr%xp(1,1)
@@ -555,7 +560,7 @@ contains
           tempx= tempinstT(atpr)
 
           CALL ScaleBox(atpr,celndm,boxndm,psc)
-          call caltabtC(celndm,atpr,lperiod,boxndm)
+          call caltabtC(celndm,atpr,lperiod,boxndm,lchktrav=.true.)
 
           ! Calcul des forces et des contraintes à l'instant t+dt
           CALL CalFo(sig,potist,atpr,celndm,boxndm%box_config,t_sigma=.true.,psc=psc)
@@ -676,6 +681,22 @@ contains
 #endif
        !    write(6,*)'MED2',atpr%xp(1,1),sp(1,1),sfp(1,1)
        ! Calcul des forces et des contraintes à l'instant t+dt
+       !           block
+       !             real(double),allocatable::normvp (:)
+       !             allocate(normvp(atpr%im))
+       if (lmaxvp) then
+          do ib=1,atpr%im
+             nrmvp=norm2(atpr%vp(:,ib))
+             if(nrmvp.ge.vplim) then
+                atpr%vp(:,ib)=atpr%vp(:,ib)*5d6/nrmvp
+             end if
+          end do
+       end if
+!!$             maxvp=maxval(normvp)
+!!$             call comm_space%max(maxvp)
+!!$             if (rang==0) write(6,*)'MAXVP', maxvp
+!           end block
+    
        CALL CalFo(sig,potist,atpr,celndm,boxndm%box_config,t_sigma=.true.,psc=psc)
        if (l2t)then
           if (i2t==1)  call calceloss(celndm,atpr)
@@ -729,6 +750,15 @@ contains
 
           ! Vitesse des atomes à l'instant t+dt
           atpr%vp(:,1:atpr%im) = MatMul(boxndm%h(:,:), sdot_new(:,1:atpr%im) )
+          if (lmaxvp) then
+             do ib=1,atpr%im
+                nrmvp=norm2(atpr%vp(:,ib))
+                if(nrmvp.ge.5d6) then
+                   atpr%vp(:,ib)=atpr%vp(:,ib)*5d6/nrmvp
+                end if
+             end do
+          end if
+
           !  Contrainte thermique à l'instant t+dt
           sigkine(:,:)=0.d0
           do ia = 1, atpr%im
@@ -785,7 +815,7 @@ contains
        sdot(:,:) = sdot_new(:,:)
        IF (iter.GE.Max_Iter) THEN
           WRITE(0,'(a,i0,a)') 'Maximal number of iterations (', Max_Iter, &
-               ') in Parrinello-Rahman / Nosé-Hoover self consistency loop has been reached'
+               ') in Parrinello-Rahman self consistency loop has been reached'
           WRITE(0,*)
           WRITE(0,'(a)') 'Last hdot proposed:'
           WRITE(0,'(a,3(f0.5,1x))') ' hdot(1,1:3) = ', 1e8*hdot_last(1,1:3)

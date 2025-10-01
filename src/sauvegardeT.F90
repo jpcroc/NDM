@@ -35,7 +35,7 @@ contains
     character::fnamcout*80
     logical, intent(in):: latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
 
-    integer :: lucout, formatsauvmod,formatsauv,im,formatsauvw
+    integer :: lucout, formatsauvmod,formatsauv,im!,formatsauvw
     logical :: lwax
 
 #ifdef PARA
@@ -59,15 +59,18 @@ contains
     end if
 
     lucout = 87
-    select type(atdml)
-       class is (atom_config_e)
-          if (atdml%lax)then
-             if (formatsauv>=5) formatsauvw=7
-          else
-             formatsauvw=formatsauv
-          end if
-       end select
+!!$    select type(atdml)
+!!$       class is (atom_config_e)
+!!$          if (atdml%lax)then
+!!$             if (formatsauv>=5) formatsauvw=7
+!!$          else
+!!$             formatsauvw=formatsauv
+!!$          end if
+!!$       class default
+!!$          formatsauvw=formatsauv
+!!$       end select
 #ifdef PARA
+!       write(6,*)'SPDBG1 ',rang,formatsauv
     if (.not.latcomp) then 
        if (myidsp==0) then
 
@@ -84,6 +87,7 @@ contains
           allocate (buffer(3,atdml%imm))
           allocate (ibuffer(atdml%imm))
        end if
+!       write(6,*)'SPDBG2 ',rang,formatsauv,formatsauvmod
        if (myidsp==0) then
           im_loc(0)=im
           ibuffer=0
@@ -123,6 +127,16 @@ contains
                    enddo
                 end if
                 write (lucout) buffer   ! Ecriture vp
+!!$                lwax=.false.
+!!$                buffer(:,1:im) = atdml%xp(:,1:im)
+!!$                write(6,*)'SPDBG251A ',rang,lwax
+!!$                if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+!!$                   do i_proc=1,nprocspace-1
+!!$                      call comm_space%recv(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),i_proc,11007)
+!!$                   enddo
+!!$                end if
+!!$                write(6,*)'SPDBG252A ',rang,lwax
+!!$                write (lucout) buffer   ! Ecriture ax
              class is (atom_config_e)
                 buffer(:,1:im) = atdml%vp(:,1:im)
                 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -131,16 +145,21 @@ contains
                    enddo
                 end if
                 write (lucout) buffer   ! Ecriture vp
-                if (formatsauvw==7 )then
-                   lwax=.true.
-                   buffer(:,1:im) = atdml%ax(:,1:im)
-                   if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-                      do i_proc=1,nprocspace-1
-                         call comm_space%recv(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),i_proc,11007)
-                      enddo
-                   end if
-                   write (lucout) buffer   ! Ecriture ax
-                end if
+!!$                if (formatsauvw==7 )then
+!!$                   lwax=.true.
+!!$                   buffer(:,1:im) = atdml%ax(:,1:im)
+!!$                else
+!!$                   lwax=.false.
+!!$                   buffer(:,1:im) = atdml%xp(:,1:im)
+!!$                end if
+!!$                write(6,*)'SPDBG251B ',rang,lwax
+!!$                if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+!!$                   do i_proc=1,nprocspace-1
+!!$                      call comm_space%recv(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),i_proc,11007)
+!!$                   enddo
+!!$                end if
+!!$                write (lucout) buffer   ! Ecriture ax
+
              end select
              
 
@@ -151,8 +170,8 @@ contains
 
 
           if (l2T)call sauveelec
-
-       else ! myidsp different de 0 :
+!       write(6,*)'SPDBG3 ',rang
+    else ! myidsp different de 0 :
           if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              call comm_space%send(im,0,11001)
              call comm_space%send(atdml%ityp(1:im),0,11002)
@@ -165,13 +184,15 @@ contains
                    call comm_space%send(atdml%vp(1:3,1:im),0,11016)
                 class is (atom_config_e)
                    call comm_space%send(atdml%vp(1:3,1:im),0,11006)
-                   if ((atdml%lxpp).and.(formatsauv==3)) call comm_space%send(atdml%xpp(1:3,1:im),0,11015)
-                   if (formatsauvw==7)then
-                      lwax=.true.
-                      call comm_space%send(atdml%ax(1:3,1:im),0,11007)
-                   end if
+!                   if ((atdml%lxpp).and.(formatsauv==3)) call comm_space%send(atdml%xpp(1:3,1:im),0,11015)
+!!$                   if (formatsauvw==7)then
+!!$                      lwax=.true.
+!!$                      call comm_space%send(atdml%ax(1:3,1:im),0,11007)
+!!$                   end if
                 end select
-                if (.not.lwax)call comm_space%send(atdml%xp(1:3,1:im),0,11008)
+!!$                write(6,*)'SPDBG251 ',rang,lwax
+!!$                if (.not.lwax)call comm_space%send(atdml%xp(1:3,1:im),0,11008)
+!                write(6,*)'SPDBG25 ',rang
              endif
           end if
        endif
@@ -192,13 +213,13 @@ contains
           end select
           select type (atdml)
           class is (atom_config_e)
-!             write (lucout) atdml%xpp
+
 !             write (lucout) atdml%vp
-             if (atdml%lxpp)             write (lucout) atdml%xpp
-             if (formatsauvw==7)then
-                write (lucout) atdml%ax
-                lwax=.true.
-             end if
+!             if (atdml%lxpp)             write (lucout) atdml%xpp
+!!$             if (formatsauvw==7)then
+!!$                write (lucout) atdml%ax
+!!$                lwax=.true.
+!!$             end if
           end select
           if (.not.lwax)write (lucout) atdml%xp
           write (lucout) tstep
@@ -237,13 +258,13 @@ contains
        class is (atom_config_e)
 !          write (lucout) atdml%xpp
 !          write (lucout) atdml%vp
-          if (atdml%lxpp)          write (lucout) atdml%xpp
-          if (formatsauvw==7)then
-             write (lucout) atdml%ax
-             lwax=.true.
-          end if
+!!$          if (atdml%lxpp)          write (lucout) atdml%xpp
+!!$          if (formatsauvw==7)then
+!!$             write (lucout) atdml%ax
+!!$             lwax=.true.
+!!$          end if
        end select
-       if (.not.lwax)write (lucout) atdml%xp
+!       if (.not.lwax)write (lucout) atdml%xp
        write (lucout) tstep
        write (lucout) tmean, pmean, iteration, timel
     endif
@@ -252,7 +273,6 @@ contains
     lucout=87
     close(unit=lucout)
     if (l2T)call sauveelec
-
     return
   end subroutine sauvegardeT
 

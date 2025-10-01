@@ -368,8 +368,8 @@ contains
           !seul MEGAMASTER A LES POSITIONS OLD
           call config_atom_old_0%copy_config(config_atom_n(1), lrescl=.true.)          
           call config_atom_old_1%copy_config(config_atom_nplus1(1), lrescl=.true.) 
-          call caltabtC(config_cells_n(1),config_atom_n(1),lperiod,box_old0)
-          call caltabtC(config_cells_nplus1(1),config_atom_nplus1(1),lperiod,box_old1)
+          call caltabtC(config_cells_n(1),config_atom_n(1),lperiod,box_old0,lchktrav=.false.)
+          call caltabtC(config_cells_nplus1(1),config_atom_nplus1(1),lperiod,box_old1,lchktrav=.false.)
           if(dmtype==151) then
              if(direction==0) then
                 config_cells_old=config_cells_n(1)
@@ -710,8 +710,6 @@ contains
 
        end if !if lbigmaster
        do ipp=1,nparapath
-          !write(200+rang,*)'IPPP2',ipp
-          !call boxmcgcpath(ipp)%print(unit=200+rang)
 #ifdef PARA
           if (lparapath) then
              call boxmcgc_p%master2slave(0,paramcgc%mpi_master)
@@ -1025,11 +1023,11 @@ contains
           if (dir == 0) then
              call config_atom_old_1%copy_config(config_atom_nplus1(ipchemin), lrescl=.true.)
              boxmcgcpath(ipchemin)=box_old1
-             call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgcpath(ipchemin))
+             call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgcpath(ipchemin),lchktrav=.false.)
           else
              call config_atom_old_0%copy_config(config_atom_n(ipchemin), lrescl=.true.)
              boxmcgcpath(ipchemin)=box_old0
-             call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgcpath(ipchemin))
+             call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgcpath(ipchemin),lchktrav=.false.)
           end if
 
 !!!!! etape 2 pot chimique !!!!!!!!!
@@ -1184,11 +1182,11 @@ contains
               
              call config_atom_old_1%copy_config(config_atom_nplus1(ipchemin), lrescl=.true.)
              boxmcgcpath(ipchemin)=box_old1
-             call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgcpath(ipchemin))
+             call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgcpath(ipchemin),lchktrav=.false.)
           else
              call config_atom_old_0%copy_config(config_atom_n(ipchemin), lrescl=.true.)
              boxmcgcpath(ipchemin)=box_old0
-             call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgcpath(ipchemin))
+             call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgcpath(ipchemin),lchktrav=.false.)
           end if
           !on envoie l'ancienne conf a tous les procs
 #ifdef PARA
@@ -1462,7 +1460,7 @@ contains
     !-----------------------------------------------
     real(double), allocatable, dimension(:,:) :: cart_vec_nplus1
     integer,allocatable :: indice(:)
-    integer:: i,nag,rgcib,rgem,iloc,i1,i2,j,iplus
+    integer:: i,nag,rgcib,rgem,iloc,i1,i2,j,iplus,icelj,jjj
     logical ::ldistrib,lchange
     real(double)::pins,poscenter(3,1),postest(3)
     allocate (cart_vec_nplus1(3,nbatplus))
@@ -1532,7 +1530,12 @@ contains
                    i1=indice(i)
                    i2=j
                    indice(i)=i2
+                   icelj=atconf_Nplus1%ielat(i2)
                    call atconf_Nplus1%switch_atom(i1,i2)
+                   do jjj=1,cells_nplus1%nato(icelj)
+                      if (cells_nplus1%atincel(jjj,icelj)==i2) cells_nplus1%atincel(jjj,icelj)=i1
+                   end do
+                   
                    exit
                 end if
              end do
@@ -1947,13 +1950,13 @@ contains
     if (lbigmaster) then
        if (itetemp>0) then
           if (mod(iteration,itetemp)==0) then
-             call caltabtC(celndm,atdml,lperiod,box)
+             call caltabtC(celndm,atdml,lperiod,box,lchktrav=.false.)
              call calctemp (temp,kine,atdml,celndm,latcomp=.true.)
           end if
        end if
        if (iterasmol>0) then
           if (mod(iteration,iterasmol)==0) then
-             call caltabtC(celndm,atdml,lperiod,box)
+             call caltabtC(celndm,atdml,lperiod,box,lchktrav=.false.)
              call calctemp (temp,kine,atdml,celndm,latcomp=.true.)
              call rasmolT(atdml,box,namefr=name_file,latcomp=.true.,lappend=.true.)
           end if
@@ -2286,8 +2289,8 @@ contains
              atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i) 
           END DO
 !          write(6,*)'MCCDBG42 ', rang
-          call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc_p)
-          call caltabtC(cells_n,atconf_n,lperiod,boxmcgc_p)
+          call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc_p,lchktrav=.false.)
+          call caltabtC(cells_n,atconf_n,lperiod,boxmcgc_p,lchktrav=.false.)
 !          write(6,*)'MCCDBG43 ', rang
           call calctemp (tempN,kineN,atconf_N,cells_n,latcomp=.true.)
           call calctemp (tempNP1,kineNP1,atconf_Nplus1,cells_nplus1,latcomp=.true.)
@@ -2504,7 +2507,7 @@ contains
        else !procs N+1
           call atconf_nplus1%send2all(0,paramcgc%mpi_image)
           call init_voisinage(cells_nplus1,pscgc)
-          call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc_p)
+          call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc_p,lchktrav=.true.)
        end if
 
     end if
@@ -2624,7 +2627,7 @@ contains
     integer,intent(in)::ipp
 
     real(double)::xp_np1(3)
-    integer::i,i1,i2,j,iplus
+    integer::i,i1,i2,j,iplus,icelj,jjj
     integer,allocatable::indice(:)
     character :: extension*4
     logical ::lc2d
@@ -2662,7 +2665,12 @@ contains
                 i1=indice(i)
                 i2=j
                 indice(i)=i2
+                icelj=atconf_Nplus1%ielat(i2)
                 call atconf_Nplus1%switch_atom(i1,i2)
+                do jjj=1,cells_nplus1%nato(icelj)
+                   if (cells_nplus1%atincel(jjj,icelj)==i2) cells_nplus1%atincel(jjj,icelj)=i1
+                end do
+                
                 exit
              end if
           end do
@@ -2710,7 +2718,7 @@ contains
        if(paramcgc%image==0) then !procs N
           call atconf_n%send2all(0,paramcgc%mpi_image)
           call init_voisinage(cells_n,pscgc)
-          call caltabtC(cells_n,atconf_n,lperiod,boxmcgc_p)
+          call caltabtC(cells_n,atconf_n,lperiod,boxmcgc_p,lchktrav=.true.)
        else !procs N+1
           !deja fait dans init_simple
           !        call atconf_nplus1%send2all(0,paramcgc%mpi_image)
@@ -3440,9 +3448,9 @@ contains
              atconf_N%xp(1:3,i) = atconf_Nplus1%xp(1:3,i)
              atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i)
           END DO
-          call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc_p)
+          call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc_p,lchktrav=.false.)
           call calctemp (tempNP1,kineNP1,atconf_Nplus1,cells_nplus1,latcomp=.true.)
-          call caltabtC(cells_n,atconf_n,lperiod,boxmcgc_p)
+          call caltabtC(cells_n,atconf_n,lperiod,boxmcgc_p,lchktrav=.false.)
           call calctemp (tempN,kineN,atconf_N,cells_n,latcomp=.true.)
           call calcUKcell
           Tempcell=Kcell*2./(sum(ihbox0)*bk)
@@ -3553,7 +3561,7 @@ contains
   subroutine type_switch(direction)
     integer,intent(in)::direction
     integer,allocatable::indice(:)
-    integer::i,i1,i2,j
+    integer::i,i1,i2,j,jjj,icelj
 
     allocate(indice(nbatplus))
 
@@ -3585,7 +3593,11 @@ contains
              i1=indice(i)
              i2=j
              indice(i)=i2
+             icelj=atconf_Nplus1%ielat(i2)
              call atconf_Nplus1%switch_atom(i1,i2)
+             do jjj=1,cells_nplus1%nato(icelj)
+                if (cells_nplus1%atincel(jjj,icelj)==i2) cells_nplus1%atincel(jjj,icelj)=i1
+             end do
              exit
           end if
        end do

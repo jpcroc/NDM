@@ -71,9 +71,9 @@ contains
    end if
 #endif
    if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-      call caltabtC(celndm,atpr,lperiod,boxndm,psc=psc)
+      call caltabtC(celndm,atpr,lperiod,boxndm,psc=psc,lchktrav=.true.)
     else
-      call caltabtC(celndm,atpr,lperiod,boxndm)
+      call caltabtC(celndm,atpr,lperiod,boxndm,lchktrav=.false.)
     end if
     
 

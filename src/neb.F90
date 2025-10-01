@@ -168,7 +168,6 @@ contains
     do i1=1,npath
 #ifdef PARA
 
-       !       if (i1==paraneb%image+2) then
        if ((i1==paraneb%image+2).or.((i1==1).and.(paraneb%image==0)).or.((i1==npath).and.(paraneb%image==paraneb%nimage-1))) then
           ii=i1
           if (i1==npath)ii=npath-1
@@ -177,8 +176,6 @@ contains
           ii=i1
 #endif
           if(rang==0) then
-!             call atneb(ii)%print_type('atneb')
-!             call atnebloc%print_type('atnebloc')
           end if
           call initloc(atneb(ii),cellneb(ii),atnebloc,cellnebloc,boxneb,paraneb,&
                &rumax,lperiod,psc=pscneb,lcalcvois=.true.) !initloc contient caltabtc sur atloc
@@ -218,7 +215,6 @@ contains
        call paraneb%mpi_master%sum(enepathev)
     end if
 #endif
-!    call atneb(ii)%print_type('NEB')
     select case (nebtype)
     case (1)
        if (rang==0) write(6,*) 'NEB: !!!!-------this is DRAG----------!!!!!!'
@@ -233,12 +229,6 @@ contains
           if (ii==paraneb%image+2) then
 
              enepath(2:npath-1)=0; enepathev(2:npath-1)=0
-             !             if (paraneb%image.ne.0) then
-             !                enepath(1)=0;enepath(npath)=0;enepathev(1)=0;enepathev(npath)=0
-             !             end if
-             !             if ((paraneb%image.ne.0).and.(paraneb%image.ne.npath)) then
-             !                enepath(1)=0;enepath(npath)=0;enepathev(1)=0;enepathev(npath)=0
-             !             end if
 #endif
              iteration=0; iter(ii)=0
              dragtest=0
@@ -258,13 +248,7 @@ contains
 
                 if (paraneb%lmaster) then
 #endif
-                   !                   call atneb(ii)%print(unit=100+ii,natg1=1,natg2=2049)
-                   !                   flush(100+ii)
                    call force_projection(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp,  atneb(ii)%ityp,atneb(ii)%imm,atneb(ii)%im)
-                   !                   call atneb(ii)%print(unit=300+ii,natg1=1,natg2=2049)
-                   !                   flush(300+ii)
-                   !                   call atneb(ii)%print(unit=400+ii)
-                   !                   flush(400+ii)
 
                    IF (lFire) THEN
                       call trempe_fire(atneb(ii),fire_dt(ii), fire_nstep(ii), fire_alph(ii))

@@ -19,7 +19,6 @@ contains
     class(atom_config_d),intent(inout)::atcf
     class(cell_config),intent(inout)::celcf
     class(box_config)::boxcf
-!    real(double)::epcou
     integer :: i, im,imm,ic
     type(atom_config_e)::atcou
     type(cell_config):: celcou
@@ -53,30 +52,16 @@ contains
           end if
        end do
     end do loopi
-!    call atcf%print(unit=600)
     call atcf%fab(atcou,lback=.true.)
-    call caltabtC(celcou,atcou,lperiod,boxcf)
+    call caltabtC(celcou,atcou,lperiod,boxcf,lchktrav=.false.)
     call calctemp(tempcou,kinecou,atcou,celcou)
-!    write(6,*)'TCOU',tempcou,tfcou,atcou%im,atcf%im
-!!$    do i=1,im
-!!$       if (atcf%lgul(i)) then
-!!$          atcf%xpp(:,i)=atcf%xp(:,i)-(atcf%xp(:,i)-atcf%xpp(:,i))*sqrt(tfcou/tempcou)
-!!$          atcf%vp(:,i)=atcf%vp(:,i)*sqrt(tfcou/tempcou)
-!!$       end if
-!!$    end do
-
-!    do i=1,atcou%im
-    !       if (atcf%lgul(i)) then
     
           if (atcou%lxpp)          atcou%xpp(:,:)=atcou%xp(:,:)-(atcou%xp(:,:)-atcou%xpp(:,:))*sqrt(tfcou/tempcou)
     
           atcou%vp(:,:)=atcou%vp(:,:)*sqrt(tfcou/tempcou)
-!       end if
-!    end do
     call atcou%backto(atcf)
 
     atcf%lgul=lgs
- !   call atcf%print(unit=601)
   end subroutine contrTcou
 
 end module tccontr

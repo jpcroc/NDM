@@ -88,9 +88,9 @@ contains
     end if
     atloc%im_glob=atcomp%im_glob
     if (lspacendm.and.div%mpi_image%nproc.gt.1) then
-       call caltabtC(celloc,atloc,lperiod,box,psc=psc)
+       call caltabtC(celloc,atloc,lperiod,box,psc=psc,lchktrav=.true.)
     else
-       call caltabtC(celloc,atloc,lperiod,box)
+       call caltabtC(celloc,atloc,lperiod,box,lchktrav=.true.)
     end if
     if ((lcalcv).and.(atloc%ltabvois)) call caltabi(atloc,celloc,box)
 #ifdef PARA
@@ -179,11 +179,6 @@ contains
 
     if (lupdate)   call driver_caltabt_para(atcalc,cellcalc,box,psc,lperiod,lcalcv)
     CALL CalFo(sig,potist,atcalc,cellcalc,box,t_sigma=.true.,psc=psc)
-!    if (rang==0) then
-!       call atcalc%print_type('atcalc')
-!       call atloc%print_type('atloc')
-!       call atcomp%print_type('atcomp')
-!    end if
 #ifdef PARA
     if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
        call atloc%vers_master(atcomp,div)
@@ -219,7 +214,6 @@ contains
     else
        carac=caracT//'np'       
     end if
-
     if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
        !    if (div%mpi_image%nproc.gt.1) then
        if (lord) then
@@ -236,7 +230,6 @@ contains
              atcdes=> ate
           end select
           call atlocin%vers_master(atcdes,div,carac)
-
           if (div%mpi_image%rank==0) then
 
              do i=1,atcdes%im
@@ -244,22 +237,21 @@ contains
                 call atcdes%copy_atom(i,atcomp,j)
              end do
 
-
-             call caltabtC(cellcomp,atcomp,lperiod,box)
+             call caltabtC(cellcomp,atcomp,lperiod,box,lchktrav=.false.)
           end if
 
        else
           call cellcomp%init(box,cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
           call atlocin%vers_master(atcomp,div,carac)
           if (div%mpi_image%rank==0) then
-             call caltabtC(cellcomp,atcomp,lperiod,box)
+             call caltabtC(cellcomp,atcomp,lperiod,box,lchktrav=.false.)
           end if
 
        end if
     else
        call atlocin%copy_config(atcomp,lrescl=.false.)
        cellcomp=cellocin
-       call caltabtC(cellcomp,atcomp,lperiod,box)
+       call caltabtC(cellcomp,atcomp,lperiod,box,lchktrav=.false.)
        if (atlocin%ltabvois) then
           call caltabi(atcomp,cellcomp,box)
        end if
@@ -349,9 +341,9 @@ contains
     call periodbox (boxcf,atcf)
     ! repartition des atomes dans la nouvelle boite
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       call caltabtC(celcf,atcf,lperiod,boxcf,psc=psc)
+       call caltabtC(celcf,atcf,lperiod,boxcf,psc=psc,lchktrav=.true.)
     else
-       call caltabtC(celcf,atcf,lperiod,boxcf)
+       call caltabtC(celcf,atcf,lperiod,boxcf,lchktrav=.false.)
     end if
     if (atcf%ltabvois.and.(lcalcv)) then
        call caltabi(atcf,celcf,boxcf)

@@ -45,16 +45,16 @@ module Tpara
      procedure :: barrier => mpic_barrier
      procedure :: print
      ! sum
-     generic :: send  => mpic_send_dp,mpic_send_cdp,mpic_send_i,mpic_send_l
-     generic :: recv  => mpic_recv_dp,mpic_recv_cdp,mpic_recv_i,mpic_recv_l
+     generic :: send  => mpic_send_dp,mpic_send_cdp,mpic_send_i,mpic_send_l,mpic_send_char
+     generic :: recv  => mpic_recv_dp,mpic_recv_cdp,mpic_recv_i,mpic_recv_l,mpic_recv_char
      generic :: sum  => mpic_sum_dp
      generic :: sum  => mpic_sum_cdp
      generic :: sum  => mpic_sum_i
      procedure :: mpic_sum_dp
      procedure :: mpic_sum_cdp
      procedure :: mpic_sum_i
-     procedure:: mpic_send_dp,mpic_send_cdp,mpic_send_i,mpic_send_l
-     procedure:: mpic_recv_dp,mpic_recv_cdp,mpic_recv_i,mpic_recv_l
+     procedure:: mpic_send_dp,mpic_send_cdp,mpic_send_i,mpic_send_l,mpic_send_char
+     procedure:: mpic_recv_dp,mpic_recv_cdp,mpic_recv_i,mpic_recv_l,mpic_recv_char
      ! min ALLREDUCE !!
      generic :: min  => mpic_min_dp
      generic :: min  => mpic_min_i
@@ -67,6 +67,16 @@ module Tpara
      procedure::mpic_maxloc_dp
      procedure :: mpic_max_dp
      procedure :: mpic_max_i
+     ! maxval
+     generic :: maxval  => mpic_maxval_dp
+     generic :: maxval  => mpic_maxval_i
+     generic :: minval  => mpic_minval_dp
+     generic :: minval  => mpic_minval_i
+     procedure ::mpic_maxval_dp
+     procedure ::mpic_maxval_i
+     procedure ::mpic_minval_dp
+     procedure ::mpic_minval_i
+
      ! and
      procedure :: and => mpic_and_l
      ! broadcast
@@ -708,6 +718,64 @@ contains
 
   end subroutine mpic_send_dp
 
+  subroutine mpic_send_char(mpic,array,rgcib,tag)
+    implicit none
+    class(mpi_communicator),intent(in) :: mpic
+    character(*),intent(in) :: array(:)
+    integer,intent(in)::rgcib
+    integer,optional,intent(in)::tag
+    !=====
+    integer :: nsize,longueur,nsizetot
+    integer :: ierror=0
+    !=====
+
+    if( mpic%nproc == 1 ) return
+
+    nsize = SIZE(array)
+    longueur=len(array)
+    nsizetot=nsize*longueur
+#if defined(PARA)
+    if (present(tag)) then
+       call MPI_SEND( array, nsizetot,  MPI_CHARACTER, rgcib, tag,mpic%comm, ierror)
+    else
+       call MPI_SEND( array, nsizetot,  MPI_CHARACTER, rgcib, MPI_ANY_TAG,mpic%comm, ierror)
+    end if
+#endif
+    if( ierror /= 0 ) then
+       write(6,*) 'error in MPI_SEND_DP'
+    endif
+
+  end subroutine mpic_send_char
+  
+  subroutine mpic_recv_char(mpic,array,rgem,tag)
+    implicit none
+    class(mpi_communicator),intent(in) :: mpic
+    character(*),intent(in) :: array(:)
+    integer,intent(in)::rgem
+    integer,optional,intent(in)::tag
+    !=====
+    integer :: nsize,longueur,nsizetot
+    integer :: ierror=0
+    !=====
+
+    if( mpic%nproc == 1 ) return
+
+    nsize = SIZE(array)
+    longueur=len(array)
+    nsizetot=nsize*longueur
+#if defined(PARA)
+    if (present(tag)) then
+       call MPI_recv( array, nsizetot,  MPI_CHARACTER, rgem, tag,mpic%comm, status,ierror)
+    else
+       call MPI_recv( array, nsizetot,  MPI_CHARACTER, rgem, MPI_ANY_TAG,mpic%comm, status,ierror)
+    end if
+#endif
+    if( ierror /= 0 ) then
+       write(6,*) 'error in MPI_SEND_DP'
+    endif
+
+  end subroutine mpic_recv_char
+
   subroutine mpic_send_l(mpic,array,rgcib,tag)
     implicit none
     class(mpi_communicator),intent(in) :: mpic
@@ -1113,4 +1181,140 @@ contains
 
 
   end subroutine build_l
+
+
+
+
+
+
+
+  
+
+  !=========================================================================
+  subroutine mpic_maxval_dp(mpic,array,arraymax,torank)
+    implicit none
+    class(mpi_communicator),intent(in) :: mpic
+    real(double),intent(in) :: array(..)
+    real(double),intent(out) :: arraymax(..)
+    integer,intent(in),optional::torank
+    !=====
+    integer :: nsize
+    integer :: ierror=0
+    !=====
+    if( mpic%nproc == 1 ) return
+    nsize = SIZE(array)
+#if defined(PARA)
+    if (present(torank))then
+!       if (mpic%rank==torank) then
+!          call MPI_REDUCE(arraymax, array, nsize, MPI_DOUBLE_PRECISION, MPI_MAX, torank,mpic%comm, ierror)
+!       else
+          call MPI_REDUCE( array, arraymax, nsize, MPI_DOUBLE_PRECISION, MPI_MAX, torank,mpic%comm, ierror)
+!       end if
+    else
+       call MPI_ALLREDUCE( array, arraymax, nsize, MPI_DOUBLE_PRECISION, MPI_MAX, mpic%comm, ierror)
+    end if
+#endif
+    if( ierror /= 0 ) then
+       write(6,*) 'error in MPI_ALLREDUCE'
+    endif
+
+  end subroutine mpic_maxval_dp
+
+
+  !=========================================================================
+  subroutine mpic_maxval_i(mpic,array,arraymax,torank)
+    implicit none
+    class(mpi_communicator),intent(in) :: mpic
+    integer,intent(in) :: array(..)
+    integer,intent(in) :: arraymax(..)
+    integer,intent(in),optional::torank
+    !=====
+    integer :: nsize
+    integer :: ierror=0
+    !=====
+
+    if( mpic%nproc == 1 ) return
+    nsize = SIZE(array)
+#if defined(PARA)
+    if (present(torank))then
+!       if (mpic%rank==torank) then
+!          call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER, MPI_MAX, torank,mpic%comm, ierror)
+!       else
+          call MPI_REDUCE( array, arraymax, nsize, MPI_INTEGER, MPI_MAX, torank,mpic%comm, ierror)
+!       end if
+    else
+       call MPI_ALLREDUCE( array, arraymax, nsize, MPI_INTEGER, MPI_MAX, mpic%comm, ierror)
+    end if
+#endif
+    if( ierror /= 0 ) then
+       write(6,*) 'error in MPI_ALLREDUCE'
+    endif
+  end subroutine mpic_maxval_i
+
+
+  !=========================================================================
+ subroutine mpic_minval_dp(mpic,array,arraymin,torank)
+    implicit none
+    class(mpi_communicator),intent(in) :: mpic
+    real(double),intent(in) :: array(..)
+    real(double),intent(out) :: arraymin(..)
+    integer,intent(in),optional::torank
+    !=====
+    integer :: nsize
+    integer :: ierror=0
+    !=====
+    if( mpic%nproc == 1 ) return
+    nsize = SIZE(array)
+#if defined(PARA)
+    if (present(torank))then
+!       if (mpic%rank==torank) then
+!          call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_DOUBLE_PRECISION, MPI_MIN,TORANK, mpic%comm, ierror)
+!       else
+          call MPI_REDUCE( array, arraymin, nsize, MPI_DOUBLE_PRECISION, MPI_MIN,TORANK, mpic%comm, ierror)
+!       end if
+      
+    else
+       call MPI_ALLREDUCE( array, arraymin, nsize, MPI_DOUBLE_PRECISION, MPI_MIN, mpic%comm, ierror)
+    end if
+#endif
+    if( ierror /= 0 ) then
+       write(6,*) 'error in MPI_ALLREDUCE'
+    endif
+
+  end subroutine mpic_minval_dp
+
+
+  !=========================================================================
+  subroutine mpic_minval_i(mpic,array,arraymin,torank)
+    implicit none
+    class(mpi_communicator),intent(in) :: mpic
+    integer,intent(in) :: array(..)
+    integer,intent(out) :: arraymin(..)
+    integer,intent(in),optional::torank
+    !=====
+    integer :: nsize
+    integer :: ierror=0
+    !=====
+    if( mpic%nproc == 1 ) return
+    nsize = SIZE(array)
+#if defined(PARA)
+    if (present(torank))then
+!       if (mpic%rank==torank) then
+!          call MPI_REDUCE( MPI_IN_PLACE, array, nsize, MPI_INTEGER, MPI_MIN, torank,mpic%comm, ierror)
+!       else
+          call MPI_REDUCE(array, arraymin, nsize, MPI_INTEGER, MPI_MIN, torank,mpic%comm, ierror)
+!       end if
+    else
+       call MPI_ALLREDUCE( array, arraymin, nsize, MPI_INTEGER, MPI_MIN, mpic%comm, ierror)
+    end if
+#endif
+    if( ierror /= 0 ) then
+       write(6,*) 'error in MPI_ALLREDUCE'
+    endif
+
+  end subroutine mpic_minval_i
+
+
+
+
 end module Tpara

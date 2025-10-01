@@ -148,7 +148,7 @@ contains
     boxcf%at(:,:)=cell(:,:)/angst
     call boxcf%init(boxcf%at,ipbc)
     call celcf%init(boxcf,celart%nox,celart%noy,celart%noz,celart%natperc)
-    call caltabtc(celcf,atcf,lperiod,boxcf)
+    call caltabtc(celcf,atcf,lperiod,boxcf,lchktrav=.false.)
 
 
   end subroutine art2ndm

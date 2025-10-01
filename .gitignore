@@ -11,6 +11,7 @@
 nohup.out
 a.out
 
+build_mld
 build
 _build
 install

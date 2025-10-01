@@ -90,7 +90,7 @@ contains
 
     call init_pot2(boxneb,atneb(1)%imm)
 #ifdef ML
-    call caltabtC(cellneb(1),atneb(1),lperiod,boxneb)
+    call caltabtC(cellneb(1),atneb(1),lperiod,boxneb,lchktrav=.false.)
     call init_config_ml
 #endif
     

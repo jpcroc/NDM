@@ -1,0 +1,24 @@
+Pour compiler NDM avec MiLaDy en mode DEBUG, le plus simple est de compiler d'abord Milady en mode debug et ensuite de compiler NDM. En fait c'était déjà possible mais je n'avais pas documenté la démarche. Ce qui est important c'est la variable d'environnement MILADY_ROOT, si elle pointe vers le répertoire ml de milady alors milady sera recompilé alors que si on pointe vers le répertoire de build dans lequel se trouve le fichier MILADYConfig.cmake créé à la compilation de Milady, alors NDM utilise la version de MiLaDy déjà compilée.
+
+Compilation de MILADY et NDM en DEBUG:
+# Compiler Milady en mode DEBUG dans ml (branche mld_ndm_md)
+mkdir build; cd build
+cmake .. -DCMAKE_BUILD_TYPE=DEBUG
+make -j
+
+# Ensuite compiler NDM dans NDM avec MILADY compilé
+mkdir build; cd build
+export MILADY_ROOT=/absolute/path/to/ml/build
+cmake .. -DCMAKE_BUILD_TYPE=DEBUG -D NDM_PACKAGE_LIST=MILADY
+make -j
+
+Exemple de debug en parallèle dans NDM+Milady avec gdb:
+Personnellement pour debug en parallèle j'utilise gdb et xterm, la commande suivante ouvre 4 fenêtres:
+mpirun -np 4 xterm -e gdb  rundm90_ndm_mpi
+
+Ensuite dans chaque fenêtre j'ajoute des breakpoints, par exemple :
+break ndm_interface.F90:170
+
+Si on veut placer un breakpoint dans milady alors qu'on a lancé NDM on a un warning de gdb qui indique que le symbole n'existe pas, il faut donc répondre "y" pour utiliser des symboles qui ne sont pas encore définis et gdb s'arrêtera normalement correctement dans milady.
+Ensuite je lance avec la commande run dans gdb.
+

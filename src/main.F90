@@ -42,11 +42,13 @@ program ndm
   !Initialisation MPI
   call init_MPI()
 #ifdef PARA
-
-
-  write(6,*) 'Process ', rang, ' of ', nprocs, ' is alive'
-    call MPI_BARRIER(MPI_COMM_WORLD,ierr)
+  call MPI_BARRIER(MPI_COMM_WORLD,ierr)
   myidsp=rang
+
+  if ((rang.lt.4).or.(rang.gt.nprocs-4)) then
+     write(6,*) 'Process ', rang, ' of ', nprocs, ' is alive'
+  end if
+
 #else
   rang = 0
   myidsp=rang

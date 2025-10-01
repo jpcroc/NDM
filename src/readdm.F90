@@ -29,8 +29,8 @@ contains
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,nfda,h0,&
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou,iteprtkin&
-         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart,pseudosc,itypsc&
-         &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit
+         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart&
+         &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit,lmaxvp,vplim
 #ifdef LAMMPS_VERSION
      USE gen_com_m, ONLY: energy_conversion_lammps, position_conversion_lammps, pressure_conversion_lammps
 #endif
@@ -66,9 +66,9 @@ contains
     !-----------------------------------------------
     integer :: ludin, lufilm, lufilmpaf,  i,itean, ic,ic2, iThermo,itecompcr,ipotcont
     character :: fnamdin*80
-    logical :: lginread,ltriclin,lpcon,lfissure,tpot,lpr
+    logical :: lginread,ltriclin,lpcon,lfissure,tpot,lpr,lseedcom
     integer::itecfg,np2
-    logical :: lpconx,lpcony,lpconz,lpconxyz,ltest
+    logical :: lpconx,lpcony,lpconz,lpconxyz,ltest,lseecom
     !-----------------------------------------------
     !
     !
@@ -96,8 +96,8 @@ contains
          itesauvinter,units_lammps,lWgin,lvzeroneb,lclimb,nwclimb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
-         &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,pseudosc,itypsc,kmin,kmax,iteprtkin,lspecialinit,&
-         &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag,protocol_mcc
+         &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
+         &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag,protocol_mcc,lmaxvp,vplim
 
 
     !
@@ -363,8 +363,7 @@ contains
     nparafm=nprocs
     lwfm=.false.
     lwritefreq=.true.
-    pseudosc(1:3)=1
-    itypsc=0
+
 
     ndir=50   !nombre de direction dans steepest descent
     nstep=50  ! nombre de pas dans la minimisation sur une ligne en steepes descent
@@ -401,6 +400,8 @@ contains
     nwclimb=3 ! starts the climbing at the second evaluation of forces (in VASP =1, in Henkelmann is set to "a few iterations")
     i_neb_drag=5
 
+    lmaxvp=.false. ! if true velocities are caped at vplim in pr2.F90 (very crude way of stabilizing dynamics)
+    vplim=5d6 
     
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
@@ -1177,13 +1178,6 @@ contains
           write (6,'(a)') '      FORCE Matrix calculation '
           if (ltabvois) write (6,'(a)') '  BE SURE THAT RVOIS>RUE+DECAL'
        end if
-       if (itypsc.ne.0 ) then
-          if (rang==0) then
-             write(6,*)'ITYPSC=',itypsc
-             write (6,'(a,3I3)') '  Pseudo super cell calculation ', pseudosc(:)
-             write (6,'(a,3I3)') ' Be sure imm is large enough and igen equals 0 !'
-          end if
-       end if
 #ifndef MKL
        if (rang==0)then
           write(6,*)"dmtype=19 works with lapack or MKL"
@@ -1667,7 +1661,7 @@ contains
        select case(dmtype)
        case(1,4,8)
           itetimestep=1
-       case(2,3,32,33,34,35,21,22)
+       case(2,3,32,33,34,35,21,22,23,24)
           itetimestep=-1
        case default
           if (rang==0) write(6,*)'dmtype inconsistent with creaDP', dmtype
@@ -1688,20 +1682,27 @@ contains
           Tinitbox=0.
        end if
     end If
-
+    lseedcom=.false.
 
     if (iseed.le.0) then
-          call system_clock (iseed)
-          iseed =iseed +10*rang
-       end if
-       if (lspacendm.eqv..false.) then
-#ifdef PARA
-          call mpi_world%bcast(0,iseed)
-#endif
-       end if
-       
-       write(6,*)'rang readdm iseed ',rang,iseed
+       call system_clock (iseed)
 
+       iseed =iseed +10*rang
+    else
+       lseecom=.true.
+    end if
+    if (lspacendm.eqv..false.) then
+#ifdef PARA
+       call mpi_world%bcast(0,iseed)
+       lseedcom=.true.
+#endif
+    end if
+    if (lseedcom   ) then
+       if (rang==0)    write(6,*)'all ranks  readdm iseed ',iseed
+    else
+       write(6,*)'rang readdm iseed ',rang,iseed
+    end if
+    
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
     if ((dmtype.ge.41).and.(dmtype.le.42)) then
@@ -1711,5 +1712,5 @@ contains
        end if
     end if
   end subroutine readdm
-
+  
 end module readdm_mod

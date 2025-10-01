@@ -1,7 +1,7 @@
 module ForceMatrix_mod
   USE arret_ndm_mod,only:arret_ndm
   USE gen_com_m,only:  lperiod,lenfnam,lspaceNDM,rang,erg2ev,fnam,fnamcout,imm_glob,fnam,lenfnam,iteration,&
-       &pseudosc,lwgin,itypsc
+       &lwgin
   USE atomconfig,only:atom_config
   USE cellconfig, only:cell_config, caltabtC
   USE var_pot,only:ntyp,cm,gamlt
@@ -22,7 +22,6 @@ module ForceMatrix_mod
   USE parautils,only:initloc,pointer_caltabt_calfo
   use config2data_mod,only:config2data
   USE constrconf_mod,only:read_cin
-  USE parautils,only:driver_caltabt_para
 
   
   implicit none

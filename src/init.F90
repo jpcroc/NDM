@@ -85,7 +85,7 @@ contains
     rang=rangph
 #endif
 
-    call init_pot
+    call init_pot  ! contains calls to MLD
     usdh = 1/(two*tstep)
     if (ibrake.gt.0) then
        call initeloss
@@ -100,9 +100,9 @@ contains
     end if
     call constrconf(atdml,boxndm,celndm,lrepart,psc=psc)
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
+       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc,lchktrav=.true.)
     else
-       call caltabtC(celndm,atdml,lperiod,boxndm)
+       call caltabtC(celndm,atdml,lperiod,boxndm,lchktrav=.false.)
     end if
     call init_pot2(boxndm,atdml%imm)
 #ifdef DECOUP
@@ -126,7 +126,7 @@ contains
       end if
       !  !This comes with MiLaDy Package
 
-      call mld_init_config(atdml)
+      call mld_init_config(atdml) 
 
     !call init ! mld init
     end if
@@ -137,6 +137,7 @@ contains
     case (-1)
        formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
+       if (lwgin) call rasmolT (atdml,boxndm,-1,latcomp=latcomp,ivisumol=5)
        if (rang==0) write (6, *) 'generation terminee'
        call arret_ndm
     case (2)
@@ -147,6 +148,7 @@ contains
        call transf(atdml)
        formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
+       if (lwgin) call rasmolT (atdml,boxndm,-1,latcomp=latcomp,ivisumol=5)
        if (rang==0) write (6, *) 'modification terminee'
        call arret_ndm
     case default
@@ -164,9 +166,9 @@ contains
 #endif
     !<---------end setting the cell diviion ----------------------
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
+       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc,lchktrav=.true.)
     else
-       call caltabtC(celndm,atdml,lperiod,boxndm)
+       call caltabtC(celndm,atdml,lperiod,boxndm,lchktrav=.false.)
     end if
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)
@@ -210,7 +212,7 @@ contains
     !
     !end init the speed using Maxwell proba density-----------------
     select type(atdml)
-       class is (atom_config_d)
+    class is (atom_config_d)
        if ((itetimestep>0).and.(.not.lcasca)) call deftimestep(atdml,boxndm)
     end select
     if ((lspecialinit).and.(.not.(lrestart))) call specialinit(atdml,boxndm,celndm)
@@ -224,9 +226,9 @@ contains
 
     if (itmax==0) stop
     if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
+       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc,lchktrav=.true.)
     else
-       call caltabtC(celndm,atdml,lperiod,boxndm)
+       call caltabtC(celndm,atdml,lperiod,boxndm,lchktrav=.false.)
     end if
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)
@@ -250,7 +252,6 @@ contains
        end select
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
     end if
-    
     if (itmax==0) call arret_ndm
 
     if (lcdp) call initcdp

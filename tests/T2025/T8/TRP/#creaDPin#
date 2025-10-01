@@ -1,0 +1,8 @@
+ &inputcdp
+  nfp=10
+  ncreadp=300
+  itprep=40000000
+  itecdp=40000000
+  typint=1
+  iseed=124
+ &end

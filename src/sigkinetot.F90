@@ -20,7 +20,6 @@ contains
     real(double),dimension(3,3)::sig,sigkine,sigtot
     real(double)::pint
     integer::i,j,ic
-!    call box%print
     
     sigkine(:,:)=0.d0
     do i = 1, at_n%im
@@ -35,13 +34,6 @@ contains
     enddo
     sigkine(1:3,1:3) =sigkine(1:3,1:3)/box%Volu
     
-!!$#ifdef PARA
-!!$    write(6,*)'MCCDBG61 ', rang
-!!$    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-!!$       call comm_space%sum(sigkine)
-!!$    end if
-!!$#endif
-!!$    write(6,*)'MCCDBG62 ', rang
           if (lpcube) then
              pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
              sigkine=0

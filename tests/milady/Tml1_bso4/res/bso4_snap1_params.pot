@@ -1,0 +1,1 @@
+../bso4_snap1_params.pot

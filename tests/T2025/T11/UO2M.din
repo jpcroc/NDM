@@ -1,0 +1,15 @@
+ &input
+	igen=0 !(*) =0 lecture .gin; =1 lecture .cin/cout 
+	imm=1000 !(*) nombre max d'atomes (taille des tableaux
+	dmtype=4 !(*) type de DM (4= Velocity Verlet; 3= GC ; 2=trempe rapide
+	tinit=300! (*) si .gin	! temperature initiale
+	itesigma=2	
+	itmax=20 ! (*)nombre max d'itarations
+	ipotentiel=4 ! (*) UO2Morelon
+	itetemp=2 ! periode d'ecriture de la température 
+	leEv=.true., lPKbar=.true. ! energies en eV ; pression kbar
+	itesauv =100 !period d'écriture du fichiers .cout (écrase le pr précédent)
+	iseed=11 ! graine aléatoire (si pas précisé= horloge machine)
+	iterasmol=10
+
+&end

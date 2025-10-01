@@ -1,0 +1,17 @@
+# Temporary file to hold unsorted output
+tmpfile=$(mktemp)
+
+# Header
+echo "File,CreationDate"
+
+# Loop over all tracked *.F90 files
+for file in $(git ls-files '*.F90'); do
+    creation_date=$(git log --diff-filter=A --follow --format="%ad" --date=iso -- "$file" | tail -1)
+    if [[ -n "$creation_date" ]]; then
+        echo "$file,$creation_date" >> "$tmpfile"
+    fi
+done
+
+# Sort by date and print
+sort -t',' -k2 "$tmpfile"
+rm "$

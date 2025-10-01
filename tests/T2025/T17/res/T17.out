@@ -1,0 +1,201 @@
+ Process            0  of            4  is alive
+ Process            1  of            4  is alive
+ Process            2  of            4  is alive
+ Process            3  of            4  is alive
+ nom fichier din=
+ Febulk.din                                                                     
+  
+ 
+ -------- caracteristiques du run DM-------- 1
+     DYNAMIQUE MOLECULAIRE VERLET STANDARD
+ run a partir du fichier .cin
+ 
+      ANALYSES 
+ itetemp=           1  iteprtsigma=           1
+ 
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=           1 timemax=    10000000000.0000       itab=           1 
+  itetimestep=          -1
+tinit=       0.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+ 
+ 
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+ all ranks readdm iseed            1
+ IMM PARA =        19800       66000
+ 
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+ 
+ 
+ POTENTIEL EAM
+ 
+ NTYP NPAIR            1           1
+ Types d_atomes pour ce potentiel:
+ CM, masse,type, NUMERO DU TYPE D ATOME
+   1   55.847   26.000  Fe 
+ nb of readed pairs           1
+ nptmax in the max number of points on grid        249999
+ EAM           1           1
+ EAM number of points in potin and the step      249999  6.817837029000000E-004
+ dens           1           1
+ RHO potin points and the step:       249999  2.400000000000000E-005
+ paire eam ; paire complete           1           1
+ rep
+ 
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+ imm,imm_glob,nprocspace       19800       66000           4
+ 
+ ********** reading configuration from file********
+ 
+  *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-
+  *-*-*-*-*- LRESTART = F
+ config type of  .cin file :            3
+volume= 0.76280474D-18 cm3  0.76280474D+06 Ang3
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.9137E-06/  0.6000E-07) = 15
+  noy = Int(   0.9137E-06/  0.6000E-07) = 15
+  noz = Int(   0.9137E-06/  0.6000E-07) = 15
+celsizes   0.6091345E-07  0.6091345E-07  0.6091345E-07
+ sur            4  cpus           0
+ 
+ 
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :          15          15
+          15
+ sur            4  cpus           0
+ Nbre de solutions possibles :            6
+LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.7649
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+ 
+ Nbre de cellule suivant x :          15
+ Nbre de cellule suivant y :          15
+ Nbre de cellule suivant z :          15
+ 
+ Le cas choisit :           2           2           1
+ Nombre de cellules max echg  par proc :           4         740
+ Taux d'equilibrage :           4  0.765625000000000     
+ valeur            4  0.764949324324324     
+ Nbre Min/Max de cel. locales. :         735         960
+ Nbre Min/Max de cel. fantomes. :         642         740
+ locmin/fantomax :           4  0.993243243243243     
+ Taille des decoupages
+ Decoupage           0 :           8           8          15
+ Decoupage           1 :           7           8          15
+ Decoupage           2 :           8           7          15
+ Decoupage           3 :           7           7          15
+ Decoupage           4 :           8          15          96
+ ----------------------------------------------
+volume= 0.76280474D-18 cm3  0.76280474D+06 Ang3
+ config type of  .cin file :            3
+ types
+ XPR
+ num_at_glob
+ VP
+ natperc im/noxyz          70          19
+ ltabvois F
+ 
+ -------- boite de simulation ------
+ nombre d atomes =       65536
+vecteur  1      91.370176       0.000000       0.000000
+vecteur  2       0.000000      91.370176       0.000000
+vecteur  3       0.000000       0.000000      91.370176
+       65536  atomes de type           1
+ 
+  -------------------------------------------------------------------
+              2nd step of potential initialization , dependancy on box size
+ calpoeam ktorho and the inverse:   8.522228107257609E-003
+   117.340205802329     
+ rang rangspace            3           3  nbr procs voisins            3
+ rang rangspace            1           1  nbr procs voisins            3
+ rang rangspace            2           2  nbr procs voisins            3
+ rang rangspace            0           0  nbr procs voisins            3
+ tempsauv    560.473874886264     
+ pas de chgt des vitesses= 
+ temperature fin initspeed    560.473874886264     
+ ***** FIRST ITERATION  ***           1   10000000000.0000     
+ 
+ 
+<<<<<<<<  ITERATION =      1  time =   0.1000000E-14
+ 
+ 
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         1 0.100E-14*Epot =    -268836.3079803358      eV 
+    *energie PAIRE EAM =     11416.9417692      eV 
+    *energie GLUE  =    -280253.249750      eV 
+         1 0.100E-14*Ec =     4659.59969817      eV   (550.064 K)
+         1 0.100E-14*Etot =    -264176.7082821664      eV 
+ 
+         1 0.100E-14*Temp instantanee = 550.064
+ 
+*temp instantanee des atomes de type 1 =       550.06
+ 
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -35.73193522      0.2684304356E-01  0.1538237667E-01
+2 sigma potentiel (1,2) (2,2) (3,2) =  0.2684304356E-01  -35.74538022     -0.1317477268E-01
+3 sigma potentiel (1,3) (2,3) (3,3) =  0.1538237667E-01 -0.1317477268E-01  -35.74161627    
+ 
+1 sigma cinetique (1,1) (2,1) (3,1) =   6.655230108      0.3396401272E-01  0.2748379360E-01
+2 sigma cinetique (1,2) (2,2) (3,2) =  0.3396401272E-01   6.623818995      0.2450591517E-01
+3 sigma cinetique (1,3) (2,3) (3,3) =  0.2748379360E-01  0.2450591517E-01   6.665212603    
+ 
+1 sigma total (1,1) (2,1) (3,1) =  -29.07670511      0.6080705628E-01  0.4286617027E-01
+2 sigma total (1,2) (2,2) (3,2) =  0.6080705628E-01  -29.12156123      0.1133114249E-01
+3 sigma total (1,3) (2,3) (3,3) =  0.4286617027E-01  0.1133114249E-01  -29.07640367    
+ 
+         1 0.100E-14*Pression =    -29.092    
+ pression totale  potentiel = cinetique =
+   -29.092       -35.740        6.6481    
+ ----------valeurs moyennes------------
+*temperature moyenne =       550.06
+*pression moyenne =    -29.092    
+ --------------------------------------
+ 
+ 
+<<<<<<<<  ITERATION =      2  time =   0.2000000E-14
+ 
+ 
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         2 0.200E-14*Epot =    -268656.8012048919      eV 
+    *energie PAIRE EAM =     11619.9494317      eV 
+    *energie GLUE  =    -280276.750637      eV 
+         2 0.200E-14*Ec =     4480.17366178      eV   (528.883 K)
+         2 0.200E-14*Etot =    -264176.6275431138      eV 
+ 
+         2 0.200E-14*Temp instantanee = 528.883
+ 
+*temp instantanee des atomes de type 1 =       528.88
+ 
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -34.84192320      0.3194447029E-01  0.1856217541E-01
+2 sigma potentiel (1,2) (2,2) (3,2) =  0.3194447029E-01  -34.85626305     -0.1562342945E-01
+3 sigma potentiel (1,3) (2,3) (3,3) =  0.1856217541E-01 -0.1562342945E-01  -34.85299525    
+ 
+1 sigma cinetique (1,1) (2,1) (3,1) =   6.531336988      0.3362902309E-01  0.2671039534E-01
+2 sigma cinetique (1,2) (2,2) (3,2) =  0.3362902309E-01   6.501085961      0.2426582402E-01
+3 sigma cinetique (1,3) (2,3) (3,3) =  0.2671039534E-01  0.2426582402E-01   6.541396011    
+ 
+1 sigma total (1,1) (2,1) (3,1) =  -28.31058622      0.6557349338E-01  0.4527257075E-01
+2 sigma total (1,2) (2,2) (3,2) =  0.6557349338E-01  -28.35517709      0.8642394569E-02
+3 sigma total (1,3) (2,3) (3,3) =  0.4527257075E-01  0.8642394569E-02  -28.31159924    
+ 
+         2 0.200E-14*Pression =    -28.326    
+ pression totale  potentiel = cinetique =
+   -28.326       -34.850        6.5246    
+ ----------valeurs moyennes------------
+*temperature moyenne =       539.47
+*pression moyenne =    -28.709    
+ --------------------------------------
+ *******Derniere iteration **** 
+ 
+ 
+ ####### END OF RUN  ######## =            2   time =   2.000000000000000E-015

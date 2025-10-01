@@ -77,7 +77,13 @@ contains
     end if
 
     nvij=0
-    
+
+    if (ipotentiel==20) then
+      if (allocated(atvois%distance))deallocate(atvois%distance)
+      allocate(atvois%distance(atvois%nVois, 4))
+   end if
+   ! write(*,*) 'testtttttt', ipotentiel
+
 
     !write(*,*) 'caltabi_inside  ', rvois, rvois2
     !*************construction par double boucle ****************
@@ -101,7 +107,10 @@ contains
              if(i.eq.j) cycle
              itj=atvois%ityp(j)
              ll=ipo(iti,itj)
-             
+
+            !  if (ipotentiel==20) then
+            !    call vect_dist(atvois,celvois,boxndm,i,j,VJI,lperiod=lperiod,linter=linter,rum=rvois(ll))
+
              call vect_dist(atvois,celvois,boxndm,i,j,lperiod=lperiod,linter=linter,rum=rvois(ll))
              if (.not.linter)cycle             
              iw = iw+1
@@ -166,6 +175,12 @@ contains
                    
 !                write(6,*)rang,iw,size(atvois%indi)
                 atvois%indi(iw) = j
+
+                if (ipotentiel==20) then
+                  atvois%distance(iw, 1) = dij
+                  atvois%distance(iw, 2:4) = VJI(:)
+                end if
+
                 !              indi2(iwph) = j
              end do loop_j !i2
           end do !ncelvois

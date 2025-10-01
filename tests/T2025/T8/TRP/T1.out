@@ -1,0 +1,1386 @@
+ Process            0  of            2  is alive
+ Process            1  of            2  is alive
+ >>>>>>>>>>> entree readdm
+ nom fichier din=Febulk.din                                                                      
+
+ -------- caracteristiques du run DM--------21
+     TREMPE RAPIDE Verlet std
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=        1000  iteprtsigma=           1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=        2000 timemax=    10000000000.000002       itab=           1  itetimestep=          -1
+tinit=       0.1
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+ IMM PARA =         1440        2400
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM
+
+ Types d_atomes pour ce potentiel:
+ CM, masse,type, NUMERO DU TYPE D ATOME
+   1   55.847   26.000  Fe 
+ nb de paires grille           1
+ nptmax in the max number of points on grid        250000
+ EAM           1           1
+ EAM number of points in potin and the step      250000   6.8178370289999997E-004
+ dens           1           1
+ RHO potin points and the step:       250000   2.4000000000000001E-005
+ paire eam ; paire complete           1           1
+ rep
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+ imm,imm_glob,nprocspace        1440        2400           2
+
+ **********construction du reseau************
+ repetition de mailles          10          10          10
+  .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +1e-6
+ izonr,zlmin,rut           4   57.106360000000002        12.000000000000002     
+ nox,noy,noz dans .din =          -1          -1          -1
+ calcul de nox noy noz !!!
+nox noy noz calcules a partir de ru
+  nox = Int(   0.2855E-06/  0.6000E-07) = 4
+  noy = Int(   0.2855E-06/  0.6000E-07) = 4
+  noz = Int(   0.2855E-06/  0.6000E-07) = 4
+nox noy noz apres correction = 4 4 4
+celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
+Febulk.gin                                                                      volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Nbre de solutions possibles :            3
+LE_MEILLEUR_DECOUPAGE :    2    1    1    2    0.9286
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ natperc im/noxyz          62          31
+ ltabvois F
+
+ -------- boite de simulation ------
+ nombre d atomes =        2000
+vecteur  1      28.553180       0.000000       0.000000
+vecteur  2       0.000000      28.553180       0.000000
+vecteur  3       0.000000       0.000000      28.553180
+        2000  atomes de type           1
+
+  -------------------------------------------------------------------
+              definition des rayons de coupure
+ calpoeam RHO MIN:    0.0000000000000000     
+ calpoeam RHO MAX:    12.174708979468400     
+ calpoeam Rhomin Rhomax    0.0000000000000000        170.44524392885501     
+ calpoeam ktorho and the inverse:    8.5222621964427502E-003   117.33973643962830     
+ rangspace            1  nbr procs voisins            1
+ rangspace            0  nbr procs voisins            1
+
+ random velocities at TINIT =   0.10000000000000001      K
+ seed_size           8
+ iseed pour tirage des vitesses           1
+ temperature fin initspeed   0.10220094498164901     
+
+
+ POINT DEFECT CREATION
+ ITECDP    40000000
+
+ NFP VAC INT for all types
+ rang iseed CREADP           0         124
+ ***** PREMIERE ITERATION  VERLET STD ***    40000000   100000000.00000000     
+TR: force max, energy     1    0.2807514029E-13   -0.8238898745E+04
+ energie   -8238.8987446237752     
+
+
+TR: force max, energy     2    0.1431364007E-02   -0.8238898723E+04
+ energie   -8238.8987234874930     
+
+
+TR: force max, energy     3    0.3524328349E-01   -0.8238889592E+04
+ energie   -8238.8895920059585     
+
+
+TR: force max, energy     4    0.2559719735E-01   -0.8238893567E+04
+ energie   -8238.8935666873585     
+
+
+TR: force max, energy     5    0.1893172294E-01   -0.8238895756E+04
+ energie   -8238.8957557162539     
+
+
+TR: force max, energy     6    0.7554676959E-02   -0.8238898277E+04
+ energie   -8238.8982766313275     
+
+
+TR: force max, energy     7    0.7701130163E-02   -0.8238898381E+04
+ energie   -8238.8983807284076     
+
+
+TR: force max, energy     8    0.2390351716E-02   -0.8238898706E+04
+ energie   -8238.8987064595640     
+
+
+TR: force max, energy     9    0.1086727970E-01   -0.8238898058E+04
+ energie   -8238.8980576823124     
+
+
+TR: force max, energy    10    0.3780851709E-02   -0.8238898664E+04
+ energie   -8238.8986637677081     
+
+
+TR: force max, energy    11    0.1440339032E-01   -0.8238897407E+04
+ energie   -8238.8974073261543     
+
+
+TR: force max, energy    12    0.5582163875E-02   -0.8238898568E+04
+ energie   -8238.8985680631631     
+
+
+TR: force max, energy    13    0.1039619900E-01   -0.8238898352E+04
+ energie   -8238.8983520484089     
+
+
+TR: force max, energy    14    0.4951975969E-02   -0.8238898665E+04
+ energie   -8238.8986649010367     
+
+
+TR: force max, energy    15    0.6513249132E-02   -0.8238898630E+04
+ energie   -8238.8986303865368     
+
+
+TR: force max, energy    16    0.2321603456E-02   -0.8238898719E+04
+ energie   -8238.8987186380145     
+
+
+TR: force max, energy    17    0.1111020138E-01   -0.8238898190E+04
+ energie   -8238.8981896797577     
+
+
+TR: force max, energy    18    0.5476401740E-02   -0.8238898679E+04
+ energie   -8238.8986786577498     
+
+
+TR: force max, energy    19    0.2262280357E-01   -0.8238897429E+04
+ energie   -8238.8974285898912     
+
+
+TR: force max, energy    20    0.1685411297E-01   -0.8238897944E+04
+ energie   -8238.8979440051407     
+
+
+TR: force max, energy    21    0.3431636741E-02   -0.8238898636E+04
+ energie   -8238.8986360540330     
+
+
+TR: force max, energy    22    0.1042190140E-01   -0.8238898615E+04
+ energie   -8238.8986153113146     
+
+
+TR: force max, energy    23    0.8042690849E-02   -0.8238898627E+04
+ energie   -8238.8986268295739     
+
+
+TR: force max, energy    24    0.1973133723E-02   -0.8238898728E+04
+ energie   -8238.8987276550106     
+
+
+TR: force max, energy    25    0.7391486149E-02   -0.8238898504E+04
+ energie   -8238.8985037113889     
+
+
+TR: force max, energy    26    0.3140867487E-02   -0.8238898706E+04
+ energie   -8238.8987055209982     
+
+
+TR: force max, energy    27    0.1112730665E-01   -0.8238898223E+04
+ energie   -8238.8982226219323     
+
+
+TR: force max, energy    28    0.6003701150E-02   -0.8238898652E+04
+ energie   -8238.8986523566946     
+
+
+TR: force max, energy    29    0.7202575012E-02   -0.8238898577E+04
+ energie   -8238.8985771577827     
+
+
+TR: force max, energy    30    0.3407807400E-02   -0.8238898702E+04
+ energie   -8238.8987023068366     
+
+
+TR: force max, energy    31    0.1610599080E-01   -0.8238897739E+04
+ energie   -8238.8977385342769     
+
+
+TR: force max, energy    32    0.5354218396E-02   -0.8238898624E+04
+ energie   -8238.8986237972204     
+
+
+TR: force max, energy    33    0.2391656024E-01   -0.8238896030E+04
+ energie   -8238.8960297334252     
+
+
+TR: force max, energy    34    0.1800970659E-01   -0.8238897124E+04
+ energie   -8238.8971240966093     
+
+
+TR: force max, energy    35    0.6891132983E-02   -0.8238898524E+04
+ energie   -8238.8985241478240     
+
+
+TR: force max, energy    36    0.9280061570E-02   -0.8238898569E+04
+ energie   -8238.8985693000177     
+
+
+TR: force max, energy    37    0.6916676569E-02   -0.8238898518E+04
+ energie   -8238.8985182152865     
+
+
+TR: force max, energy    38    0.1832605778E-02   -0.8238898714E+04
+ energie   -8238.8987137857148     
+
+
+TR: force max, energy    39    0.8343018515E-02   -0.8238898147E+04
+ energie   -8238.8981469643641     
+
+
+TR: force max, energy    40    0.3551842189E-02   -0.8238898669E+04
+ energie   -8238.8986690483835     
+
+
+TR: force max, energy    41    0.1518829436E-01   -0.8238897197E+04
+ energie   -8238.8971972754844     
+
+
+TR: force max, energy    42    0.7942391672E-02   -0.8238898520E+04
+ energie   -8238.8985203459288     
+
+
+TR: force max, energy    43    0.1000305297E-01   -0.8238898101E+04
+ energie   -8238.8981014648489     
+
+
+TR: force max, energy    44    0.7032377367E-02   -0.8238898392E+04
+ energie   -8238.8983916454581     
+
+
+TR: force max, energy    45    0.3842564377E-02   -0.8238898673E+04
+ energie   -8238.8986725768773     
+
+
+TR: force max, energy    46    0.1450018576E-01   -0.8238897224E+04
+ energie   -8238.8972237204489     
+
+
+TR: force max, energy    47    0.8027994664E-02   -0.8238898551E+04
+ energie   -8238.8985511148258     
+
+
+TR: force max, energy    48    0.9696088300E-02   -0.8238898124E+04
+ energie   -8238.8981244955812     
+
+
+TR: force max, energy    49    0.6748380158E-02   -0.8238898616E+04
+ energie   -8238.8986155503299     
+
+
+TR: force max, energy    50    0.5889935115E-02   -0.8238898601E+04
+ energie   -8238.8986014698712     
+
+
+TR: force max, energy    51    0.2643177305E-02   -0.8238898697E+04
+ energie   -8238.8986969536236     
+
+
+TR: force max, energy    52    0.1393379463E-01   -0.8238897507E+04
+ energie   -8238.8975073448782     
+
+
+TR: force max, energy    53    0.5860817760E-02   -0.8238898576E+04
+ energie   -8238.8985762561442     
+
+
+TR: force max, energy    54    0.2858687395E-01   -0.8238894408E+04
+ energie   -8238.8944081041991     
+
+
+TR: force max, energy    55    0.2082525681E-01   -0.8238896259E+04
+ energie   -8238.8962589892944     
+
+
+TR: force max, energy    56    0.1498161244E-01   -0.8238897432E+04
+ energie   -8238.8974322862286     
+
+
+TR: force max, energy    57    0.7249439741E-02   -0.8238898210E+04
+ energie   -8238.8982096682594     
+
+
+TR: force max, energy    58    0.4102316452E-02   -0.8238898644E+04
+ energie   -8238.8986442678488     
+
+
+TR: force max, energy    59    0.8348048893E-02   -0.8238898258E+04
+ energie   -8238.8982581020664     
+
+
+TR: force max, energy    60    0.2314979329E-02   -0.8238898688E+04
+ energie   -8238.8986884155274     
+
+
+TR: force max, energy    61    0.5846388071E-01   -0.8238853714E+04
+ energie   -8238.8537140135068     
+
+
+TR: force max, energy    62    0.5362330039E-01   -0.8238860744E+04
+ energie   -8238.8607440371343     
+
+
+TR: force max, energy    63    0.3603271062E-01   -0.8238881374E+04
+ energie   -8238.8813744219606     
+
+
+TR: force max, energy    64    0.2868545413E-01   -0.8238887643E+04
+ energie   -8238.8876434165250     
+
+
+TR: force max, energy    65    0.2650220530E-01   -0.8238889394E+04
+ energie   -8238.8893941958868     
+
+
+TR: force max, energy    66    0.1807049160E-01   -0.8238894520E+04
+ energie   -8238.8945203889325     
+
+
+TR: force max, energy    67    0.1349929127E+00   -0.8238649068E+04
+ energie   -8238.6490677922211     
+
+
+TR: force max, energy    68    0.1334401850E+00   -0.8238655641E+04
+ energie   -8238.6556413581548     
+
+
+TR: force max, energy    69    0.1317251245E+00   -0.8238662040E+04
+ energie   -8238.6620401268519     
+
+
+TR: force max, energy    70    0.9047618202E+00   -0.8226357913E+04
+ energie   -8226.3579128985057     
+
+
+TR: force max, energy    71    0.9046062056E+00   -0.8226378492E+04
+ energie   -8226.3784920137223     
+
+
+TR: force max, energy    72    0.9045315015E+00   -0.8226398952E+04
+ energie   -8226.3989519183397     
+
+
+TR: force max, energy    73    0.6310936035E+00   -0.8233252871E+04
+ energie   -8233.2528713135871     
+
+
+TR: force max, energy    74    0.3329859574E+00   -0.8237503283E+04
+ energie   -8237.5032827989598     
+
+
+TR: force max, energy    75    0.3410876694E-01   -0.8238892914E+04
+ energie   -8238.8929142411016     
+
+
+TR: force max, energy    76    0.2792310896E+00   -0.8238583856E+04
+ energie   -8238.5838564996975     
+
+
+TR: force max, energy    77    0.2783397009E+00   -0.8238585803E+04
+ energie   -8238.5858030301806     
+
+
+TR: force max, energy    78    0.2746885333E+00   -0.8238593275E+04
+ energie   -8238.5932749902695     
+
+
+TR: force max, energy    79    0.1824541099E+00   -0.8238748595E+04
+ energie   -8238.7485945023454     
+
+
+TR: force max, energy    80    0.8092331611E-01   -0.8238855565E+04
+ energie   -8238.8555647149242     
+
+
+TR: force max, energy    81    0.4451318499E-01   -0.8238885517E+04
+ energie   -8238.8855168640894     
+
+
+TR: force max, energy    82    0.5084762527E-01   -0.8238880515E+04
+ energie   -8238.8805147107814     
+
+
+TR: force max, energy    83    0.5021527572E-01   -0.8238880984E+04
+ energie   -8238.8809839917285     
+
+
+TR: force max, energy    84    0.4638380862E-01   -0.8238883424E+04
+ energie   -8238.8834243924430     
+
+
+TR: force max, energy    85    0.1659095806E-01   -0.8238895198E+04
+ energie   -8238.8951982885719     
+
+
+TR: force max, energy    86    0.2166848280E-01   -0.8238895839E+04
+ energie   -8238.8958389211948     
+
+
+TR: force max, energy    87    0.1922450539E-01   -0.8238896170E+04
+ energie   -8238.8961702644920     
+
+
+TR: force max, energy    88    0.1309366193E-01   -0.8238897232E+04
+ energie   -8238.8972320411758     
+
+
+TR: force max, energy    89    0.8095365635E-02   -0.8238898005E+04
+ energie   -8238.8980051474500     
+
+
+TR: force max, energy    90    0.4230931687E-02   -0.8238898444E+04
+ energie   -8238.8984439971755     
+
+
+TR: force max, energy    91    0.7292938082E-02   -0.8238898323E+04
+ energie   -8238.8983226058263     
+
+
+TR: force max, energy    92    0.4225271483E-02   -0.8238898603E+04
+ energie   -8238.8986027350875     
+
+
+TR: force max, energy    93    0.1912552232E-01   -0.8238896362E+04
+ energie   -8238.8963623164309     
+
+
+TR: force max, energy    94    0.6264950802E-02   -0.8238898507E+04
+ energie   -8238.8985074006723     
+
+
+TR: force max, energy    95    0.1520207843E-01   -0.8238897804E+04
+ energie   -8238.8978036106564     
+
+
+TR: force max, energy    96    0.1128851854E-01   -0.8238898203E+04
+ energie   -8238.8982034722267     
+
+
+TR: force max, energy    97    0.3055397306E-02   -0.8238898628E+04
+ energie   -8238.8986276941396     
+
+
+TR: force max, energy    98    0.5695800500E-02   -0.8238898640E+04
+ energie   -8238.8986402284099     
+
+
+TR: force max, energy    99    0.2306557922E-02   -0.8238898692E+04
+ energie   -8238.8986918800219     
+
+
+TR: force max, energy   100    0.1327622525E-01   -0.8238897765E+04
+ energie   -8238.8977645230079     
+
+
+TR: force max, energy   101    0.5463156790E-02   -0.8238898614E+04
+ energie   -8238.8986136798630     
+
+
+TR: force max, energy   102    0.2243950109E-01   -0.8238895555E+04
+ energie   -8238.8955547603528     
+
+
+TR: force max, energy   103    0.1757466598E-01   -0.8238896796E+04
+ energie   -8238.8967955197277     
+
+
+TR: force max, energy   104    0.1277403103E-01   -0.8238897737E+04
+ energie   -8238.8977371719138     
+
+
+TR: force max, energy   105    0.6797454101E-01   -0.8238858459E+04
+ energie   -8238.8584587450077     
+
+
+TR: force max, energy   106    0.6309889621E-01   -0.8238864618E+04
+ energie   -8238.8646181550630     
+
+
+TR: force max, energy   107    0.5893720779E-01   -0.8238869636E+04
+ energie   -8238.8696363697945     
+
+
+TR: force max, energy   108    0.2503564263E-01   -0.8238894500E+04
+ energie   -8238.8945001656120     
+
+
+TR: force max, energy   109    0.2278406337E-01   -0.8238895086E+04
+ energie   -8238.8950864545041     
+
+
+TR: force max, energy   110    0.2125648014E-01   -0.8238895709E+04
+ energie   -8238.8957090238073     
+
+
+TR: force max, energy   111    0.1422526090E-01   -0.8238897577E+04
+ energie   -8238.8975766038002     
+
+
+TR: force max, energy   112    0.9888308341E-02   -0.8238897775E+04
+ energie   -8238.8977749686201     
+
+
+TR: force max, energy   113    0.6947307972E-02   -0.8238898280E+04
+ energie   -8238.8982802921837     
+
+
+TR: force max, energy   114    0.2690184376E-02   -0.8238898686E+04
+ energie   -8238.8986861047561     
+
+
+TR: force max, energy   115    0.1470663521E-01   -0.8238896537E+04
+ energie   -8238.8965369976613     
+
+
+TR: force max, energy   116    0.4649459195E-02   -0.8238898528E+04
+ energie   -8238.8985281942132     
+
+
+TR: force max, energy   117    0.3040429020E-01   -0.8238889778E+04
+ energie   -8238.8897778768933     
+
+
+TR: force max, energy   118    0.8476068851E-02   -0.8238897949E+04
+ energie   -8238.8979491232840     
+
+
+TR: force max, energy   119    0.5362437138E-01   -0.8238864153E+04
+ energie   -8238.8641525110925     
+
+
+TR: force max, energy   120    0.3753022335E-01   -0.8238881890E+04
+ energie   -8238.8818899778817     
+
+
+TR: force max, energy   121    0.2603614119E-01   -0.8238890932E+04
+ energie   -8238.8909323764001     
+
+
+TR: force max, energy   122    0.1862073665E-01   -0.8238894079E+04
+ energie   -8238.8940788556847     
+
+
+TR: force max, energy   123    0.1272949541E-01   -0.8238896628E+04
+ energie   -8238.8966278592088     
+
+
+TR: force max, energy   124    0.8618108169E-02   -0.8238897771E+04
+ energie   -8238.8977713821532     
+
+
+TR: force max, energy   125    0.6734379032E-02   -0.8238898132E+04
+ energie   -8238.8981317683902     
+
+
+TR: force max, energy   126    0.2293182748E-02   -0.8238898672E+04
+ energie   -8238.8986716952750     
+
+
+TR: force max, energy   127    0.1123973034E-01   -0.8238897924E+04
+ energie   -8238.8979240527224     
+
+
+TR: force max, energy   128    0.6077067301E-01   -0.8238862187E+04
+ energie   -8238.8621873120537     
+
+
+TR: force max, energy   129    0.5669016910E-01   -0.8238867879E+04
+ energie   -8238.8678789001879     
+
+
+TR: force max, energy   130    0.5295685817E-01   -0.8238872680E+04
+ energie   -8238.8726799550714     
+
+
+TR: force max, energy   131    0.3286937500E+00   -0.8237542447E+04
+ energie   -8237.5424471282658     
+
+
+TR: force max, energy   132    0.3277172433E+00   -0.8237551400E+04
+ energie   -8237.5514001413176     
+
+
+TR: force max, energy   133    0.3267012857E+00   -0.8237560246E+04
+ energie   -8237.5602456263605     
+
+
+TR: force max, energy   134    0.8415258421E-01   -0.8238760887E+04
+ energie   -8238.7608868802072     
+
+
+TR: force max, energy   135    0.8387794502E-01   -0.8238760810E+04
+ energie   -8238.7608103134480     
+
+
+TR: force max, energy   136    0.8360087365E-01   -0.8238761748E+04
+ energie   -8238.7617476056948     
+
+
+TR: force max, energy   137    0.7649241332E-01   -0.8238784250E+04
+ energie   -8238.7842504739438     
+
+
+TR: force max, energy   138    0.5555793962E+00   -0.8232718602E+04
+ energie   -8232.7186020023291     
+
+
+TR: force max, energy   139    0.5551228651E+00   -0.8232728839E+04
+ energie   -8232.7288388084125     
+
+
+TR: force max, energy   140    0.5547109992E+00   -0.8232739037E+04
+ energie   -8232.7390374185652     
+
+
+TR: force max, energy   141    0.3742599709E+00   -0.8236139027E+04
+ energie   -8236.1390274751757     
+
+
+TR: force max, energy   142    0.1877824494E+00   -0.8238228917E+04
+ energie   -8238.2289172610454     
+
+
+TR: force max, energy   143    0.4533703849E-01   -0.8238893840E+04
+ energie   -8238.8938396665289     
+
+
+TR: force max, energy   144    0.1337210666E+00   -0.8238845154E+04
+ energie   -8238.8451535903332     
+
+
+TR: force max, energy   145    0.1321394657E+00   -0.8238846322E+04
+ energie   -8238.8463218648230     
+
+
+TR: force max, energy   146    0.1305568563E+00   -0.8238847699E+04
+ energie   -8238.8476986962796     
+
+
+TR: force max, energy   147    0.9396062055E-01   -0.8238871598E+04
+ energie   -8238.8715979573699     
+
+
+TR: force max, energy   148    0.3392258972E-01   -0.8238892585E+04
+ energie   -8238.8925849323368     
+
+
+TR: force max, energy   149    0.3242786896E-01   -0.8238893682E+04
+ energie   -8238.8936820373310     
+
+
+TR: force max, energy   150    0.3213373271E-01   -0.8238893734E+04
+ energie   -8238.8937336247473     
+
+
+TR: force max, energy   151    0.2966877539E-01   -0.8238894396E+04
+ energie   -8238.8943955058094     
+
+
+TR: force max, energy   152    0.1824701221E-01   -0.8238896553E+04
+ energie   -8238.8965534513136     
+
+
+TR: force max, energy   153    0.1675433573E-01   -0.8238897491E+04
+ energie   -8238.8974914059090     
+
+
+TR: force max, energy   154    0.1207284724E-01   -0.8238897951E+04
+ energie   -8238.8979510561039     
+
+
+TR: force max, energy   155    0.8571921974E-02   -0.8238898276E+04
+ energie   -8238.8982760644030     
+
+
+TR: force max, energy   156    0.4513810386E-02   -0.8238898537E+04
+ energie   -8238.8985365788958     
+
+
+TR: force max, energy   157    0.2189663805E-02   -0.8238898665E+04
+ energie   -8238.8986648308619     
+
+
+TR: force max, energy   158    0.1176039470E-01   -0.8238897923E+04
+ energie   -8238.8979227763557     
+
+
+TR: force max, energy   159    0.4604419827E-02   -0.8238898621E+04
+ energie   -8238.8986205885194     
+
+
+TR: force max, energy   160    0.9793433263E-02   -0.8238898403E+04
+ energie   -8238.8984034720797     
+
+
+TR: force max, energy   161    0.3300474759E-02   -0.8238898697E+04
+ energie   -8238.8986968536192     
+
+
+TR: force max, energy   162    0.1683088686E-01   -0.8238897743E+04
+ energie   -8238.8977433382042     
+
+
+TR: force max, energy   163    0.6257262746E-02   -0.8238898607E+04
+ energie   -8238.8986069360290     
+
+
+TR: force max, energy   164    0.2336743793E-01   -0.8238896103E+04
+ energie   -8238.8961028232952     
+
+
+TR: force max, energy   165    0.1761478393E-01   -0.8238897097E+04
+ energie   -8238.8970968022441     
+
+
+TR: force max, energy   166    0.1316117368E-01   -0.8238897817E+04
+ energie   -8238.8978167924051     
+
+
+TR: force max, energy   167    0.7102589551E-01   -0.8238870436E+04
+ energie   -8238.8704364510177     
+
+
+TR: force max, energy   168    0.6582288777E-01   -0.8238874429E+04
+ energie   -8238.8744292296306     
+
+
+TR: force max, energy   169    0.6150996964E-01   -0.8238877743E+04
+ energie   -8238.8777430615719     
+
+
+TR: force max, energy   170    0.1817639432E-01   -0.8238896216E+04
+ energie   -8238.8962164818258     
+
+
+TR: force max, energy   171    0.1916679298E-01   -0.8238896491E+04
+ energie   -8238.8964907313130     
+
+
+TR: force max, energy   172    0.1784101734E-01   -0.8238896864E+04
+ energie   -8238.8968640928088     
+
+
+TR: force max, energy   173    0.1305551430E-01   -0.8238897869E+04
+ energie   -8238.8978685436850     
+
+
+TR: force max, energy   174    0.6029408957E-02   -0.8238898300E+04
+ energie   -8238.8982996200357     
+
+
+TR: force max, energy   175    0.5482624508E-02   -0.8238898630E+04
+ energie   -8238.8986298222717     
+
+
+TR: force max, energy   176    0.6350656290E-02   -0.8238898340E+04
+ energie   -8238.8983402370704     
+
+
+TR: force max, energy   177    0.3057797653E-02   -0.8238898687E+04
+ energie   -8238.8986871794896     
+
+
+TR: force max, energy   178    0.1652816440E-01   -0.8238896691E+04
+ energie   -8238.8966914257999     
+
+
+TR: force max, energy   179    0.3543176353E-02   -0.8238898572E+04
+ energie   -8238.8985723120968     
+
+
+TR: force max, energy   180    0.1036078154E+00   -0.8238756349E+04
+ energie   -8238.7563490486718     
+
+
+TR: force max, energy   181    0.9553391399E-01   -0.8238778132E+04
+ energie   -8238.7781315743032     
+
+
+TR: force max, energy   182    0.8810301475E-01   -0.8238796588E+04
+ energie   -8238.7965882941917     
+
+
+TR: force max, energy   183    0.3315551166E-01   -0.8238882867E+04
+ energie   -8238.8828670820621     
+
+
+TR: force max, energy   184    0.3131781633E-01   -0.8238885143E+04
+ energie   -8238.8851434968765     
+
+
+TR: force max, energy   185    0.2898505558E-01   -0.8238887272E+04
+ energie   -8238.8872723306013     
+
+
+TR: force max, energy   186    0.1801948906E-01   -0.8238894588E+04
+ energie   -8238.8945875573845     
+
+
+TR: force max, energy   187    0.1467505368E-01   -0.8238894826E+04
+ energie   -8238.8948260121415     
+
+
+TR: force max, energy   188    0.9957261705E-02   -0.8238896936E+04
+ energie   -8238.8969356576290     
+
+
+TR: force max, energy   189    0.3639618849E-02   -0.8238898544E+04
+ energie   -8238.8985442925914     
+
+
+TR: force max, energy   190    0.3017979810E-02   -0.8238898708E+04
+ energie   -8238.8987076027497     
+
+
+TR: force max, energy   191    0.1206447648E-01   -0.8238898362E+04
+ energie   -8238.8983624060056     
+
+
+TR: force max, energy   192    0.6082467539E-02   -0.8238898700E+04
+ energie   -8238.8987001431869     
+
+
+TR: force max, energy   193    0.8136274008E-02   -0.8238898564E+04
+ energie   -8238.8985636061734     
+
+
+TR: force max, energy   194    0.1324085869E-02   -0.8238898723E+04
+ energie   -8238.8987230036510     
+
+
+TR: force max, energy   195    0.6766762143E-02   -0.8238898311E+04
+ energie   -8238.8983112047645     
+
+
+TR: force max, energy   196    0.4620777855E-02   -0.8238898681E+04
+ energie   -8238.8986813016836     
+
+
+TR: force max, energy   197    0.1893244353E-01   -0.8238897646E+04
+ energie   -8238.8976456091368     
+
+
+TR: force max, energy   198    0.3973810998E-02   -0.8238898618E+04
+ energie   -8238.8986177603692     
+
+
+TR: force max, energy   199    0.1679108769E-01   -0.8238896575E+04
+ energie   -8238.8965750280186     
+
+
+TR: force max, energy   200    0.1268612799E-01   -0.8238897396E+04
+ energie   -8238.8973957526359     
+
+
+TR: force max, energy   201    0.5844792850E-02   -0.8238898521E+04
+ energie   -8238.8985211269355     
+
+
+TR: force max, energy   202    0.7888096786E-02   -0.8238898504E+04
+ energie   -8238.8985041052747     
+
+
+TR: force max, energy   203    0.6869273597E-02   -0.8238898624E+04
+ energie   -8238.8986235117445     
+
+
+TR: force max, energy   204    0.4250426063E-02   -0.8238898689E+04
+ energie   -8238.8986892194971     
+
+
+TR: force max, energy   205    0.2838359881E-02   -0.8238898713E+04
+ energie   -8238.8987127867840     
+
+
+TR: force max, energy   206    0.1434214993E-01   -0.8238898012E+04
+ energie   -8238.8980119332537     
+
+
+TR: force max, energy   207    0.4358464822E-02   -0.8238898676E+04
+ energie   -8238.8986758890569     
+
+
+TR: force max, energy   208    0.1761552495E-01   -0.8238897071E+04
+ energie   -8238.8970713868457     
+
+
+TR: force max, energy   209    0.7147685580E-02   -0.8238898512E+04
+ energie   -8238.8985124481187     
+
+
+TR: force max, energy   210    0.3001778973E-01   -0.8238893964E+04
+ energie   -8238.8939635717925     
+
+
+TR: force max, energy   211    0.2190577241E-01   -0.8238895834E+04
+ energie   -8238.8958344719340     
+
+
+TR: force max, energy   212    0.1629335334E-01   -0.8238897059E+04
+ energie   -8238.8970589597502     
+
+
+TR: force max, energy   213    0.9200081683E-02   -0.8238898254E+04
+ energie   -8238.8982541200512     
+
+
+TR: force max, energy   214    0.5060054513E-02   -0.8238898584E+04
+ energie   -8238.8985840656496     
+
+
+TR: force max, energy   215    0.7139923172E-02   -0.8238898425E+04
+ energie   -8238.8984250870326     
+
+
+TR: force max, energy   216    0.3348533713E-02   -0.8238898691E+04
+ energie   -8238.8986907412727     
+
+
+TR: force max, energy   217    0.1782966870E-01   -0.8238896980E+04
+ energie   -8238.8969797539230     
+
+
+TR: force max, energy   218    0.3110575094E-02   -0.8238898597E+04
+ energie   -8238.8985970056110     
+
+
+TR: force max, energy   219    0.2073452040E-01   -0.8238894094E+04
+ energie   -8238.8940941534347     
+
+
+TR: force max, energy   220    0.1039401881E-01   -0.8238898281E+04
+ energie   -8238.8982811088590     
+
+
+TR: force max, energy   221    0.1508358639E-01   -0.8238896939E+04
+ energie   -8238.8969390204966     
+
+
+TR: force max, energy   222    0.1039447388E-01   -0.8238897736E+04
+ energie   -8238.8977355909265     
+
+
+TR: force max, energy   223    0.4919035776E-02   -0.8238898544E+04
+ energie   -8238.8985441108289     
+
+
+TR: force max, energy   224    0.6136543701E-02   -0.8238898605E+04
+ energie   -8238.8986053755252     
+
+
+TR: force max, energy   225    0.3664467316E-02   -0.8238898657E+04
+ energie   -8238.8986566925869     
+
+
+TR: force max, energy   226    0.2057498937E-01   -0.8238896245E+04
+ energie   -8238.8962454898592     
+
+
+TR: force max, energy   227    0.6027160857E-02   -0.8238898461E+04
+ energie   -8238.8984611198721     
+
+
+TR: force max, energy   228    0.1582776920E-01   -0.8238897565E+04
+ energie   -8238.8975651238197     
+
+
+TR: force max, energy   229    0.1196670371E-01   -0.8238898082E+04
+ energie   -8238.8980821711339     
+
+
+TR: force max, energy   230    0.4235454099E-02   -0.8238898624E+04
+ energie   -8238.8986241017810     
+
+
+TR: force max, energy   231    0.6971550066E-02   -0.8238898655E+04
+ energie   -8238.8986551150974     
+
+
+TR: force max, energy   232    0.3186147560E-02   -0.8238898692E+04
+ energie   -8238.8986921119995     
+
+
+TR: force max, energy   233    0.1888834725E-01   -0.8238897383E+04
+ energie   -8238.8973830428440     
+
+
+TR: force max, energy   234    0.7024646576E-02   -0.8238898579E+04
+ energie   -8238.8985787751481     
+
+
+TR: force max, energy   235    0.2899374914E-01   -0.8238894408E+04
+ energie   -8238.8944079830580     
+
+
+TR: force max, energy   236    0.2202671637E-01   -0.8238896094E+04
+ energie   -8238.8960939953813     
+
+
+TR: force max, energy   237    0.1628100149E-01   -0.8238897388E+04
+ energie   -8238.8973880758458     
+
+
+TR: force max, energy   238    0.7673529145E-02   -0.8238898190E+04
+ energie   -8238.8981900397630     
+
+
+TR: force max, energy   239    0.3510690873E-02   -0.8238898655E+04
+ energie   -8238.8986547291952     
+
+
+TR: force max, energy   240    0.6751204598E-02   -0.8238898182E+04
+ energie   -8238.8981819216733     
+
+
+TR: force max, energy   241    0.2315084697E-02   -0.8238898683E+04
+ energie   -8238.8986826032087     
+
+
+TR: force max, energy   242    0.5950779009E-01   -0.8238845889E+04
+ energie   -8238.8458887158940     
+
+
+TR: force max, energy   243    0.5505780675E-01   -0.8238854172E+04
+ energie   -8238.8541720488756     
+
+
+TR: force max, energy   244    0.5053427684E-01   -0.8238861149E+04
+ energie   -8238.8611492633499     
+
+
+TR: force max, energy   245    0.3623438448E+00   -0.8236909993E+04
+ energie   -8236.9099929147924     
+
+
+TR: force max, energy   246    0.3623328328E+00   -0.8236923208E+04
+ energie   -8236.9232082192812     
+
+
+TR: force max, energy   247    0.3611491748E+00   -0.8236936279E+04
+ energie   -8236.9362793097825     
+
+
+TR: force max, energy   248    0.1084928380E+00   -0.8238689169E+04
+ energie   -8238.6891688437172     
+
+
+TR: force max, energy   249    0.1081592101E+00   -0.8238689982E+04
+ energie   -8238.6899821139468     
+
+
+TR: force max, energy   250    0.1078207964E+00   -0.8238691386E+04
+ energie   -8238.6913855891326     
+
+
+TR: force max, energy   251    0.1060355068E+00   -0.8238698201E+04
+ energie   -8238.6982005882783     
+
+
+TR: force max, energy   252    0.3538646499E-01   -0.8238875097E+04
+ energie   -8238.8750969115281     
+
+
+TR: force max, energy   253    0.4108993304E-01   -0.8238875564E+04
+ energie   -8238.8755639459614     
+
+
+TR: force max, energy   254    0.3988576845E-01   -0.8238876172E+04
+ energie   -8238.8761715133114     
+
+
+TR: force max, energy   255    0.3731608755E-01   -0.8238880285E+04
+ energie   -8238.8802851040655     
+
+
+TR: force max, energy   256    0.2237282976E+00   -0.8237899536E+04
+ energie   -8237.8995362442292     
+
+
+TR: force max, energy   257    0.2208207358E+00   -0.8237925847E+04
+ energie   -8237.9258468769549     
+
+
+TR: force max, energy   258    0.2179411543E+00   -0.8237951458E+04
+ energie   -8237.9514577397204     
+
+
+TR: force max, energy   259    0.7105181982E-01   -0.8238789389E+04
+ energie   -8238.7893890313881     
+
+
+TR: force max, energy   260    0.7012568837E-01   -0.8238792077E+04
+ energie   -8238.7920771730896     
+
+
+TR: force max, energy   261    0.6921215960E-01   -0.8238794888E+04
+ energie   -8238.7948882581240     
+
+
+TR: force max, energy   262    0.4561751610E-01   -0.8238854140E+04
+ energie   -8238.8541395859702     
+
+
+TR: force max, energy   263    0.3813648054E-01   -0.8238866290E+04
+ energie   -8238.8662898324710     
+
+
+TR: force max, energy   264    0.3499677397E-01   -0.8238871432E+04
+ energie   -8238.8714322918113     
+
+
+TR: force max, energy   265    0.3212358860E-01   -0.8238875774E+04
+ energie   -8238.8757737609740     
+
+
+TR: force max, energy   266    0.1300474012E-01   -0.8238894729E+04
+ energie   -8238.8947293784695     
+
+
+TR: force max, energy   267    0.8716117287E-02   -0.8238896946E+04
+ energie   -8238.8969458819101     
+
+
+TR: force max, energy   268    0.5879364148E-02   -0.8238897942E+04
+ energie   -8238.8979419035313     
+
+
+TR: force max, energy   269    0.4532840939E-01   -0.8238850019E+04
+ energie   -8238.8500189123843     
+
+
+TR: force max, energy   270    0.3034002253E-01   -0.8238876990E+04
+ energie   -8238.8769896458125     
+
+
+TR: force max, energy   271    0.2033343794E-01   -0.8238889030E+04
+ energie   -8238.8890296734407     
+
+
+TR: force max, energy   272    0.1652340914E-01   -0.8238892153E+04
+ energie   -8238.8921533196844     
+
+
+TR: force max, energy   273    0.1099673847E-01   -0.8238895804E+04
+ energie   -8238.8958037971461     
+
+
+TR: force max, energy   274    0.3521495507E-02   -0.8238898433E+04
+ energie   -8238.8984325121837     
+
+
+TR: force max, energy   275    0.2134961004E-02   -0.8238898712E+04
+ energie   -8238.8987117413453     
+
+
+TR: force max, energy   276    0.8894201613E-02   -0.8238898465E+04
+ energie   -8238.8984646157769     
+
+
+TR: force max, energy   277    0.4690212263E-01   -0.8238886914E+04
+ energie   -8238.8869144919863     
+
+
+TR: force max, energy   278    0.3416243543E-01   -0.8238893444E+04
+ energie   -8238.8934435293631     
+
+
+TR: force max, energy   279    0.2508533454E-01   -0.8238896365E+04
+ energie   -8238.8963651296508     
+
+
+TR: force max, energy   280    0.1049009000E-01   -0.8238897159E+04
+ energie   -8238.8971586666248     
+
+
+TR: force max, energy   281    0.7391370977E-02   -0.8238898039E+04
+ energie   -8238.8980386370458     
+
+
+TR: force max, energy   282    0.5243143631E-02   -0.8238898431E+04
+ energie   -8238.8984308309409     
+
+
+TR: force max, energy   283    0.1565089525E+00   -0.8238564827E+04
+ energie   -8238.5648268962086     
+
+
+TR: force max, energy   284    0.1561779285E+00   -0.8238573627E+04
+ energie   -8238.5736271506030     
+
+
+TR: force max, energy   285    0.1543387735E+00   -0.8238582197E+04
+ energie   -8238.5821973975144     
+
+
+TR: force max, energy   286    0.3916209887E-01   -0.8238861772E+04
+ energie   -8238.8617718554215     
+
+
+TR: force max, energy   287    0.3868112586E-01   -0.8238862720E+04
+ energie   -8238.8627203226351     
+
+
+TR: force max, energy   288    0.3820918381E-01   -0.8238863675E+04
+ energie   -8238.8636750119258     
+
+
+TR: force max, energy   289    0.1303546344E-01   -0.8238894607E+04
+ energie   -8238.8946066304743     
+
+
+TR: force max, energy   290    0.1059489578E-01   -0.8238896878E+04
+ energie   -8238.8968779328643     
+
+
+TR: force max, energy   291    0.8018138073E-02   -0.8238897903E+04
+ energie   -8238.8979031700419     
+
+
+TR: force max, energy   292    0.4704213035E-02   -0.8238898185E+04
+ energie   -8238.8981853741316     
+
+
+TR: force max, energy   293    0.1591206851E-02   -0.8238898682E+04
+ energie   -8238.8986821510989     
+
+
+TR: force max, energy   294    0.7833684524E-02   -0.8238898157E+04
+ energie   -8238.8981567408337     
+
+
+TR: force max, energy   295    0.4600632550E-01   -0.8238871335E+04
+ energie   -8238.8713354775373     
+
+
+TR: force max, energy   296    0.3264516683E-01   -0.8238886477E+04
+ energie   -8238.8864769089705     
+
+
+TR: force max, energy   297    0.2326151617E-01   -0.8238893243E+04
+ energie   -8238.8932430253808     
+
+
+TR: force max, energy   298    0.1265641060E-01   -0.8238895041E+04
+ energie   -8238.8950413559942     
+
+
+TR: force max, energy   299    0.8823621828E-02   -0.8238897091E+04
+ energie   -8238.8970910915887     
+
+
+TR: force max, energy   300    0.2494075368E-02   -0.8238898564E+04
+ energie   -8238.8985637212863     
+
+
+TR: force max, energy   301    0.8216051688E-03   -0.8238898725E+04
+ energie   -8238.8987246851211     
+
+
+TR: force max, energy   302    0.2899075206E-02   -0.8238898594E+04
+ energie   -8238.8985935781075     
+
+
+TR: force max, energy   303    0.7160476079E-01   -0.8238751372E+04
+ energie   -8238.7513724616547     
+
+
+TR: force max, energy   304    0.6684970505E-01   -0.8238774769E+04
+ energie   -8238.7747689924909     
+
+
+TR: force max, energy   305    0.6235893553E-01   -0.8238794446E+04
+ energie   -8238.7944459961018     
+
+
+TR: force max, energy   306    0.4313015269E+00   -0.8233229005E+04
+ energie   -8233.2290045321861     
+
+
+TR: force max, energy   307    0.4299195075E+00   -0.8233266487E+04
+ energie   -8233.2664868637748     
+
+
+TR: force max, energy   308    0.4285504648E+00   -0.8233303710E+04
+ energie   -8233.3037099159756     
+
+
+TR: force max, energy   309    0.1394267681E+00   -0.8238290068E+04
+ energie   -8238.2900684828237     
+
+
+TR: force max, energy   310    0.1389154197E+00   -0.8238293981E+04
+ energie   -8238.2939806000577     
+
+
+TR: force max, energy   311    0.1384933224E+00   -0.8238298008E+04
+ energie   -8238.2980076647673     
+
+
+TR: force max, energy   312    0.1265695311E+00   -0.8238397337E+04
+ energie   -8238.3973372627170     
+
+
+TR: force max, energy   313    0.5296728020E-01   -0.8238808399E+04
+ energie   -8238.8083994982535     
+
+
+TR: force max, energy   314    0.5225664658E-01   -0.8238810739E+04
+ energie   -8238.8107389865654     
+
+
+TR: force max, energy   315    0.5157660526E-01   -0.8238813065E+04
+ energie   -8238.8130648830811     
+
+
+TR: force max, energy   316    0.3403164925E-01   -0.8238862067E+04
+ energie   -8238.8620670734690     
+
+
+TR: force max, energy   317    0.2893392205E-01   -0.8238871725E+04
+ energie   -8238.8717248879893     
+
+
+TR: force max, energy   318    0.2653123599E-01   -0.8238876029E+04
+ energie   -8238.8760293545456     
+
+
+TR: force max, energy   319    0.1773732261E-01   -0.8238888622E+04
+ energie   -8238.8886223973386     
+

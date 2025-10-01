@@ -1,0 +1,1 @@
+../g2b4_snap1_params.pot

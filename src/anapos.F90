@@ -207,12 +207,12 @@ contains
           call gin2ndm(atperfdef,celperfdef,boxperfdef,fnamperfdef,rumax,lrepartition=.false.,immread=immcr,lconstrsimple=.true.)
           !             call setnoxsimple (atperfdef,boxperfdef,celperfdef,rumax)
           call celana0%copy(celperfdef,boxana0)
-          call caltabtC(celperfdef,atperfdef,lperiod,boxcr)
+          call caltabtC(celperfdef,atperfdef,lperiod,boxcr,lchktrav=.false.)
        case default
           write(6,*)'set igencr to 1 or 0 for .crcin or .crgin file respectively'
           call arret_ndm
        end select
-       call caltabtc(celcr,atcr,lperiod,boxcr)
+       call caltabtc(celcr,atcr,lperiod,boxcr,lchktrav=.false.)
        !       write(6,*)' celana0 celcr celperfdef ',celana0%nox,celcr%nox,celperfdef%nox
        if (lws) then
           if (rang==0)write(6,*)'analyse de Wigner-Seitz'
@@ -268,7 +268,7 @@ contains
        !          call periodbox (boxcf,atcf)
        call periodbox(boxcr,atcr)
        !       end if
-       call caltabtc(celcr,atcr,lperiod,boxcr)
+       call caltabtc(celcr,atcr,lperiod,boxcr,lchktrav=.false.)
     else
        if (ldepla) then
           if (rang==0)write(6,'(A,F6.1)') 'test depla ',tdep
@@ -330,155 +330,6 @@ contains
     !   set default values for variables in namelist
     !
     !-----------------------------------------------
-!!$    namecr='ZZ'
-!!$    ivisuana=-1
-!!$    igencr=-1
-!!$    rclu(:)=2.8
-!!$    pstmax(:)=0.
-!!$    lcomp=.false.
-!!$!   iprtnvi=.false.
-!!$    iprtnvi=0      
-!!$    lws=.false.
-!!$    ldetdec=.false.
-!!$    idecal= -1
-!!$    ldesord=.false.
-!!$    lnbvois=.false.
-!!$    idistord=0
-!!$    ldeptest=.true.
-!!$    lpdep=.false.
-!!$    lpstruct=.true.
-!!$    lpdef=.true.
-!!$    lvac=.false.
-!!$    lc15=.false.
-!!$    tdep=2.0
-!!$    tvac=1.1
-!!$    tint=1.1
-!!$    plmin1=0;plmin2=0.;plmin3=0.
-!!$    plmax1=0.;plmax2=0.;plmax3=0.
-!!$    lrescale=.true.
-!!$    ldefcat=.false.
-!!$    deltx=0. ; delty=0.0; deltz=0.0
-!!$    lallint=.false.
-!!$    nbvoisparf(:,:)=0
-!!$    lsubc=.false.
-!!$    ndvblob=0
-!!$    ndvmin=0
-!!$    write(6,*)'*** analyse du crystal'
-!!$    open(175, file='analyse.in')
-!!$    read(175,nml=analyse)
-!!$    if(.not.(lnbvois).and.(ldesord))lnbvois=.true.
-!!$    if(lws) then
-!!$       lcomp=.true.
-!!$       lvac=.true.
-!!$    end if
-!!$    if(ivisuana==-1) ivisuana=ivisu
-!!$    if (ivisuana==4) ivisuana=40
-!!$    if (ivisuana==6) ivisuana=60
-!!$
-!!$    if ((idistord.gt.0).and.(.not.lperiod)) then
-!!$       write(6,*) 'distord seulement avec lperiod =true.'
-!!$       call arret_ndm
-!!$    end if
-!!$    if ((idistord.gt.0).and.(.not.lperiod)) then
-!!$       write(6,*) 'distord ne fonctionne pas '
-!!$       call arret_ndm
-!!$    end if
-!!$    if ((idistord.ge.3).and.(maxval(pstmax)==0))then
-!!$       write(6,*) 'isdistrod=3 preciser pstmax'
-!!$       call arret_ndm
-!!$    end if
-!!$    if(namecr=='ZZ') then
-!!$       namecr=fnam(1:lenfnam)
-!!$    end if
-!!$    ! write(6,*)'distordflag',distordflag
-!!$    rc(1:ntyp)=rclu(1:ntyp)*1.0d-8
-!!$
-!!$! pourquoi plotpart ici ?
-!!$    plmin(1)=plmin1; plmax(1)=plmax1
-!!$    plmin(2)=plmin2; plmax(2)=plmax2
-!!$    plmin(3)=plmin3; plmax(3)=plmax3
-!!$    plmin=plmin*1.0d-8 ; plmax=plmax*1.0d-8
-!!$    if (any(plmin.ne.0.).or.any(plmax.ne.0.)) then
-!!$       call plotpart(atcf,plmin)
-!!$    end if
-!!$
-!!$    if (lcomp) then
-!!$       if (icall==1) then
-!!$          select case (igencr)
-!!$             case(1)
-!!$             fnamcr=namecr(1:len(namecr))//'crcin'
-!!$             call read_cin(boxcr,1,atcr,atcf%imm,fnamcr)
-!!$             atcf%im_glob=atcr%im
-!!$             call setnoxsimple (atcr,boxcr,celcr,rumax)
-!!$          case(0)
-!!$             fnamcr=trim(namecr)//'.crgin'
-!!$             write(6,*)'fnamcr ',len(fnamcr),fnamcr
-!!$             call gin2ndm(atcr,celcr,boxcr,fnamcr,rdum,lrepartition=.false.)
-!!$          case default
-!!$             write(6,*)'set igencr to 1 or 0 for .crcin or .crgin file respectively'
-!!$             call arret_ndm
-!!$          end select
-!!$          call caltabtc(celcr,atcr,lperiod,boxcr)
-!!$       write(6,*)
-!!$       write(6,*)'COMPARAISON crystal it = ' ,itapp, 'with file ',fnamcr
-!!$       write(6,*)
-!!$
-!!$       if (lws) then
-!!$          write(6,*)'analyse de Wigner-Seitz'
-!!$       else
-!!$          if(ldeptest) then
-!!$             write(6,'(A,F6.1)') 'seuil deplacement pour detection de defauts ',tdep
-!!$             tvac=tdep
-!!$          end if
-!!$          if(lpdep) then
-!!$             write(6,'(A,F6.1)') 'ecriture des deplacés ',tdep
-!!$          end if
-!!$          tint=tvac
-!!$          write(6,'(A,F6.1)') 'seuil lacune ',tvac 
-!!$          write(6,'(A,F6.1)') 'seuil interstitiel ',tint 
-!!$          tdep=tdep*1.0d-8
-!!$          tvac=(tvac*1.0d-8)
-!!$          tint=(tint*1.0d-8)
-!!$       end if
-!!$
-!!$    end if
-!!$
-!!$
-!!$    if (any(boxcf%at.ne.boxcr%at) )then
-!!$       write(6,*)'boxf <> boxcr'
-!!$       write(6,*)'atcf',boxcf%at
-!!$       write(6,*)'atcr',boxcr%at
-!!$!       call arret_ndm
-!!$    end if
-!!$    
-!!$       if (ldecal) then
-!!$          if (idecal.gt.0) then
-!!$             if (idecal.gt.atcf%im) then
-!!$                write(6,*)'idecal >atcf%im ; stop'
-!!$                call arret_ndm
-!!$             end if
-!!$             do ic=1,3
-!!$                decal(ic)=atcr%xp(ic,idecal)-atcf%xp(ic,idecal)
-!!$             end do
-!!$             do i=1,atcr%im
-!!$                do ic=1,3
-!!$                   atcr%xp(ic,i)=atcr%xp(ic,i)-decal(ic)
-!!$                end do
-!!$             end do
-!!$          else
-!!$             do i=1,atcr%im
-!!$                atcr%xp(1,i)=atcr%xp(1,i)-deltx*1d-8
-!!$                atcr%xp(2,i)=atcr%xp(2,i)-delty*1d-8
-!!$                atcr%xp(3,i)=atcr%xp(3,i)-deltz*1d-8
-!!$             end do
-!!$          end if
-!!$          
-!!$       end if
-!!$ !       if (lperiod) then
-!!$          call periodbox (boxcf,atcf)
-!!$          call periodbox(boxcr,atcr)
-!!$ !       end if
-!!$       call caltabtc(celcr,atcr,lperiod,boxcr)
     if (lcomp)then
        if(ldetdec) then
           if (atcf%im.ne.atcr%im) then
@@ -694,10 +545,6 @@ contains
     write(6,*)'rcm ', rcm
 
     call setnoxsimple(atcf,boxcf,celcf,rcm)
-!!$    call atcf%print
-!!$    call celcf%print
-!!$    call boxcf%print
-!!$    write(6,*)'POST '
     allocate(nvi(atcf%im))
     allocate(nvityp(atcf%im,ntyp))
     natvi(:)=0
@@ -706,7 +553,7 @@ contains
     !calcul en deux temps
     !calcul du nombre de voisins par atome
 
-    call caltabtC(celcf,atcf,lperiod,boxcf)
+    call caltabtC(celcf,atcf,lperiod,boxcf,lchktrav=.false.)
 
 
 
@@ -1401,12 +1248,7 @@ contains
     if (lvac) then 
 
        nvac=0 ;nint=0;nremp=0;nas=0
-       !    do j=1,atr%im
-       !       write(6,*)j,natsit(j),indatsit(j,:natsit(j))
-       !    end do
-       !    call atc%print
        iloop1: do j=1,atr%im
-          !          write(6,*)j,natsit(j),indatsit(j,:natsit(j))
           select case (natsit(j))
           case(0) 
              nvac=nvac+1
@@ -1943,12 +1785,11 @@ contains
           namemolperf=trim(namemol)//'perf'
           call rasmolT(atperf,boxcr,namefr=namemolperf,latcomp=.true.,ivisumol=5)
 
-          !       call celcf%print
 
           if (lpsp) then          
              call celcf%copy(celperf,boxcf)
 
-             call caltabtc(celperf,atperf,lperiod,boxcf)
+             call caltabtc(celperf,atperf,lperiod,boxcf,lchktrav=.false.)
              call depladet(atperf,celperf,boxcf,atperfdef,celperfdef,boxperfdef,tdep,ndep,inddep,vectdep,valdepla)
              write(unit6P,*)ndep, ' displaced atoms perfect structure'
              valdepla=valdepla*(1d8)*5./27.273

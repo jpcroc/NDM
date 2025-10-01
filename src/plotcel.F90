@@ -552,7 +552,6 @@ module plottpcel_mod
     type(slice_config)::slice
     call slice%build(celcf,box,slxyz)
     call slice%merge(celcf)
-!    call slice%print(unit=100,mess='SLICE')
     call actualplot(slice,box,'TSlice','PSlice',itp)
     
   end subroutine plotslice
