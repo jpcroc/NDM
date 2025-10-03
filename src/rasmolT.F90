@@ -396,7 +396,7 @@ contains
          call writepos(ivisum, im_glob,atmol%xp,tyw,atmol%ityp,atmol%num_at_glob,luvisu,boxmol%at,boxmol%bg,laux,nauxw,vauxw)
 #ifdef DKIO
        else
-         call dk_io_write(nameo,end_name,at,bg,atmol,tyw,trim(format),extension,lvelocities)
+         call dk_io_write(nameo,end_name,boxmol%at,boxmol%bg,atmol,tyw,trim(format),extension,lvelocities)
 #endif
        end if
     else
@@ -557,16 +557,17 @@ contains
        if(velocities) then
           select type (atcomp)
           class is (atom_config_d)
-             call write_structure(trim(namef), box, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d-4)
+             call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d-4)
              called = .true.
           end select
        end if
     end if
 
     if (.not.called) then
-       call write_structure(trim(namef), box, atcomp%xp(:,1:atcomp%im), tags, format=format)
+       call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format)
     end if
 
+    call cryst_to_cart (atcomp%im, atcomp%xp,  box,  1) !cryst vers cart
     deallocate(tags)
   end subroutine dk_io_write
 #endif
