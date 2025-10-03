@@ -73,6 +73,8 @@ contains
 #ifdef DKIO
     logical :: lvelocities=.false.
     character(len=6) :: format
+    real(double),allocatable::xposg(:,:)
+    character*3, dimension(:),allocatable :: tywg
 #endif
 
     !    class(atom_config),allocatable::atcomp
@@ -396,7 +398,7 @@ contains
          call writepos(ivisum, im_glob,atmol%xp,tyw,atmol%ityp,atmol%num_at_glob,luvisu,boxmol%at,boxmol%bg,laux,nauxw,vauxw)
 #ifdef DKIO
        else
-         call dk_io_write(nameo,end_name,boxmol%at,boxmol%bg,atmol,tyw,trim(format),extension,lvelocities)
+         call dk_io_write(nameo,end_name,boxmol%at,boxmol%bg,trim(format),extension,atmol,tyw,velocities=lvelocities)
 #endif
        end if
     else
@@ -424,8 +426,14 @@ contains
              aux_proc(1:nauxw,1:im_proc)=vauxw(1:nauxw,1:im_proc)
           end if
           natg_proc(1:im_proc)=atmol%num_at_glob(1:im_proc)
-
-          call writepos(ivisum,im_proc,xp_proc,ty_proc,ityp_proc,natg_proc, luvisu,boxmol%at,boxmol%bg,laux,nauxw,aux_proc)
+          
+          if (ivisum < 10 .or. ivisum > 30) then
+             call writepos(ivisum,im_proc,xp_proc,ty_proc,ityp_proc,natg_proc, luvisu,boxmol%at,boxmol%bg,laux,nauxw,aux_proc)
+#ifdef DKIO
+          else
+             call reconstruction(atmol%im_glob,im_proc,natg_proc,xp_proc,ty_proc,xposg,tywg)
+#endif
+          end if
 
           do i_proc=1,nprocspace-1
              call comm_space%probe(11001,sourceout=proc_source)
@@ -437,10 +445,21 @@ contains
              if (laux) then
                 call comm_space%recv(aux_proc(1:nauxw,1:im_proc),proc_source,11006)
              end if
-             call writepos(ivisum,im_proc,xp_proc,ty_proc,ityp_proc,natg_proc, luvisu,boxmol%at,boxmol%bg,laux,nauxw,aux_proc)
-
-
+             if (ivisum < 10 .or. ivisum > 30) then
+                call writepos(ivisum,im_proc,xp_proc,ty_proc,ityp_proc,natg_proc, luvisu,boxmol%at,boxmol%bg,laux,nauxw,aux_proc)
+#ifdef DKIO
+             else
+                call reconstruction(atmol%im_glob,im_proc,natg_proc,xp_proc,ty_proc,xposg,tywg)
+#endif
+             end if
           enddo
+#ifdef DKIO
+          if (ivisum > 9 .and. ivisum < 31) then
+             call dk_io_write(nameo,end_name,boxmol%at,boxmol%bg,trim(format),extension,xposg=xposg,tywg=tywg,img=atmol%im_glob,velocities=lvelocities)
+             deallocate(xposg)
+             deallocate(tywg)
+          end if
+#endif
 
        else ! myidsp different de 0 :
           im_proc=atmol%im
@@ -521,7 +540,7 @@ contains
   end subroutine openfilemol
 
 #ifdef DKIO
-  subroutine dk_io_write(nameo,end_name,box,invbox,atcomp,tyw,format,ext,velocities)
+  subroutine dk_io_write(nameo,end_name,box,invbox,format,ext,atcomp,tyw,xposg,tywg,img,velocities)
     !-----------------------------------------------------
     !  Subroutine for interfacing with the dk_io library
     !-----------------------------------------------------
@@ -530,14 +549,17 @@ contains
     
     character(len=*), intent(in) :: nameo,end_name,format
     real(double), intent(in) :: box(3,3), invbox(3,3)
-    class(atom_config) :: atcomp
-    character(len=3), dimension(:), intent(in) :: tyw
+    class(atom_config), optional :: atcomp
+    character(len=3), dimension(:), intent(in), optional :: tyw
+    real(double),allocatable, optional ::xposg(:,:)
+    character*3, dimension(:),allocatable, optional :: tywg
     character(len=9), intent(in), optional :: ext
     logical, intent(in), optional :: velocities
     character(len=80) :: namef
     character(TAG_LENGTH), dimension(:), allocatable :: tags
     logical :: called = .false.
     integer :: i
+    integer, intent(in), optional :: img
 
     if (present(ext)) then
        namef=trim(nameo)//'.'//trim(ext)//trim(end_name)
@@ -545,31 +567,64 @@ contains
        namef=trim(nameo)//trim(end_name)
     end if
     
-    allocate(tags(atcomp%im))
+    if (present(atcomp)) then
+       allocate(tags(atcomp%im))
 
-    ! Convert to fractional coordinates, and get atoms tag
-    call cryst_to_cart(atcomp%im, atcomp%xp,  invbox,  -1) !cart vers cryst
-    do i=1, atcomp%im
-       tags(i) = tyw(i)
-    end do
+       ! Convert to fractional coordinates, and get atoms tag
+       call cryst_to_cart(atcomp%im, atcomp%xp,  invbox,  -1) !cart vers cryst
+       do i=1, atcomp%im
+          tags(i) = tyw(i)
+       end do
 
-    if (present(velocities)) then
-       if(velocities) then
-          select type (atcomp)
-          class is (atom_config_d)
-             call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d-4)
-             called = .true.
-          end select
+       if (present(velocities)) then
+          if(velocities) then
+             select type (atcomp)
+             class is (atom_config_d)
+                call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d-4)
+                called = .true.
+             end select
+          end if
        end if
-    end if
 
-    if (.not.called) then
-       call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format)
-    end if
+       if (.not.called) then
+          call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format)
+       end if
+       call cryst_to_cart (atcomp%im, atcomp%xp,  box,  1) !cryst vers cart
 
-    call cryst_to_cart (atcomp%im, atcomp%xp,  box,  1) !cryst vers cart
+    else ! xposg, tygw and img
+       allocate(tags(img))
+       ! Convert to fractional coordinates, and get atoms tag
+       call cryst_to_cart(img, xposg,  invbox,  -1) !cart vers cryst
+       do i=1, img
+          tags(i) = tywg(i)
+       end do
+
+       call write_structure(trim(namef), box*1d8, xposg, tags, format=format)
+       
+    end if
     deallocate(tags)
   end subroutine dk_io_write
+
+  subroutine reconstruction(img,im,natg,xpos,tyw,xposg,tywg)
+    integer,intent(in)::img, im
+    integer,intent(in)::natg(:)
+    real(double),allocatable::xposg(:,:)
+    character*3, dimension(:),allocatable :: tywg
+    real(double)::xpos(:,:)
+    character*3, dimension(:),intent(in) :: tyw
+    integer :: i
+
+    if (.not. allocated(xposg)) then
+       write(6,*) "Attention : utilisation de dk-io en parallèle => reconstruction des tableau de position complets sur le proc 0"
+       allocate(xposg(3,img))
+       allocate(tywg(img))
+    end if
+
+    do i=1, im
+       xposg(:,natg(i))=xpos(:,i)
+       tywg(natg(i))=tyw(i)
+    end do
+  end subroutine reconstruction
 #endif
 
   subroutine writexred(im,xpos,tyw,luvisu,atw,bgw)
