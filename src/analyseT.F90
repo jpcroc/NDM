@@ -34,7 +34,7 @@ contains
   !         Sous-programme analyse.f
   ! ************************************************
 
-  subroutine analyseT(atdml,celndm,boxndm,psc)
+  subroutine analyseT(atdml,celndm,boxndm,psc,unitwr)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -47,19 +47,16 @@ contains
 
 
     type(para_space_config)::psc    
-    !-----------------------------------------------
-    !   G l o b a l   P a r a m e t e r s
-    !-----------------------------------------------
-    !-----------------------------------------------
-    !   L o c a l   V a r i a b l e s        
-    !-----------------------------------------------
-    integer :: i, iti, ic,formatsauv
-    real(double), dimension(ntyp) :: temptyp
-
-
     class(atom_config_d)::atdml
     class(cell_config):: celndm
     class(box_config)::boxndm
+    integer,optional ::unitwr
+    integer::unitw=6
+
+    integer :: i, iti, ic,formatsauv,iteapp
+    real(double), dimension(ntyp) :: temptyp
+
+
 
     type(atom_config_d)::attyp
     type(cell_config):: celtyp
@@ -77,14 +74,15 @@ contains
     real(double)::atkin
     logical,save::linitrdf=.false.,linitadf=.false.,lopenkin=.false.
 
-
+    if (present(unitwr))unitw=unitwr
     if (itloopmax==0) itetemp=0
     if (itesauv.GT.0) then
-       if (mod(iteration,itesauv)==0) then 
+       if (mod(iteration,itesauv)==0) then
+          iteapp=iteration+unitw-6
           formatsauv = 5
           if(itesauvinter.gt.0) then
              if (mod(iteration,itesauvinter).eq.0) then
-                write(extension,'(i9.9)') iteration
+                write(extension,'(i9.9)') iteapp
                 fnamcout = fnam(1:lenfnam)//'.'//extension//'.cout.'
              else
                 fnamcout = fnam(1:lenfnam)//'.cout'
@@ -112,7 +110,8 @@ contains
     if (itesauvposition.GT.0) then
        if (mod(iteration,itesauvposition)==0) then
           formatsauv = 2
-          write(extension,'(i9.9)') iteration
+          iteapp=iteration+unitw-6
+          write(extension,'(i9.9)') iteapp
           fnamcout = fnam(1:lenfnam)//'.'//extension//'.pos.cout.'
           call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
        end if
@@ -171,55 +170,55 @@ contains
           if (mod(iteration,itetemp2)==0) then
              if (rang==0) then
 
-                if (ibrake.GT.0)  write(6,*)'electronic losses ', elosselec, elosselec1
+                if (ibrake.GT.0)  write(unitw,*)'electronic losses ', elosselec, elosselec1
 
-                write (6, *)
-                write (6, *)
-                write (6, '(A,I7,A,G15.7)') '<<<<<<<<  ITERATION =', iteration, &
+                write (unitw, *)
+                write (unitw, *)
+                write (unitw, '(A,I7,A,G15.7)') '<<<<<<<<  ITERATION =', iteration, &
                      '  time = ', timel
-                write (6, *)
-                write (6, *)
-                write (6, *) '--------- Temperatures et Pression--------'
-                write (6, *) '----------valeurs instantanees------------'
+                write (unitw, *)
+                write (unitw, *)
+                write (unitw, *) '--------- Temperatures et Pression--------'
+                write (unitw, *) '----------valeurs instantanees------------'
 
 
-                write (6, '(I10,G10.3,A,G25.16,A)') iteration, timel, '*Epot = ', potist*unitE, cunitE
+                write (unitw, '(I10,G10.3,A,G25.16,A)') iteration, timel, '*Epot = ', potist*unitE, cunitE
                 do ipot=1,npotmax
                    if (lpotentiel(ipot).eqv..true.) then
                       select case (ipot)
                       case (1:9)
-                         write(6,'(A,G21.12,A)')'    *energie paire 2 corps = ',(potis1)*unitE, cunitE
-                         if(l3c) write(6,'(A,G21.12,A)')'    *energie pot 3 corps = ',potcp*unitE, cunitE
+                         write(unitw,'(A,G21.12,A)')'    *energie paire 2 corps = ',(potis1)*unitE, cunitE
+                         if(l3c) write(unitw,'(A,G21.12,A)')'    *energie pot 3 corps = ',potcp*unitE, cunitE
                       case(10:12)
-                         write(6,'(A,G21.12,A)')'    *energie PAIRE EAM = ',potisrep*unitE, cunitE
-                         write(6,'(A,G21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
+                         write(unitw,'(A,G21.12,A)')'    *energie PAIRE EAM = ',potisrep*unitE, cunitE
+                         write(unitw,'(A,G21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
                       case(16)
-                         write(6,'(A,G21.12,A)')'    *energie PAIRE EAM = ',potisrep*unitE, cunitE
-                         write(6,'(A,G21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
+                         write(unitw,'(A,G21.12,A)')'    *energie PAIRE EAM = ',potisrep*unitE, cunitE
+                         write(unitw,'(A,G21.12,A)')'    *energie GLUE  = ',potisglue*unitE, cunitE
                       case(13)
-                         write(6,'(A,G21.12,A)')'    *energie Tersoff = ',potisTersoff*unitE, cunitE
-                         If (potisZBL.ne.0)write(6,'(A,G21.12,A)')'    *energie ZBL = ',potisZBL*unitE, cunitE
+                         write(unitw,'(A,G21.12,A)')'    *energie Tersoff = ',potisTersoff*unitE, cunitE
+                         If (potisZBL.ne.0)write(unitw,'(A,G21.12,A)')'    *energie ZBL = ',potisZBL*unitE, cunitE
                       end select
                    end if
                 end do
-                if( potis2.ne.0) write (6, '(A,G21.12,A)') '    *energie EWALD 2eme terme = ', (potis2)*unitE, cunitE
-                if ((iewald.gt.0).and.(iewald.ne.3)) write (6, '(A,G21.12,A)') '    *energie EWALD RECIP = ', (potis3)*unitE, cunitE
-                write (6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel,'*Ec = ',kine*unitE, cunitE, &
+                if( potis2.ne.0) write (unitw, '(A,G21.12,A)') '    *energie EWALD 2eme terme = ', (potis2)*unitE, cunitE
+                if ((iewald.gt.0).and.(iewald.ne.3)) write (unitw, '(A,G21.12,A)') '    *energie EWALD RECIP = ', (potis3)*unitE, cunitE
+                write (unitw,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel,'*Ec = ',kine*unitE, cunitE, &
                      '  (', temp, ' K)'
 
-                write (6,'(I10,G10.3,A,G25.16,A)') iteration,timel,'*Etot = ',(kine+potist)*unitE, cunitE
+                write (unitw,'(I10,G10.3,A,G25.16,A)') iteration,timel,'*Etot = ',(kine+potist)*unitE, cunitE
                 If (l2T) then
 
-                   write (6,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Eelec = ',Eelec*unitE, cunitE                 
-                   write (6,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*IE_Et = ',&
+                   write (unitw,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Eelec = ',Eelec*unitE, cunitE                 
+                   write (unitw,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*IE_Et = ',&
                         &(kine+potist+Eelec)*unitE, cunitE                 
-                   write (6,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Telec = ',Teavg
-                   write (6,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*TempEP = ',TempEP
-                   write (6,'(I10,G10.3,A,G21.12,3I5)') iteration,timel,'*maxTe = ',Tecmax,ietm(:)
+                   write (unitw,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Telec = ',Teavg
+                   write (unitw,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*TempEP = ',TempEP
+                   write (unitw,'(I10,G10.3,A,G21.12,3I5)') iteration,timel,'*maxTe = ',Tecmax,ietm(:)
 
                 end If
 
-                write (6, *)
+                write (unitw, *)
 
                 !	IF(it==1) Open(unit=774, file='energie_it.dat', status='unknown', action='write')
                 !	IF(modulo(it,10)==0) WRITE(774,'(i6, f)') it, (kine+potist)*unitE  ! controle .. !*!
@@ -230,32 +229,32 @@ contains
 
 
                 if (lEparat) then
-                   write (6, '(I10,G10.3,A,G21.12,A)') iteration, timel, '*Epot/at = ', potist*unitE/atdml%im_glob, cunitE
-                   write(6,*)
+                   write (unitw, '(I10,G10.3,A,G21.12,A)') iteration, timel, '*Epot/at = ', potist*unitE/atdml%im_glob, cunitE
+                   write(unitw,*)
                 end if
 
-                write (6, '(I10,G10.3,A,f0.3)') iteration,timel, &
+                write (unitw, '(I10,G10.3,A,f0.3)') iteration,timel, &
                      '*Temp instantanee = ',temp
 
-                if (tfcou>0.0) write (6, '(A,G15.4)') '*temperature externe = ', tcou
+                if (tfcou>0.0) write (unitw, '(A,G15.4)') '*temperature externe = ', tcou
 
                 IF (lprahman) THEN
-                   write(6,*) 'NPT With Parrinello-Rahman'
-                   write(6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel,'*Kcell = ',Kcell*unitE,cunitE, &
+                   write(unitw,*) 'NPT With Parrinello-Rahman'
+                   write(unitw,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel,'*Kcell = ',Kcell*unitE,cunitE, &
                         '  (', 2.d0*Kcell/(9.d0*bk), ' K)'
                    IF (lUcell) THEN
-                      write(6,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Ucell = ',Ucell*unitE,cunitE
-                      write(6,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Ecell = ',EcellPR*unitE,cunitE
-                      write(6,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Htot_PR = ', &
+                      write(unitw,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Ucell = ',Ucell*unitE,cunitE
+                      write(unitw,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Ecell = ',EcellPR*unitE,cunitE
+                      write(unitw,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Htot_PR = ', &
                            (potist+kine+EcellPR)*unitE,cunitE
                    END IF
-                   write(6,*) 'Box tensor'
-                   write(6,*)'a',boxndm%at(1,1),boxndm%at(2,1),boxndm%at(3,1)
-                   write(6,*)'b',boxndm%at(1,2),boxndm%at(2,2),boxndm%at(3,2)
-                   write(6,*)'c',boxndm%at(1,3),boxndm%at(2,3),boxndm%at(3,3)
-                   write(6,*)'H0(1)',h0(1,1),h0(2,1),h0(3,1)
-                   write(6,*)'H0(2)',h0(1,2),h0(2,2),h0(3,2)
-                   write(6,*)'H0(3)',h0(1,3),h0(2,3),h0(3,3)
+                   write(unitw,*) 'Box tensor'
+                   write(unitw,*)'a',boxndm%at(1,1),boxndm%at(2,1),boxndm%at(3,1)
+                   write(unitw,*)'b',boxndm%at(1,2),boxndm%at(2,2),boxndm%at(3,2)
+                   write(unitw,*)'c',boxndm%at(1,3),boxndm%at(2,3),boxndm%at(3,3)
+                   write(unitw,*)'H0(1)',h0(1,1),h0(2,1),h0(3,1)
+                   write(unitw,*)'H0(2)',h0(1,2),h0(2,2),h0(3,2)
+                   write(unitw,*)'H0(3)',h0(1,3),h0(2,3),h0(3,3)
                    Call MatInv(h0, invh0)
                    Transformation=MatMul(boxndm%at,invh0)
                    ! Strain tensor (Lagrange definition)
@@ -264,14 +263,14 @@ contains
                       strain(i,i) = strain(i,i) - 0.5d0
                    END DO
                    rotation = 0.5d0*(Transformation - Transpose(Transformation))
-                   WRITE(6,'(a)') 'Strain (Lagrange def.):'
-                   WRITE(6,'(a,3g14.6)') '  e(1:3,1) = ', strain(1:3,1)
-                   WRITE(6,'(a,3g14.6)') '  e(1:3,2) = ', strain(1:3,2)
-                   WRITE(6,'(a,3g14.6)') '  e(1:3,3) = ', strain(1:3,3)
-                   WRITE(6,'(a)') 'Rotation:'
-                   WRITE(6,'(a,3g14.6)') '  r(1:3,1) = ', rotation(1:3,1)
-                   WRITE(6,'(a,3g14.6)') '  r(1:3,2) = ', rotation(1:3,2)
-                   WRITE(6,'(a,3g14.6)') '  r(1:3,3) = ', rotation(1:3,3)
+                   WRITE(unitw,'(a)') 'Strain (Lagrange def.):'
+                   WRITE(unitw,'(a,3g14.6)') '  e(1:3,1) = ', strain(1:3,1)
+                   WRITE(unitw,'(a,3g14.6)') '  e(1:3,2) = ', strain(1:3,2)
+                   WRITE(unitw,'(a,3g14.6)') '  e(1:3,3) = ', strain(1:3,3)
+                   WRITE(unitw,'(a)') 'Rotation:'
+                   WRITE(unitw,'(a,3g14.6)') '  r(1:3,1) = ', rotation(1:3,1)
+                   WRITE(unitw,'(a,3g14.6)') '  r(1:3,2) = ', rotation(1:3,2)
+                   WRITE(unitw,'(a,3g14.6)') '  r(1:3,3) = ', rotation(1:3,3)
 
 
 
@@ -305,29 +304,29 @@ contains
                       tbcmean=(tbcmean*(iteration/itetemp-1)+tbc)/(iteration/itetemp)
                       tabmean=(tabmean*(iteration/itetemp-1)+tab)/(iteration/itetemp)
                    end if
-                   write(6,'(I10,G10.3,A,2G18.9)') iteration,timel,'*l_a,m  ',amod,amodmean
-                   write(6,'(I10,G10.3,A,2G18.9)') iteration,timel,'*l_b,m  ',bmod,bmodmean
-                   write(6,'(I10,G10.3,A,2G18.9)') iteration,timel,'*l_c,m  ',cmod,cmodmean
-                   write(6,'(I10,G10.3,A,2F11.4)') iteration,timel,'*ang_bc,m  ',tbc,tbcmean
-                   write(6,'(I10,G10.3,A,2F11.4)') iteration,timel,'*ang_ca,m  ',tca,tcamean
-                   write(6,'(I10,G10.3,A,2F11.4)') iteration,timel,'*ang_ab,m  ',tab,tabmean
-                   write(6,'(I10,G10.3,A,2G21.12)') iteration,timel,'*volume  ',boxndm%volu*1d24,volumean*1d24
+                   write(unitw,'(I10,G10.3,A,2G18.9)') iteration,timel,'*l_a,m  ',amod,amodmean
+                   write(unitw,'(I10,G10.3,A,2G18.9)') iteration,timel,'*l_b,m  ',bmod,bmodmean
+                   write(unitw,'(I10,G10.3,A,2G18.9)') iteration,timel,'*l_c,m  ',cmod,cmodmean
+                   write(unitw,'(I10,G10.3,A,2F11.4)') iteration,timel,'*ang_bc,m  ',tbc,tbcmean
+                   write(unitw,'(I10,G10.3,A,2F11.4)') iteration,timel,'*ang_ca,m  ',tca,tcamean
+                   write(unitw,'(I10,G10.3,A,2F11.4)') iteration,timel,'*ang_ab,m  ',tab,tabmean
+                   write(unitw,'(I10,G10.3,A,2G21.12)') iteration,timel,'*volume  ',boxndm%volu*1d24,volumean*1d24
 
                 endif    ! if (lprahman)
 
                 IF (lTNose) THEN
-                   WRITE(6,'(a)') 'Thermostat de Nose'
-                   WRITE(6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel, &
+                   WRITE(unitw,'(a)') 'Thermostat de Nose'
+                   WRITE(unitw,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel, &
                         '*KNose = ',KNose*unitE,cunitE, '  (', 2.d0*KNose/(bk), ' K)'
-                   WRITE(6,'(i7,G10.3,a,g22.12)') iteration,timel,'*fNose = ', fNose
-                   WRITE(6,'(i7,G10.3,a,g22.12,a)') iteration,timel,'*Htot_Nose = ', (kine+potist+EcellPR+KNose+UNose)*unitE,cunitE
+                   WRITE(unitw,'(i7,G10.3,a,g22.12)') iteration,timel,'*fNose = ', fNose
+                   WRITE(unitw,'(i7,G10.3,a,g22.12,a)') iteration,timel,'*Htot_Nose = ', (kine+potist+EcellPR+KNose+UNose)*unitE,cunitE
 
                 ELSEIF (lTHoover) THEN
-                   WRITE(6,'(a)') 'Thermostat de Nose-Hoover'
-                   WRITE(6,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel, &
+                   WRITE(unitw,'(a)') 'Thermostat de Nose-Hoover'
+                   WRITE(unitw,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel, &
                         '*KNose = ',KNose*unitE,cunitE, '  (', 2.d0*KNose/(bk), ' K)'
-                   WRITE(6,'(i7,G10.3,a,g22.12)') iteration,timel,'*zHoover(1) = ', zHoover(1)
-                   !WRITE(6,'(i7,G10.3,a,g22.12,a)') iteration,timel,'*Htot_Hoover = ', (kine+potist+Ecell+KNose+UNose)*unitE,cunitE
+                   WRITE(unitw,'(i7,G10.3,a,g22.12)') iteration,timel,'*zHoover(1) = ', zHoover(1)
+                   !WRITE(unitw,'(i7,G10.3,a,g22.12,a)') iteration,timel,'*Htot_Hoover = ', (kine+potist+Ecell+KNose+UNose)*unitE,cunitE
 
                 END IF   ! if lTNose / lTHoover
 
@@ -343,11 +342,11 @@ contains
 
 
           if (rang==0) then
-             write (6, *)
+             write (unitw, *)
              do iti = 1, ntyp
                 if (count(atdml%ityp==iti)==0) cycle
                 if (mod(iteration,itetemp2)==0) then
-                   write (6, '(A,I2,A,F12.2)') &
+                   write (unitw, '(A,I2,A,F12.2)') &
                         '*temp instantanee des atomes de type', iti, ' = ', &
                         temptyp(iti)
                 end if
@@ -356,42 +355,42 @@ contains
              if (iteprtSigma>0) then
                 if (mod(iteration,iteprtsigma)==0) then
                    if (mod(iteration,itetemp2)==0) then
-                      write (6, *)
-                      write (6, *) '* stress en ', cunitP
+                      write (unitw, *)
+                      write (unitw, *) '* stress en ', cunitP
                    end if
                    ppot = 0.0
                    pkin = 0.0
                    do ic = 1, 3
                       if (mod(iteration,itetemp2)==0) then
-                         write (6, '(I1,3(A,I1),A,3G18.10)') ic,' sigma potentiel (1,', ic, ') (2,', ic, &
+                         write (unitw, '(I1,3(A,I1),A,3G18.10)') ic,' sigma potentiel (1,', ic, ') (2,', ic, &
                               ') (3,', ic, ') =',sig(1:3,ic)*unitP
                       end if
                       ppot = ppot+1.0/3.0*sig(ic,ic)
                    end do
                    if (mod(iteration,itetemp2)==0) then
-                      write (6, *)
+                      write (unitw, *)
                    end if
                    do ic = 1, 3
                       if (mod(iteration,itetemp2)==0) then
-                         write (6, '(I1,3(A,I1),A,3G18.10)') ic,' sigma cinetique (1,', ic, ') (2,', ic, &
+                         write (unitw, '(I1,3(A,I1),A,3G18.10)') ic,' sigma cinetique (1,', ic, ') (2,', ic, &
                               ') (3,', ic, ') =',sigkine(1:3,ic)*unitP
                       end if
                       pkin = pkin+1.0/3.0*sigkine(ic,ic)
                    end do
                    if (mod(iteration,itetemp2)==0) then
-                      write (6, *)
+                      write (unitw, *)
                       do ic = 1, 3
-                         write (6, '(I1,3(A,I1),A,3G18.10)') ic,' sigma total (1,', ic, ') (2,', ic, &
+                         write (unitw, '(I1,3(A,I1),A,3G18.10)') ic,' sigma total (1,', ic, ') (2,', ic, &
                               ') (3,', ic, ') =',sigtot(1:3,ic)*unitP
                       end do
 
-                      write (6, *)
+                      write (unitw, *)
                    end if
 
 
                    pist = ppot+pkin
                    if (mod(iteration,itetemp2)==0) then
-                      write (6, '(I10,G10.3,A,G14.5)') iteration, timel, '*Pression = '&
+                      write (unitw, '(I10,G10.3,A,G14.5)') iteration, timel, '*Pression = '&
                            , pist*unitP
                    end if
                    if(iteration<=1) then
@@ -400,8 +399,8 @@ contains
                       pmean = (pmean*(iteration/iteprtsigma-1)+pist)/(iteration/iteprtsigma)
                    end if
                    if (mod(iteration,itetemp2)==0) then
-                      write (6, *) 'pression totale  potentiel = cinetique ='
-                      write (6, '(3g14.5)') pist*unitP, ppot*unitP, pkin*unitP
+                      write (unitw, *) 'pression totale  potentiel = cinetique ='
+                      write (unitw, '(3g14.5)') pist*unitP, ppot*unitP, pkin*unitP
                    end if
 
 
@@ -412,16 +411,16 @@ contains
 
 
              if (mod(iteration,itetemp2)==0) then
-                !               write (6, *)
-                write (6, *) '----------valeurs moyennes------------'
-                write (6, '(A,F12.2)') '*temperature moyenne = ', tmean
-                !               write (6, '(A,G21.12,A)') '*energie cinetique moyenne = ', &
+                !               write (unitw, *)
+                write (unitw, *) '----------valeurs moyennes------------'
+                write (unitw, '(A,F12.2)') '*temperature moyenne = ', tmean
+                !               write (unitw, '(A,G21.12,A)') '*energie cinetique moyenne = ', &
                 !                  kinemean*unitE, cunitE
                 if (iteprtsigma>0) then
-                   if (mod(iteration,iteprtsigma)==0) write (6, '(A,G14.5)') &
+                   if (mod(iteration,iteprtsigma)==0) write (unitw, '(A,G14.5)') &
                         '*pression moyenne = ', pmean*unitP
                 endif
-                write (6, *) '--------------------------------------'
+                write (unitw, *) '--------------------------------------'
              end if
 
 
@@ -437,10 +436,10 @@ contains
 
 !!$    select type (atdml)
 !!$    type is (atom_config_e)
-!!$       write(6,*)'prteat'
+!!$       write(unitw,*)'prteat'
 !!$       if (lprteat) then
 !!$          do i=1,atdml%im
-!!$             write(6,*)atdml%eat(i)
+!!$             write(unitw,*)atdml%eat(i)
 !!$          end do
 !!$       end if
 !!$    end select

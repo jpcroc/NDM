@@ -29,7 +29,7 @@ contains
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,nfda,h0,&
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou,iteprtkin&
-         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart&
+         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart,lmultin&
          &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit,lmaxvp,vplim
 #ifdef LAMMPS_VERSION
      USE gen_com_m, ONLY: energy_conversion_lammps, position_conversion_lammps, pressure_conversion_lammps
@@ -49,6 +49,7 @@ contains
     use Parrinello_Rahman,only:TinitBox
     use constrconf_mod,only: ldecalcor
     use arps_mod,only:kmin,kmax,noxyzkmin,noxyzkmax,lpartarps!,lxyz
+    use babar_mod,only:ntempbabar,nbabarprocs,bbtempmin,bbtempmax
 
 
 
@@ -95,9 +96,10 @@ contains
          tempdeplainit,debyetemp,ibrake,lprtpot,ngrdel,timemax,tpseuils,lrctest,tcelec,Ecelec,l2T,depmaxts,tsmin,&
          itesauvinter,units_lammps,lWgin,lvzeroneb,lclimb,nwclimb,pas_lambda_mc,n_path,lax,ldecoup,distminat,&
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
-         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
+         &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,lmultin,&
          &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
-         &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag,protocol_mcc,lmaxvp,vplim
+         &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag,protocol_mcc,lmaxvp,vplim,ntempbabar,&
+         &nbabarprocs,bbtempmin,bbtempmax
 
 
     !
@@ -143,7 +145,7 @@ contains
     !                               9 -> NEB
     !                              11 -> UN SEUL CALCUL DE FORCES
     !                              12 -> ART
-    !                              16 -> SUNDAE
+    !                              16 -> BABAR
     !                              17 -> MAB
     !                              18 -> ML
     !                              19 -> matrice de forces
@@ -403,6 +405,14 @@ contains
     lmaxvp=.false. ! if true velocities are caped at vplim in pr2.F90 (very crude way of stabilizing dynamics)
     vplim=5d6 
     
+
+    ntempbabar=0
+    nbabarprocs=ntempbabar
+    bbtempmin=0; bbtempmax=0
+
+    
+    lmultin=.false. ! T==> reads multiple condfiguration files
+
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
@@ -680,6 +690,15 @@ contains
                 if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
              end select
           end if
+       end if
+    case(16)
+       if (ntempbabar==0) then
+          if (rang==0) write(6,*)'DMTYPE=16 and NTEMPBABAR=0 stop'
+          call arret_ndm
+       end if
+       if ((bbtempmin==0).or.(bbtempmax==0)) then
+          if (rang==0) write(6,*)'DMTYPE=16 and bbtempmin/max=0 stop'
+          call arret_ndm
        end if
     case default
        write(6,*)'DMTYPE',dmtype

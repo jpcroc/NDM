@@ -6,8 +6,8 @@ module initspeed_mod
   USE tempinstT_mod,only: tempinstT
   USE arret_ndm_mod,only: arret_ndm
   USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,iseed,lcalcjq,lperiod,ltpcel,&
-       &lvpread,oldtstep,one,rang,tempdeplainit,tinit,tstep,iseed,&
-       bk,lspacendm,mdcg_noise
+       &lvpread,oldtstep,one,rang,tempdeplainit,tstep,iseed,&
+       bk,lspacendm,mdcg_noise,tinit
   use neb_module, only : neb_noise_scale,mdcg_noise_scale
   USE var_pot, ONLY:ntyp,cm
 #ifdef PARA
@@ -72,7 +72,7 @@ contains
 
 
   ! *********************************************************************
-  subroutine initspeed(atcf,boxndm,latcomp,lprt)
+  subroutine initspeed(atcf,boxndm,latcomp,lprt,tinitr)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -104,7 +104,13 @@ contains
     integer::iti,imtot
     real(double)::sd,grnd,theta,fhi ! ,decx(2)
 
-
+    real(double),optional::tinitr
+    real(double)::tinit0
+    if(present(tinitr)) then
+       tinit0=tinit
+    else
+       tinit0=tinit
+    end if
     
     if (present(lprt))lprint=lprt
 !    if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed,lvpread
@@ -137,19 +143,19 @@ contains
        end select
        !     vp(:,:im)=vp(:,:im)*tstep/oldtstep
 
-       if (tinit<=0) then
+       if (tinit0<=0) then
           ! velocities are read from file and not modified
        if ((rang==0).and.(lprint)) write (6,*) 'pas de chgt des vitesses= '
           !        return
        else
           ! velocities are read from file and rescaled
-                 if ((rang==0).and.(lprint)) write (6,*) 'scaling read velocities at TINIT = ', &
-               tinit, 'K'
+                 if ((rang==0).and.(lprint)) write (6,*) 'scaling read velocities at TINIT0 = ', &
+               tinit0, 'K'
           !   if (rang==0) write(6,*)'tempsauv ',tempsauv
           if (tempsauv.le.1.) then
              lvpread=.false. ; goto 1
           end if
-          vv = sqrt(tinit/tempsauv)
+          vv = sqrt(tinit0/tempsauv)
        select type (atcf)
        class is (atom_config_e)
           if (atcf%lxpp) atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*vv
@@ -158,9 +164,9 @@ contains
        endif
 
     else
-!       write(6,*)'TINIT',tinit
+!       write(6,*)'TINIT0',tinit0
 
-       if (tinit<=0) then
+       if (tinit0<=0) then
           ! velocities are not read and no starting temperature is given
              atcf%vp(1,:atcf%im) = 0.0
              atcf%vp(2,:atcf%im) = 0.0
@@ -176,7 +182,7 @@ contains
        if ((rang==0).and.(lprint))  write (6,*) 'ZERO VELOCITY '
        else
           !  a starting temperature is given
-                 if ((rang==0).and.(lprint))  write (6,*) 'random velocities at TINIT = ', tinit, &
+                 if ((rang==0).and.(lprint))  write (6,*) 'random velocities at TINIT0 = ', tinit0, &
                'K'
                  call random_seed(size=seed_size)
 !          if (rang==0)write(6,*)'seed_size',seed_size
@@ -195,7 +201,7 @@ contains
           call    random_seed (put=iseedt)
           deallocate(iseedt)
 
-          v0 = sqrt(2.D0*bk*tinit)
+          v0 = sqrt(2.D0*bk*tinit0)
           vt1(:)=0.0
           do i = 1, atcf%im
              !******************************************
@@ -226,7 +232,7 @@ contains
                 kinx(ic)=kinx(ic)+0.5*atcf%vp(ic,i)*atcf%vp(ic,i)*cm(atcf%ityp(i))
                 !write(*,*) ic, i,kinx(ic),  cm(ityp(i)), vp(ic,i)
              end do
-             ka=0.5*bk*tinit 
+             ka=0.5*bk*tinit0 
 !!$             imtot=atcf%im
 !!$#ifdef PARA
 !!$             if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
@@ -235,7 +241,7 @@ contains
 !!$             end if
 !!$#endif
 !!$             kinx(ic)=kinx(ic)+0.5*atcf%vp(ic,i)*atcf%vp(ic,i)*cm(atcf%ityp(i))/imtot
-             !if (rang==0) write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
+             !if (rang==0) write(6,*)'dir ',ic,' ka Ktinit0 ', kinx(ic),ka
           end do
           !***************************************************************
           !       Make total momentum zero
@@ -293,7 +299,7 @@ contains
           enddo
 
           if (lcalcjq) then
-             ka=0.5*bk*tinit
+             ka=0.5*bk*tinit0
              kinx=0.
              do ic=1,3
                 do i=1,atcf%im
@@ -309,7 +315,7 @@ contains
              end if
 #endif
              kinx(ic)=kinx(ic)+0.5*atcf%vp(ic,i)*atcf%vp(ic,i)*cm(atcf%ityp(i))/imtot
-                if (rang==0)write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
+                if (rang==0)write(6,*)'dir ',ic,' ka Ktinit0 ', kinx(ic),ka
                 do i=1,atcf%im
                    atcf%vp(ic,i)= atcf%vp(ic,i)*dsqrt(ka/kinx(ic))
                 end do

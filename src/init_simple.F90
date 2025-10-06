@@ -17,7 +17,7 @@ module init_simple_mod
 #endif
 
   USE gen_com_m, ONLY:fnam,lenfnam,igen,lperiod,lrestart,rang,tstep,two,usdh,&
-       &lspacendm
+       &lspacendm,tinit
   use read_val,only:ltabvois
   USE var_pot, ONLY:ipotentiel
   use Tpara,only:para_space_config
@@ -25,7 +25,7 @@ module init_simple_mod
 
 contains
   ! **************************************************************
-  subroutine init_simple(atdml,celndm,boxndm,filename,psc,linitpot)
+  subroutine init_simple(atdml,celndm,boxndm,filename,psc,linitpot,tinitr)
 
 
 
@@ -60,10 +60,16 @@ contains
     
     logical::linitpotW=.true.
     character*80::filenomIS
-
+    real(double),optional::tinitr
+    real(double)::tinit0
     !-----------------------------------------------
 
      logical :: lrepart
+     if(present(tinitr)) then
+        tinit0=tinit
+     else
+        tinit0=tinit
+     end if
 
     filenomIS=fnam(1:lenfnam)
     if (present(filename))filenomIS=filename
@@ -93,7 +99,7 @@ contains
        select type(atdml)
        class is (atom_config_d)
 
-          call initspeed(atdml,boxndm,lprt=lprt)
+          call initspeed(atdml,boxndm,lprt=lprt,tinitr=tinit0)
        end select
     end if
 

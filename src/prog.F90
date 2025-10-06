@@ -25,6 +25,7 @@ module prog_mod
   use read_val,only:imm,ltabvois,rvois
   use posana,only:initanapos
   use NGC_mod,only:ngc
+  use babar_mod,only:init_babar,init_mpi_babar, babar
 #ifdef ML
   use NDM_ML,only:init_config_ml
 #endif
@@ -320,7 +321,15 @@ contains
        call init_montecarlo(boxndm,rv)
 
        call montecarlo
-
+    case(16)
+       call init_mpi_babar
+       if (ltabvois) then
+          rv=rvois
+       else
+          rv=0
+       end if ! PARAPATH
+       call init_babar(rv)
+       call babar
     end select
   end subroutine prog
 end module prog_mod
