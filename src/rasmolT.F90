@@ -567,7 +567,7 @@ contains
        namef=trim(nameo)//trim(end_name)
     end if
     
-    if (present(atcomp)) then
+    if (present(atcomp)) then ! atcomp and tyw
        allocate(tags(atcomp%im))
 
        ! Convert to fractional coordinates, and get atoms tag

@@ -1001,6 +1001,7 @@ contains
     !  Subroutine for interfacing with the dk_io library
     !-----------------------------------------------------
     use dk_structure_io, only: read_structure, TAG_LENGTH
+    USE decoupage_mod,only: constrandrepart_dkio
 
     type(para_space_config),optional::psc
     class(atom_config)::at2b
@@ -1013,7 +1014,7 @@ contains
     integer::immr,npr
     logical::lcs
     logical::lrepart
-    type (atom_config)::COMPatrcf
+    ! type (atom_config)::COMPatrcf
     real(double) :: boxrin(3,3),deltx
     real(double), dimension(:,:), allocatable :: atrin
     character(TAG_LENGTH), dimension(:), allocatable :: tags
@@ -1026,7 +1027,7 @@ contains
     if (present(immread)) immr=immread
 
     if (ldecoup) then
-       itread=0
+       itread=0 ! Attention : itread pas utilisé avec dk-io => tous les atomes seront lus malgrés itread=0
     else
        itread=1
     end if
@@ -1099,24 +1100,22 @@ contains
        end if
     end if
 
+    !COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
+    call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
     ncore=0
-    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-       at2b%imm_glob=imm_glob
-       if (lrepart) then
-          at2b%im_glob=imcell
-          call  decoupage(nprocspace,ncore,cel2b,at2b,psc=psc,lverbose=lprt)
-       else
-          call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
-       end if
-    end if
-    COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
-    call constr_2dkio (COMPatrcf,atrin,tags,imm_glob)
-    call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
-    compatrcf%imm_glob=imm_glob
+    at2b%imm_glob=imm_glob
+    at2b%im_glob=imcell
+    
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart)) then
-       call repartition(COMPatrcf,at2b,box2b,cel2b)
+       call constrandrepart_dkio(atrin,at2b,cel2b,box2b,tags,psc)
+!       call constr_2dkio (COMPatrcf,atrin,tags,imm_glob)
+!       call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
+!       compatrcf%imm_glob=imm_glob
+!       call repartition(COMPatrcf,at2b,box2b,cel2b)
     else
-       call compatrcf%copy_config(at2b, lrescl=.true.)
+       call constr_2dkio(at2b,atrin,tags,imm_glob)
+       call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
+       at2b%imm_glob=imm_glob
     end if
 #else
     if (ldecoup) then
