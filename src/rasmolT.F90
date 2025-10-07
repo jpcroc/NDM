@@ -398,7 +398,7 @@ contains
          call writepos(ivisum, im_glob,atmol%xp,tyw,atmol%ityp,atmol%num_at_glob,luvisu,boxmol%at,boxmol%bg,laux,nauxw,vauxw)
 #ifdef DKIO
        else
-         call dk_io_write(nameo,end_name,boxmol%at,boxmol%bg,trim(format),extension,atmol,tyw,velocities=lvelocities)
+         call dk_io_write(nameo,end_name,boxmol%at,boxmol%bg,trim(format),lvelocities,extension,atmol,tyw)
 #endif
        end if
     else
@@ -455,7 +455,7 @@ contains
           enddo
 #ifdef DKIO
           if (ivisum > 9 .and. ivisum < 31) then
-             call dk_io_write(nameo,end_name,boxmol%at,boxmol%bg,trim(format),extension,xposg=xposg,tywg=tywg,img=atmol%im_glob,velocities=lvelocities)
+             call dk_io_write(nameo,end_name,boxmol%at,boxmol%bg,trim(format),lvelocities,extension,xposg=xposg,tywg=tywg,img=atmol%im_glob)
              deallocate(xposg)
              deallocate(tywg)
           end if
@@ -540,7 +540,7 @@ contains
   end subroutine openfilemol
 
 #ifdef DKIO
-  subroutine dk_io_write(nameo,end_name,box,invbox,format,ext,atcomp,tyw,xposg,tywg,img,velocities)
+  subroutine dk_io_write(nameo,end_name,box,invbox,format,velocities,ext,atcomp,tyw,xposg,tywg,img)
     !-----------------------------------------------------
     !  Subroutine for interfacing with the dk_io library
     !-----------------------------------------------------
@@ -554,10 +554,9 @@ contains
     real(double),allocatable, optional ::xposg(:,:)
     character*3, dimension(:),allocatable, optional :: tywg
     character(len=9), intent(in), optional :: ext
-    logical, intent(in), optional :: velocities
+    logical, intent(in) :: velocities
     character(len=80) :: namef
     character(TAG_LENGTH), dimension(:), allocatable :: tags
-    logical :: called = .false.
     integer :: i
     integer, intent(in), optional :: img
 
@@ -576,22 +575,21 @@ contains
           tags(i) = tyw(i)
        end do
 
-       if (present(velocities)) then
-          if(velocities) then
-             select type (atcomp)
-             class is (atom_config_d)
-                call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d-4)
-                called = .true.
-             end select
-          end if
-       end if
-
-       if (.not.called) then
+       if(velocities) then
+          select type (atcomp)
+          type is(atom_config)
+             write(6,*)'no velocity in atom-config and export asked with velocities stop'
+             call arret_ndm
+          class is (atom_config_d)
+             call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d8*1d-12)
+          end select
+       else
           call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format)
        end if
+
        call cryst_to_cart (atcomp%im, atcomp%xp,  box,  1) !cryst vers cart
 
-    else ! xposg, tygw and img
+    else ! xposg, tywg and img
        allocate(tags(img))
        ! Convert to fractional coordinates, and get atoms tag
        call cryst_to_cart(img, xposg,  invbox,  -1) !cart vers cryst
