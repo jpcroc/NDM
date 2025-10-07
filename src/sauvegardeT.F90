@@ -98,7 +98,8 @@ contains
           next_pt = pt_im(0) + im_loc(0)
           if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              do i_proc=1,nprocspace-1
-                call comm_space%probe(11001,sourceout=proc_source)
+                !call comm_space%probe(11001,sourceout=proc_source)
+                proc_source=i_proc
                 call comm_space%recv (im_temp,proc_source,11001)
                 im_loc(proc_source)=im_temp
                 pt_im(proc_source)=next_pt
@@ -127,16 +128,6 @@ contains
                    enddo
                 end if
                 write (lucout) buffer   ! Ecriture vp
-!!$                lwax=.false.
-!!$                buffer(:,1:im) = atdml%xp(:,1:im)
-!!$                write(6,*)'SPDBG251A ',rang,lwax
-!!$                if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-!!$                   do i_proc=1,nprocspace-1
-!!$                      call comm_space%recv(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),i_proc,11007)
-!!$                   enddo
-!!$                end if
-!!$                write(6,*)'SPDBG252A ',rang,lwax
-!!$                write (lucout) buffer   ! Ecriture ax
              class is (atom_config_e)
                 buffer(:,1:im) = atdml%vp(:,1:im)
                 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -145,30 +136,11 @@ contains
                    enddo
                 end if
                 write (lucout) buffer   ! Ecriture vp
-!!$                if (formatsauvw==7 )then
-!!$                   lwax=.true.
-!!$                   buffer(:,1:im) = atdml%ax(:,1:im)
-!!$                else
-!!$                   lwax=.false.
-!!$                   buffer(:,1:im) = atdml%xp(:,1:im)
-!!$                end if
-!!$                write(6,*)'SPDBG251B ',rang,lwax
-!!$                if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-!!$                   do i_proc=1,nprocspace-1
-!!$                      call comm_space%recv(buffer(1:3,pt_im(i_proc):pt_im(i_proc)+im_loc(i_proc)-1),i_proc,11007)
-!!$                   enddo
-!!$                end if
-!!$                write (lucout) buffer   ! Ecriture ax
 
              end select
-             
-
           end if
           write (lucout) tstep
           write (lucout) tmean, pmean, iteration, timel
-
-
-
           if (l2T)call sauveelec
 !       write(6,*)'SPDBG3 ',rang
     else ! myidsp different de 0 :

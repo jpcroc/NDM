@@ -375,7 +375,8 @@ contains
           call writepos(ivisum,im_proc,xp_proc,ty_proc,ityp_proc,natg_proc, luvisu,boxmol%at,boxmol%bg,laux,nauxw,aux_proc)
 
           do i_proc=1,nprocspace-1
-             call comm_space%probe(11001,sourceout=proc_source)
+             !             call comm_space%probe(11001,sourceout=proc_source)
+             proc_source=i_proc
              call comm_space%recv(im_proc,proc_source,11001)
              call comm_space%recv(xp_proc(1:3,1:im_proc),proc_source,11002)
              call comm_space%recv(ityp_proc(1:im_proc),proc_source,11003)

@@ -182,7 +182,7 @@ contains
     integer::jint,iinttot,numcell,imt,iold,irang,pvactot,dvactot
     logical::lsuiv,lcrea0
     character::fnamcout*80
-    character :: extension*5
+    character :: extension*7
     
     
     if (myidsp==0) then
@@ -285,7 +285,7 @@ contains
           natyp=0
           nb_at_typ=0
           itinser=itinser+1
-          write(extension,'(i5.5)')itinser
+          write(extension,'(i7.7)')itinser
           fnamcout = fnam(1:lenfnam)//'.'//trim(extension)//'.PRECDP.cout'
           if (lspacendm) then
              call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
@@ -452,7 +452,8 @@ contains
              end if
              
           end if
-!IIIIIIINNNNNNNNNNNNNNNNTTTTTTTTTTTEEEEEEEEEEERRRRRRRRRRRRSSSSSSSSSSSTTTTTTTT
+          !IIIIIIINNNNNNNNNNNNNNNNTTTTTTTTTTTEEEEEEEEEEERRRRRRRRRRRRSSSSSSSSSSSTTTTTTTT
+
           if (ninttot.ne.0) then
              iinttot=0 
              lti:do iti=1,ntyp
@@ -460,7 +461,6 @@ contains
                 do iint=1,nbint(iti)
                    l2close=.true.
                    ntry=0
-
                    iinttot=iinttot+1 ! indice l'ensemble des interstitiels (inter-types)
                    do while (l2close.eqv..true.)
                       ntry=ntry+1
