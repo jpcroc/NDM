@@ -1014,7 +1014,6 @@ contains
     integer::immr,npr
     logical::lcs
     logical::lrepart
-    ! type (atom_config)::COMPatrcf
     real(double) :: boxrin(3,3),deltx
     real(double), dimension(:,:), allocatable :: atrin
     character(TAG_LENGTH), dimension(:), allocatable :: tags
@@ -1027,7 +1026,7 @@ contains
     if (present(immread)) immr=immread
 
     if (ldecoup) then
-       itread=0 ! Attention : itread pas utilisé avec dk-io => tous les atomes seront lus malgrés itread=0
+       itread=0 ! Attention : itread=0 pas utilisé avec dk-io => tous les atomes seront lus malgrés itread=0
     else
        itread=1
     end if
@@ -1049,7 +1048,6 @@ contains
     if (dmtype==9) then
        if (lsecondpath) then
           !write(6,*)xpd
-          if ((rang==0).and.(lprt))  write(6,*)'TAAAAAAG WTF'
           do i=1,imcell
              do ic=1,3
                 deltx=atrin(ic,i)-xpd(ic,i)
@@ -1100,7 +1098,6 @@ contains
        end if
     end if
 
-    !COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
     call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
     ncore=0
     at2b%imm_glob=imm_glob
@@ -1108,10 +1105,6 @@ contains
     
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart)) then
        call constrandrepart_dkio(atrin,at2b,cel2b,box2b,tags,psc)
-!       call constr_2dkio (COMPatrcf,atrin,tags,imm_glob)
-!       call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
-!       compatrcf%imm_glob=imm_glob
-!       call repartition(COMPatrcf,at2b,box2b,cel2b)
     else
        call constr_2dkio(at2b,atrin,tags,imm_glob)
        call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
@@ -1143,13 +1136,12 @@ contains
     real(double), dimension(:,:), intent(in) :: atrin
     character(TAG_LENGTH), dimension(:), intent(in) :: tags
     integer,intent(in),optional::immread
-    integer::i,icell,imloc,immr,ix,iy,iz
+    integer::i,icell,imloc,immr
     real(double)::rvn
     logical :: lprteattrf
     logical::liniint
-    !imloc=atrgin%im
+
     imloc=size(atrin, 2)
-   
     immr=imm_glob
     if (present(immread)) immr=immread
     if (imloc>immread) then
@@ -1162,11 +1154,6 @@ contains
     else
        rvn=0
     end if
-    lprteattrf=.false.
-    select type (atrcf)
-    class is (atom_config_e)
-       lprteattrf=atrcf%lprteat
-    end select
     if (present(immread))then
        call atrcf%init(imloc,immin=immread,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois,rvois=rvn,im_glob=imloc)
     else
