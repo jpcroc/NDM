@@ -1137,6 +1137,7 @@ contains
 
   subroutine constr_2dkio(atrcf,atrin,tags,immread)
     use dk_structure_io, only: TAG_LENGTH
+    use decoupage_mod,only: get_ityp
 
     class(atom_config),intent(inout)::atrcf 
     real(double), dimension(:,:), intent(in) :: atrin
@@ -1184,28 +1185,6 @@ contains
     return
   end subroutine constr_2dkio
 
-  integer function get_ityp(tag)
-    ! Retourne ityp de l'atome 'tag' par correspondance avec les types du fichier .potin
-    use dk_structure_io, only: TAG_LENGTH
-    USE var_pot, ONLY:ntyp,ty
-    character(len=TAG_LENGTH), intent(in) :: tag
-    integer :: i
-
-    get_ityp = -1
-    do i = 1, ntyp
-       if (trim(tag) == trim(ty(i))) then
-          get_ityp = i
-          return
-       end if
-    end do
-
-    if (get_ityp == -1) then
-       if ((rang==0).and.(lprt)) then
-          write (6, *) 'Error: no match found between the atom types in the .potin file and the atom in the configuration file: ', tag, ty
-       end if
-       call arret_ndm
-    end if
-  end function
 #endif
   !#endif
 end module constrconf_mod
