@@ -105,7 +105,7 @@ contains
     laux=.false.
     nauxw=0 ; nauxv=0
 #ifdef DKIO
-    if ((ivisum==41).or.(ivisum==61).or.(ivisum==21).or.(ivisum==22).or.(ivisum==24))then
+    if ((ivisum==41).or.(ivisum==61).or.(ivisum==21).or.(ivisum==22).or.(ivisum==23).or.(ivisum==25))then
 #else
     if ((ivisum==41).or.(ivisum==61))then
 #endif
@@ -138,7 +138,7 @@ contains
          allocate (vauxw(nauxw,atmol%im))
          allocate(charauxw(nauxw))
 #ifdef DKIO
-         if ((ivisum==41).or.(ivisum==61).or.(ivisum==21).or.(ivisum==22).or.(ivisum==24))then
+         if ((ivisum==41).or.(ivisum==61).or.(ivisum==21).or.(ivisum==22).or.(ivisum==23).or.(ivisum==25))then
 #else
          if ((ivisum==41).or.(ivisum==61))then
 #endif
@@ -172,7 +172,7 @@ contains
 
     iaux=0
 #ifdef DKIO
-    if ((ivisum==41).or.(ivisum==61).or.(ivisum==21).or.(ivisum==22).or.(ivisum==24))then
+    if ((ivisum==41).or.(ivisum==61).or.(ivisum==21).or.(ivisum==22).or.(ivisum==23).or.(ivisum==25))then
 #else
     if ((ivisum==41).or.(ivisum==61))then
 #endif
@@ -324,37 +324,42 @@ contains
 !          ! Dk_io Abinit format
 !          end_name='.'
        case(11,21)
-          ! Dk_io Atomeye's extended CFG format
-          end_name='.xfg'
+          ! Dk_io Atomeye's CFG format
+          end_name='.cfg'
           format='xfg'
           if (ivisum==21) lvelocities=.true.
        case(12,22)
+          ! Dk_io Atomeye's extended CFG format
+          end_name='.xfg'
+          format='xfg'
+          if (ivisum==22) lvelocities=.true.
+       case(13,23)
           ! Dk_io CASTEP format
           end_name='.cell'
           format='castep'
-          if (ivisum==22) lvelocities=.true.
-       case(13)
+          if (ivisum==23) lvelocities=.true.
+       case(14)
           ! Dk_io CIF format
           end_name='.cif'
           format='cif'
-       case(14,24)
+       case(15,25)
           ! Dk_io DL_POLY format
           end_name='.CONFIG'
           format='dlpoly'
-          if (ivisum==24) lvelocities=.true.
-       case(15)
-          ! Dk_io GULP format
-          end_name='.gin'
-          format='gulp'
+          if (ivisum==25) lvelocities=.true.
        case(16)
+          ! Dk_io GULP format
+          end_name='.gulp'
+          format='gulp'
+       case(17)
           ! Dk_io LAMMPS format
           end_name='.lmp'
           format='lammps'
-       case(17)
+       case(18)
           ! Dk_io VASP format
           end_name='.POSCAR'
           format='vasp'
-       case(18)
+       case(19)
           ! Dk_io XYZ format
           end_name='.xyz'
           format='xyz'

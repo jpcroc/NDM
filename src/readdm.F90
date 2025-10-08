@@ -592,8 +592,8 @@ contains
        if (rang == 0) write (6, *) '****** RESTART FROM FILE **'
     endif
 
-#ifdef DKIO
-    if ((igen<-1).or.igen>2.and.igen.ne.4) then                    !+1 from file; -1 generate then stop; 0 generate then run; 4 generate from kd_io then run
+#ifdef DKIO               
+    if ((igen<-1).or.(1<igen.and.igen<11).or.(igen>19)) then     !+1 from file -1 generate then stop 0 generate then run [11;19] generate from kd_io then run
        if (rang==0) write (6, *) rang,'wrong igen stop'
        call arret_ndm
     endif
@@ -1300,7 +1300,7 @@ contains
     case (3)
        if (rang==0) write (6, *) 'modification du fichier .cin'
 #ifdef DKIO
-    case (4)
+    case (11,12,13,14,15,16,17,18,19)
        if (rang==0) write (6, *) 'generation du crystal a partir de dk_io ; puis run'
 #endif
     case default

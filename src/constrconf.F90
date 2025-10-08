@@ -61,8 +61,7 @@ contains
     integer::nati
     logical::lwrite
 #ifdef DKIO
-    logical :: existe
-    character(len=10) :: extensions(8)
+    character(len=6) :: format
 #endif
     !-----------------------------------------------------
     ! READING FROM THE CONFIGURATION FILE
@@ -153,33 +152,42 @@ contains
        deallocate (buffer)
 
 #ifdef DKIO
+
+    else if (igen.ge.11 .and. igen.le.29) then
        !-----------------------------------------------------
        ! BUILDING OF THE CRISTAL FROM DK-IO
        !-----------------------------------------------------
-    else if (igen.eq.4) then
-
+       select case (igen)
+       case(11)
+          fnamgin = fnam(1:lenfnam)//'.cfg'
+          format='xfg'
+       case(12)
+          fnamgin = fnam(1:lenfnam)//'.xfg'
+          format='xfg'
+       case(13)
+          fnamgin = fnam(1:lenfnam)//'.cell'
+          format='castep'
+       case(14)
+          fnamgin = fnam(1:lenfnam)//'.cif'
+          format='cif'
+       case(15)
+          fnamgin = fnam(1:lenfnam)//'.CONFIG'
+          format='dlpoly'
+       case(16)
+          fnamgin = fnam(1:lenfnam)//'.gulp'
+          format='gulp'
+       case(17)
+          fnamgin = fnam(1:lenfnam)//'.lmp'
+          format='lammps'
+       case(18)
+          fnamgin = fnam(1:lenfnam)//'.POSCAR'
+          format='vasp'
+       case(19)
+          fnamgin = fnam(1:lenfnam)//'.xyz'
+          format='xyz'
+       end select
        lvpread=.false.
-
-       ! find file extension:
-       extensions = ['.xfg   ', '.xyz   ', '.POSCAR', '.lmp   ', '.cell  ', '.cif   ', '.CONFIG', '.gin   ']
-       existe = .false.
-       i=1
-
-       do while (i <= size(extensions) .and. .not.existe)
-          fnamgin = fnam(1:lenfnam)//trim(extensions(i))
-          inquire(file=fnamgin, exist=existe)
-          i=i+1
-       end do
-
-       if (.not.existe) then
-          if ((rang==0).and.(lprt)) then
-             write (6, *) 'Error: input atom configuration file not found'
-             write (6, *) 'With igen=4, the supported file extentions are : ', extensions
-          end if
-          call arret_ndm
-       end if
-
-       call dkio2ndm(atrcf,cellrcf,boxrcf,fnamgin,rumax,lrepart,psc)
+       call dkio2ndm(atrcf,cellrcf,boxrcf,fnamgin,rumax,format,lrepart,psc)
        call periodbox (boxrcf,atrcf)
 
        select type(atrcf)
@@ -189,6 +197,7 @@ contains
              atrcf%ax(:,1:atrcf%im)=atrcf%xp(:,1:atrcf%im)
           end if
        end select
+
 #endif
 
        !-----------------------------------------------------
@@ -996,7 +1005,7 @@ contains
   end subroutine read_gin
 
 #ifdef DKIO
-  subroutine dkio2ndm(at2b,cel2b,box2b,fnam,rum,lrepartition,psc,lconstrsimple,immread)
+  subroutine dkio2ndm(at2b,cel2b,box2b,fnam,rum,format,lrepartition,psc,lconstrsimple,immread)
     !-----------------------------------------------------
     !  Subroutine for interfacing with the dk_io library
     !-----------------------------------------------------
@@ -1007,7 +1016,7 @@ contains
     class(atom_config)::at2b
     type(cell_config)::cel2b
     class(box_config)::box2b
-    character,intent(in) :: fnam*80
+    character,intent(in) :: fnam*80,format*6
     real(double),intent(in)::rum
     logical,optional,intent(in)::lrepartition,lconstrsimple
     integer,optional::immread
@@ -1031,7 +1040,7 @@ contains
        itread=1
     end if
     !call read_gin(boxrgin,atrgin,fnamg,lat,itread=itread,immread=immr)
-    call read_structure(trim(fnam),boxrin,atrin,tags)
+    call read_structure(trim(fnam),boxrin,atrin,tags,format=format)
     imcell=size(atrin,2)
 
     if (ldecalcor) then
