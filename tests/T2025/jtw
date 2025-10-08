@@ -6,7 +6,7 @@ pwd
 pwd
 pwd
 ./jtest
-cp    TXXX.out res/T$tn.out>rd
+cp    TXXX.out res/T$tn.out
 
 cd ../
 done

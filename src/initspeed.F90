@@ -181,15 +181,6 @@ contains
                  call random_seed(size=seed_size)
 !          if (rang==0)write(6,*)'seed_size',seed_size
           allocate(iseedt(seed_size))
-!!$          if (iseed==0)  then
-!!$             call system_clock (iseed)
-!!$             if (rang==0)write(6,*)'iseed pour tirage des vitesses',iseed
-!!$             iseedt(:)=iseed
-!!$
-!!$          else
-!!$             if (rang==0)write(6,*)'iseed pour tirage des vitesses',iseed
-!!$             iseedt(:)=iseed
-!!$          end if
 
           iseedt(:)=iseed
           call    random_seed (put=iseedt)
@@ -393,6 +384,13 @@ contains
 
           end if
        end if
+       tempsauv=tempinstT(atcf)
+      vv = sqrt(tinit0/tempsauv)
+       select type (atcf)
+       class is (atom_config_e)
+          if (atcf%lxpp) atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*vv
+       end select
+       atcf%vp(:,:atcf%im) = atcf%vp(:,:atcf%im)*vv
        
     endif
     !     write(6,*)'sortie initspeed'

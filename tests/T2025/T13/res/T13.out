@@ -8,6 +8,7 @@
       DYNAMIQUE MOLECULAIRE VELOCITY VERLET
  generation du crystal ; puis run
  
+ rang readdm iseed            1          11
       ANALYSES 
  itetemp=           2  iteprtsigma=           1
  
@@ -24,7 +25,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel           4
  fmt_cin           1
- all ranks readdm iseed           11
+ rang readdm iseed            0          11
  IMM PARA =         1200        2000
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -92,7 +93,12 @@ LE_MEILLEUR_DECOUPAGE :    2    2    1    1    0.9059
  Taille des decoupages
  Decoupage           0 :           2           1           1
  Decoupage           1 :           2           1           1
- Decoupage           2 :           1           1    14817632
+ Decoupage           2 :           1           1           0
+ Decoupage           3 :           1           1           0
+ Decoupage          -2 :    41851232           2           1
+ Decoupage          -1 :           0           2           1
+ Decoupage           0 :           2           1           1
+ Decoupage           1 :           2           1           1
  ----------------------------------------------
  natperc im/noxyz         960         480
  ltabvois F

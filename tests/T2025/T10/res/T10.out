@@ -1,10 +1,10 @@
  Process            0  of            4  is alive
- Process            1  of            4  is alive
- Process            2  of            4  is alive
- Process            3  of            4  is alive
  nom fichier din=
  Febulk.din                                                                     
   
+ Process            1  of            4  is alive
+ Process            2  of            4  is alive
+ Process            3  of            4  is alive
  
  -------- caracteristiques du run DM--------23
      FIRE Quenching Vcst
@@ -15,6 +15,9 @@
  
       CONTROLES 
 tstep=  0.100D-14
+ rang readdm iseed            1           1
+ rang readdm iseed            2           1
+ rang readdm iseed            3           1
  itmax=       20000 timemax=    10000000000.0000       itab=           1 
   itetimestep=          -1
 tinit=       0.1
@@ -26,7 +29,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
- all ranks readdm iseed            1
+ rang readdm iseed            0           1
  IMM PARA =          720        2400
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -89,7 +92,10 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
  Decoupage           1 :           2           2           4
  Decoupage           2 :           2           2           4
  Decoupage           3 :           2           2           4
- Decoupage           4 :           2           4           0
+ Decoupage           0 :           2           2           4
+ Decoupage           1 :           2           2           4
+ Decoupage           2 :           2           2           4
+ Decoupage           3 :           2           2           4
  ----------------------------------------------
  natperc im/noxyz          70          31
  ltabvois F
@@ -125,6 +131,28 @@ TR: force max, energy     1    0.279031190982931E-13   -0.823889874462380E+04
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
           0       0.0000000          20000      0.10000000E+10     10     10
  ****************************************
+ VAC
+ VAC           1
+ VAC           2
+ VAC           3
+ VAC           4
+ VAC           5
+ VAC           6
+ VAC           7
+ VAC           8
+ VAC           9
+ VAC          10
+ INSER
+ INT           1
+ INT           2
+ INT           3
+ INT           4
+ INT           5
+ INT           6
+ INT           7
+ INT           8
+ INT           9
+ INT          10
  ***** FIRST ITERATION  ***       20000   1000000000.00000     
  
 TR: force max, energy     1    0.885240251217510E+02   -0.759908680345626E+04
@@ -147,7 +175,7 @@ TR: force max, energy     9    0.563337332151624E+02   -0.788424638844815E+04
  
 TR: force max, energy    10    0.504302169929368E+02   -0.794679451593986E+04
  
-TR: force max, energy    11    0.436728834209769E+02   -0.801099934181384E+04
+TR: force max, energy    11    0.436728834209769E+02   -0.801099934181383E+04
  
 TR: force max, energy    12    0.359355142314211E+02   -0.807326554795287E+04
  
@@ -231,6 +259,28 @@ TR: force max, energy    48    0.196494898571011E+01   -0.818709431987867E+04
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
          48       0.0000000          20000      0.10000000E+10     10     10
  ****************************************
+ VAC
+ VAC           1
+ VAC           2
+ VAC           3
+ VAC           4
+ VAC           5
+ VAC           6
+ VAC           7
+ VAC           8
+ VAC           9
+ VAC          10
+ INSER
+ INT           1
+ INT           2
+ INT           3
+ INT           4
+ INT           5
+ INT           6
+ INT           7
+ INT           8
+ INT           9
+ INT          10
  ***** FIRST ITERATION  ***       20000   1000000000.00000     
  
 TR: force max, energy    49    0.931213243646967E+02   -0.749756704591407E+04
@@ -249,7 +299,7 @@ TR: force max, energy    55    0.251952593746099E+02   -0.809530729704464E+04
  
 TR: force max, energy    56    0.893241747189607E+01   -0.810293060444584E+04
  
-TR: force max, energy    57    0.792200675021673E+01   -0.811084873331683E+04
+TR: force max, energy    57    0.792200675021673E+01   -0.811084873331682E+04
  
 TR: force max, energy    58    0.693922523016499E+01   -0.811670990084940E+04
  
@@ -277,7 +327,7 @@ TR: force max, energy    69    0.413809987258792E+01   -0.813253532962554E+04
  
 TR: force max, energy    70    0.411947591206035E+01   -0.813266063995607E+04
  
-TR: force max, energy    71    0.409785032938100E+01   -0.813279487326033E+04
+TR: force max, energy    71    0.409785032938100E+01   -0.813279487326034E+04
  
 TR: force max, energy    72    0.407134375440104E+01   -0.813296331731593E+04
  

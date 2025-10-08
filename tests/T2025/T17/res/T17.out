@@ -14,6 +14,9 @@
  itetemp=           1  iteprtsigma=           1
  
       CONTROLES 
+ rang readdm iseed            1           1
+ rang readdm iseed            2           1
+ rang readdm iseed            3           1
 tstep=  0.100D-14
  itmax=           1 timemax=    10000000000.0000       itab=           1 
   itetimestep=          -1
@@ -26,7 +29,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
- all ranks readdm iseed            1
+ rang readdm iseed            0           1
  IMM PARA =        19800       66000
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -91,7 +94,10 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.7649
  Decoupage           1 :           7           8          15
  Decoupage           2 :           8           7          15
  Decoupage           3 :           7           7          15
- Decoupage           4 :           8          15          96
+ Decoupage           0 :           8           8          15
+ Decoupage           1 :           7           8          15
+ Decoupage           2 :           8           7          15
+ Decoupage           3 :           7           7          15
  ----------------------------------------------
 volume= 0.76280474D-18 cm3  0.76280474D+06 Ang3
  config type of  .cin file :            3

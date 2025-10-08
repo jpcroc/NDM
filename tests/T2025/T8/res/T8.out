@@ -23,7 +23,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
- all ranks readdm iseed            1
+ rang readdm iseed            0           1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
  
@@ -85,6 +85,25 @@ vecteur  3       0.000000       0.000000      28.553180
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
           0       0.0000000              4      0.10000000E+10     10      7
  ****************************************
+ VAC
+ VAC           1
+ VAC           2
+ VAC           3
+ VAC           4
+ VAC           5
+ VAC           6
+ VAC           7
+ VAC           8
+ VAC           9
+ VAC          10
+ INSER
+ INT           1
+ INT           2
+ INT           3
+ INT           4
+ INT           5
+ INT           6
+ INT           7
  ***** FIRST ITERATION  ***           4   1000000000.00000     
  
  
@@ -132,11 +151,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-         2 0.200E-14*Epot =    -7761.941689106421      eV 
+         2 0.200E-14*Epot =    -7761.941689106422      eV 
     *energie PAIRE EAM =     820.451688291      eV 
     *energie GLUE  =    -8582.39337740      eV 
          2 0.200E-14*Ec =     180.350549698      eV   (698.689 K)
-         2 0.200E-14*Etot =    -7581.591139408421      eV 
+         2 0.200E-14*Etot =    -7581.591139408422      eV 
  
          2 0.200E-14*Epot/at =    -3.88680104612      eV 
  
@@ -213,11 +232,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-         4 0.300E-14*Epot =    -7819.315067246795      eV 
+         4 0.300E-14*Epot =    -7819.315067246793      eV 
     *energie PAIRE EAM =     763.268399652      eV 
     *energie GLUE  =    -8582.58346690      eV 
          4 0.300E-14*Ec =     216.353549531      eV   (838.166 K)
-         4 0.300E-14*Etot =    -7602.961517716166      eV 
+         4 0.300E-14*Etot =    -7602.961517716165      eV 
  
          4 0.300E-14*Epot/at =    -3.91553082987      eV 
  
@@ -252,11 +271,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-         5 0.350E-14*Epot =    -7842.180542165247      eV 
+         5 0.350E-14*Epot =    -7842.180542165248      eV 
     *energie PAIRE EAM =     740.505222930      eV 
     *energie GLUE  =    -8582.68576510      eV 
          5 0.350E-14*Ec =     239.184894471      eV   (926.616 K)
-         5 0.350E-14*Etot =    -7602.995647694508      eV 
+         5 0.350E-14*Etot =    -7602.995647694509      eV 
  
          5 0.350E-14*Epot/at =    -3.92698074220      eV 
  
@@ -296,6 +315,25 @@ vecteur  3       0.000000       0.000000      28.553180
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
           5      0.35000000E-14          9      0.10000000E+10     10      7
  ****************************************
+ VAC
+ VAC           1
+ VAC           2
+ VAC           3
+ VAC           4
+ VAC           5
+ VAC           6
+ VAC           7
+ VAC           8
+ VAC           9
+ VAC          10
+ INSER
+ INT           1
+ INT           2
+ INT           3
+ INT           4
+ INT           5
+ INT           6
+ INT           7
  ***** FIRST ITERATION  ***           9   1000000000.00000     
  
  
@@ -304,11 +342,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-         6 0.370E-14*Epot =    -7421.341350269126      eV 
+         6 0.370E-14*Epot =    -7421.341350269124      eV 
     *energie PAIRE EAM =     1188.86484342      eV 
     *energie GLUE  =    -8610.20619369      eV 
          6 0.370E-14*Ec =     248.550068411      eV   (964.346 K)
-         6 0.370E-14*Etot =    -7172.791281857745      eV 
+         6 0.370E-14*Etot =    -7172.791281857744      eV 
  
          6 0.370E-14*Epot/at =    -3.72183618369      eV 
  
@@ -421,11 +459,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-         9 0.430E-14*Epot =    -7457.328269052836      eV 
+         9 0.430E-14*Epot =    -7457.328269052837      eV 
     *energie PAIRE EAM =     1153.08004795      eV 
     *energie GLUE  =    -8610.40831701      eV 
          9 0.430E-14*Ec =     284.528443183      eV   (1103.938 K)
-         9 0.430E-14*Etot =    -7172.799825870046      eV 
+         9 0.430E-14*Etot =    -7172.799825870047      eV 
  
          9 0.430E-14*Epot/at =    -3.73988378588      eV 
  
@@ -501,6 +539,25 @@ vecteur  3       0.000000       0.000000      28.553180
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
          10      0.45000000E-14         14      0.10000000E+10     10      7
  ****************************************
+ VAC
+ VAC           1
+ VAC           2
+ VAC           3
+ VAC           4
+ VAC           5
+ VAC           6
+ VAC           7
+ VAC           8
+ VAC           9
+ VAC          10
+ INSER
+ INT           1
+ INT           2
+ INT           3
+ INT           4
+ INT           5
+ INT           6
+ INT           7
  ***** FIRST ITERATION  ***          14   1000000000.00000     
  
  
@@ -509,11 +566,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        11 0.470E-14*Epot =    -7017.293412495193      eV 
+        11 0.470E-14*Epot =    -7017.293412495183      eV 
     *energie PAIRE EAM =     1623.64115978      eV 
     *energie GLUE  =    -8640.93457227      eV 
         11 0.470E-14*Ec =     312.184395713      eV   (1213.065 K)
-        11 0.470E-14*Etot =    -6705.109016782039      eV 
+        11 0.470E-14*Etot =    -6705.109016782028      eV 
  
         11 0.470E-14*Epot/at =    -3.52450698769      eV 
  
@@ -548,11 +605,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        12 0.490E-14*Epot =    -7032.804530308634      eV 
+        12 0.490E-14*Epot =    -7032.804530308622      eV 
     *energie PAIRE EAM =     1608.26022152      eV 
     *energie GLUE  =    -8641.06475183      eV 
         12 0.490E-14*Ec =     327.691553220      eV   (1273.322 K)
-        12 0.490E-14*Etot =    -6705.112977088931      eV 
+        12 0.490E-14*Etot =    -6705.112977088918      eV 
  
         12 0.490E-14*Epot/at =    -3.53229760437      eV 
  
@@ -587,11 +644,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        13 0.510E-14*Epot =    -7049.778080909183      eV 
+        13 0.510E-14*Epot =    -7049.778080909180      eV 
     *energie PAIRE EAM =     1591.45045050      eV 
     *energie GLUE  =    -8641.22853141      eV 
         13 0.510E-14*Ec =     344.660724551      eV   (1339.260 K)
-        13 0.510E-14*Etot =    -6705.117356358131      eV 
+        13 0.510E-14*Etot =    -6705.117356358129      eV 
  
         13 0.510E-14*Epot/at =    -3.54082274280      eV 
  
@@ -626,11 +683,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        14 0.530E-14*Epot =    -7068.143297982500      eV 
+        14 0.530E-14*Epot =    -7068.143297982502      eV 
     *energie PAIRE EAM =     1573.28752979      eV 
     *energie GLUE  =    -8641.43082778      eV 
         14 0.530E-14*Ec =     363.021185741      eV   (1410.604 K)
-        14 0.530E-14*Etot =    -6705.122112241018      eV 
+        14 0.530E-14*Etot =    -6705.122112241021      eV 
  
         14 0.530E-14*Epot/at =    -3.55004685986      eV 
  
@@ -665,11 +722,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        15 0.550E-14*Epot =    -7087.823344654215      eV 
+        15 0.550E-14*Epot =    -7087.823344654213      eV 
     *energie PAIRE EAM =     1553.85375210      eV 
     *energie GLUE  =    -8641.67709676      eV 
         15 0.550E-14*Ec =     382.696158720      eV   (1487.055 K)
-        15 0.550E-14*Etot =    -6705.127185934404      eV 
+        15 0.550E-14*Etot =    -6705.127185934401      eV 
  
         15 0.550E-14*Epot/at =    -3.55993136346      eV 
  
@@ -706,6 +763,25 @@ vecteur  3       0.000000       0.000000      28.553180
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
          15      0.55000000E-14         19      0.10000000E+10     10      7
  ****************************************
+ VAC
+ VAC           1
+ VAC           2
+ VAC           3
+ VAC           4
+ VAC           5
+ VAC           6
+ VAC           7
+ VAC           8
+ VAC           9
+ VAC          10
+ INSER
+ INT           1
+ INT           2
+ INT           3
+ INT           4
+ INT           5
+ INT           6
+ INT           7
  ***** FIRST ITERATION  ***          19   1000000000.00000     
  
  
@@ -714,11 +790,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        16 0.570E-14*Epot =    -6600.323879179905      eV 
+        16 0.570E-14*Epot =    -6600.323879179918      eV 
     *energie PAIRE EAM =     2077.27523946      eV 
     *energie GLUE  =    -8677.59911864      eV 
         16 0.570E-14*Ec =     403.245236999      eV   (1569.268 K)
-        16 0.570E-14*Etot =    -6197.078642181054      eV 
+        16 0.570E-14*Etot =    -6197.078642181066      eV 
  
         16 0.570E-14*Epot/at =    -3.32008243420      eV 
  
@@ -753,11 +829,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        17 0.590E-14*Epot =    -6623.338473656563      eV 
+        17 0.590E-14*Epot =    -6623.338473656565      eV 
     *energie PAIRE EAM =     2054.61064091      eV 
     *energie GLUE  =    -8677.94911457      eV 
         17 0.590E-14*Ec =     426.256501078      eV   (1658.819 K)
-        17 0.590E-14*Etot =    -6197.081972578511      eV 
+        17 0.590E-14*Etot =    -6197.081972578512      eV 
  
         17 0.590E-14*Epot/at =    -3.33165919198      eV 
  
@@ -792,11 +868,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        18 0.610E-14*Epot =    -6648.168362398047      eV 
+        18 0.610E-14*Epot =    -6648.168362398042      eV 
     *energie PAIRE EAM =     2030.17189247      eV 
     *energie GLUE  =    -8678.34025487      eV 
         18 0.610E-14*Ec =     451.020249494      eV   (1755.189 K)
-        18 0.610E-14*Etot =    -6197.148112904059      eV 
+        18 0.610E-14*Etot =    -6197.148112904054      eV 
  
         18 0.610E-14*Epot/at =    -3.34414907565      eV 
  
@@ -831,11 +907,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        19 0.630E-14*Epot =    -6674.589374072930      eV 
+        19 0.630E-14*Epot =    -6674.589374072925      eV 
     *energie PAIRE EAM =     2004.06750920      eV 
     *energie GLUE  =    -8678.65688327      eV 
         19 0.630E-14*Ec =     477.434745825      eV   (1857.984 K)
-        19 0.630E-14*Etot =    -6197.154628247962      eV 
+        19 0.630E-14*Etot =    -6197.154628247958      eV 
  
         19 0.630E-14*Epot/at =    -3.35743932297      eV 
  
@@ -870,11 +946,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        20 0.650E-14*Epot =    -6702.629212158164      eV 
+        20 0.650E-14*Epot =    -6702.629212158165      eV 
     *energie PAIRE EAM =     1976.40988073      eV 
     *energie GLUE  =    -8679.03909288      eV 
         20 0.650E-14*Ec =     505.467813094      eV   (1967.077 K)
-        20 0.650E-14*Etot =    -6197.161399063705      eV 
+        20 0.650E-14*Etot =    -6197.161399063706      eV 
  
         20 0.650E-14*Epot/at =    -3.37154386929      eV 
  
