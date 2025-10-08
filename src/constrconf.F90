@@ -1123,7 +1123,7 @@ contains
     at2b%im_glob=imcell
     
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart)) then
-       call constrandrepart_dkio(atrin,at2b,cel2b,box2b,tags,psc)
+       call constrandrepart_dkio(atrin,vpin,at2b,cel2b,box2b,tags,psc,lvelocities)
     else
        call constr_2dkio(at2b,atrin,tags,vpin,lvelocities,imm_glob)
        call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
@@ -1194,9 +1194,9 @@ contains
           call arret_ndm
        class is (atom_config_d)
           do i = 1, imloc
-             atrcf%vp(1,i) = vpin(1,i)
-             atrcf%vp(2,i) = vpin(2,i)
-             atrcf%vp(3,i) = vpin(3,i)
+             atrcf%vp(1,i) = vpin(1,i)*1d4 ! car *1d8*1d-12 à l'écriture
+             atrcf%vp(2,i) = vpin(2,i)*1d4
+             atrcf%vp(3,i) = vpin(3,i)*1d4
           end do
        end select
     end if

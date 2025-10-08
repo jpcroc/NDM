@@ -649,17 +649,19 @@ contains
   end subroutine constrandrepart
 
 #ifdef DKIO
-  subroutine constrandrepart_dkio(atrin,atcf,celcf,boxcf,tags,psc)
+  subroutine constrandrepart_dkio(atrin,vpin,atcf,celcf,boxcf,tags,psc,lvelocities)
     USE gen_com_m, ONLY:imm_glob,rang,ldecoup
     use dk_structure_io, only: TAG_LENGTH
+    USE atomconfig,only: atom_config,atom_config_d
     logical:: ltabvois=.false.
     type(para_space_config)::psc
     class(box_config)::boxcf
     type(cell_config)::celcf
     class(atom_config):: atcf
     character(TAG_LENGTH), dimension(:), intent(in) :: tags
-    real(double), dimension(:,:), allocatable :: atrin
+    real(double), dimension(:,:), allocatable :: atrin,vpin
     integer::i,icell,nvois0,ii,cellules_max,cellules_int,im0,im_glob,imm_loc,imm,ig
+    logical,intent(in) :: lvelocities
 
     real(double)::rvn,xpcur(3,1),itypcur,rvois=0.
 
@@ -692,7 +694,6 @@ contains
        xpcur(1,1) = atrin(1,icell)
        xpcur(2,1) = atrin(2,icell)
        xpcur(3,1) = atrin(3,icell)
-       !itypcur=atrgin%ityp(icell)
        call cryst_to_cart (1, xpcur, boxcf%at, 1)
        call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox,celcf%noy,celcf%noz)
        numproc=celcf%proc_cell(numcell)
@@ -713,25 +714,50 @@ contains
 
 !REPARTITION
     i=0;im=0;ig=0
-    do icell = 1, im_glob
-       ig=ig+1
-       xpcur(1,1) = atrin(1,icell)
-       xpcur(2,1) = atrin(2,icell)
-       xpcur(3,1) = atrin(3,icell)
-       !itypcur=atrgin%ityp(icell)
-       call cryst_to_cart (1, xpcur, boxcf%at, 1)
-       call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox,celcf%noy,celcf%noz)
-       numproc=celcf%proc_cell(numcell)
-!                write(6,*)'np ',i,numproc,MYIDSP
-       if (numproc == myidsp) then
-          i=i+1
-          im=im+1
-          atcf%xp(:,i)=xpcur(:,1)
-          atcf%ityp(i)=get_ityp(tags(icell))
-          atcf%num_at_glob(i)=ig
-          atcf%proc_at(i)=myidsp
-       endif
-    end do
+    if (lvelocities) then
+       select type (atcf)
+       type is(atom_config)
+          if (rang==0) write(6,*)'no velocity in atom-config and import asked with velocities stop'
+          call arret_ndm
+       class is (atom_config_d)
+          do icell = 1, im_glob
+             ig=ig+1
+             xpcur(1,1) = atrin(1,icell)
+             xpcur(2,1) = atrin(2,icell)
+             xpcur(3,1) = atrin(3,icell)
+             call cryst_to_cart (1, xpcur, boxcf%at, 1)
+             call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox,celcf%noy,celcf%noz)
+             numproc=celcf%proc_cell(numcell)
+             if (numproc == myidsp) then
+                i=i+1
+                im=im+1
+                atcf%xp(:,i)=xpcur(:,1)
+                atcf%vp(:,i) = vpin(:,icell)*1d4 ! car *1d8*1d-12 à l'écriture
+                atcf%ityp(i)=get_ityp(tags(icell))
+                atcf%num_at_glob(i)=ig
+                atcf%proc_at(i)=myidsp
+             endif
+          end do
+       end select
+    else ! No velocities
+       do icell = 1, im_glob
+          ig=ig+1
+          xpcur(1,1) = atrin(1,icell)
+          xpcur(2,1) = atrin(2,icell)
+          xpcur(3,1) = atrin(3,icell)
+          call cryst_to_cart (1, xpcur, boxcf%at, 1)
+          call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox,celcf%noy,celcf%noz)
+          numproc=celcf%proc_cell(numcell)
+          if (numproc == myidsp) then
+             i=i+1
+             im=im+1
+             atcf%xp(:,i)=xpcur(:,1)
+             atcf%ityp(i)=get_ityp(tags(icell))
+             atcf%num_at_glob(i)=ig
+             atcf%proc_at(i)=myidsp
+          endif
+       end do
+    end if
     atcf%im=im
 
   end subroutine constrandrepart_dkio
