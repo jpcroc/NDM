@@ -65,7 +65,7 @@ contains
     type(cell_config),target::cellcf
     class(atom_config),target::atcf
     type(para_space_config)::psc
-    type(box_config)::boxcf
+    class(box_config)::boxcf
 
     integer::ne
 

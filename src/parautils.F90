@@ -75,7 +75,7 @@ contains
        endif
        if (lspaceNDM.eqv..true.) then
           call cellcomp%copy(celloc,box)
-          call decoupage(div%mpi_image%nproc,0,celloc,atloc,lverbose=.false.,psc=psc)
+          call decoupage(div%mpi_image%nproc,0,celloc,atloc,psc=psc)
           call repartition(atcomp,atloc,box,celloc) ! mettre les éléments de la répartition dans un type
           call setcellconf(celloc,atloc,box,rum,lverbose=.false.)
        else

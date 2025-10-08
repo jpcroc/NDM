@@ -7,13 +7,15 @@ module babar_mod
   use paraconfig,only:para_config,commconstr,initparapuresp
 
 #ifdef PARA
+  USE mod_para,only:maj_atomes_frt_ftm
   use Tpara,only:grp_world,nprocs,myidsp,MPI_COMM_space,nprocspace,ierr,mpi_comm_world,&
        &NDM_MPI_REAL_DOUBLE,para_space_config,status,comm_space,mpi_world
   USE init_vois_mod,only: init_voisinage
 #else
   use Tpara,only:myidsp,nprocspace,para_space_config
 #endif
-  USE gen_com_m,only: rang,fnam,lenfnam,lmultin,imm_glob
+  USE gen_com_m,only: rang,fnam,lenfnam,lmultin,imm_glob,dmtype,itloopmax,itmax,timemax,timeloopmax,iteration,lwrtb,unitwb,&
+       &fnam,lenfnam,lmasterb,lspacendm,latcomp
    use read_val,only:ltabvois
  USE init_simple_mod,only:init_simple
      USE init_pot_mod,only:init_pot
@@ -39,7 +41,6 @@ module babar_mod
 
 
   integer::ntbbpp,itbbpp! nombre de température par process
-  logical::lmaster !(true= master spatial)
   logical::lbigmaster !(true= master du calcul complet)
   
   type(atom_config_d),pointer::atconfb,atconfb1,atconfb2 !type derive atom_config du systeme a n atomes
@@ -56,6 +57,8 @@ contains
   subroutine init_mpi_babar
 
     integer::itbbtot,itbbpp
+    character*80::namef,nameo
+    character*6::extension
     
     allocate(babartot(ntempbabar))
     do itbbtot=1,ntempbabar
@@ -97,13 +100,19 @@ contains
     MPI_COMM_space=parababar%mpi_image%comm
     call comm_space%init(MPI_COMM_SPACE)
     nprocspace=parababar%mpi_image%nproc
-    lmaster=parababar%lmaster
+    lmasterb=parababar%lmaster
 
+    
     if (parababar%mpi_orig%rank==0) lbigmaster=.true.
-
     do itbbpp=1,ntbbpp
-       babarloc(itbbpp)%indice=ntbbpp*parababar%image+itbbpp
-       babarloc(itbbpp)%temp=bbtempmin+(babarloc(itbbpp)%indice-1)*(bbtempmax-bbtempmin)/(ntempbabar-1)
+       babarcur=> babarloc(itbbpp)
+       babarcur%indice=ntbbpp*parababar%image+itbbpp
+       babarcur%temp=bbtempmin+(babarcur%indice-1)*(bbtempmax-bbtempmin)/(ntempbabar-1)
+       unitwb=1000+babarcur%temp
+       nameo=fnam(1:lenfnam)
+       write(extension,'(i6.6)') int(babarcur%temp)
+       namef=trim(nameo)//'.'//trim(extension)//'K.out'
+       open(unit=unitwb, file=namef, status='unknown')
     end do
 
   end subroutine init_mpi_babar
@@ -116,7 +125,7 @@ contains
     character :: extension*4
     real(double)::tinitb
     name1=fnam(1:lenfnam)
-
+    call init_pot
     do itbbpp=1,ntbbpp
        babarcur=>babarloc(itbbpp)
        itemp=babarcur%indice
@@ -131,14 +140,45 @@ contains
        else
           filename=trim(name1)
        end if
-       call init_pot
+
        tinitb=babarcur%temp
+       unitwb=1000+babarcur%temp
+       if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+          latcomp=.false.
+       else
+          latcomp=.true.
+       end if
        call init_simple(atconfb,cellb,boxb,filename=trim(filename),psc=pscbb,linitpot=.false.,tinitr=tinitb)
     end do
     
   end subroutine init_babar
     
   subroutine babar
+    use dmloop_pilot_mod,only:dmloop_pilot
+    integer::itbbpp,iter
+    dmtype=4
+    itloopmax=itmax
+    timeloopmax=timemax
+
+    do itbbpp=1,ntbbpp
+    iteration=0
+       babarcur=>babarloc(itbbpp)
+       atconfb=>config_atom_b(itbbpp)
+       cellb=>config_cell_b(itbbpp)
+       boxb=>config_box_b(itbbpp)
+       pscbb=>config_psc_b(itbbpp)
+       if (lmasterb.eqv..true.)write(6,*)'BABAR RUN',babarcur%temp
+       if (lmasterb.eqv..true.)lwrtb=.true.
+       unitwb=1000+babarcur%temp
+#ifdef PARA
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+          call maj_atomes_frt_ftm(atconfb,cellb,boxb,pscbb)
+       end if
+#endif
+       
+       call dmloop_pilot(atconfb,cellb,boxb,pscbb,linit=.true.)
+    end do
+    
   end subroutine babar
   
 end module babar_mod

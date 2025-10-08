@@ -8,7 +8,7 @@ module dmloop_vverlet_mod
   USE boxconfig,only:box_config
   use var_pot,only:ntyp,cm
   USE gen_com_m, ONLY: itesauvforce,itesauvposition,ev2erg,rang,iteration,l2t,lTberendsen,potist,sig,sigtot,&
-       &tstep,itesauv,itesigma,lsigat,ltpcel,lspaceNDM,itloopmax,sigkine,timeloopmax,timel,lpcube
+       &tstep,itesauv,itesigma,lsigat,ltpcel,lspaceNDM,itloopmax,sigkine,timeloopmax,timel,lpcube,lbabar,lwrtb,unitwb
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t       
@@ -50,7 +50,7 @@ contains
     if (rang==0) write (6, *) '***** PREMIERE ITERATION  VVERLET****',itloopmax,timeloopmax
     ! Appel de la routine generale des forces
     test_sigma=(mod(iteration,itesigma)==0)
-
+    sigkine=0.
     CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
     if (l2t)then
        if (i2t==1)  call calceloss(celndm,atdml)
@@ -62,7 +62,13 @@ contains
        call analyseT (atdml,celndm,boxndm,psc)
        call endrunT(atdml,celndm,boxndm,.true.)
     end if
-    call analyseT (atdml,celndm,boxndm,psc)
+    if (lbabar.eqv..true.) then
+       call analyseT (atdml,celndm,boxndm,psc,lwrtr=lwrtb,unitwr=unitwb)
+    else
+       call analyseT (atdml,celndm,boxndm,psc)
+    end if
+
+!    call analyseT (atdml,celndm,boxndm,psc)
      do while ((iteration.le.itloopmax).and.(timel.lt.timeloopmax))
        iteration = iteration+1
        test_sigma=(mod(iteration,itesigma)==0)
@@ -121,9 +127,14 @@ contains
 
           sigtot = sigkine+sig
        end if
-       call analyseT (atdml,celndm,boxndm,psc)
-       call controleT(atdml,celndm,boxndm,psc,lreturn)
+       if (lbabar.eqv..true.) then
+          call analyseT (atdml,celndm,boxndm,psc,lwrtr=lwrtb,unitwr=unitwb)
+       else
+          call analyseT (atdml,celndm,boxndm,psc)
+          call controleT(atdml,celndm,boxndm,psc,lreturn)
        if (lreturn) return
+       end if
+
 
     end do
 

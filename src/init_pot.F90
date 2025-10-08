@@ -5,7 +5,7 @@ module init_pot_mod
   USE calpo_mod,only: calpo
   USE arret_ndm_mod,only:arret_ndm
   USE tersoff_zbl_mod,only: tersoff_zbl
-  USE gen_com_m, ONLY:firsttime_lammps,rang,umass,A2cm,rang
+  USE gen_com_m, ONLY:firsttime_lammps,rang,umass,A2cm,rang,unitwb,lwrtb,lbabar,lmasterb
   USE var_pot !, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel,ngrid,csive,npotentiel,&
        !&typ_pot_pair,rue_pair,catom,cm,iewald,ipo,lu_roff_pair,lue_paire,lue_typ,ntyp,roff1,roff2,ty,typ_pot_pair,&
        !&q,rue_lammps
@@ -209,10 +209,21 @@ contains
     integer,intent(in)::immT
     integer::ipotcont
     integer,save::iwrt=0
+    logical::lwrt=.true.
+    integer::unitw=6
+    if (lbabar.eqv..true.) then
+       if (lmasterb.eqv..true.) then
+          lwrt=.true.
+          unitw=unitwb
+       else
+          lwrt=.false.
+       end if
+    end if
+    
     if ((rang==0).and.(iwrt==0))then
-          write(6,*)
-       write(6,*)' -------------------------------------------------------------------'
-       write(6,*)'             2nd step of potential initialization , dependancy on box size'
+          write(unitw,*)
+       write(unitw,*)' -------------------------------------------------------------------'
+       write(unitw,*)'             2nd step of potential initialization , dependancy on box size'
     end if
     call param_det(boxndm)
        ! rumax défini en ce point
@@ -237,10 +248,10 @@ contains
     if ((iewald.gt.0).and.(iewald.ne.3)) call calpo_ew(boxndm,immT)
     if ((npotentiel.gt.1).and.(rang==0)) then
        if ((rang==0).and.(iwrt==0)) then
-          write(6,*)
-          write(6,*)'decoupage en cellule suivant'
-          write(6,*)'rumax',rumax*1d8
-          write(6,*)
+          write(unitw,*)
+          write(unitw,*)'decoupage en cellule suivant'
+          write(unitw,*)'rumax',rumax*1d8
+          write(unitw,*)
        end if
 
     end if

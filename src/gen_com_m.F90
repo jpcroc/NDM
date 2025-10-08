@@ -88,6 +88,10 @@ module gen_com_m
   logical :: lcalcjq
 
   logical :: lcdp ! algorithme d'accumulation de defauts ponctuels
+  logical :: lbabar ! algorithme BABAR
+  logical::lwrtb
+  integer::unitwb
+  logical::lmasterb !(true= master spatial)
   real(double) :: tinit !temp initiale
   real(double)::tempdeplainit,debyetemp
   logical :: lvpread  ! vitesse lue dans le fichier .cin

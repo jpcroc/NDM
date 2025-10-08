@@ -18,7 +18,8 @@ module analyseT_mod
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,rcangle,&
        &tpseuils,sigtot,unitP,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,linstantfda,&
        &itloopmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,itedepla,tdepla,tdepla2,&
-       & itesauvforce,itesauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,iteration,l2T,iteprtkin
+       & itesauvforce,itesauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,iteration,l2T,iteprtkin,&
+       &lbabar,unitwb,lwrtb
 
   USE cellconfig,only:cell_config, caltabtC,cell_config_arps
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
@@ -34,7 +35,7 @@ contains
   !         Sous-programme analyse.f
   ! ************************************************
 
-  subroutine analyseT(atdml,celndm,boxndm,psc,unitwr)
+  subroutine analyseT(atdml,celndm,boxndm,psc,unitwr,lwrtr)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
@@ -52,12 +53,11 @@ contains
     class(box_config)::boxndm
     integer,optional ::unitwr
     integer::unitw=6
+    logical,optional::lwrtr
+    logical::lwrt
 
     integer :: i, iti, ic,formatsauv,iteapp
     real(double), dimension(ntyp) :: temptyp
-
-
-
     type(atom_config_d)::attyp
     type(cell_config):: celtyp
 
@@ -74,6 +74,16 @@ contains
     real(double)::atkin
     logical,save::linitrdf=.false.,linitadf=.false.,lopenkin=.false.
 
+    if (present(lwrtr)) then
+       lwrt=lwrtr
+    else
+       if (rang==0) then
+          lwrt=.true.
+          else
+          lwrt=.false.
+       end if
+    end if
+    
     if (present(unitwr))unitw=unitwr
     if (itloopmax==0) itetemp=0
     if (itesauv.GT.0) then
@@ -168,7 +178,7 @@ contains
 
           !remarque 1erg = 6.24d11 eV
           if (mod(iteration,itetemp2)==0) then
-             if (rang==0) then
+             if (lwrt.eqv..true.) then
 
                 if (ibrake.GT.0)  write(unitw,*)'electronic losses ', elosselec, elosselec1
 
@@ -341,7 +351,7 @@ contains
           END IF
 
 
-          if (rang==0) then
+          if (lwrt.eqv..true.) then
              write (unitw, *)
              do iti = 1, ntyp
                 if (count(atdml%ityp==iti)==0) cycle

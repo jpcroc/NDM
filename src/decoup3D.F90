@@ -17,12 +17,11 @@ module decoupage_mod
 
 
 
-    USE gen_com_m, ONLY:imm_glob,rang,ldecoup
+    USE gen_com_m, ONLY:imm_glob,rang,ldecoup,unitwb,lwrtb,lbabar,lmasterb
     
   implicit none
-  logical::lverb=.true.
 contains
-  subroutine decoupage(nbr_cpuIN,ncore,celdec,atdec,lverbose,psc,atcomp,boxrep)
+  subroutine decoupage(nbr_cpuIN,ncore,celdec,atdec,psc,atcomp,boxrep)
 
     USE gen_com_m, ONLY:imm_glob,rang,ldecoup
 
@@ -33,7 +32,6 @@ contains
     integer::ncore ! nb de coeur par noeud
     type(cell_config)::celdec
     class(atom_config),optional:: atdec,atcomp
-    logical,optional::lverbose
     integer, allocatable :: coord_min(:,:),coord_max(:,:)	!stocke la "coordonnée" de la premiere cellule du découpage selon x,y,z
     integer:: nnoeuds,imm_loc
     integer :: nb_sol  !nbr de decoupage possible (n+1)(n+2)/2
@@ -66,21 +64,39 @@ contains
     real(double)::xt(3)
     integer,allocatable::natloc(:) !indice de boucle
     integer,save::icall=0
+    logical ::lwrt
+    integer::unitw
+    if (lbabar.eqv..true.) then
+       if (lmasterb.eqv..true.) then
+          lwrt=.true.
+          unitw=unitwb
+       else
+          lwrt=.false.
+          
+       end if
+    else
+       if (rang==0) then
+          lwrt=.true.
+          unitw=6
+       else
+          lwrt=.false.
+          unitw=6
+       end if
+    end if
+
     nox=celdec%nox;noy=celdec%noy;noz=celdec%noz; noxyz=nox*noy*noz
     icall=icall+1
-    if (present(lverbose))lverb=lverbose
 #ifdef PARA
     if (ldecoup) then
        nbr_cpumin=2
-       lverb=.true.
     else
        nbr_cpumin=nbr_cpuin
     end if
     if (present(atdec))then
-       !    write(6,*)'OHLALA1',imm_glob
-       !    write(6,*)'OHLALA2',atdec%imm_glob
+       !    write(unitw,*)'OHLALA1',imm_glob
+       !    write(unitw,*)'OHLALA2',atdec%imm_glob
        !    if (imm_glob.ne.atdec%imm_glob) then
-       !       write(6,*)'OHLALA',imm_glob,atdec%imm_glob
+       !       write(unitw,*)'OHLALA',imm_glob,atdec%imm_glob
        !       call arret_ndm
        !    end if
     end if
@@ -89,14 +105,14 @@ contains
     if (ldecoup) then
        nbr_cpumin=2
     else
-       write(6,*)'WTF decoup'
+       write(unitw,*)'WTF decoup'
        call arret_ndm
     end if
 #endif
 
     if (ldecoup) then
-       write(6,*)'DECOUP TEST from 2 to ', nbr_cpuIN,' with ',ncore ,' per node'
-       write(6,*)'results are in decoup_out, grep MEILLEUR'
+       write(unitw,*)'DECOUP TEST from 2 to ', nbr_cpuIN,' with ',ncore ,' per node'
+       write(unitw,*)'results are in decoup_out, grep MEILLEUR'
        iudecoup=1023
        open (unit=1023,file='decoup_out')    
     else
@@ -112,8 +128,8 @@ contains
 
           nb_sol = 0
 
-          if ((rang==0).and.(lverb)) then
-             write(6,*)'sur ',nbr_cpu,' cpus',ncore
+          if (lwrt) then
+             write(unitw,*)'sur ',nbr_cpu,' cpus',ncore
              write(iudecoup,*)
              write(iudecoup,*)
              write(iudecoup,*)'-----------------------------------------------------------'
@@ -176,7 +192,7 @@ contains
           !write(iudecoup,*)
 
           if (nb_sol==0) then
-             if ((rang==0).and.(lverb)) then
+             if (lwrt) then
                 write(iudecoup,*)'!!! Pas de possibilite de decoupage pour la configuration demandee !!!'
                 write(iudecoup,*)'!!! nx / ny / nz / nb_cpu :',nox,noy,noz,nbr_cpu
 
@@ -208,7 +224,7 @@ contains
 
           endif
 
-          if ((rang==0).and.(lverb))  write(iudecoup,*)'Nbre de solutions possibles : ',nb_sol
+          if (lwrt)  write(iudecoup,*)'Nbre de solutions possibles : ',nb_sol
 
           ! On scanne l'ensemble des solutions proposees pour en calculer 
           ! l'equilibrage de charge et le nombre de cellules fantomes
@@ -262,7 +278,7 @@ contains
              if (specifs(num_sol,3)>specifs(solution,3)) solution = num_sol
           enddo
 
-          if ((rang==0).and.(lverb)) write(iudecoup,'(A,4I5,F10.4)')'LE_MEILLEUR_DECOUPAGE :',nbr_cpu, decoup(solution,1), & 
+          if (lwrt) write(iudecoup,'(A,4I5,F10.4)')'LE_MEILLEUR_DECOUPAGE :',nbr_cpu, decoup(solution,1), & 
                decoup(solution,2), decoup(solution,3),specifs(solution,3)
 
           !Calcul des xmin, ymin, zmin pour chaque decoupage
@@ -314,10 +330,10 @@ contains
 
 
 
-          if (rang == 0) then
+          if (lwrt) then
 
 
-             if ((icall==1).and.(lverb)) then 
+             if (icall==1) then 
                 write(iudecoup,*)'-----------------------------------------------'
                 write(iudecoup,*)'          FIN DU CALCUL DU DECOUPAGE :         '
                 write(iudecoup,*)
@@ -403,11 +419,8 @@ contains
                       endif
                    end do
                    call comm_space%sum(natloc)
-                   !             if (rang==0) write(6,*)'natloc',natloc
                    natlocm=maxval(natloc)
-                   !             write(6,*)'IMLOC1 ',natlocm
                    natlocm=int(natlocm*float(cellules_max)/cellules_int)
-                   !             write(6,*)'IMLOC2 ',natlocm,imm_glob
                    imm_loc=min( imm_glob, int(1.2 * natlocm))
                    imm = imm_loc
                 else
@@ -424,8 +437,6 @@ contains
                 call atdec%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob,imm_glob=imm_glob)
              end if
              !       imm_loc1 = min( imm_glob, int(1.2 * imm_glob * cellules_max / noxyz) )
-             !       if (rang==0) write(6,*)'loc1 ',imm_glob ,cellules_max , noxyz
-             !       if (rang==0) write(6,*)'IMM std nouv ',imm_loc1,imm
              ! Initialisation des donnees geometriques qui serviront pour le reste du code :
           end if
 #endif
@@ -504,11 +515,8 @@ contains
                       endif
                    end do
                    call comm_space%sum(natloc)
-                   !             if (rang==0) write(6,*)'natloc',natloc
                    natlocm=maxval(natloc)
-                   !             write(6,*)'IMLOC1 ',natlocm
                    natlocm=int(natlocm*float(cellules_max)/cellules_int)
-                   !             write(6,*)'IMLOC2 ',natlocm,imm_glob
                    imm_loc=min( imm_glob, int(1.2 * natlocm))
                    imm = imm_loc
                 else
@@ -525,8 +533,6 @@ contains
                 call atdec%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob,imm_glob=imm_glob)
              end if
              !       imm_loc1 = min( imm_glob, int(1.2 * imm_glob * cellules_max / noxyz) )
-             !       if (rang==0) write(6,*)'loc1 ',imm_glob ,cellules_max , noxyz
-             !       if (rang==0) write(6,*)'IMM std nouv ',imm_loc1,imm
              ! Initialisation des donnees geometriques qui serviront pour le reste du code :
           end if
 #endif
@@ -604,7 +610,6 @@ contains
        end do
     end do
     call comm_space%sum(natloc)
-    !             if (rang==0) write(6,*)'natloc',natloc
     natlocm=maxval(natloc)
     natlocm=int(natlocm*float(cellules_max)/cellules_int)
     imm_loc=min( imm_glob, int(1.2 * natlocm))
@@ -627,7 +632,7 @@ contains
                 call cryst_to_cart (1, xpcur, boxcf%at, 1)
                 call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox,celcf%noy,celcf%noz)
                 numproc=celcf%proc_cell(numcell)
-!                write(6,*)'np ',i,numproc,MYIDSP
+!                write(unitw,*)'np ',i,numproc,MYIDSP
                 if (numproc == myidsp) then
                    i=i+1
                    im=im+1

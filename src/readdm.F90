@@ -29,7 +29,7 @@ contains
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,nfda,h0,&
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou,iteprtkin&
-         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart,lmultin&
+         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart,lmultin,lbabar&
          &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit,lmaxvp,vplim
 #ifdef LAMMPS_VERSION
      USE gen_com_m, ONLY: energy_conversion_lammps, position_conversion_lammps, pressure_conversion_lammps
@@ -700,6 +700,7 @@ contains
           if (rang==0) write(6,*)'DMTYPE=16 and bbtempmin/max=0 stop'
           call arret_ndm
        end if
+       lbabar=.true.
     case default
        write(6,*)'DMTYPE',dmtype
        if (rang==0) write(6,*) 'WARNING : VERSION PARALLELE seulement avec ',&
@@ -1262,7 +1263,8 @@ contains
        write(6,*)'simple test de distance entre atomes'
     case(113)
        write(6,*)'recvherche de la position la plus éloignée des atomes'
-
+    case(16)
+       if (rang==0) write (6, *) 'CALCUL BABAR,',dmtype
     case default
        if (rang==0) write (6, *) 'mauvais type de calcul dmtype=TTT',dmtype
        call arret_ndm

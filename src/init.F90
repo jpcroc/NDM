@@ -13,7 +13,7 @@ module init_mod
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config,caltabtC
   use boxconfig,only: box_config
-  USE constrconf_mod, only :constrconf,lprt
+  USE constrconf_mod, only :constrconf
   USE arret_ndm_mod,only: arret_ndm
 
 #ifdef PARA
@@ -206,7 +206,7 @@ contains
        ! input and initialization of 2T
        select type(atdml)
           class is (atom_config_d)
-          call initspeed(atdml,boxndm,lprt=lprt)
+          call initspeed(atdml,boxndm)
        end select
     end if
     !

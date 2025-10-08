@@ -98,7 +98,8 @@ contains
           next_pt = pt_im(0) + im_loc(0)
           if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              do i_proc=1,nprocspace-1
-                call comm_space%probe(11001,sourceout=proc_source)
+                !call comm_space%probe(11001,sourceout=proc_source)
+                proc_source=i_proc
                 call comm_space%recv (im_temp,proc_source,11001)
                 im_loc(proc_source)=im_temp
                 pt_im(proc_source)=next_pt

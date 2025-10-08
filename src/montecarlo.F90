@@ -43,7 +43,7 @@ module montecarlo_mod
   use lammps_util_mod,only:init_lammps
 #endif  
   use config2data_mod,only:config2data
-  USE constrconf_mod,only:read_cin,lprt
+  USE constrconf_mod,only:read_cin
   use probMC,only:probMC1
   use Parrinello_Rahman,only:sp,sdot, sdot_new,trh0,invh0,invtrh0,epsi,tension,volu0,invvolu0
   implicit none
@@ -155,9 +155,8 @@ contains
        allocate(rcpath(nparapath))
        rcpath=0
     end select
-    lprt=.true.
     do ipp=1,nparapath
-       if (ipp.gt.1) lprt=.false.
+!       if (ipp.gt.1) lprt=.false.
        lcalc=.false.
        if (lparapath) then
           if (parapath%image+1==ipp) lcalc=.true.

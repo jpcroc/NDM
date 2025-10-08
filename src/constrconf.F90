@@ -30,12 +30,13 @@ module constrconf_mod
 
 
   implicit none
-  logical::lprt=.true.
   logical :: ldecalcor
+  integer::unitw=6
   logical :: lsecondpath
+    logical::lwrt
   real(double),allocatable::xpd(:,:)
 contains
-  subroutine constrconf (atrcf,boxrcf,cellrcf,lrepart,filename,psc)
+  subroutine constrconf (atrcf,boxrcf,cellrcf,lrepart,filename,psc,unitwr,lwrtr)
     !********************************************************************
     !             CONSTRUCTION DE LA BOITE DE SIMULATION
     !********************************************************************
@@ -59,23 +60,37 @@ contains
     character :: fnamcin*80, fnamgin*80
     integer::itread
     integer::nati
-    logical::lwrite
+    logical::lwrite,lwrc
+    integer,optional ::unitwr
+
+    logical,optional::lwrtr
+
+    if (present(lwrtr)) then
+       lwrt=lwrtr
+    else
+       if (rang==0)then
+          lwrt=.true.
+       else
+          lwrt=.false.
+       end if
+    end if
+    if (present(unitwr))unitw=unitwr
     !-----------------------------------------------------
     ! READING FROM THE CONFIGURATION FILE
     !---------------------------------------------------
     filenom=fnam(1:lenfnam)
     if (present(filename))filenom=filename
-    if ((rang==0).and.(lprt)) then
-       write(6,*)
-       write(6,*)' *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-'
-       write(6,*)'imm,imm_glob,nprocspace',imm,imm_glob,nprocspace
-       write(6,*)
+    if (lwrt.eqv..true.) then
+       write(unitw,*)
+       write(unitw,*)' *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-'
+       write(unitw,*)'imm,imm_glob,nprocspace',imm,imm_glob,nprocspace
+       write(unitw,*)
     endif
 
     if (igen.ge.1) then
        allocate (ibuffer(imm_glob))
        allocate (buffer(3,imm_glob))
-       if ((rang==0).and.(lprt))  write(6,*)'********** reading configuration from file********'
+       if (lwrt.eqv..true.)  write(unitw,*)'********** reading configuration from file********'
        if (lrestart) then
           fnamcin = fnam(1:lenfnam)//'.cout'
        else
@@ -85,33 +100,33 @@ contains
 #ifdef PARA
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           itread=0
-          call read_cin(boxrcf,itread,fnamcin=fnamcin,fmtcin=fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
-          if ((rang==0).and.(lprt)) then
-             write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
+          call read_cin(boxrcf,itread,fnamcin=fnamcin,fmtcin=fmt_cin,unitwr=unitw) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+          if (lwrt.eqv..true.) then
+             write (unitw, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
-          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
+          call setnox(boxrcf,cellrcf,rumax,noxr=nox,noyr=noy,nozr=noz)
           ncore=0
-          call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
+          call  decoupage(nprocspace,ncore,cellrcf,psc=psc)
 
-          if ((rang==0).and.(lprt)) then
-             write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
+          if (lwrt.eqv..true.) then
+             write (unitw, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
           ncore=0
           if (lrepart.eqv..true.) then
-             call read_cin2(boxrcf,atrcf,cellrcf,imm_glob,fnamcin,lrestart,fmt_cin,psc) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+             call read_cin2(boxrcf,atrcf,cellrcf,imm_glob,fnamcin,lrestart,fmt_cin,psc,unitwr=unitw) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
           else
              itread=1
-             call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+             call read_cin(boxrcf,itread,atrcf,imm_glob,fnamcin,lrestart,fmt_cin,unitwr=unitw) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
           end if
        else
           itread=1
           call atrcf%init(immin=imm_glob,imin=0,ltabvois=atrcf%ltabvois,rvois=atrcf%rvois)
-          call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
+          call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin,unitwr=unitw) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
           atrcf%im_glob=atrcf%im
-          if ((rang==0).and.(lprt)) then
-             write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
+          if (lwrt.eqv..true.) then
+             write (unitw, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
-          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
+          call setnox(boxrcf,cellrcf,rumax,noxr=nox,noyr=noy,nozr=noz)
           ncore=0
 
        end if
@@ -120,26 +135,26 @@ contains
 
        if (ldecoup) then 
           itread=0
-          call read_cin(boxrcf,itread,fnamcin=fnamcin)
-          if ((rang==0).and.(lprt)) then
-             write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
+          call read_cin(boxrcf,itread,fnamcin=fnamcin,unitwr=unitw)
+          if (lwrt.eqv..true.) then
+             write (unitw, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
-          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
+          call setnox(boxrcf,cellrcf,rumax,noxr=nox,noyr=noy,nozr=noz)
           open(123, file='decoup.dat', status='old')
           read (123, *) nprocspace,ncore
           close(123)         
-          call  decoupage(nprocspace,ncore,cellrcf,psc=psc,lverbose=lprt)
+          call  decoupage(nprocspace,ncore,cellrcf,psc=psc)
           call arret_ndm
        else
           itread=1
           call atrcf%init(immin=imm_glob,imin=0,ltabvois=atrcf%ltabvois,rvois=atrcf%rvois)
-          call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
+          call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin,unitwr=unitw) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
 
           atrcf%im_glob=atrcf%im
-          if ((rang==0).and.(lprt)) then
-             write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
+          if (lwrt.eqv..true.) then
+             write (unitw, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
-          call setnox(boxrcf,cellrcf,rumax,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
+          call setnox(boxrcf,cellrcf,rumax,noxr=nox,noyr=noy,nozr=noz)
           !          CALL fin allocation CELL et FIN DIVID
        end if
 
@@ -172,13 +187,13 @@ contains
     end if
 
 
-    if ((rang==0).and.(lprt)) then
+    if (lwrt.eqv..true.) then
 
-       write(6,*)
-       write (6, *) '-------- boite de simulation ------'
-       write (6, *) 'nombre d atomes =', atrcf%im_glob
+       write(unitw,*)
+       write (unitw, *) '-------- boite de simulation ------'
+       write (unitw, *) 'nombre d atomes =', atrcf%im_glob
        do i=1,3
-          write(6,'(A,I2,3F15.6)')'vecteur ',i, (boxrcf%at(ic,i)*1.0d8,ic=1,3)
+          write(unitw,'(A,I2,3F15.6)')'vecteur ',i, (boxrcf%at(ic,i)*1.0d8,ic=1,3)
        end do
     endif                                  ! fin rang=0
 
@@ -189,8 +204,8 @@ contains
           call comm_space%sum(nati)
        end if
 #endif
-       if ((rang==0).and.(lprt)) then
-          if (nati.ne.0) write (6, *) nati, ' atomes de type', iti
+       if (lwrt.eqv..true.) then
+          if (nati.ne.0) write (unitw, *) nati, ' atomes de type', iti
        end if
 
     end do
@@ -199,7 +214,7 @@ contains
 
     if((ipotentiel==-10).or.(ipotentiel==-11)) then
        !       if(rang==0)then
-       !          write(6,*)'write configuration to conf.lmp RANG 0 !'
+       !          write(unitw,*)'write configuration to conf.lmp RANG 0 !'
        if (rang==0) then
           lwrite=.true.
        else
@@ -247,7 +262,7 @@ contains
     if(present(lconstrsimple))lcs=lconstrsimple
     immr=imm_glob
     if (present(immread)) immr=immread
-    !    write(6,*)'IMMR',immr,lcs
+    !    write(unitw,*)'IMMR',immr,lcs
     if (ldecoup) then
        itread=0
     else
@@ -260,9 +275,9 @@ contains
     end do
     call box2b%init(atg,ipbc)
 
-    call setnox(box2b,cel2b,rum,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
-    if ((rang==0).and.(lprt)) then
-       write (6, '(2A,D15.8,A,D15.8,A)') fnamg,'volume=', box2b%volu,' cm3 ',box2b%volu*1d24,' Ang3'
+    call setnox(box2b,cel2b,rum,noxr=nox,noyr=noy,nozr=noz)
+    if (lwrt.eqv..true.) then
+       write (unitw, '(2A,D15.8,A,D15.8,A)') fnamg,'volume=', box2b%volu,' cm3 ',box2b%volu*1d24,' Ang3'
     end if
 
     if (lcs) then ! construction simpple sans repartition en sequentiel
@@ -279,12 +294,12 @@ contains
           open(123, file='decoup.dat', status='old')
           read (123, *) npr,ncore
           close(123)         
-          call  decoupage(npr,ncore,cel2b,psc=psc,lverbose=lprt)
+          call  decoupage(npr,ncore,cel2b,psc=psc)
           call arret_ndm
        end if
     end if
     !    COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
-    call  decoupage(nprocspace,ncore,cel2b,psc=psc,lverbose=lprt)
+    call  decoupage(nprocspace,ncore,cel2b,psc=psc)
     ncore=0
     at2b%imm_glob=imm_glob
     at2b%im_glob=atrgin%im*lat(1)*lat(2)*lat(3)
@@ -308,7 +323,7 @@ contains
        open(123, file='decoup.dat', status='old')
        read (123, *) npr,ncore
        close(123)         
-       call  decoupage(npr,ncore,cel2b,psc=psc,lverbose=lprt)
+       call  decoupage(npr,ncore,cel2b,psc=psc)
        call arret_ndm
     end if
     call constr_2gin (at2b,box2b,cel2b,atrgin,boxrgin,lat,imm)
@@ -338,7 +353,7 @@ contains
     immr=imm_glob
     if (present(immread)) immr=immread
     if (imloc>immread) then
-       write (6, *) rang,'imm trop petit',imloc,immr
+       write (unitw, *) rang,'imm trop petit',imloc,immr
        call arret_ndm
     endif
 
@@ -418,7 +433,7 @@ contains
     return
   end subroutine repartition
 
-  subroutine read_cin2(boxcin,atcinr,celcf,immr,fnamcin,lres,fmtcin,psc)
+  subroutine read_cin2(boxcin,atcinr,celcf,immr,fnamcin,lres,fmtcin,psc,unitwr)
     USE gen_com_m,only: iteration,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep
     use Tpara,only:myidsp,nprocspace
     use read_val,only:ltabvois
@@ -435,15 +450,19 @@ contains
     integer::natlocm,icomp,numcell,numproc,imm_loc1,im,cellules_max,cellules_int,im0,im_glob,imm_loc,imm,ig,&
          &lucin,icintype,icintypemod,i,nvois0,it,im_gr,ii
     integer,allocatable::natloc(:) !indice de boucle
-    logical::lprt=.true.
+    integer,optional ::unitwr
+    integer::unitw=6
+
+    if (present(unitwr))unitw=unitwr
+
     lucin = 94
     open(unit=lucin, file=fnamcin, form='unformatted', status='old', err=431)
 
     read (lucin, err=432) icintype
 
-    if ((rang==0).and.(lprt))  write (6, *) 'config type of  .cin file : ', icintype
+    if (lwrt.eqv..true.)  write (unitw, *) 'config type of  .cin file : ', icintype
     if (icintype>5.or.icintype<0) then
-       write (6, *) rang, 'wrong icintype'
+       write (unitw, *) rang, 'wrong icintype'
        call arret_ndm
     endif
 
@@ -471,15 +490,15 @@ contains
 
     read (lucin, err=434) im_gr                         !number of atoms in the box
     if (im_gr>immr) then
-       if(rang==0)                    write (6, *) 'P2 im > imM', im_gr, immr
+       if(rang==0)                    write (unitw, *) 'P2 im > imM', im_gr, immr
        call arret_ndm
     endif
     !       call atcinr%init(im_gr,immr,im_glob=im_gr)
 
     read (lucin, err=435) itypr   !ityp muet
-    if ((rang==0).and.(lprt))  write (6, *) 'types'
+    if (lwrt.eqv..true.)  write (unitw, *) 'types'
     read (lucin, err=436) xpr    ! xp
-    if ((rang==0).and.(lprt))  write (6, *) 'XPR'
+    if (lwrt.eqv..true.)  write (unitw, *) 'XPR'
     !       atcinr%xp(1:3,1:im_gr)=buffer(1:3,1:im_gr)
 
     cellules_max=0
@@ -497,9 +516,9 @@ contains
        enddo
     case(1) formcin
        read (lucin, err=437) natgr
-       if ((rang==0).and.(lprt))  write (6, *) 'num_at_glob'
+       if (lwrt.eqv..true.)  write (unitw, *) 'num_at_glob'
     case default  formcin
-       if (rang.eq.0) write(6,*) 'precisez le format fmt_cin'
+       if (rang.eq.0) write(unitw,*) 'precisez le format fmt_cin'
        call arret_ndm
     end select formcin
     !       atcinr%num_at_glob(1:im_gr)=ibuffer(1:im_gr)
@@ -514,7 +533,7 @@ contains
     end do
 
     call comm_space%sum(natloc)
-    !             if (rang==0) write(6,*)'natloc',natloc
+    !             if (rang==0) write(unitw,*)'natloc',natloc
     natlocm=maxval(natloc)
     natlocm=int(natlocm*float(cellules_max)/cellules_int)
     imm_loc=min( imm_glob, int(1.2 * natlocm))
@@ -549,7 +568,7 @@ contains
        if (icintypemod==1) then
           if (icintype==3) read (lucin, err=440) xpr                     !xpp
           read (lucin, err=441) xpr                     !vp
-          if ((rang==0).and.(lprt))  write (6, *) 'VP'
+          if (lwrt.eqv..true.)  write (unitw, *) 'VP'
           i=0
           do it=1,im_gr
              if (proc(it) == myidsp) then
@@ -568,7 +587,7 @@ contains
           end if
 
           read (lucin, err=443) xpr                     !vp
-          if ((rang==0).and.(lprt))  write (6, *) 'VP'
+          if (lwrt.eqv..true.)  write (unitw, *) 'VP'
           i=0
           do it=1,im_gr
              if (proc(it) == myidsp) then
@@ -600,12 +619,12 @@ contains
           if (nitmax.ge.0) itmax=iteration+nitmax
           tstep = oldtstep
 
-          if ((rang==0).and.(lprt)) then
+          if (lwrt.eqv..true.) then
 
-             write (6, *) 'restart parameters'
-             write (6, *) 'it =', iteration, ' time =', timel
-             write (6, *) 'pmean', pmean, ' tmean =', tmean
-             write (6, *) 'tstep', tstep
+             write (unitw, *) 'restart parameters'
+             write (unitw, *) 'it =', iteration, ' time =', timel
+             write (unitw, *) 'pmean', pmean, ' tmean =', tmean
+             write (unitw, *) 'tstep', tstep
           endif                                ! fin rang=0
        end if
        usdh = 1.0/(two*tstep)
@@ -637,7 +656,7 @@ contains
 
   end subroutine read_cin2
 
-  subroutine read_cin(boxcin,itread,atcinr,immr,fnamcin,lres,fmtcin)
+  subroutine read_cin(boxcin,itread,atcinr,immr,fnamcin,lres,fmtcin,unitwr)
     !itread 0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
     !immr : imm extrait .cin
     !lres : lrestart,
@@ -663,15 +682,20 @@ contains
     !      integer , dimension(imm,ntyp) :: fv
     !         integer , dimension(6000,10) :: fv    !Truc_bizarre_jmd
     integer::im_gr,i_loc
+    integer,optional ::unitwr
+    integer::unitw=6
+
+    if (present(unitwr))unitw=unitwr
+
     if (present(immr))then
        allocate (ibuffer(immr))      ; allocate (buffer(3,immr))
     endif
     if (present(lres))lrestart=lres
     if (present(fmtcin))fmt_cin=fmtcin
-    if ((rang==0).and.(lprt)) then
-       write(6,*)
-       write(6,*)' *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-'
-       write(6,*)' *-*-*-*-*- LRESTART =',lrestart!, '*** itread',itread
+    if (lwrt.eqv..true.) then
+       write(unitw,*)
+       write(unitw,*)' *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-'
+       write(unitw,*)' *-*-*-*-*- LRESTART =',lrestart!, '*** itread',itread
     endif
 
     lucin = 93
@@ -679,16 +703,16 @@ contains
 
     read (lucin, err=456) icintype
 
-    if ((rang==0).and.(lprt))  write (6, *) 'config type of  .cin file : ', icintype
+    if (lwrt.eqv..true.)  write (unitw, *) 'config type of  .cin file : ', icintype
     if (icintype>5.or.icintype<0) then
-       write (6, *) rang, 'wrong icintype'
+       write (unitw, *) rang, 'wrong icintype'
        call arret_ndm
     endif
 
     icintypemod = mod(icintype,2)
 
 !!$    if (lrestart.and.icintypemod==0) then
-!!$       write (6, *) rang, 'not possible to restart from this file'
+!!$       write (unitw, *) rang, 'not possible to restart from this file'
 !!$       call arret_ndm
 !!$    endif
     !at(vect123,xyz)
@@ -708,13 +732,13 @@ contains
        return
     case(1)
        if (.not.present(atcinr))then
-          write(6,*)'atcinr pas present et itread=1'
+          write(unitw,*)'atcinr pas present et itread=1'
           call arret_ndm
        end if
 
        read (lucin, err=456) im_gr                         !number of atoms in the box
        if (im_gr>immr) then
-          if(rang==0)                    write (6, *) 'P1 im > imM', im_gr, immr
+          if(rang==0)                    write (unitw, *) 'P1 im > imM', im_gr, immr
           call arret_ndm
        endif
        atcinr%im=im_gr
@@ -724,10 +748,10 @@ contains
        read (lucin, err=456) ibuffer   !ityp
        atcinr%ityp(1:im_gr)=ibuffer(1:im_gr)
 
-       if ((rang==0).and.(lprt))  write (6, *) 'types'
+       if (lwrt.eqv..true.)  write (unitw, *) 'types'
        read (lucin, err=456) buffer    ! xp
        atcinr%xp(1:3,1:im_gr)=buffer(1:3,1:im_gr)
-       if ((rang==0).and.(lprt))  write (6, *) 'xp'
+       if (lwrt.eqv..true.)  write (unitw, *) 'xp'
        formcin:select case (fmt_cin)
        case (0) formcin
           do i=1,im_gr
@@ -736,9 +760,9 @@ contains
        case(1) formcin
           read (lucin, err=456) ibuffer
           atcinr%num_at_glob(1:im_gr)=ibuffer(1:im_gr)
-          if ((rang==0).and.(lprt))  write (6, *) 'num_at_glob'
+          if (lwrt.eqv..true.)  write (unitw, *) 'num_at_glob'
        case default  formcin
-          if (rang.eq.0) write(6,*) 'precisez le format fmt_cin'
+          if (rang.eq.0) write(unitw,*) 'precisez le format fmt_cin'
           call arret_ndm
        end select formcin
 
@@ -770,10 +794,10 @@ contains
 
 !!$             read (lucin, err=456) buffer                     !xpp
 !!$             atcinr%xpp(:,1:im_gr)=buffer(:,1:im_gr)
-!!$             write(6,*)'xpp_e'
+!!$             write(unitw,*)'xpp_e'
              read (lucin, err=456) buffer                     !vp
              atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
-             !             write(6,*)'vp_e'
+             !             write(unitw,*)'vp_e'
              !             read (lucin, err=456) buffer                     !former positions
              !             atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
 
@@ -802,25 +826,25 @@ contains
              if (nitmax.ge.0) itmax=iteration+nitmax
              tstep = oldtstep
 
-             if ((rang==0).and.(lprt)) then
+             if (lwrt.eqv..true.) then
 
-                write (6, *) 'restart parameters'
-                write (6, *) 'it =', iteration, ' time =', timel
-                write (6, *) 'pmean', pmean, ' tmean =', tmean
-                write (6, *) 'tstep', tstep
+                write (unitw, *) 'restart parameters'
+                write (unitw, *) 'it =', iteration, ' time =', timel
+                write (unitw, *) 'pmean', pmean, ' tmean =', tmean
+                write (unitw, *) 'tstep', tstep
              endif                                ! fin rang=0
           end if
           usdh = 1.0/(two*tstep)
        endif
     case(2) ! at xp et num_at_glob
        if (.not.present(atcinr))then
-          write(6,*)'atcinr pas present et itread=2'
+          write(unitw,*)'atcinr pas present et itread=2'
           call arret_ndm
        end if
 
        read (lucin, err=456) im_gr                         !number of atoms in the box
        if (im_gr>immr) then
-          if(rang==0)                    write (6, *) 'P2 im > imM', im_gr, immr
+          if(rang==0)                    write (unitw, *) 'P2 im > imM', im_gr, immr
           call arret_ndm
        endif
        call atcinr%init(im_gr,immr,im_glob=im_gr)
@@ -884,12 +908,12 @@ contains
     end if
     !  si coordonnees reduites
 
-    if ((rang==0).and.(lprt))  write (6, *) '**********construction du reseau************'
+    if (lwrt.eqv..true.)  write (unitw, *) '**********construction du reseau************'
     lugin=92
     !                                                !number of cells in 3 directions
     open(unit=lugin, file=fnamgin, status='unknown')
     read (lugin, *) latr(1), latr(2), latr(3)
-    if ((rang==0).and.(lprt))  write (6, *) 'repetition de mailles', latr
+    if (lwrt.eqv..true.)  write (unitw, *) 'repetition de mailles', latr
 
 
     !     **** coordonnes des vecteurs de maille en A dans une base orthonormee ****
@@ -904,7 +928,7 @@ contains
     read (lugin, *) imcell               !number of atoms in UC
     if (itr==0) return
     if (imcell>immr) then
-       if ((rang==0).and.(lprt)) write (6, *) 'trop d_atomes dans la cel. unite',immr,imcell
+       if (lwrt.eqv..true.) write (unitw, *) 'trop d_atomes dans la cel. unite',immr,imcell
        call arret_ndm
     endif
     call atrg%init(imcell)
@@ -913,18 +937,18 @@ contains
     end do
     if (ldecalcor) then
        if (any(atrg%xp (1:3,1:imcell)==0)) then
-          if ((rang==0).and.(lprt))  write(6,*)' .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +2e-7'
+          if (lwrt.eqv..true.)  write(unitw,*)' .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +2e-7'
           atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)+2e-7
        end if
        if (any(atrg%xp (1:3,1:imcell)==1)) then
-          if ((rang==0).and.(lprt))  write(6,*)' .gin with 1 coordinates; creates FAILURES,  POSITIONS SHIFTED By -1e-7'
+          if (lwrt.eqv..true.)  write(unitw,*)' .gin with 1 coordinates; creates FAILURES,  POSITIONS SHIFTED By -1e-7'
           atrg%xp (1:3,1:imcell)=atrg%xp (1:3,1:imcell)-1e-7
        end if
     end if
 
     if (dmtype==9) then
        if (lsecondpath) then
-          !write(6,*)xpd
+          !write(unitw,*)xpd
           do i=1,imcell
              do ic=1,3
                 deltx=atrg%xp(ic,i)-xpd(ic,i)

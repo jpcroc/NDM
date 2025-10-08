@@ -4,7 +4,7 @@ module dmloop_pilot_mod
   USE atomconfig,only : atom_config_d, atom_config_e,atom_config_arps
   USE cellconfig, only:cell_config,cell_config_arps
   USE boxconfig,only:box_config,box_config_lpr
-  USE gen_com_m, ONLY: dmtype,lcdp,rang,latcomp
+  USE gen_com_m, ONLY: dmtype,lcdp,rang,latcomp,lbabar
 
   use Tpara,only:para_space_config
   use endrunT_mod,only:endrunT
@@ -62,13 +62,17 @@ contains
     if (lcdp) then
        if (rang==0) write (6, *) '*******return CDP**** '
        return
-    else
-       if (rang==0) write (6, *) '*******Derniere iteration **** '
-       call endrunT(atdml,celndm,boxndm,latcomp)
-       write (6, *) 'predeal '
-       !       call DeallocateAll
-       call arret_ndm
-    end if
+    endif
+    if (lbabar) then
+       if (rang==0) write (6, *) '*******return babar**** '
+       return
+    endif
+    if (rang==0) write (6, *) '*******Derniere iteration **** '
+    call endrunT(atdml,celndm,boxndm,latcomp)
+    write (6, *) 'predeal '
+    !       call DeallocateAll
+    call arret_ndm
+
 
     return
   end subroutine dmloop_pilot

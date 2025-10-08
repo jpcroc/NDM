@@ -6,7 +6,7 @@ module init_simple_mod
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config,caltabtC
   use boxconfig,only: box_config
-  USE constrconf_mod, only :constrconf,lprt
+  USE constrconf_mod, only :constrconf
 
 #ifdef PARA
   USE init_vois_mod,only: init_voisinage
@@ -17,7 +17,7 @@ module init_simple_mod
 #endif
 
   USE gen_com_m, ONLY:fnam,lenfnam,igen,lperiod,lrestart,rang,tstep,two,usdh,&
-       &lspacendm,tinit
+       &lspacendm,tinit,lbabar,unitwb,lmasterb
   use read_val,only:ltabvois
   USE var_pot, ONLY:ipotentiel
   use Tpara,only:para_space_config
@@ -47,6 +47,14 @@ contains
     use Tpara,only:nprocspace
 
 #endif
+#ifdef LAMMPS_VERSION
+  use lammps_util_mod
+  use vars_lammps
+#endif
+#ifdef ML
+  use mld_interface_mod, only: mld_init_config
+#endif
+
 
     ! **************************************************************
 
@@ -58,7 +66,8 @@ contains
     character(*),optional::filename
     logical, optional::linitpot
     
-    logical::linitpotW=.true.
+    logical::linitpotW=.true.,lwrt
+    integer::uniti
     character*80::filenomIS
     real(double),optional::tinitr
     real(double)::tinit0
@@ -66,7 +75,7 @@ contains
 
      logical :: lrepart
      if(present(tinitr)) then
-        tinit0=tinit
+        tinit0=tinitr
      else
         tinit0=tinit
      end if
@@ -77,13 +86,50 @@ contains
     if (linitpotW)call init_pot
     usdh = 1/(two*tstep)
 !    if ((ipotentiel==-10).or.(ipotentiel==-11))then
-       lrepart=.false. !TOUJOURS FALSE, repartition plus tard
+    lrepart=.false. !TOUJOURS FALSE, repartition plus tard
+    if( lbabar.eqv..true.) lrepart=.true.
 !    else
 !       lrepart=.true.
        !    end if
-       call constrconf(atdml,boxndm,celndm,lrepart,filenomIS,psc)
+       if (lbabar.eqv..true.) then
+          uniti=unitwb
+          lwrt=lmasterb
+       else
+          uniti=6
+          if (rang==0) then
+             lwrt=.true.
+          else
+             lwrt=.false.
+          end if
+       end if
+       call constrconf(atdml,boxndm,celndm,lrepart,filenomIS,psc,unitwr=uniti,lwrtr=lwrt)
+       call caltabtC(celndm,atdml,lperiod,boxndm,lchktrav=.false.)
        call init_pot2(boxndm,atdml%imm)
 
+#ifdef LAMMPS_VERSION
+    if ((ipotentiel==-10).or.(ipotentiel==-11))then
+       firsttime_lammps=.true.
+       call init_lammps()
+       if (rang==0) write(6,*)'postinitlammps'
+    end if
+#endif  
+#ifdef ML
+    ! MiLaDy
+    if(ipotentiel==20) then
+      if (rang.eq.0) then
+           write(6,*)
+           write(6,*)' ML  ..... configuration MiLady '
+           write(6,*)
+      end if
+      !  !This comes with MiLaDy Package
+
+      call mld_init_config(atdml) 
+
+    !call init ! mld init
+    end if
+#endif
+
+       
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        CALL comm_space%barrier
@@ -99,7 +145,7 @@ contains
        select type(atdml)
        class is (atom_config_d)
 
-          call initspeed(atdml,boxndm,lprt=lprt,tinitr=tinit0)
+          call initspeed(atdml,boxndm,tinitr=tinit0)
        end select
     end if
 

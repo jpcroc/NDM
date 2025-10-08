@@ -7,7 +7,7 @@ module initspeed_mod
   USE arret_ndm_mod,only: arret_ndm
   USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,iseed,lcalcjq,lperiod,ltpcel,&
        &lvpread,oldtstep,one,rang,tempdeplainit,tstep,iseed,&
-       bk,lspacendm,mdcg_noise,tinit
+       bk,lspacendm,mdcg_noise,tinit,unitwb,lwrtb,lbabar,lmasterb
   use neb_module, only : neb_noise_scale,mdcg_noise_scale
   USE var_pot, ONLY:ntyp,cm
 #ifdef PARA
@@ -106,8 +106,25 @@ contains
 
     real(double),optional::tinitr
     real(double)::tinit0
+    integer::unitw=6
+    logical::lwrt
+
+    if (lbabar.eqv..true.) then
+       if (lmasterb.eqv..true.) then
+          lwrt=.true.
+          unitw=unitwb
+       else
+          lwrt=.false.
+       end if
+    else
+       if (rang==0) then
+          lwrt=.true.
+       else
+          lwrt=.false.
+       end if
+    end if
     if(present(tinitr)) then
-       tinit0=tinit
+       tinit0=tinitr
     else
        tinit0=tinit
     end if
@@ -136,7 +153,7 @@ contains
 1   continue
     if (lvpread) then
        tempsauv=tempinstT(atcf)
-      if (myidsp==0) write(6,*)'tempsauv ',tempsauv
+      if (myidsp==0) write(unitw,*)'tempsauv ',tempsauv
        select type (atcf)
        class is (atom_config_e)
           if (atcf%lxpp)       atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*tstep/oldtstep
@@ -145,11 +162,11 @@ contains
 
        if (tinit0<=0) then
           ! velocities are read from file and not modified
-       if ((rang==0).and.(lprint)) write (6,*) 'pas de chgt des vitesses= '
+       if ((rang==0).and.(lprint)) write (unitw,*) 'pas de chgt des vitesses= '
           !        return
        else
           ! velocities are read from file and rescaled
-                 if ((rang==0).and.(lprint)) write (6,*) 'scaling read velocities at TINIT0 = ', &
+                 if ((rang==0).and.(lprint)) write (unitw,*) 'scaling read velocities at TINIT0 = ', &
                tinit0, 'K'
           !   if (rang==0) write(6,*)'tempsauv ',tempsauv
           if (tempsauv.le.1.) then
@@ -168,34 +185,25 @@ contains
 
        if (tinit0<=0) then
           ! velocities are not read and no starting temperature is given
-             atcf%vp(1,:atcf%im) = 0.0
-             atcf%vp(2,:atcf%im) = 0.0
-             atcf%vp(3,:atcf%im) = 0.0
-       select type (atcf)
-       class is (atom_config_e)
-          if (atcf%lxpp) then
-             atcf%xpp(1,:atcf%im) = atcf%xp(1,:atcf%im)
-             atcf%xpp(2,:atcf%im) = atcf%xp(2,:atcf%im)
-             atcf%xpp(3,:atcf%im) = atcf%xp(3,:atcf%im)
-          end if
-       end select
-       if ((rang==0).and.(lprint))  write (6,*) 'ZERO VELOCITY '
+          atcf%vp(1,:atcf%im) = 0.0
+          atcf%vp(2,:atcf%im) = 0.0
+          atcf%vp(3,:atcf%im) = 0.0
+          select type (atcf)
+          class is (atom_config_e)
+             if (atcf%lxpp) then
+                atcf%xpp(1,:atcf%im) = atcf%xp(1,:atcf%im)
+                atcf%xpp(2,:atcf%im) = atcf%xp(2,:atcf%im)
+                atcf%xpp(3,:atcf%im) = atcf%xp(3,:atcf%im)
+             end if
+          end select
+          if ((rang==0).and.(lprint))  write (unitw,*) 'ZERO VELOCITY '
        else
           !  a starting temperature is given
-                 if ((rang==0).and.(lprint))  write (6,*) 'random velocities at TINIT0 = ', tinit0, &
+                 if ((rang==0).and.(lprint))  write (unitw,*) 'random velocities at TINIT = ', tinit0, &
                'K'
                  call random_seed(size=seed_size)
-!          if (rang==0)write(6,*)'seed_size',seed_size
+!          if (rang==0)write(unitw,*)'seed_size',seed_size
           allocate(iseedt(seed_size))
-!!$          if (iseed==0)  then
-!!$             call system_clock (iseed)
-!!$             if (rang==0)write(6,*)'iseed pour tirage des vitesses',iseed
-!!$             iseedt(:)=iseed
-!!$
-!!$          else
-!!$             if (rang==0)write(6,*)'iseed pour tirage des vitesses',iseed
-!!$             iseedt(:)=iseed
-!!$          end if
 
           iseedt(:)=iseed
           call    random_seed (put=iseedt)
@@ -226,6 +234,7 @@ contains
 
              !             endif
           end do
+
           kinx(:)=0.d0
           do ic=1,3
              do i=1,atcf%im
@@ -241,7 +250,7 @@ contains
 !!$             end if
 !!$#endif
 !!$             kinx(ic)=kinx(ic)+0.5*atcf%vp(ic,i)*atcf%vp(ic,i)*cm(atcf%ityp(i))/imtot
-             !if (rang==0) write(6,*)'dir ',ic,' ka Ktinit0 ', kinx(ic),ka
+             !if (rang==0) write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
           end do
           !***************************************************************
           !       Make total momentum zero
@@ -315,7 +324,7 @@ contains
              end if
 #endif
              kinx(ic)=kinx(ic)+0.5*atcf%vp(ic,i)*atcf%vp(ic,i)*cm(atcf%ityp(i))/imtot
-                if (rang==0)write(6,*)'dir ',ic,' ka Ktinit0 ', kinx(ic),ka
+                if (rang==0)write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
                 do i=1,atcf%im
                    atcf%vp(ic,i)= atcf%vp(ic,i)*dsqrt(ka/kinx(ic))
                 end do
@@ -399,9 +408,18 @@ contains
 
           end if
        end if
+       tempsauv=tempinstT(atcf)
+      vv = sqrt(tinit0/tempsauv)
+       select type (atcf)
+       class is (atom_config_e)
+          if (atcf%lxpp) atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*vv
+       end select
+       atcf%vp(:,:atcf%im) = atcf%vp(:,:atcf%im)*vv
        
     endif
     !     write(6,*)'sortie initspeed'
+    
+
     select type (atcf)
     class is (atom_config_e)
        if (atcf%lxpp) then 
@@ -412,7 +430,8 @@ contains
     end select
     
     tempsauv=tempinstT(atcf)
-    if (rang==0) write(6,*)'temperature fin initspeed ',tempsauv
+    if (lwrt) write(unitw,*)'temperature fin initspeed ',tempsauv
+!    if (rang==0) write(6,*)'temperature fin initspeed ',tempsauv
 
     if (mdcg_noise==1) then
        call bruit_xp (bruitmd,atcf%im)
