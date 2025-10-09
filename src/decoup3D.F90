@@ -649,8 +649,8 @@ contains
   end subroutine constrandrepart
 
 #ifdef DKIO
-  subroutine constrandrepart_dkio(atrin,vpin,atcf,celcf,boxcf,tags,psc,lvelocities)
-    USE gen_com_m, ONLY:imm_glob,rang,ldecoup
+  subroutine constrandrepart_dkio(atrin,vpin,atcf,celcf,boxcf,tags,psc)
+    USE gen_com_m, ONLY:imm_glob,rang,ldecoup,lvpread
     use dk_structure_io, only: TAG_LENGTH
     USE atomconfig,only: atom_config,atom_config_d
     logical:: ltabvois=.false.
@@ -661,7 +661,6 @@ contains
     character(TAG_LENGTH), dimension(:), intent(in) :: tags
     real(double), dimension(:,:), allocatable :: atrin,vpin
     integer::i,icell,nvois0,ii,cellules_max,cellules_int,im0,im_glob,imm_loc,imm,ig
-    logical,intent(in) :: lvelocities
 
     real(double)::rvn,xpcur(3,1),itypcur,rvois=0.
 
@@ -714,7 +713,7 @@ contains
 
 !REPARTITION
     i=0;im=0;ig=0
-    if (lvelocities) then
+    if (lvpread) then
        select type (atcf)
        type is(atom_config)
           if (rang==0) write(6,*)'no velocity in atom-config and import asked with velocities stop'

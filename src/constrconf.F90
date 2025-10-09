@@ -62,7 +62,6 @@ contains
     logical::lwrite
 #ifdef DKIO
     character(len=6) :: format
-    logical :: lvelocities=.false.
 #endif
     !-----------------------------------------------------
     ! READING FROM THE CONFIGURATION FILE
@@ -158,26 +157,27 @@ contains
        !-----------------------------------------------------
        ! BUILDING OF THE CRISTAL FROM DK-IO
        !-----------------------------------------------------
+       lvpread=.false.
        select case (igen)
        case(11,21)
           fnamgin = fnam(1:lenfnam)//'.cfg'
           format='xfg'
-          if (igen==21) lvelocities=.true.
+          if (igen==21) lvpread=.true.
        case(12,22)
           fnamgin = fnam(1:lenfnam)//'.xfg'
           format='xfg'
-          if (igen==22) lvelocities=.true.
+          if (igen==22) lvpread=.true.
        case(13,23)
           fnamgin = fnam(1:lenfnam)//'.cell'
           format='castep'
-          if (igen==23) lvelocities=.true.
+          if (igen==23) lvpread=.true.
        case(14)
           fnamgin = fnam(1:lenfnam)//'.cif'
           format='cif'
        case(15,25)
           fnamgin = fnam(1:lenfnam)//'.CONFIG'
           format='dlpoly'
-          if (igen==25) lvelocities=.true.
+          if (igen==25) lvpread=.true.
        case(16)
           fnamgin = fnam(1:lenfnam)//'.gulp'
           format='gulp'
@@ -191,8 +191,7 @@ contains
           fnamgin = fnam(1:lenfnam)//'.xyz'
           format='xyz'
        end select
-       lvpread=.false.
-       call dkio2ndm(atrcf,cellrcf,boxrcf,fnamgin,rumax,format,lvelocities,lrepart,psc)
+       call dkio2ndm(atrcf,cellrcf,boxrcf,fnamgin,rumax,format,lrepart,psc)
        call periodbox (boxrcf,atrcf)
 
        select type(atrcf)
@@ -1010,7 +1009,7 @@ contains
   end subroutine read_gin
 
 #ifdef DKIO
-  subroutine dkio2ndm(at2b,cel2b,box2b,fnam,rum,format,lvelocities,lrepartition,psc,lconstrsimple,immread)
+  subroutine dkio2ndm(at2b,cel2b,box2b,fnam,rum,format,lrepartition,psc,lconstrsimple,immread)
     !-----------------------------------------------------
     !  Subroutine for interfacing with the dk_io library
     !-----------------------------------------------------
@@ -1027,7 +1026,6 @@ contains
     integer,optional::immread
     integer::immr,npr
     logical::lcs,lrepart
-    logical,intent(in) :: lvelocities
     real(double) :: boxrin(3,3),deltx
     real(double), dimension(:,:), allocatable :: atrin,vpin
     character(TAG_LENGTH), dimension(:), allocatable :: tags
@@ -1045,9 +1043,8 @@ contains
        itread=1
     end if
     !call read_gin(boxrgin,atrgin,fnamg,lat,itread=itread,immread=immr)
-    if (lvelocities) then
+    if (lvpread) then
        call read_structure(trim(fnam),boxrin,atrin,tags,format=format, velocities=vpin)
-       write (6, *) "vitesses lues pour l'atome 1:",vpin(:,1)
     else
        call read_structure(trim(fnam),boxrin,atrin,tags,format=format)
     end if
@@ -1099,7 +1096,7 @@ contains
     end if
 
     if (lcs) then ! construction simpple sans repartition en sequentiel
-       call constr_2dkio (at2b,atrin,tags,vpin,lvelocities,immr)
+       call constr_2dkio (at2b,atrin,tags,vpin,immr)
        call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
        at2b%im_glob=at2b%im
        call setcellconf(cel2b,at2b,box2b,rum)
@@ -1123,9 +1120,9 @@ contains
     at2b%im_glob=imcell
     
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart)) then
-       call constrandrepart_dkio(atrin,vpin,at2b,cel2b,box2b,tags,psc,lvelocities)
+       call constrandrepart_dkio(atrin,vpin,at2b,cel2b,box2b,tags,psc)
     else
-       call constr_2dkio(at2b,atrin,tags,vpin,lvelocities,imm_glob)
+       call constr_2dkio(at2b,atrin,tags,vpin,imm_glob)
        call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
        at2b%imm_glob=imm_glob
     end if
@@ -1137,7 +1134,7 @@ contains
        call  decoupage(npr,ncore,cel2b,psc=psc,lverbose=lprt)
        call arret_ndm
     end if
-    call constr_2dkio (at2b,atrin,tags,vpin,lvelocities,imm)
+    call constr_2dkio (at2b,atrin,tags,vpin,imm)
     call cryst_to_cart (at2b%imm, at2b%xp, box2b%at, 1)
     at2b%im_glob=at2b%im
 #endif
@@ -1147,7 +1144,7 @@ contains
     return
   end subroutine dkio2ndm
 
-  subroutine constr_2dkio(atrcf,atrin,tags,vpin,lvelocities,immread)
+  subroutine constr_2dkio(atrcf,atrin,tags,vpin,immread)
     use dk_structure_io, only: TAG_LENGTH
     use decoupage_mod,only: get_ityp
 
@@ -1155,7 +1152,6 @@ contains
     real(double), dimension(:,:), intent(in) :: atrin,vpin
     character(TAG_LENGTH), dimension(:), intent(in) :: tags
     integer,intent(in),optional::immread
-    logical,intent(in) :: lvelocities
     integer::i,imloc,immr
     real(double)::rvn
 
@@ -1187,7 +1183,7 @@ contains
        atrcf%ityp(i)=get_ityp(tags(i))
     end do
 
-    if (lvelocities) then
+    if (lvpread) then
        select type (atrcf)
        type is(atom_config)
           if (rang==0) write(6,*)'no velocity in atom-config and import asked with velocities stop'
