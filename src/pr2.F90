@@ -69,6 +69,10 @@ module Parrinello_Rahman
   USE tempinstT_mod,only: tempinstT
 
   implicit none
+
+  integer::unitw=6
+  logical::lwrt
+
 !!$  ! Vecteurs de la boîte et leurs dérivées
 !!$  real(double), dimension(3,3), save , private :: h, hDot
 !!$  real(double), dimension(3,3), save , private :: trh, invh, invtrh, Gmat, invGmat, Gdot
@@ -118,30 +122,30 @@ contains
        CALL init_trempe_fire(tstep, fire_nstep, fire_alph)
     END IF
 
-    IF(RANG==0) WRITE(6,*)
+    IF(LWRT) WRITE(unitw,*)
     if (dmtype.ne.15) then
        if (llangevin) then 
-          IF(RANG==0) WRITE(6,*) 'Algorithme deP cst Langevin Parrinello-Rahman '
+          IF(LWRT) WRITE(unitw,*) 'Algorithme deP cst Langevin Parrinello-Rahman '
        else
-          IF(RANG==0) WRITE(6,*) 'Algorithme de Parrinello-Rahman (V2)'
+          IF(LWRT) WRITE(unitw,*) 'Algorithme de Parrinello-Rahman (V2)'
        end if
-       IF(RANG==0) WRITE(6,'(a)') '  -> la vitesse de la boîte ne prend pas en compte la dérivée du tenseur h à t=0'
-       IF(RANG==0) WRITE(6,*)
+       IF(LWRT) WRITE(unitw,'(a)') '  -> la vitesse de la boîte ne prend pas en compte la dérivée du tenseur h à t=0'
+       IF(LWRT) WRITE(unitw,*)
     end if
 
     IF (lUcell) THEN
-       IF(RANG==0) WRITE(6,'(a)') "Repère de référence pour Parrinello-Rahman  (A):"
-       IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*h0(1:3,1)
-       IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*h0(1:3,2)
-       IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*h0(1:3,3)
-       IF(RANG==0) WRITE(6,*)
+       IF(LWRT) WRITE(unitw,'(a)') "Repère de référence pour Parrinello-Rahman  (A):"
+       IF(LWRT) WRITE(unitw,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*h0(1:3,1)
+       IF(LWRT) WRITE(unitw,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*h0(1:3,2)
+       IF(LWRT) WRITE(unitw,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*h0(1:3,3)
+       IF(LWRT) WRITE(unitw,*)
     ELSE
        h0 = boxndm%at
     END IF
-    IF(RANG==0) WRITE(6,'(a)') "Repère actuel  (A):"
-    IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,1) = ', 1e8*boxndm%at(1:3,1)
-    IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,2) = ', 1e8*boxndm%at(1:3,2)
-    IF(RANG==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,3) = ', 1e8*boxndm%at(1:3,3)
+    IF(LWRT) WRITE(unitw,'(a)') "Repère actuel  (A):"
+    IF(LWRT) WRITE(unitw,'(a,3(f0.5,1x))') ' h (1:3,1) = ', 1e8*boxndm%at(1:3,1)
+    IF(LWRT) WRITE(unitw,'(a,3(f0.5,1x))') ' h (1:3,2) = ', 1e8*boxndm%at(1:3,2)
+    IF(LWRT) WRITE(unitw,'(a,3(f0.5,1x))') ' h (1:3,3) = ', 1e8*boxndm%at(1:3,3)
     boxndm%wbox =wboxf*sum(0.5*cm(atpr%ityp(:atpr%im)))       ! La moitié de la masse totale des atomes
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -150,7 +154,7 @@ contains
 #endif
 
 
-    IF(RANG==0) WRITE(6,'(a,g20.12)')'Masse de la boîte pour Parrinello-Rahman: wbox=',boxndm%wbox
+    IF(LWRT) WRITE(unitw,'(a,g20.12)')'Masse de la boîte pour Parrinello-Rahman: wbox=',boxndm%wbox
 
     ! État de référence défini par la matrice h0
     !   Cet état de référence doit correspondre à un tenseur de contrainte nul.
@@ -173,7 +177,7 @@ contains
 !!$    invVolu = 1.d0/boxndm%volu
 
     ! Initialisation de la vitesse de la boîte
-    IF(RANG==0) WRITE(6,'(a,f0.3,a)') 'Initialisation de la vitesse de la boîte pour la température ', TinitBox, ' K'
+    IF(LWRT) WRITE(unitw,'(a,f0.3,a)') 'Initialisation de la vitesse de la boîte pour la température ', TinitBox, ' K'
     boxndm%hdot(:,:) = 0.d0
     !#ifdef PARA
     if (myidsp==0) then
@@ -221,7 +225,7 @@ contains
        unitE=1.0
        cunitE=' erg'
     end if
-    if(rang==0) write(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') 0,0.d0,'*Kcell = ',Kcell*unitE,cunitE, &
+    if(lwrt) write(unitw,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') 0,0.d0,'*Kcell = ',Kcell*unitE,cunitE, &
          '  (', 2.d0*Kcell/(9.d0*bk), ' K)'
 
     ! Nombre de thermostats de Hoover
@@ -270,17 +274,17 @@ contains
        !UNose = Sum( UHoover(1:nHoover) )
        zHoover(nHoover+1)=0.d0
 
-       IF(RANG==0) WRITE(6,*)
-       IF(RANG==0) WRITE(6,'(a)') 'Thermostat de Nosé-Hoover (V2)'
-       IF(RANG==0) WRITE(6,'(a)') "  -> l'énergie cinétique des atomes et de la boîte est thermalisée"
-       IF(RANG==0) WRITE(6,'(a,g20.12)')'Masse de la boîte pour thermostat de Nosé-Hoover: wHoover=',wNose
-       IF(RANG==0) WRITE(6,'(a,g20.12)')'Nombre de degrés de liberté: gNose=',gNose
-       IF(RANG==0) WRITE(6,'(a,i0)')    'Nombre de thermostats: nHoover=', nHoover
-       IF(RANG==0) WRITE(6,'(a,f0.3,a)') 'Initialisation du thermostat de Nosé-Hoover pour la température ', &
+       IF(LWRT) WRITE(unitw,*)
+       IF(LWRT) WRITE(unitw,'(a)') 'Thermostat de Nosé-Hoover (V2)'
+       IF(LWRT) WRITE(unitw,'(a)') "  -> l'énergie cinétique des atomes et de la boîte est thermalisée"
+       IF(LWRT) WRITE(unitw,'(a,g20.12)')'Masse de la boîte pour thermostat de Nosé-Hoover: wHoover=',wNose
+       IF(LWRT) WRITE(unitw,'(a,g20.12)')'Nombre de degrés de liberté: gNose=',gNose
+       IF(LWRT) WRITE(unitw,'(a,i0)')    'Nombre de thermostats: nHoover=', nHoover
+       IF(LWRT) WRITE(unitw,'(a,f0.3,a)') 'Initialisation du thermostat de Nosé-Hoover pour la température ', &
             2.d0*KNose/(bk*dble(nHoover)), ' K'
-       IF(RANG==0) WRITE(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') iteration,timel,'*KNose = ',KNose*unitE,cunitE, &
+       IF(LWRT) WRITE(unitw,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') iteration,timel,'*KNose = ',KNose*unitE,cunitE, &
             '  (', 2.d0*KNose/(bk*nHoover), ' K)'
-       IF(RANG==0) WRITE(6,*)
+       IF(LWRT) WRITE(unitw,*)
     ELSE
        gNose=0.d0; zHoover(1)=0.d0
     END IF
@@ -366,7 +370,7 @@ contains
 
     select case(dmtype)
     case(24)
-       !       write(6,*)'IN',atpr%xp(1,1)
+       !       write(unitw,*)'IN',atpr%xp(1,1)
        ! Coordonnées réduites des atomes (au cas où elles ont été modifiées à l'extérieur)
        sp(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%xp(:,1:atpr%im) )
        select type (atpr)
@@ -375,7 +379,7 @@ contains
        end select
        ! De même pour les vitesses au cas où, par exemple, on utilise le thermostat
        sdot(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%vp(:,1:atpr%im) )
-       !       write(6,*)'VEL',sdot(1,1),atpr%vp(1,1)
+       !       write(unitw,*)'VEL',sdot(1,1),atpr%vp(1,1)
        DO ia=1, atpr%im
           sfp(:,ia)= MatMul( boxndm%invh(:,:), atpr%fp(:,ia) )
        END DO
@@ -385,7 +389,7 @@ contains
        usdh = 1.d0/(2.d0*tstep)
        DO i=1, im
           xprov(:) = sp(:,i) + sdot(:,i)*tstep + sfp(:,i)*aux(atpr%iTyp(i))
-          !            if (i==1) write(6,*)'VPROV',(xprov(1) - spp(1,i))*usdh
+          !            if (i==1) write(unitw,*)'VPROV',(xprov(1) - spp(1,i))*usdh
           sdot(:,i) = (xprov(:) - spp(:,i))*usdh
           spp(:,i) = sp(:,i)
           sp(:,i) = xprov(:)
@@ -399,9 +403,9 @@ contains
           call comm_space%sum(pscal)
        end if
 #endif
-       !         write(6,*)'PSCAL',pscal,hdot(1,1)
+       !         write(unitw,*)'PSCAL',pscal,hdot(1,1)
        ! Modification du vecteur vitesse
-       !         write(6,*)'PSCAL',iteration,nstep,pscal,tstep
+       !         write(unitw,*)'PSCAL',iteration,nstep,pscal,tstep
        if (pScal.gt.0) then
           ! Norme du vecteur force
           norme_de_fp = Sqrt( Sum( sfp(:,1:im)**2 ) )
@@ -431,14 +435,14 @@ contains
           end do
        end do
 
-       !          write(6,*)'hdot',hdot(1,1),tstep/(1*wBox)*forcebox(1,1)*ihbox0(1,1),invtrh(1,1),sigtot(1,1),tstep,tstepN
+       !          write(unitw,*)'hdot',hdot(1,1),tstep/(1*wBox)*forcebox(1,1)*ihbox0(1,1),invtrh(1,1),sigtot(1,1),tstep,tstepN
        boxndm%hdot(:,:) = boxndm%hdot(:,:)*ihbox0(:,:)+ tstep/(1*boxndm%wBox)*forcebox(:,:)*ihbox0(:,:)
 
        ! Tenseur h à l'instant t+dt
        boxndm%h(:,:) = boxndm%h(:,:) + boxndm%hdot(:,:)*tstep*ihbox0(:,:)
-       !          write(6,*)'FHdot',hdot(1,1),tstep,(1*wBox),forcebox(1,1)*ihbox0(1,1),h(1,1)
+       !          write(unitw,*)'FHdot',hdot(1,1),tstep,(1*wBox),forcebox(1,1)*ihbox0(1,1),h(1,1)
 
-       !       write(6,*)'MED',atpr%xp(1,1),sp(1,1),sfp(1,1)
+       !       write(unitw,*)'MED',atpr%xp(1,1),sp(1,1),sfp(1,1)
        ! Coordonnées réelles à l'instant t+dt
        select type (atpr)
        class is (atom_config_e)
@@ -457,7 +461,7 @@ contains
        !    atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
        sdot(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%vp(:,1:atpr%im) )
        !#endif
-       !    write(6,*)'MED2',atpr%xp(1,1),sp(1,1),sfp(1,1)
+       !    write(unitw,*)'MED2',atpr%xp(1,1),sp(1,1),sfp(1,1)
        ! Calcul des forces et des contraintes à l'instant t+dt
        CALL CalFo(sig,potist,atpr,celndm,boxndm%box_config,t_sigma=.true.,psc=psc)
        if (dmtype==24) tstep=tstepN
@@ -647,7 +651,7 @@ contains
                + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul(&
                &sigtot(:,:) - sigext(:,:), boxndm%invtrh(:,:) )*ihbox0(:,:)
        END IF
-       !          write(6,*)'hdot',hdot
+       !          write(unitw,*)'hdot',hdot
        ! Coordonnées réduites des atomes à l'instant t+dt
        sp(:,1:atpr%im) = sp(:,1:atpr%im) + sdot(:,1:atpr%im)*tstep
 
@@ -661,12 +665,6 @@ contains
        end select
        atpr%xp(:,1:atpr%im) = MatMul( boxndm%h, sp(:,1:atpr%im) )
        call updatebox(boxndm,boxndm%h)
-!!$    invVolu = 1.d0/boxndm%volu
-!!$    trh=Transpose(h)                            ! Matrices associées à h
-!!$    Gmat = MatMul(trh,h)
-!!$    CALL MatInv(Gmat,invGmat)
-!!$    call MatInv(h,invh)
-!!$    invtrh = Transpose(invh)
 
 #ifdef PARA
        atpr%vp(:,1:atpr%im) = MatMul( boxndm%h(:,:), sdot(:,1:atpr%im) )
@@ -676,14 +674,8 @@ contains
        CALL ScaleBox(atpr,celndm,boxndm,psc)
 
 #ifdef PARA
-       !    atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
        sdot(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%vp(:,1:atpr%im) )
 #endif
-       !    write(6,*)'MED2',atpr%xp(1,1),sp(1,1),sfp(1,1)
-       ! Calcul des forces et des contraintes à l'instant t+dt
-       !           block
-       !             real(double),allocatable::normvp (:)
-       !             allocate(normvp(atpr%im))
        if (lmaxvp) then
           do ib=1,atpr%im
              nrmvp=norm2(atpr%vp(:,ib))
@@ -692,10 +684,6 @@ contains
              end if
           end do
        end if
-!!$             maxvp=maxval(normvp)
-!!$             call comm_space%max(maxvp)
-!!$             if (rang==0) write(6,*)'MAXVP', maxvp
-!           end block
     
        CALL CalFo(sig,potist,atpr,celndm,boxndm%box_config,t_sigma=.true.,psc=psc)
        if (l2t)then
@@ -858,18 +846,8 @@ contains
              KHoover(i) = 0.5d0*wHoover(i)*zHoover(i)**2
           END DO
           KNose = Sum( KHoover(1:nHoover) )
-          ! Énergie potentielle du thermostat
-          !DO i=1, nHoover
-          !   UHoover_new(i) = UHoover_old(i) + 2.d0*tstep*bk*Text*zHoover(i)   ! t+dt
-          !   UHoover_old(i) = UHoover(i)              ! t
-          !   UHoover(i) = UHoover_new(i)              ! t+dt
-          !END DO
-          !UHoover(1) = gNose*UHoover(1)               ! t+dt
-          !UNose = Sum( UHoover(1:nHoover) )           ! t+dt
-          !ENose = KNose + UNose                       ! t+dt
        END IF
     end select
-    !    write(6,*)'OUT',atpr%xp(1,1),tstep
 
     call calctemp(T1,kin1,atpr,celndm)
 

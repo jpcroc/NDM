@@ -134,7 +134,7 @@ contains
           lwrt=.false.
        end if
     else
-       if (myidsp==0) then
+       if (rang==0) then
           lwrt=.true.
        else
           lwrt=.false.

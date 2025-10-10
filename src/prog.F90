@@ -12,15 +12,13 @@ module prog_mod
   USE neb_module,only:boxneb,init_neb0
   USE var_pot
   USE ForceMatrix_mod, only: calcFM, init_MPI_FM, pscFM,paraFM
-  USE montecarlo_mod, only: montecarlo,init_montecarlo,init_mpi_mcgc!!atconf_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1,pscgc,config_atom_n&
-  !       &,config_atom_nplus1,config_cells_n,config_cells_nplus1,atconf_nplus1,nparapath,cells_nplus1,&
-  !       &idirectionmcgc,initN,init_instyp,ins_typ,boxmcgc_p,boxmcgcpath,paramcgc,seed!,initmclpr
+  USE montecarlo_mod, only: montecarlo,init_montecarlo,init_mpi_mcgc
   USE init_simple_mod,only:init_simple
   USE boxconfig,only:box_config,box_config_lpr
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e,atom_config_arps
   USE cellconfig, only:cell_config,cell_config_arps
   USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax,timemax,timeloopmax,iseed,&
-       &lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,firsttime_lammps,lprahman,lanaposart
+       &lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,firsttime_lammps,lprahman,lanaposart,igen
 
   use read_val,only:imm,ltabvois,rvois
   use posana,only:initanapos

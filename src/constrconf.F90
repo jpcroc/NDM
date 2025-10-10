@@ -80,6 +80,7 @@ contains
     !---------------------------------------------------
     filenom=fnam(1:lenfnam)
     if (present(filename))filenom=filename
+    write(6,*)'FILENOM', filenom
     if (lwrt.eqv..true.) then
        write(unitw,*)
        write(unitw,*)' *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-'
@@ -91,12 +92,19 @@ contains
        allocate (ibuffer(imm_glob))
        allocate (buffer(3,imm_glob))
        if (lwrt.eqv..true.)  write(unitw,*)'********** reading configuration from file********'
+       if (present(filename))then       
+          if (lrestart) then
+             fnamcin = trim(filename)//'.cout'
+          else
+             fnamcin = trim(filename)//'.cin'
+          end if
+       else
        if (lrestart) then
           fnamcin = fnam(1:lenfnam)//'.cout'
        else
           fnamcin = fnam(1:lenfnam)//'.cin'
        end if
-
+    end if
 #ifdef PARA
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           itread=0
@@ -170,9 +178,11 @@ contains
 
 
        lvpread=.false.
-
-       ! open fichier .gin
-       fnamgin = fnam(1:lenfnam)//'.gin'
+       if (present(filename))then       
+          fnamgin = trim(filename)//'.gin'
+       else
+          fnamgin = fnam(1:lenfnam)//'.gin'
+       end if
        call gin2ndm(atrcf,cellrcf,boxrcf,fnamgin,rumax,lrepart,psc)
        call periodbox (boxrcf,atrcf)
 
@@ -614,7 +624,7 @@ contains
 
     if (icintypemod==1) then
        read (lucin, err=444) oldtstep
-       if (lrestart) then
+       if ((lrestart).and.(dmtype.ne.16)) then
           read (lucin, err=445) tmean, pmean, iteration, timel
           if (nitmax.ge.0) itmax=iteration+nitmax
           tstep = oldtstep
@@ -634,7 +644,7 @@ contains
 
     close (lucin)
     return
-431 print *,'Erreur 431'
+    431 print *,'Erreur 431'
 432 print *,'Erreur 432'
 433 print *,'Erreur 433'
 434 print *,'Erreur 434'
@@ -649,6 +659,7 @@ contains
 443 print *,'Erreur 443'
 444 print *,'Erreur 444'
 445 print *,'Erreur 445'
+
     call arret_ndm
 
 
@@ -701,7 +712,7 @@ contains
     lucin = 93
     open(unit=lucin, file=fnamcin, form='unformatted', status='unknown', err=456)
 
-    read (lucin, err=456) icintype
+    read (lucin, err=432) icintype
 
     if (lwrt.eqv..true.)  write (unitw, *) 'config type of  .cin file : ', icintype
     if (icintype>5.or.icintype<0) then
@@ -717,7 +728,7 @@ contains
 !!$    endif
     !at(vect123,xyz)
     !        if (icintype>=2) then
-    read (lucin, err=456) at
+    read (lucin, err=433) at
     if(dilat(1).ne.0.0)then
        do i=1,3
           at(i,:)=at(i,:)*dilat(i)
@@ -736,7 +747,7 @@ contains
           call arret_ndm
        end if
 
-       read (lucin, err=456) im_gr                         !number of atoms in the box
+       read (lucin, err=434) im_gr                         !number of atoms in the box
        if (im_gr>immr) then
           if(rang==0)                    write (unitw, *) 'P1 im > imM', im_gr, immr
           call arret_ndm
@@ -745,11 +756,11 @@ contains
        atcinr%im_glob=im_gr
 
 
-       read (lucin, err=456) ibuffer   !ityp
+       read (lucin, err=435) ibuffer   !ityp
        atcinr%ityp(1:im_gr)=ibuffer(1:im_gr)
 
        if (lwrt.eqv..true.)  write (unitw, *) 'types'
-       read (lucin, err=456) buffer    ! xp
+       read (lucin, err=436) buffer    ! xp
        atcinr%xp(1:3,1:im_gr)=buffer(1:3,1:im_gr)
        if (lwrt.eqv..true.)  write (unitw, *) 'xp'
        formcin:select case (fmt_cin)
@@ -758,7 +769,7 @@ contains
              atcinr%num_at_glob(i) = i
           enddo
        case(1) formcin
-          read (lucin, err=456) ibuffer
+          read (lucin, err=437) ibuffer
           atcinr%num_at_glob(1:im_gr)=ibuffer(1:im_gr)
           if (lwrt.eqv..true.)  write (unitw, *) 'num_at_glob'
        case default  formcin
@@ -770,14 +781,14 @@ contains
        select type(atcinr)
        type is (atom_config)
           if (icintypemod==1) then
-             if (icintype==3)read (lucin, err=456) buffer                     !xpp
-             read (lucin, err=456) buffer                     !vp
+             if (icintype==3)read (lucin, err=440) buffer                     !xpp
+             read (lucin, err=441) buffer                     !vp
           end if
           lvpread=.false.
        type is (atom_config_d)
           if (icintypemod==1) then
-             if (icintype==3) read (lucin, err=456) buffer                     !xpp
-             read (lucin, err=456) buffer                     !vp
+             if (icintype==3) read (lucin, err=440) buffer                     !xpp
+             read (lucin, err=441) buffer                     !vp
              atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
              !             read (lucin, err=456) buffer                     !former positions
              !             atcinr%ax(:,1:im_gr)=buffer(:,1:im_gr)
@@ -789,13 +800,13 @@ contains
           if (icintypemod==1) then
 
              if (icintype==3) then
-                read (lucin, err=456) buffer                     !xpp
+                read (lucin, err=440) buffer                     !xpp
              end if
 
 !!$             read (lucin, err=456) buffer                     !xpp
 !!$             atcinr%xpp(:,1:im_gr)=buffer(:,1:im_gr)
 !!$             write(unitw,*)'xpp_e'
-             read (lucin, err=456) buffer                     !vp
+             read (lucin, err=441) buffer                     !vp
              atcinr%vp(:,1:im_gr)=buffer(:,1:im_gr)
              !             write(unitw,*)'vp_e'
              !             read (lucin, err=456) buffer                     !former positions
@@ -820,9 +831,9 @@ contains
 
 
        if (icintypemod==1) then
-          read (lucin, err=456) oldtstep
-          if (lrestart) then
-             read (lucin, err=456) tmean, pmean, iteration, timel
+          read (lucin, err=444) oldtstep
+          if ((lrestart).and.(dmtype.ne.16)) then
+             read (lucin, err=445) tmean, pmean, iteration, timel
              if (nitmax.ge.0) itmax=iteration+nitmax
              tstep = oldtstep
 
@@ -872,6 +883,21 @@ contains
 
     close (lucin)
     return
+431 print *,'Erreur 431'
+432 print *,'Erreur 432'
+433 print *,'Erreur 433'
+434 print *,'Erreur 434'
+435 print *,'Erreur 435'
+436 print *,'Erreur 436'
+437 print *,'Erreur 437'
+438 print *,'Erreur 438'
+439 print *,'Erreur 439'
+440 print *,'Erreur 440'
+441 print *,'Erreur 441'
+442 print *,'Erreur 442'
+443 print *,'Erreur 443'
+444 print *,'Erreur 444'
+445 print *,'Erreur 445'
 456 print *,'Erreur dans la lecture du fichier .cin, verifier son format&
          & et fmt_cin ATTENTION A BIG_ENDIAN !! SI COMMPILE BIG_ENDIAN NE LIT PLUS QUE CA'
 

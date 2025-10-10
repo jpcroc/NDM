@@ -49,7 +49,7 @@ contains
     use Parrinello_Rahman,only:TinitBox
     use constrconf_mod,only: ldecalcor
     use arps_mod,only:kmin,kmax,noxyzkmin,noxyzkmax,lpartarps!,lxyz
-    use babar_mod,only:ntempbabar,nbabarprocs,bbtempmin,bbtempmax
+    use babar_mod,only:ntempbabar,nbabarprocs,bbtempmin,bbtempmax,itbtherm,itbprod
 
 
 
@@ -99,7 +99,7 @@ contains
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,lmultin,&
          &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
          &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag,protocol_mcc,lmaxvp,vplim,ntempbabar,&
-         &nbabarprocs,bbtempmin,bbtempmax
+         &nbabarprocs,bbtempmin,bbtempmax,itbtherm,itbprod
 
 
     !
@@ -409,7 +409,7 @@ contains
     ntempbabar=0
     nbabarprocs=ntempbabar
     bbtempmin=0; bbtempmax=0
-
+    itbtherm=0;itbprod=0
     
     lmultin=.false. ! T==> reads multiple condfiguration files
 
@@ -701,6 +701,14 @@ contains
           call arret_ndm
        end if
        lbabar=.true.
+       lprahman=.true.
+       llangevin=.true.
+       text=10.
+       if((itbtherm==0.).and.(itbprod==0)) then
+          if (rang==0) write(6,*)'DMTYPE=16 and itbtherm or itbprod=0 stop'
+          call arret_ndm
+       end if
+          
     case default
        write(6,*)'DMTYPE',dmtype
        if (rang==0) write(6,*) 'WARNING : VERSION PARALLELE seulement avec ',&
@@ -965,7 +973,7 @@ contains
           dmtype=88
        else
           ltest=.false.
-          if ((dmtype==4).or.(dmtype==41).or.(dmtype==42))ltest=.true.
+          if ((dmtype==4).or.(dmtype==16).or.(dmtype==41).or.(dmtype==42))ltest=.true.
           if (.not.ltest)then
              write(6,*)'llangevin only with dmtype =4,41, 42'
              call arret_ndm
@@ -1177,6 +1185,8 @@ contains
        lprahman=.true.
     case (6)
        if (rang==0) write (6,'(a)') '      ANALYSE DES POSITIONS EN FIN DE CASCADE '
+    case (16)
+       if (rang==0) write (6,'(a)') '      BABAR ==> llangevin + lpr =true.' 
     case (9)
        if (rang==0) write (6,'(a)') '      DRAG OR NEB DYNAMICS ' 
        itesauvposition=-1
@@ -1245,12 +1255,6 @@ contains
        if (rang==0) write (6,'(a)') '|======== colored by Cosmin Marinica!==============|'
        if (rang==0) write (6,'(a)') '|======== updated by J-P Crocombette!==============|'
 !#endif
-#ifdef SUNDAE    
-    case (16)
-       if (rang==0) write (6,'(a)') '|=========       NDM + SUNDAE       ===============|'
-       if (rang==0) write (6,'(a)') '|---------..........................---------------|'
-       if (rang==0) write (6,'(a)') '|==================================================|'
-#endif
 #ifdef MAB    
     case (17)
        if (rang==0) write (6,'(a)') '|=========       NDM + MAB          ===============|'
@@ -1263,8 +1267,6 @@ contains
        write(6,*)'simple test de distance entre atomes'
     case(113)
        write(6,*)'recvherche de la position la plus éloignée des atomes'
-    case(16)
-       if (rang==0) write (6, *) 'CALCUL BABAR,',dmtype
     case default
        if (rang==0) write (6, *) 'mauvais type de calcul dmtype=TTT',dmtype
        call arret_ndm
@@ -1720,6 +1722,8 @@ contains
           call arret_ndm
        end if
     end if
+
+    
   end subroutine readdm
   
 end module readdm_mod

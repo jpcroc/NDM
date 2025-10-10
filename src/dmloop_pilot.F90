@@ -31,6 +31,7 @@ contains
     logical,optional::linit
     logical::lini=.false.
     if (present(linit))lini=linit
+    write(6,*)'DMTYPE',dmtype
     select case (dmtype)
     case(41,42)
        select type(atdml)

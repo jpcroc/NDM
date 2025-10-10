@@ -181,7 +181,7 @@ contains
     integer::formatsauv=5
     integer::jint,iinttot,numcell,imt,iold,irang,pvactot,dvactot
     logical::lsuiv,lcrea0
-    character::fnamcout*80
+    character::fnamecout*80
     character :: extension*7
     
     
@@ -286,13 +286,13 @@ contains
           nb_at_typ=0
           itinser=itinser+1
           write(extension,'(i7.7)')itinser
-          fnamcout = fnam(1:lenfnam)//'.'//trim(extension)//'.PRECDP.cout'
+          fnamecout = fnam(1:lenfnam)//'.'//trim(extension)//'.PRECDP.cout'
           if (lspacendm) then
              call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
-             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.false.)
+             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamecout,latcomp=.false.)
           else
              call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.true.,ivisumol=ivisu)
-             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.true.)
+             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamecout,latcomp=.true.)
           end if
 !          call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
  !         call 
@@ -679,13 +679,13 @@ contains
        end if
        lcrea0=.true.
     end do
-    fnamcout = fnam(1:lenfnam)//'.F.cout'
+    fnamecout = fnam(1:lenfnam)//'.F.cout'
     if (lspacendm) then
        call rasmolT(atdml,boxndm,itinser,'POST_INSER',latcomp=.false.,ivisumol=ivisu)
-       call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.false.)
+       call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamecout,latcomp=.false.)
     else
        call rasmolT(atdml,boxndm,itinser,'POST_INSER',latcomp=.true.,ivisumol=ivisu)
-       call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.true.)
+       call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamecout,latcomp=.true.)
     end if
 
 
