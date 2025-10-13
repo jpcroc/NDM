@@ -11,19 +11,19 @@ module analyseT_mod
   use notperiod_mod,only:notperiod
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,nkmax,contmax,zz,potis1,&
        &cm
-  use gen_com_m, only:bk,cunite,fnose,iteanapos,iteangle,itebdv,ecellpr,itesigma,&
-       &itecoordo,iterasmol,iterdf,iteprtsigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
+  use gen_com_m, only:bk,cunite,fnose,iteanapos,iteangle,itebdv,itesigma,&
+       &itecoordo,iterasmol,iterdf,iteprtsigma,itetemp,itetemp2,kine,kinemean,knose,&
        &leev,leparat,linstantfda,lprahman,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
        &nfda,pist,pmean,potcp,potis2,potis3,potist,potistersoff,potiszbl,thetamin,thetamax,&
-       &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,rcangle,&
+       &tcou,temp,tempep,tfcou,tmean,unite,unose,zhoover,sig,sigkine,lprtcel,rcangle,&
        &tpseuils,sigtot,unitP,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,linstantfda,&
-       &itloopmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,itedepla,tdepla,tdepla2,&
+       &itloopmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,rcrdf,iteangle,itedepla,tdepla,tdepla2,&
        & itesauvforce,itesauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,iteration,l2T,iteprtkin,&
        &lbabar,unitwb,lwrtb
 
   USE cellconfig,only:cell_config, caltabtC,cell_config_arps
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
-  use boxconfig,only: box_config
+  use boxconfig,only: box_config,box_config_lpr
   use Tpara,only:nprocspace,myidsp
   use calcdepla_mod,only:calcdepla
   use newunit_mod,only:newunit
@@ -247,25 +247,27 @@ contains
                      '*Temp instantanee = ',temp
 
                 if (tfcou>0.0) write (unitw, '(A,G15.4)') '*temperature externe = ', tcou
-
+                select type(boxndm)
+                class is (box_config_lpr)
+                   
                 IF (lprahman) THEN
                    write(unitw,*) 'NPT With Parrinello-Rahman'
-                   write(unitw,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel,'*Kcell = ',Kcell*unitE,cunitE, &
-                        '  (', 2.d0*Kcell/(9.d0*bk), ' K)'
+                   write(unitw,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel,'*Kcell = ',boxndm%Kcell*unitE,cunitE, &
+                        '  (', 2.d0*boxndm%Kcell/(9.d0*bk), ' K)'
                    IF (lUcell) THEN
-                      write(unitw,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Ucell = ',Ucell*unitE,cunitE
-                      write(unitw,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Ecell = ',EcellPR*unitE,cunitE
+                      write(unitw,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Ucell = ',boxndm%Ucell*unitE,cunitE
+                      write(unitw,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Ecell = ',boxndm%EcellPR*unitE,cunitE
                       write(unitw,'(I10,G10.3,A,G21.12,A)') iteration,timel,'*Htot_PR = ', &
-                           (potist+kine+EcellPR)*unitE,cunitE
+                           (potist+kine+boxndm%EcellPR)*unitE,cunitE
                    END IF
                    write(unitw,*) 'Box tensor'
                    write(unitw,*)'a',boxndm%at(1,1),boxndm%at(2,1),boxndm%at(3,1)
                    write(unitw,*)'b',boxndm%at(1,2),boxndm%at(2,2),boxndm%at(3,2)
                    write(unitw,*)'c',boxndm%at(1,3),boxndm%at(2,3),boxndm%at(3,3)
-                   write(unitw,*)'H0(1)',h0(1,1),h0(2,1),h0(3,1)
-                   write(unitw,*)'H0(2)',h0(1,2),h0(2,2),h0(3,2)
-                   write(unitw,*)'H0(3)',h0(1,3),h0(2,3),h0(3,3)
-                   Call MatInv(h0, invh0)
+                   write(unitw,*)'H0(1)',boxndm%h0(1,1),boxndm%h0(2,1),boxndm%h0(3,1)
+                   write(unitw,*)'H0(2)',boxndm%h0(1,2),boxndm%h0(2,2),boxndm%h0(3,2)
+                   write(unitw,*)'H0(3)',boxndm%h0(1,3),boxndm%h0(2,3),boxndm%h0(3,3)
+                   Call MatInv(boxndm%h0, invh0)
                    Transformation=MatMul(boxndm%at,invh0)
                    ! Strain tensor (Lagrange definition)
                    strain = 0.5d0*MatMul(Transformation,Transpose(Transformation))
@@ -321,15 +323,18 @@ contains
                    write(unitw,'(I10,G10.3,A,2F11.4)') iteration,timel,'*ang_ca,m  ',tca,tcamean
                    write(unitw,'(I10,G10.3,A,2F11.4)') iteration,timel,'*ang_ab,m  ',tab,tabmean
                    write(unitw,'(I10,G10.3,A,2G21.12)') iteration,timel,'*volume  ',boxndm%volu*1d24,volumean*1d24
-
-                endif    ! if (lprahman)
+                end IF
+             end select    ! if (lprahman)
 
                 IF (lTNose) THEN
                    WRITE(unitw,'(a)') 'Thermostat de Nose'
                    WRITE(unitw,'(I10,G10.3,A,G21.12,A,a,f0.3,a)') iteration,timel, &
                         '*KNose = ',KNose*unitE,cunitE, '  (', 2.d0*KNose/(bk), ' K)'
                    WRITE(unitw,'(i7,G10.3,a,g22.12)') iteration,timel,'*fNose = ', fNose
-                   WRITE(unitw,'(i7,G10.3,a,g22.12,a)') iteration,timel,'*Htot_Nose = ', (kine+potist+EcellPR+KNose+UNose)*unitE,cunitE
+                   select type(boxndm)
+                   class is (box_config_lpr)
+                      WRITE(unitw,'(i7,G10.3,a,g22.12,a)') iteration,timel,'*Htot_Nose = ', (kine+potist+boxndm%EcellPR+KNose+UNose)*unitE,cunitE
+                   end select
 
                 ELSEIF (lTHoover) THEN
                    WRITE(unitw,'(a)') 'Thermostat de Nose-Hoover'

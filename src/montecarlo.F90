@@ -3,7 +3,7 @@ module montecarlo_mod
   USE gen_com_m,only:  lperiod, tstep, timel, tstep,  itetabvois,lenfnam,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,gamprfact,one,pi,text,tinit,&
        &lspaceNDM,rang,iteration,firsttime_lammps,erg2ev,fnam,fnamcout,unitP,dmtype,&
-       &lrestartmcgc,imm_glob,iseed,sig,lprahman,sigext,h0,kcell,ucell,ihbox0,sigtot,sigkine
+       &lrestartmcgc,imm_glob,iseed,sig,lprahman,sigext,ihbox0,sigtot,sigkine
   USE atomconfig,only:atom_config,atom_config_d, switch_atom
   USE cellconfig, only:cell_config, caltabtC
   USE var_pot,only:ntyp,cm,gamlt
@@ -45,7 +45,7 @@ module montecarlo_mod
   use config2data_mod,only:config2data
   USE constrconf_mod,only:read_cin
   use probMC,only:probMC1
-  use Parrinello_Rahman,only:sp,sdot, sdot_new,trh0,invh0,invtrh0,epsi,tension,volu0,invvolu0
+  use Parrinello_Rahman,only:sp,sdot, sdot_new,epsi,tension
   implicit none
 
   type, extends (atom_config_d):: atom_config_mc
@@ -3297,17 +3297,17 @@ contains
 
   subroutine calcukcell
     integer::i
-    Kcell = 0.5d0*boxmcgc_p%wbox*Sum( boxmcgc_p%hDot(1:3,1:3)**2 )
-    Tempcell=Kcell*2./(sum(ihbox0)*bk)
-    epsi=0.5d0*MatMul( MatMul( invtrh0, boxmcgc_p%Gmat ), invh0 )
+    boxmcgc_p%Kcell = 0.5d0*boxmcgc_p%wbox*Sum( boxmcgc_p%hDot(1:3,1:3)**2 )
+    boxmcgc_p%Tempcell=boxmcgc_p%Kcell*2./(sum(ihbox0)*bk)
+    epsi=0.5d0*MatMul( MatMul( boxmcgc_p%invtrh0, boxmcgc_p%Gmat ), boxmcgc_p%invh0 )
     DO i=1, 3
        epsi(i,i) = epsi(i,i) - 1.d0
     END DO
 
     grsig = boxmcgc_p%volu * MatMul(boxmcgc_p%invh, MatMul( sigext, boxmcgc_p%invtrh) )
-    tension = invVolu0*MatMul( MatMul( h0, grsig), trh0 )
+    tension = boxmcgc_p%invVolu0*MatMul( MatMul( boxmcgc_p%h0, grsig), boxmcgc_p%trh0 )
     ! Énergie potentielle de la cellule (Eq. 2.25, Ref.2)
-    Ucell = volu0*Sum( tension(1:3,1:3) * epsi(1:3,1:3) )
+    boxmcgc_p%Ucell = boxmcgc_p%volu0*Sum( tension(1:3,1:3) * epsi(1:3,1:3) )
   end subroutine calcukcell
 
   subroutine langevinLPR( direc, protocol) !LANGEVIN
@@ -3364,7 +3364,7 @@ contains
        call lambda(direc, ip, protocol)
        U_l_n = (1.d0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
 
-       H_l_ini = Ek_n + U_l_n +kcell+ucell
+       H_l_ini = Ek_n + U_l_n +boxmcgc_p%kcell+boxmcgc_p%ucell
        H_l_n   = H_l_ini
 
        !if (lmegamaster) write(*,'(A15, G25.16E3,A15, G25.16E3,A15, G25.16E3,A15, G25.16E3)') &
@@ -3424,12 +3424,12 @@ contains
              end do
           end do
           call calcUKcell
-          EkP_n=kcell
+          EkP_n=boxmcgc_p%kcell
 
           boxmcgc_p%hdot(:,:) = (  boxmcgc_p%hdot(:,:)*rgah  &
                + (glanh(:,:)/boxmcgc_p%wbox)*sqrt(boxmcgc_p%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
           call calcUKcell
-          EkP_n_1s4=kcell
+          EkP_n_1s4=boxmcgc_p%kcell
           boxmcgc_p%hdot(:,:) =(boxmcgc_p%hdot(:,:) +&
                &tstep/(2.d0*boxmcgc_p%wBox)*boxmcgc_p%volu*MatMul(sigtot(:,:)-sigext(:,:),boxmcgc_p%invtrh(:,:)))*ihbox0(:,:)
           sp(:,1:atconf_Nplus1%im) = sp(:,1:atconf_Nplus1%im) + sdot(:,1:atconf_Nplus1%im)*tstep
@@ -3452,7 +3452,7 @@ contains
           call caltabtC(cells_n,atconf_n,lperiod,boxmcgc_p,lchktrav=.false.)
           call calctemp (tempN,kineN,atconf_N,cells_n,latcomp=.true.)
           call calcUKcell
-          Tempcell=Kcell*2./(sum(ihbox0)*bk)
+          boxmcgc_p%Tempcell=boxmcgc_p%Kcell*2./(sum(ihbox0)*bk)
 
        end if !on sort du master général (bigmaster)
        !En ce point on doit transférer le système N+1 du master 0 vers le master 1
@@ -3482,8 +3482,8 @@ contains
        if (lbigmaster) then
        call sigkinetotMC(atconf_n,atconf_nplus1,boxmcgc_p,lambda_mc,sig,sigkine,sigtot)
           tempx= tempinstT(atconf_n)
-          Kcell = 0.5d0*boxmcgc_p%wbox*Sum( boxmcgc_p%hDot(1:3,1:3)**2 )
-          Tempcell=Kcell*2./(sum(ihbox0)*bk)
+          boxmcgc_p%Kcell = 0.5d0*boxmcgc_p%wbox*Sum( boxmcgc_p%hDot(1:3,1:3)**2 )
+          boxmcgc_p%Tempcell=boxmcgc_p%Kcell*2./(sum(ihbox0)*bk)
           !          write(6,*)'PR35',boxmcgc_p%hdot(1,1),boxmcgc_p%h(1,1)*1d8,sigtot(1,1)*unitP,tempx,tempcell
 
 
@@ -3522,18 +3522,18 @@ contains
                &tstep/(2.d0*boxmcgc_p%wBox)*boxmcgc_p%volu*MatMul(sigtot(:,:)-sigext(:,:),boxmcgc_p%invtrh(:,:)))*ihbox0(:,:)
 
           call calcUKcell
-          EkP_n_3s4=kcell
+          EkP_n_3s4=boxmcgc_p%kcell
 
           boxmcgc_p%hdot(:,:) = (  boxmcgc_p%hdot(:,:)*rgah  &
                + (glanh(:,:)/boxmcgc_p%wbox)*sqrt(boxmcgc_p%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
 
 
           call calcUKcell
-          EkP_n_p1=kcell
+          EkP_n_p1=boxmcgc_p%kcell
           !calcul des energies et travail et chaleur efficaces
           U_l_n_m1 = U_l_n
           H_l_n_m1 = H_l_n
-          H_l_n    = Ek_n_plus1  + U_l_n+kcell+ucell
+          H_l_n    = Ek_n_plus1  + U_l_n+boxmcgc_p%kcell+boxmcgc_p%ucell
           !          write(6,*)'compHLN',Ek_n_plus1*erg2ev ,U_l_n*erg2ev,kcell*erg2ev,ucell*erg2ev
           dWork = H_l_n - H_l_n_m1
 

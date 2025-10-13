@@ -32,14 +32,14 @@ module Parrinello_Rahman_Nose
 
 
   USE T_kind_param_m
-  USE gen_com_m, ONLY:   ecellpr,enose,fnose,kcell,kine,knose,lpcon2,sigext,sigtot,tbox,text,&
-       &tstep,ucell,unose,wboxf,wnose,enose,erg2ev,fnose,iteration,kcell,knose,leev,&
-       &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM,h0,ihbox0,lpcube
+  USE gen_com_m, ONLY:   enose,fnose,kine,knose,lpcon2,sigext,sigtot,tbox,text,&
+       &tstep,unose,wboxf,wnose,enose,erg2ev,fnose,iteration,knose,leev,&
+       &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM,ihbox0,h0r,lpcube
   USE var_pot, ONLY:cm
   USE tempinstT_mod,only: tempinstT
   USE Mat_utils_mod,only:  matinv
   USE recips_mod,only: recips,calcvol
-  USE boxconfig,only:box_config,updatebox!,box_config_lpr
+  USE boxconfig,only:box_config,box_config_lpr,updatebox!,box_config_lpr
   use atomconfig,only:atom_config_d,atom_config_e
   use cellconfig,only:cell_config
 #ifdef PARA
@@ -70,7 +70,7 @@ module Parrinello_Rahman_Nose
 contains
 
   subroutine initlprNose(atpr,celndm,boxndm)
-    class(box_config)::boxndm
+    class(box_config_lpr)::boxndm
     class(atom_config_d)::atpr
     type(cell_config):: celndm
 
@@ -90,12 +90,13 @@ contains
     if (rang==0) WRITE(6,*)
     IF (lUcell) THEN
        if (rang==0) WRITE(6,'(a)') "Repère de référence pour Parrinello-Rahman  (A):"
-       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*h0(1:3,1)
-       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*h0(1:3,2)
-       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*h0(1:3,3)
+       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*h0r(1:3,1)
+       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*h0r(1:3,2)
+       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*h0r(1:3,3)
        if (rang==0) WRITE(6,*)
+       boxndm%h0=h0r
     ELSE
-       h0 = boxndm%at
+       boxndm%h0 = boxndm%at
     END IF
     if (rang==0) WRITE(6,'(a)') "Repère actuel  (A):"
     if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,1) = ', 1e8*boxndm%at(1:3,1)
@@ -128,10 +129,10 @@ end if
     !   Cet état de référence doit correspondre à un tenseur de contrainte nul.
     !   Il n'est utile que pour calculer la déformation et l'énergie potentielle
     !   de la boîte.
-    volu0 = calcvol(h0(1:3,1),h0(1:3,2),h0(1:3,3))
+    volu0 = calcvol(boxndm%h0(1:3,1),boxndm%h0(1:3,2),boxndm%h0(1:3,3))
     invVolu0 = 1.d0/volu0
-    trh0=Transpose(h0)
-    CALL MatInv(h0,invh0)
+    trh0=Transpose(boxndm%h0)
+    CALL MatInv(boxndm%h0,invh0)
     invtrh0=Transpose(invh0)
 
     ! Vecteurs de la boîte et matrice inverse
@@ -155,7 +156,7 @@ end if
     hold(:,:) = h(:,:) - tstep*hpoint(:,:)
     ! Kinetic energy of the cell (Eq. 2.14 of Ref. [2])
     maux2 = MatMul( Transpose(hpoint), hpoint )
-    Kcell = 0.5d0*wbox*( maux2(1,1) + maux2(2,2) + maux2(3,3) )
+    boxndm%Kcell = 0.5d0*wbox*( maux2(1,1) + maux2(2,2) + maux2(3,3) )
     if(lEev) then
        unitE=erg2eV
        cunitE='  eV'
@@ -163,8 +164,8 @@ end if
        unitE=1.0
        cunitE=' erg'
     end if
-    write(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') 0,0.d0,'*Kcell = ',Kcell*unitE,cunitE, &
-         '  (', 2.d0*Kcell/(9.d0*bk), ' K)'
+    write(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') 0,0.d0,'*Kcell = ',Boxndm%Kcell*unitE,cunitE, &
+         '  (', 2.d0*Boxndm%Kcell/(9.d0*bk), ' K)'
 
     ! Kinetic and potential energies of Nosé thermostat (Eq. 3.1 Ref. [3])
     !KNose = 0.5d0*bk*temp0
@@ -193,7 +194,7 @@ end if
   subroutine prNose(atpr,celndm,boxndm,psc)
 
     implicit none
-    class(box_config)::boxndm
+    class(box_config_lpr)::boxndm
     class(atom_config_d)::atpr
     type(cell_config):: celndm
     type(para_space_config)::psc
@@ -238,11 +239,11 @@ end if
     END DO
 
     ! Thermodynamic tension (Eq. 2.22)
-    tension = invVolu0*MatMul( MatMul( h0, grsig), trh0 )
+    tension = invVolu0*MatMul( MatMul( boxndm%h0, grsig), trh0 )
 
     ! Potential energy of the cell (Eq. 2.25)
     maux1 = MatMul( tension, epsi )
-    Ucell = volu0*( maux1(1,1) + maux1(2,2) + maux1(3,3) )
+    boxndm%Ucell = volu0*( maux1(1,1) + maux1(2,2) + maux1(3,3) )
 
     ! Coordonnées réduites des atomes
     sp(1:3,1:atpr%imm) = MatMul(invh(1:3,1:3), atpr%xp(1:3,1:atpr%imm) )
@@ -304,7 +305,7 @@ end if
     hpoint = (hnew - hold)/(2.d0*tstep)
     ! Kinetic energy of the cell (Eq. 2.14, Ref.[2])
     maux2 = MatMul( Transpose(hpoint), hpoint )
-    Kcell = 0.5d0*wbox*fNose2*( maux2(1,1) + maux2(2,2) + maux2(3,3) )
+    Boxndm%Kcell = 0.5d0*wbox*fNose2*( maux2(1,1) + maux2(2,2) + maux2(3,3) )
     ! Time derivative of the metric tensor Gmat
     DO i=1, 3
        DO j=1, 3
@@ -365,7 +366,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     hnew(:,:) = 2.d0*h(:,:) - hold(:,:) + whpointpoint(:,:)*tstep**2/(fNose2*wbox)
 
     ! Résolution de l'équation (3.4) de la Réf. [3]
-    f2point = (2.d0*(kine+Kcell) - gNose*bk*Text)/(fNose*wNose)
+    f2point = (2.d0*(kine+Boxndm%Kcell) - gNose*bk*Text)/(fNose*wNose)
     fnew = 2.d0*fNose - fold + f2point*tstep**2
 
     ! Vérifie l'autocohérence
@@ -411,7 +412,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        if (atpr%lxpp)    atpr%xpp(1:3,1:atpr%imm) = MatMul(hold(1:3,1:3), sold(1:3,1:atpr%imm) )
     end select
     ! Total energy of the cell
-    EcellPR = Kcell + Ucell
+    boxndm%EcellPR = Boxndm%Kcell +boxndm% Ucell
 
     ! Kinetic and potential energies of Nosé thermostat (Eq. 3.1 Ref. [3])
     KNose = 0.5d0*wNose*fpoint**2

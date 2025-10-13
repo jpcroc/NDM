@@ -24,10 +24,10 @@ module boxconfig
   end type box_config
 
   type, extends (box_config):: box_config_lpr ! type dynamique des configurations atomiques(+vp/+xpp). vp et xpp seront toujours allouées
-     real(double), dimension(3,3)  :: h, hDot
+     real(double), dimension(3,3)  :: h, hDot,h0,invh0,invtrh0,trh0
      real(double), dimension(3,3)  :: trh, invh, invtrh, Gmat, invGmat, Gdot
-     real(double) :: invVolu,wbox
-     
+     real(double) :: invVolu,wbox,volu0,invvolu0
+     real(double):: EcellPR, Kcell, Ucell,Htot,tempcell
    contains
   end type box_config_lpr
 

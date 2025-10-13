@@ -26,7 +26,6 @@ module gen_com_m
 
   integer :: imm_glob 
 
-  real(double), dimension(3,3) :: h0     ! Vecteurs de base de la boite de reference en A (Parrinello, Rahman)
   logical :: lUcell                 ! affiche l'energie potentielle de la boite
   ! (cela suppose que h0 corresponde a l'etat de reference pour lequelle la contrainte est nulle)     
   logical :: lrctest    ! .true.: test sur rc ; false pas de test
@@ -141,7 +140,7 @@ module gen_com_m
   real(double), dimension(3,3) :: att, ati    !vitesse de la forme de la boite ; ati=(at^-1)
   integer, dimension(3,3) :: ihbox0 ! integer pour bétonner les tests      ! the degree of freebom of the box. If is 1 everywhere all the shape  can change.
 
-  real(double), dimension(3,3) :: sigext, pext_hydro  !contraintes externes appliques; contraintes calculees
+  real(double), dimension(3,3) :: sigext, pext_hydro,h0r  !contraintes externes appliques; contraintes calculees
 
 !ci-dessous choses à modulariser
   integer, parameter :: cont888 = 1000
@@ -154,7 +153,7 @@ module gen_com_m
 
 
   ! energies potentielle, cinetique et totale de la boite en Parrinello-Rahman
-  real(double):: EcellPR, Kcell, Ucell      
+
 
 
   !Variables Nose

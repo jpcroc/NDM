@@ -27,7 +27,7 @@ contains
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,iteprtsigma,itetemp,itetemp2,itmax,ivisu,l2t,lcalcjq,&
          &lcasca,lcontr,ldemitab,leev,leparat,lfilm,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
-         &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,nfda,h0,&
+         &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,nfda,h0r,&
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou,iteprtkin&
          &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart,lmultin,lbabar&
          &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit,lmaxvp,vplim
@@ -85,7 +85,7 @@ contains
          iteangle,  itesauvposition, itesauvforce,  tdepla2, lpcube,&
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
          maxorder, ipotentiel,lpotentiel,beta35,R0mcgc,izlins,zlcenter,fdfactmcgc,ins_typ,bublcenter,&
-         h0, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
+         h0r, sigext,lconstrtot,lEev,lPkbar,deltax,lcorrelvp,lvpread,&
          lcalcjq,dilat,lderive,lTandersen,nuandersen,landerscou,Llangevin,gamlg,ilangevin,&
          lcdp, ljqbh,lEparat,itebdv,itetemp2,itecompcr,iteanapos,&
          lnemd,fnemd,fpstop,iseed,fsumstop,sigstop,lcontr,lpr,lUcell,ngrid,lperiod,&
@@ -194,7 +194,7 @@ contains
     ihbox0(:,:) = 1   ! all the dimension of the box can change
     sigext = 0.0                ! Symetric tensor related to the external stress
     !=== Modif Emmanuel Clouet ================
-    h0(1:3,1:3) = 0.d0          ! Vecteurs de base de la bite de reference en A (Parrinello, Rahman)
+    h0r(1:3,1:3) = 0.d0          ! Vecteurs de base de la bite de reference en A (Parrinello, Rahman)
     lUcell=.false.              ! affiche l'energie potentielle de la boite
     ! (cela suppose que h0 correspond a l'etat de
     ! reference, ie etat pour laquelle la

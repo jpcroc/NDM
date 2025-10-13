@@ -37,11 +37,11 @@ module Parrinello_Rahman
   !     A Molecular Dynamics Method for Simulations in the Canonical Ensemble
   !     Mol. Phys., 1984, 52, 255-268tabv
   USE T_kind_param_m
-  USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lthoover,nhoover,sigext,ucell,erg2ev,&
-       &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
+  USE gen_com_m, ONLY:kine,knose,lpcon2,lthoover,nhoover,sigext,erg2ev,&
+       &kine,knose,leev,lthoover,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
        &potist,sig,sigtot,text,tstep,iteration,potist,rang,sig,text,sigkine,lpcube,&
-       &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype,usdh,llangevin,gamlg,gamprfact,unitP,&
-       & lmaxvp,vplim
+       &pi,l2t,ltberendsen,lperiod,lspaceNDM,dmtype,usdh,llangevin,gamlg,gamprfact,unitP,&
+       & lmaxvp,vplim,lucell,h0r
   
   use FireModule,only:alph_start,f_alph,fdec,finc,nstepmin,tstep_mm,tstep0,init_trempe_fire
 
@@ -95,8 +95,8 @@ module Parrinello_Rahman
   !  real(double)::wbox
   ! Variables uniquement nécessaires au calcul de l'énergie potentielle de la
   ! boîte
-  real(double), dimension(3,3) ::trh0,invh0,invtrh0,epsi, tension
-  real(double) ::volu0, invVolu0
+  real(double), dimension(3,3) ::tension,epsi !trh0,invh0,invtrh0,epsi, tension
+!  real(double) ::volu0, invVolu0
   REAL(double) ::  fire_alph
   INTEGER :: fire_nstep,ic
 
@@ -135,12 +135,13 @@ contains
 
     IF (lUcell) THEN
        IF(LWRT) WRITE(unitw,'(a)') "Repère de référence pour Parrinello-Rahman  (A):"
-       IF(LWRT) WRITE(unitw,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*h0(1:3,1)
-       IF(LWRT) WRITE(unitw,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*h0(1:3,2)
-       IF(LWRT) WRITE(unitw,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*h0(1:3,3)
+       IF(LWRT) WRITE(unitw,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*h0r(1:3,1)
+       IF(LWRT) WRITE(unitw,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*h0r(1:3,2)
+       IF(LWRT) WRITE(unitw,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*h0r(1:3,3)
        IF(LWRT) WRITE(unitw,*)
+       boxndm%h0=1e8*h0r(1:3,1:3)
     ELSE
-       h0 = boxndm%at
+       boxndm%h0 = boxndm%at
     END IF
     IF(LWRT) WRITE(unitw,'(a)') "Repère actuel  (A):"
     IF(LWRT) WRITE(unitw,'(a,3(f0.5,1x))') ' h (1:3,1) = ', 1e8*boxndm%at(1:3,1)
@@ -160,11 +161,11 @@ contains
     !   Cet état de référence doit correspondre à un tenseur de contrainte nul.
     !   Il n'est utile que pour calculer la déformation et l'énergie potentielle
     !   de la boîte.
-    volu0 = calcvol(h0(1:3,1),h0(1:3,2),h0(1:3,3))
-    invVolu0 = 1.d0/volu0
-    trh0=Transpose(h0)
-    CALL MatInv(h0,invh0)
-    invtrh0=Transpose(invh0)
+    boxndm%volu0 = calcvol(boxndm%h0(1:3,1),boxndm%h0(1:3,2),boxndm%h0(1:3,3))
+    boxndm%invvolu0 = 1.d0/boxndm%volu0
+    boxndm%trh0=Transpose(boxndm%h0)
+    CALL MatInv(boxndm%h0,boxndm%invh0)
+    boxndm%invtrh0=Transpose(boxndm%invh0)
 
     ! Vecteurs de la boîte et grandeurs associées à l'instant initial
 !!$    h(:,:)=boxndm%at(:,:)
@@ -201,8 +202,8 @@ contains
 
     !#endif
 
-    Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
-    Tempcell=Kcell*2./(9.*bk)
+    boxndm%Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
+    Tempcell=boxndm%Kcell*2./(9.*bk)
 !    if (Tinitbox.gt.0)     boxndm%hdot(1:3,1:3)=sqrt(tinitbox/Tempcell)*boxndm%hdot(1:3,1:3)
     DO i=1, 3
        DO j=1, 3
@@ -215,7 +216,7 @@ contains
 
     ! Kinetic energy of the cell (Eq. 2.14 of Ref. [2])
 
-    Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
+    boxndm%Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
 
 
     if(lEev) then
@@ -225,8 +226,8 @@ contains
        unitE=1.0
        cunitE=' erg'
     end if
-    if(lwrt) write(unitw,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') 0,0.d0,'*Kcell = ',Kcell*unitE,cunitE, &
-         '  (', 2.d0*Kcell/(9.d0*bk), ' K)'
+    if(lwrt) write(unitw,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') 0,0.d0,'*Kcell = ',boxndm%Kcell*unitE,cunitE, &
+         '  (', 2.d0*boxndm%Kcell/(9.d0*bk), ' K)'
 
     ! Nombre de thermostats de Hoover
     IF (nHoover.LT.0) nHoover=0
@@ -496,8 +497,8 @@ contains
        call comm_space%barrier
        select type(atpr)
        class is (atom_config_e)
-          Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
-          Tempcell=Kcell*2./(sum(ihbox0)*bk)
+          boxndm%Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
+          Tempcell=boxndm%Kcell*2./(sum(ihbox0)*bk)
           DO i=1, atpr%im
 
              rga=exp(-gamlt(atpr%ityp(i))*tstep/2)
@@ -541,8 +542,8 @@ contains
           call comm_space%bcast(0,boxndm%hdot)
           call comm_space%bcast(0,glanh)
          tempx= tempinstT(atpr)
-          Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
-          Tempcell=Kcell*2./(sum(ihbox0)*bk)
+          boxndm%Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
+          Tempcell=boxndm%Kcell*2./(sum(ihbox0)*bk)
 
           sp(:,1:atpr%im) = sp(:,1:atpr%im) + sdot(:,1:atpr%im)*tstep
 
@@ -558,8 +559,8 @@ contains
 
           call updatebox(boxndm,boxndm%h)
           atpr%vp(:,1:atpr%im) = MatMul( boxndm%h(:,:), sdot(:,1:atpr%im) ) ! retour à vp car transfert d'atomes  dans scalebox en PARA
-          Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
-          Tempcell=Kcell*2./(sum(ihbox0)*bk)
+          boxndm%Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
+          Tempcell=boxndm%Kcell*2./(sum(ihbox0)*bk)
 
           tempx= tempinstT(atpr)
 
@@ -592,15 +593,15 @@ contains
           END DO
 
           grsig = boxndm%volu * MatMul(boxndm%invh, MatMul( sigext, boxndm%invtrh) )
-          tension = invVolu0*MatMul( MatMul( h0, grsig), trh0 )
+          tension = boxndm%invvolu0*MatMul( MatMul( boxndm%h0, grsig), boxndm%trh0 )
 
           ! Énergie potentielle de la cellule (Eq. 2.25, Ref.2)
-          Ucell = volu0*Sum( tension(1:3,1:3) * epsi(1:3,1:3) )
+          boxndm%Ucell = boxndm%volu0*Sum( tension(1:3,1:3) * epsi(1:3,1:3) )
 
           ! Énergie cinétique de la cellule (Eq. 2.14, Ref.2)
-          Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
-          Tempcell=Kcell*2./(sum(ihbox0)*bk)
-          EcellPR = Kcell + Ucell
+          boxndm%Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
+          boxndm%Tempcell=boxndm%Kcell*2./(sum(ihbox0)*bk)
+          boxndm%EcellPR = boxndm%Kcell + boxndm%Ucell
 
        end select
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -821,23 +822,23 @@ contains
        kine = 0.5d0*boxndm%volu*( sigKine(1,1) + sigKine(2,2) + sigKine(3,3) )
 
        ! Déformation (Eq. 2.16, Ref.2)
-       epsi=0.5d0*MatMul( MatMul( invtrh0, boxndm%Gmat ), invh0 )
+       epsi=0.5d0*MatMul( MatMul( boxndm%invtrh0, boxndm%Gmat ), boxndm%invh0 )
        DO i=1, 3
           epsi(i,i) = epsi(i,i) - 1.d0
        END DO
        ! Tension thermodynamique (Eq. 2.22 et 2.26, Ref.2)
        grsig = boxndm%volu * MatMul(boxndm%invh, MatMul( sigext, boxndm%invtrh) )
-       tension = invVolu0*MatMul( MatMul( h0, grsig), trh0 )
+       tension = boxndm%invvolu0*MatMul( MatMul( boxndm%h0, grsig), boxndm%trh0 )
 
        ! Énergie potentielle de la cellule (Eq. 2.25, Ref.2)
-       Ucell = volu0*Sum( tension(1:3,1:3) * epsi(1:3,1:3) )
+       boxndm%Ucell = boxndm%volu0*Sum( tension(1:3,1:3) * epsi(1:3,1:3) )
 
        ! Énergie cinétique de la cellule (Eq. 2.14, Ref.2)
-       Kcell = 0.5d0*boxndm%wbox*Sum(boxndm%hDot(1:3,1:3)**2 )
-       EcellPR = Kcell + Ucell
+       boxndm%Kcell = 0.5d0*boxndm%wbox*Sum(boxndm%hDot(1:3,1:3)**2 )
+       boxndm%EcellPR = boxndm%Kcell + boxndm%Ucell
        IF (lTHoover) THEN
           ! Dérivée de la viscosité et énergie cinétique du thermostat
-          zDot(1) = (2.d0*(kine + Kcell) - gNose*bk*Text)/wHoover(1) &
+          zDot(1) = (2.d0*(kine + boxndm%Kcell) - gNose*bk*Text)/wHoover(1) &
                - zHoover(2)*zHoover(1)
           KHoover(1) = 0.5d0*wHoover(1)*zHoover(1)**2         ! t+dt
           DO i=2, nHoover
