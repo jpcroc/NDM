@@ -202,13 +202,15 @@ install( TARGETS ${MAIN_LIBRARY_NAME} ${MAIN_EXECUTABLE_NAME})
 ################################################
 
 if (${PROJECT_NAME}_OPT_DK-IO)
-    add_compile_definitions(DKIO=1)
-    target_link_libraries(${MAIN_LIBRARY_NAME} dk_io dk_core zstd bz2 z)
-    target_link_directories(${MAIN_LIBRARY_NAME} PUBLIC "$ENV{HOME}/workdir/tmp/lib")
-    target_include_directories(${MAIN_LIBRARY_NAME} PUBLIC "$ENV{HOME}/workdir/tmp/lib/modules/gfortran/dk_io" "$ENV{HOME}/workdir/tmp/lib/modules/gfortran/dk_core")
-    target_link_options(${MAIN_EXECUTABLE_NAME} PRIVATE "-fopenmp")
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/dk_io/CMakeLists.txt")
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/dk_io)
+        add_compile_definitions(DKIO=1)
+        target_link_libraries(${MAIN_LIBRARY_NAME} dk_io)
+    else()
+        log_warning( "DK_IO non trouvé, fonctionnalités associées désactivées.")
+        set(${PROJECT_NAME}_OPT_DK-IO OFF)
+    endif()
 endif()
-
 
 ################################################
 # Tests and coverage
