@@ -4,6 +4,8 @@ CMAKE_minimum_required( VERSION 3.20 )
 list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_files" )        
 message(STATUS "CMAKE_MODULE_PATH : ${CMAKE_MODULE_PATH}" )
 include( utils )
+include( TraceNewMacros )   # colorful logs
+setcolors()                 # setting log colors
 
 ################################################
 # Auto configuration
@@ -16,6 +18,13 @@ if ("LAMMPS" IN_LIST NDM_PACKAGE_LIST)
     list(APPEND languages "CXX")
 endif()
 
+# met CMAKE_BUILD_TYPE en majuscules
+if(CMAKE_BUILD_TYPE)
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" _tmp)
+    set(CMAKE_BUILD_TYPE "${_tmp}" CACHE STRING "RELEASE or DEBUG" FORCE)
+endif()
+
+# release mode by default
 set(CMAKE_BUILD_TYPE "RELEASE" CACHE STRING "RELEASE or DEBUG")
 set(compile_configuration_list INTEL GNU)
 
@@ -36,6 +45,8 @@ macro(CONFIG_INTEL)
     set(NDM_PRESET_TITLE "Compile NDM INTEL: ${compiler_name}" CACHE STRING "")
     set(CMAKE_Fortran_FLAGS_RELEASE " -O3" CACHE STRING "")
     set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0 -check bounds -traceback" CACHE STRING "")
+    set(NDM_OPT_DK-IO OFF CACHE BOOL "" FORCE) #Car DK-IO ne compile pas avec les compilateurs INTEL
+    log_warning("DK-IO désactivé, car ne compile pas encore avec les compilateurs INTEL")
 endmacro(CONFIG_INTEL)
 
 macro(CONFIG_GNU)
@@ -123,8 +134,6 @@ get_property(${PROJECT_NAME}_LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
 # Import cmake scripts
 include(doxygen_doc)        # to compile documentation with Doxygen
 include( CTest )            # testing with CTest
-include( TraceNewMacros )   # colorful logs
-setcolors()                 # setting log colors
 
 
 ################################################
@@ -202,13 +211,20 @@ install( TARGETS ${MAIN_LIBRARY_NAME} ${MAIN_EXECUTABLE_NAME})
 ################################################
 
 if (${PROJECT_NAME}_OPT_DK-IO)
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/dk_io/CMakeLists.txt")
-        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/dk_io)
+    find_package(DKIO QUIET)
+    if(DKIO_FOUND)
         add_compile_definitions(DKIO=1)
-        target_link_libraries(${MAIN_LIBRARY_NAME} dk_io)
+        target_link_libraries(${MAIN_LIBRARY_NAME} DKIO::dk_io)
     else()
-        log_warning( "DK_IO non trouvé, fonctionnalités associées désactivées.")
-        set(${PROJECT_NAME}_OPT_DK-IO OFF)
+        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/dk_io/CMakeLists.txt")
+            add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/dk_io)
+            add_compile_definitions(DKIO=1)
+            target_link_libraries(${MAIN_LIBRARY_NAME} dk_io)
+            set(${PROJECT_NAME}_LANGUAGES "Fortran" "C" "CXX")
+        else()
+            log_warning( "DK_IO ou DKCore non trouvé, fonctionnalités associées désactivées.")
+            set(${PROJECT_NAME}_OPT_DK-IO OFF CACHE BOOL "" FORCE)
+        endif()
     endif()
 endif()
 
