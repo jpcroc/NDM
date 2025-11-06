@@ -385,7 +385,7 @@ contains
           end if
        end if
        tempsauv=tempinstT(atcf)
-      vv = sqrt(tinit0/tempsauv)
+      vv = sqrt(tinit/tempsauv)
        select type (atcf)
        class is (atom_config_e)
           if (atcf%lxpp) atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*vv
