@@ -142,11 +142,11 @@ contains
                 compression_format = "ASCII, mmap reader"
             class is (TextFileReader)
                 compression_format = "ASCII"
-#ifdef HAVE_LIBZSTD
+#ifdef HAVE_LIBBZ2
             class is (Bzip2FileReader)
                 compression_format = "bzip2"
 #endif
-#ifdef HAVE_LIBZSTD
+#ifdef HAVE_LIBZ
             class is (GzipFileReader)
                 compression_format = "gzip"
 #endif
