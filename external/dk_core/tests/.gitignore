@@ -1,0 +1,9 @@
+# Generated files from the test suite
+testsuite
+testsuite.dir
+testsuite.log
+atconfig
+
+# Test cases
+DataTable.exe
+DataTable
