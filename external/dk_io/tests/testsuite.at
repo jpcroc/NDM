@@ -1,0 +1,375 @@
+AT_INIT
+AT_COLOR_TESTS
+AT_COPYRIGHT([Copyright (c) 2023-2025 CEA])
+
+
+AT_BANNER([Testing structure files i/o])
+
+AT_SETUP([Basic infrastructure])
+AT_CHECK([structure_io], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([CASTEP files])
+AT_CHECK([
+  cp $abs_top_srcdir/tests/castep/*.cell ./
+  structure_castep
+], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([CIF files])
+AT_CHECK([
+  cp $abs_top_srcdir/tests/cif/*.cif ./
+  structure_cif
+], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([DL_POLY files])
+AT_CHECK([
+  cp $abs_top_srcdir/tests/dlpoly/*.dlpoly ./
+  cp $abs_top_srcdir/tests/dlpoly/HISTORY ./
+  structure_dlpoly
+], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([GULP files])
+AT_CHECK([
+  cp $abs_top_srcdir/tests/gulp/*.gin ./
+  structure_gulp
+], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([Extended CFG files])
+AT_CHECK([
+  cp $abs_top_srcdir/tests/xfg/*.xfg ./
+  structure_xfg
+], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([LAMMPS data files])
+AT_CHECK([structure_lammps], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([VASP files])
+AT_CHECK([structure_vasp], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([XSF files])
+AT_CHECK([
+  cp $abs_top_srcdir/tests/xsf/*.xsf ./
+  structure_xsf
+], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([XYZ files])
+AT_CHECK([
+  cp $abs_top_srcdir/tests/xyz/*.xyz ./
+  structure_xyz
+], [0], [ignore])
+AT_CLEANUP
+
+
+AT_BANNER([Testing the cfgconvert utility])
+AT_SETUP([cfgconvert --help])
+AT_CHECK([$abs_top_builddir/src/cfgconvert --help], [0], [Usage: cfgconvert @<:@options@:>@ input output
+
+Available options:
+-f FORMAT, --input-format FORMAT   specify the format of the input file
+-h, --help       print this help message and exit
+-i, --info       print detailed information about the program and the libraries it uses
+-q, --quiet      suppress unnecessary output during processing
+-t FORMAT, --output-format FORMAT  specify the format of the output file
+-v, --verbose    print additional output during processing
+])
+AT_CLEANUP
+AT_SETUP([cfgconvert --info])
+AT_CHECK(["$abs_top_builddir/src/cfgconvert" --info | grep 'DynamicsKit:cfgconvert'], [0], [ignore])
+AT_CHECK(["$abs_top_builddir/src/cfgconvert" -v --info | grep 'Compiled with'], [0], [ignore])
+AT_CHECK(["$abs_top_builddir/src/cfgconvert" -v -q --info | grep 'Compiled with'], [1], [ignore])
+AT_CHECK(["$abs_top_builddir/src/cfgconvert" -v -v -q --info | grep 'Compiled with'], [0], [ignore])
+AT_CLEANUP
+AT_SETUP([Missing input file])
+AT_CHECK(["$abs_top_builddir/src/cfgconvert"], [1], [ignore], [Please provide an input file
+])
+AT_CLEANUP
+AT_SETUP([Missing output file])
+AT_CHECK(["$abs_top_builddir/src/cfgconvert" "$abs_top_srcdir/tests/reference.xfg"], [1], [ignore], [Please provide an output file
+])
+AT_CLEANUP
+AT_SETUP([Wrong input format])
+AT_CHECK(
+  [
+    "$abs_top_builddir/src/cfgconvert" --input-format gulp "$abs_top_srcdir/tests/reference.xfg" test.xfg
+  ],
+  [42],
+  [ignore],
+  [ignore],
+  [],
+  []
+)
+AT_CLEANUP
+
+
+AT_BANNER([Testing the cfgdiff utility])
+AT_SETUP([cfgdiff --help])
+AT_CHECK([$abs_top_builddir/src/cfgdiff --help], [0], [Usage: cfgdiff @<:@options@:>@ file1 file2
+
+Available options:
+-a, --auxiliaries  consider auxiliary fields when comparing structures
+-f, --forces     consider atomic forces when comparing structures
+-h, --help       print this help message and exit
+-i, --info       print detailed information about the program and the libraries it uses
+-l, --velocities consider atomic velocities when comparing structures
+-q, --quiet      suppress unnecessary output during processing
+-v, --verbose    print additional output during processing
+])
+AT_CLEANUP
+AT_SETUP([cfgdiff --info])
+AT_CHECK(["$abs_top_builddir/src/cfgdiff" --info | grep 'DynamicsKit:cfgdiff'], [0], [ignore])
+AT_CHECK(["$abs_top_builddir/src/cfgdiff" -v --info | grep 'Compiled with'], [0], [ignore])
+AT_CHECK(["$abs_top_builddir/src/cfgdiff" -v -q --info | grep 'Compiled with'], [1], [ignore])
+AT_CHECK(["$abs_top_builddir/src/cfgdiff" -v -v -q --info | grep 'Compiled with'], [0], [ignore])
+AT_CLEANUP
+AT_SETUP([Missing file 1])
+AT_CHECK(["$abs_top_builddir/src/cfgdiff"], [1], [ignore], [Please provide two input files
+])
+AT_CLEANUP
+AT_SETUP([Missing file 2])
+AT_CHECK(["$abs_top_builddir/src/cfgdiff" "$abs_top_srcdir/tests/reference.xfg"], [1], [ignore], [Please provide two input files
+])
+AT_CLEANUP
+AT_SETUP([identical structures])
+AT_CHECK(
+  [
+    "$abs_top_builddir/src/cfgdiff" "$abs_top_srcdir/tests/reference.xfg" "$abs_top_srcdir/tests/reference.xfg"
+  ],
+  [0],
+  [ignore],
+  [ignore],
+  [],
+  []
+)
+AT_CLEANUP
+AT_SETUP([structures with velocities])
+AT_CHECK(
+  [
+    "$abs_top_builddir/src/cfgdiff" -l "$abs_top_srcdir/tests/velocities.xfg" "$abs_top_srcdir/tests/velocities.xfg"
+  ],
+  [0],
+  [ignore],
+  [ignore],
+  [],
+  []
+)
+AT_CLEANUP
+AT_SETUP([structures with forces])
+AT_CHECK(
+  [
+    "$abs_top_builddir/src/cfgdiff" -r "$abs_top_srcdir/tests/forces.xfg" "$abs_top_srcdir/tests/forces.xfg"
+  ],
+  [0],
+  [ignore],
+  [ignore],
+  [],
+  []
+)
+AT_CLEANUP
+AT_SETUP([Simple deletion])
+AT_CHECK(
+  [
+    "$abs_top_builddir/src/cfgdiff" "$abs_top_srcdir/tests/reference.xfg" "$abs_top_srcdir/tests/deletion.xfg"
+  ],
+  [1],
+  [ignore],
+  [ignore],
+  [],
+  []
+)
+AT_CLEANUP
+AT_SETUP([Double deletion])
+AT_CHECK(
+  [
+    "$abs_top_builddir/src/cfgdiff" "$abs_top_srcdir/tests/reference.xfg" "$abs_top_srcdir/tests/deletion2.xfg"
+  ],
+  [2],
+  [ignore],
+  [ignore],
+  [],
+  []
+)
+AT_CLEANUP
+AT_SETUP([Deletion at the end])
+AT_CHECK(
+  [
+    "$abs_top_builddir/src/cfgdiff" "$abs_top_srcdir/tests/reference.xfg" "$abs_top_srcdir/tests/deletion3.xfg"
+  ],
+  [1],
+  [ignore],
+  [ignore],
+  [],
+  []
+)
+AT_CLEANUP
+AT_SETUP([Simple addition])
+AT_CHECK(
+  [
+    "$abs_top_builddir/src/cfgdiff" "$abs_top_srcdir/tests/reference.xfg" "$abs_top_srcdir/tests/addition2.xfg"
+  ],
+  [1],
+  [ignore],
+  [ignore],
+  [],
+  []
+)
+AT_CLEANUP
+AT_SETUP([Addition at the end])
+AT_CHECK(
+  [
+    "$abs_top_builddir/src/cfgdiff" "$abs_top_srcdir/tests/reference.xfg" "$abs_top_srcdir/tests/addition.xfg"
+  ],
+  [1],
+  [ignore],
+  [ignore],
+  [],
+  []
+)
+AT_CLEANUP
+AT_SETUP([Simple change])
+AT_CHECK(
+  [
+    "$abs_top_builddir/src/cfgdiff" "$abs_top_srcdir/tests/reference.xfg" "$abs_top_srcdir/tests/change.xfg"
+  ],
+  [2],
+  [ignore],
+  [ignore],
+  [],
+  []
+)
+AT_CLEANUP
+
+
+AT_BANNER([Testing file conversion])
+AT_SETUP([CASTEP])
+AT_CHECK([
+  "$abs_top_builddir/src/cfgconvert" "$abs_top_srcdir/tests/reference.xfg" structure.cell
+], [0], [ignore])
+AT_CHECK([
+  "$abs_top_builddir/src/cfgconvert" --output-format castep "$abs_top_srcdir/tests/reference.xfg" structure
+], [0], [ignore])
+AT_CHECK([
+  diff -I "^#" structure structure.cell
+], [0], [ignore])
+AT_CHECK([
+  "$abs_top_builddir/src/cfgconvert" structure.cell check.xfg
+], [0], [ignore])
+AT_CHECK([
+  diff -I "^#" "$abs_top_srcdir/tests/reference.xfg" check.xfg
+], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([CIF])
+AT_CHECK([
+  "$abs_top_builddir/src/cfgconvert" "$abs_top_srcdir/tests/reference.xfg" structure.cif
+], [0], [ignore])
+AT_CHECK([
+  "$abs_top_builddir/src/cfgconvert" --output-format cif "$abs_top_srcdir/tests/reference.xfg" structure
+], [0], [ignore])
+AT_CHECK([
+  diff -I "^#" structure.cif structure
+], [0], [ignore])
+AT_CHECK([
+  "$abs_top_builddir/src/cfgconvert" structure.cif check.xfg
+], [0], [ignore])
+AT_CHECK([
+  diff -I "^#" "$abs_top_srcdir/tests/reference.xfg" check.xfg
+], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([DL_POLY])
+AT_CHECK([
+  "$abs_top_builddir/src/cfgconvert" "$abs_top_srcdir/tests/reference.xfg" CONFIG
+  "$abs_top_builddir/src/cfgconvert" CONFIG check.xfg
+  diff -I "^#" "$abs_top_srcdir/tests/reference.xfg" check.xfg
+], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([GULP])
+AT_CHECK([
+  "$abs_top_builddir/src/cfgconvert" "$abs_top_srcdir/tests/reference.xfg" structure.gin
+  "$abs_top_builddir/src/cfgconvert" structure.gin check.xfg
+  diff -I "^#" "$abs_top_srcdir/tests/reference.xfg" check.xfg
+], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([VASP])
+AT_CHECK([
+  "$abs_top_builddir/src/cfgconvert" "$abs_top_srcdir/tests/reference.xfg" POSCAR
+  "$abs_top_builddir/src/cfgconvert" POSCAR check.xfg
+  diff -I "^#" "$abs_top_srcdir/tests/reference.xfg" check.xfg
+], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([XSF])
+AT_CHECK([
+  "$abs_top_builddir/src/cfgconvert" "$abs_top_srcdir/tests/reference.xfg" structure.xsf
+  "$abs_top_builddir/src/cfgconvert" structure.xsf check.xfg
+  diff -I "^#" "$abs_top_srcdir/tests/reference.xfg" check.xfg
+], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([XYZ])
+AT_CHECK([
+  "$abs_top_builddir/src/cfgconvert" "$abs_top_srcdir/tests/reference.xfg" structure.xyz
+  "$abs_top_builddir/src/cfgconvert" structure.xyz check.xfg
+  diff -I "^#" "$abs_top_srcdir/tests/reference.xfg" check.xfg
+], [0], [ignore])
+AT_CLEANUP
+
+
+
+
+AT_BANNER([Testing file readers])
+AT_SETUP([File objects])
+AT_CHECK([fileobject], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([bzip2 file reader])
+AT_CHECK([
+  cp $abs_top_srcdir/tests/bzip2/corrupted.bz2 ./
+  cp $abs_top_srcdir/tests/bzip2/empty.bz2 ./
+  cp $abs_top_srcdir/tests/bzip2/incomplete.bz2 ./
+  cp $abs_top_srcdir/tests/bzip2/magic.bz2 ./
+  bzip2filereader
+], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([Fortran file reader])
+AT_CHECK([fortranfilereader], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([gzip file reader])
+AT_CHECK([
+  cp $abs_top_srcdir/tests/gzip/corrupted.gz ./
+  cp $abs_top_srcdir/tests/gzip/empty.gz ./
+  cp $abs_top_srcdir/tests/gzip/incomplete.gz ./
+  cp $abs_top_srcdir/tests/gzip/magic.gz ./
+  gzipfilereader
+], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([mmap file reader])
+AT_CHECK([mmapfilereader], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([uncompressed file reader])
+AT_CHECK([textfilereader], [0], [ignore])
+AT_CLEANUP
+
+AT_SETUP([zstandard file reader])
+AT_CHECK([
+  cp $abs_top_srcdir/tests/zstd/corrupted.zst ./
+  cp $abs_top_srcdir/tests/zstd/empty.zst ./
+  cp $abs_top_srcdir/tests/zstd/incomplete.zst ./
+  cp $abs_top_srcdir/tests/zstd/magic.zst ./
+  zstdfilereader
+], [0], [ignore])
+AT_CLEANUP

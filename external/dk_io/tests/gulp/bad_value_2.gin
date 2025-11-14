@@ -1,0 +1,11 @@
+single full nosymm
+
+cell
+5.51605194 5.51605194 5.51605194 90.00000000 90.00000000 90.00000000
+
+fractional
+Ca c 0 0 bad
+F  c 1/4 1/4 1/4
+
+space
+F M -3 M

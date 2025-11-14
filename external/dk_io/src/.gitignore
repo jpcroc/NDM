@@ -1,0 +1,12 @@
+generate_mman
+generate_mman.exe
+mman.f90
+spglib_f08.F90
+
+cfginfo
+cfginfo.exe
+cfgconvert
+cfgconvert.exe
+cfgdiff
+cfgdiff.exe
+

@@ -1,0 +1,25 @@
+
+# Generated files from the test suite
+testsuite
+testsuite.dir
+
+# Test cases
+atconfig
+bzip2filereader
+fileobject
+fortranfilereader
+gzipfilereader
+mmapfilereader
+structure_io
+structure_dlpoly
+structure_gulp
+structure_lammps
+structure_xfg
+structure_cif
+structure_vasp
+structure_xyz
+
+testsuite.log
+textfilereader
+zstdfilereader
+*.exe

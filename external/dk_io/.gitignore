@@ -1,0 +1,38 @@
+
+#
+*~
+._*
+.DS_Store
+
+# Generated files
+*.o
+*.mod
+*.smod
+*.a
+*.so
+*.dylib
+*.gcno
+*.gcda
+gmon.out
+
+# Build system
+Makefile.in
+Makefile
+aclocal.m4
+configure
+config.h
+aminclude_static.am
+autom4te.cache
+compile
+depcomp
+install-sh
+missing
+config.log
+config.status
+
+.deps
+.dirstamp
+
+# Code coverage output
+*-coverage.info
+*-coverage
