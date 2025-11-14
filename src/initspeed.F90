@@ -112,7 +112,7 @@ contains
 !    if (rang==0) write(6,*)
 !    write(6,*)'ISEED initspeed',iseed
     select case (dmtype)
-    case(3,30,5,11,31,32,33,21,22,23,24,2)
+    case(3,30,5,11,31,32,33,21,22,2)
        atcf%vp = 0.0
        if (mdcg_noise==0) then 
           atcf%vp=0.0;

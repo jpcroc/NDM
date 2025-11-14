@@ -22,7 +22,7 @@ make
 
 ### Available formats:
 
-| Format  | Input (ignen) | Input with speeds* ** (ignen) | Output (ivisu) | Output with speeds (ivisu) | Extension |
+| Format  | Input (igen)  | Input with speeds* ** (igen)  | Output (ivisu) | Output with speeds (ivisu) | Extension |
 | :-----: | :-----------: | :---------------------------: | :------------: | :------------------------: | --------- |
 | AtomEye |      11       |              21               |       11       |             21             | .cfg      |
 | AtomEye |      12       |              22               |       12       |             22             | .xfg      |
@@ -38,9 +38,9 @@ make
 
 (*) dmtype 30, 32, 34, 33, 19, 35, 12 are not compatible with reading atoms' speeds from the input file. (See src/prog.F90)
 
-(**) For dmtype 3, 30, 5, 11, 31, 32, 33, 21, 22, 23, 24, 2 the input speeds will be reset. (See src/initspeed.F90)
+(**) For dmtype 3, 30, 5, 11, 31, 32, 33, 21, 22, 2 the input speeds will be reset. (See src/initspeed.F90)
 
 
 
-If `tinit` is specified in the `.din` file, the atom speeds read will be rescaled to match the temperature `tinit` (K). If `tinit` <= 0, atoms' speeds will remain unchanged.
+If `tinit` is specified in the `.din` file, the atom velocities will be read then rescaled to match the temperature `tinit` (K). If `tinit` <= 0, atoms' speeds will remain unchanged.
 
