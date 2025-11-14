@@ -1,0 +1,3 @@
+#\#CIF_1.1
+data_
+symmetry_int_tables_number 1
