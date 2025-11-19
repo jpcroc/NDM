@@ -266,7 +266,9 @@ contains
        !                                    CALCULATED SO FAR, AND NOTE G      
        !                                    SQUARED AND THE VALUE OF NCALLS.   
        !                                    TEST FOR CONVERGENCE.              
-       IF (FCH) 35,30,50                                                 
+       IF (FCH.lT.0)goto 35
+       if(fch==0) goto 30
+       if (fch.gt.0) goto 50                                                 
 30     IF (GNEW/GMIN.LT.-1.0D0) GO TO 45                                 
 35     FMIN = F                                                          
        GSQRD = SUM                                                       
@@ -360,7 +362,11 @@ if (nprocspace.gt.1) then
        !                                  TERMINATE THE LINE SEARCH IF STEPCH  
        !                                    IS EFFECTIVELY ZERO.               
        IF (NCALLS.GT.NFBEG+1) GO TO 115                                  
-       IF (DABS(GMIN/GINIT)-0.2D0) 170,170,115                           
+!       IF (DABS(GMIN/GINIT)-0.2D0) 170,170,115                           
+       IF (DABS(GMIN/GINIT)-0.2D0.lT.0)goto 170
+       if(DABS(GMIN/GINIT)-0.2D0==0) goto 170
+       if (DABS(GMIN/GINIT)-0.2D0.gt.0) goto 115                                                 
+
        !                                  LET SPLN BE THE QUADRATIC SPLINE     
        !                                    THAT INTERPOLATES THE CALCULATED   
        !                                    FUNCTION VALUES AND DIRECTIONAL    
