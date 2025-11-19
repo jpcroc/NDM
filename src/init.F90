@@ -192,7 +192,7 @@ contains
           write(6,*) 'i2T=0 t_cpl<0 and l2T : STOP'
           call arret_ndm
        end if
-       if (celndm%nox.le.0 ) then
+       if (celndm%nox(1).le.0 ) then
           write(6,*) 'nox noy noz MUST be defined in .din with 2T: STOP'
           call arret_ndm
        end if

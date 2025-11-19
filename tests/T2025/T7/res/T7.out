@@ -3,14 +3,17 @@
  neb.din                                                                        
   
  Process            1  of           12  is alive
+ rang readdm iseed            1   447523534
  Process            2  of           12  is alive
+ rang readdm iseed            2   447523544
  Process            3  of           12  is alive
+ rang readdm iseed            3   447523554
  Process            9  of           12  is alive
- rang readdm iseed            9   812725019
+ rang readdm iseed            9   447523614
  Process           10  of           12  is alive
- rang readdm iseed           10   812725029
+ rang readdm iseed           10   447523624
  Process           11  of           12  is alive
- rang readdm iseed           11   812725039
+ rang readdm iseed           11   447523634
  
  coordinates can get out of  0-1
  along  a
@@ -32,20 +35,28 @@ tinit=      -1.0
 tempdeplainit=      -1.0
 debyetemp=      -1.0
   ----------------------------------
- rang readdm iseed            1   812724939
- rang readdm iseed            3   812724959
- rang readdm iseed            4   812724969
- rang readdm iseed            5   812724979
- rang readdm iseed            6   812724989
- rang readdm iseed            8   812725009
  
  
  nb de potentiels           1
  ipotentiel          11
  fmt_cin           1
- rang readdm iseed            0   812724930
- rang readdm iseed            2   812724950
- rang readdm iseed            7   812725006
+ rang readdm iseed            0   447523525
+ rang readdm iseed            4   447523564
+ rang readdm iseed            5   447523574
+ rang readdm iseed            6   447523584
+ rang readdm iseed            7   447523594
+ rang readdm iseed            8   447523604
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
  PARANEB           4
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -53,17 +64,6 @@ debyetemp=      -1.0
  
  POTENTIEL EAM ERCOLESI
  
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
  Types d_atomes :
    1   26.982   13.000  Al 
     0.900    2.200
@@ -132,24 +132,24 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
  rhomm  -20.5955397268345        1.29742094557351     
  calpoeam ktorho and the inverse:   1.094648033620400E-003
    913.535647337378     
- rang rangspace            3           3  nbr procs voisins            3
+ rang rangspace           10           2  nbr procs voisins            3
+ rang rangspace           11           3  nbr procs voisins            3
+ rang rangspace            7           3  nbr procs voisins            3
+ rang rangspace            9           1  nbr procs voisins            3
+ rang rangspace            8           0  nbr procs voisins            3
+ rang rangspace            6           2  nbr procs voisins            3
  NEB: deplacement max entre configurations =    1.11836008295241      
   pour l atome         2049
+ rang rangspace            1           1  nbr procs voisins            3
+ rang rangspace            4           0  nbr procs voisins            3
+ rang rangspace            2           2  nbr procs voisins            3
+ rang rangspace            3           3  nbr procs voisins            3
+ rang rangspace            5           1  nbr procs voisins            3
  NEB: The kspring is in the eV/A^2                          :     1.00000
  NEB: The kspring is in the NDM internal units (cgs)  : 16021.76463
  rang rangspace            0           0  nbr procs voisins            3
  NEB: nebrelaxation /= 1
  NEB: relaxation NEB pour TOUS les atomes
- rang rangspace            5           1  nbr procs voisins            3
- rang rangspace            6           2  nbr procs voisins            3
- rang rangspace            9           1  nbr procs voisins            3
- rang rangspace           11           3  nbr procs voisins            3
- rang rangspace            2           2  nbr procs voisins            3
- rang rangspace            4           0  nbr procs voisins            3
- rang rangspace           10           2  nbr procs voisins            3
- rang rangspace            7           3  nbr procs voisins            3
- rang rangspace            1           1  nbr procs voisins            3
- rang rangspace            8           0  nbr procs voisins            3
  NEB: -------this is NEB--V2-------
  NEB: The MAX steps in NEB        :         100
  ("NEB:===============================================")

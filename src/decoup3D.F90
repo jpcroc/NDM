@@ -66,7 +66,7 @@ contains
     real(double)::xt(3)
     integer,allocatable::natloc(:) !indice de boucle
     integer,save::icall=0
-    nox=celdec%nox;noy=celdec%noy;noz=celdec%noz; noxyz=nox*noy*noz
+    nox=celdec%nox(1);noy=celdec%nox(2);noz=celdec%nox(3); noxyz=nox*noy*noz
     icall=icall+1
     if (present(lverbose))lverb=lverbose
 #ifdef PARA
@@ -395,7 +395,7 @@ contains
 
 
                       xt(:)=atcomp%xp(:,icomp)
-                      call coord_to_cell(xt,numcell,boxrep,celdec%nox,celdec%noy,celdec%noz)
+                      call coord_to_cell(xt,numcell,boxrep,celdec%nox(1),celdec%nox(2),celdec%nox(3))
                       numproc=celdec%proc_cell(numcell)
 
                       if (numproc == myidsp) then
@@ -468,7 +468,7 @@ contains
     integer::natlocm,icomp,numcell,numproc,imm_loc1
     real(double)::xt(3)
     integer,allocatable::natloc(:) !indice de boucle
-    nox=celdec%nox;noy=celdec%noy;noz=celdec%noz; noxyz=nox*noy*noz
+    nox=celdec%nox(1);noy=celdec%nox(2);noz=celdec%nox(3); noxyz=nox*noy*noz
 #ifdef PARA
        nbr_cpumin=nbr_cpuin
 #endif
@@ -496,7 +496,7 @@ contains
                    natloc=0
                    do icomp=1,atcomp%im
                       xt(:)=atcomp%xp(:,icomp)
-                      call coord_to_cell(xt,numcell,boxrep,celdec%nox,celdec%noy,celdec%noz)
+                      call coord_to_cell(xt,numcell,boxrep,celdec%nox(1),celdec%nox(2),celdec%nox(3))
                       numproc=celdec%proc_cell(numcell)
 
                       if (numproc == myidsp) then
@@ -564,7 +564,7 @@ contains
     allocate (natloc(0:nprocspace-1))
     natloc=0
 
-    nox=celcf%nox;noy=celcf%noy;noz=celcf%noz; noxyz=nox*noy*noz
+    nox=celcf%nox(1);noy=celcf%nox(2);noz=celcf%nox(3); noxyz=nox*noy*noz
     im0=0
     nvois0=0
     cellules_max=0
@@ -592,7 +592,7 @@ contains
                 xpcur(3,1) = (atrgin%xp(3,icell)+float(ic-1))/float(lat(3))
                 itypcur=atrgin%ityp(icell)
                 call cryst_to_cart (1, xpcur, boxcf%at, 1)
-                call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox,celcf%noy,celcf%noz)
+                call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox(1),celcf%nox(2),celcf%nox(3))
                 numproc=celcf%proc_cell(numcell)
 
                 if (numproc == myidsp) then
@@ -625,7 +625,7 @@ contains
                 xpcur(3,1) = (atrgin%xp(3,icell)+float(ic-1))/float(lat(3))
                 itypcur=atrgin%ityp(icell)
                 call cryst_to_cart (1, xpcur, boxcf%at, 1)
-                call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox,celcf%noy,celcf%noz)
+                call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox(1),celcf%nox(2),celcf%nox(3))
                 numproc=celcf%proc_cell(numcell)
 !                write(6,*)'np ',i,numproc,MYIDSP
                 if (numproc == myidsp) then

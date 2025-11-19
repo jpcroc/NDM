@@ -1,10 +1,10 @@
  Process            0  of            4  is alive
- Process            1  of            4  is alive
- Process            2  of            4  is alive
- Process            3  of            4  is alive
  nom fichier din=
  Febulk.din                                                                     
   
+ Process            1  of            4  is alive
+ Process            2  of            4  is alive
+ Process            3  of            4  is alive
  
  -------- caracteristiques du run DM--------19
       FORCE Matrix calculation 
@@ -56,6 +56,8 @@ debyetemp=      -1.0
  RHO potin points and the step:       249999  2.400000000000000E-005
  paire eam ; paire complete           1           1
  rep
+ IN ForceMatrix           2
+ IN ForceMatrix           3
  
   *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
  imm,imm_glob,nprocspace        2000        2000           1
@@ -86,19 +88,17 @@ vecteur  3       0.000000       0.000000      17.131908
  calpoeam ktorho and the inverse:   8.522228107257609E-003
    117.340205802329     
  random velocities at TINIT =    600.000000000000      K
- IN ForceMatrix           1
- temperature fin initspeed    606.920649061559     
+ temperature fin initspeed    600.000000000000     
  IN ForceMatrix           0
- IN ForceMatrix           3
- IN ForceMatrix           2
+ IN ForceMatrix           1
+ decal rang ideb ifin          -1           2         217         324
  decal rang ideb ifin          -1           3         325         432
  decal rang ideb ifin          -1           0           1         108
  decal rang ideb ifin          -1           1         109         216
- decal rang ideb ifin          -1           2         217         324
  decal rang ideb ifin           1           2         217         324
  decal rang ideb ifin           1           3         325         432
- decal rang ideb ifin           1           0           1         108
  decal rang ideb ifin           1           1         109         216
+ decal rang ideb ifin           1           0           1         108
  PRE MKL
  zero frequency=  0.000000000000000E+000
  3 non positive frequencies OK for periodic bulk 

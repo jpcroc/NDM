@@ -34,7 +34,7 @@ contains
     call notperiod(2,xp,xpnp,boxcf%at,boxcf%bg,lperiod)
     XJI(:)= xpnp(:,1)-xpnp(:,2)
     !    if ((celcf%noxyz.ne.1).and.(i1.ge.1).and.(i1.le.27)) then
-    if (present(indcv).and.(celcf%nox.ge.3).and.(celcf%noy.ge.3).and.(celcf%noz.ge.3)) then
+    if (present(indcv).and.(celcf%nox(1).ge.3).and.(celcf%nox(2).ge.3).and.(celcf%nox(3).ge.3)) then
        do ic=1,3
           XJI(ic)=XJI(ic)+sum(boxcf%at(ic,:)*celcf%deltadist(:,indcv,atcf%ielat(i)))
        end do

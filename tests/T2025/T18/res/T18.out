@@ -5,8 +5,8 @@
  nom fichier din=
  Febulk.din                                                                     
   
- rang readdm iseed            2           1
  rang readdm iseed            3           1
+ rang readdm iseed            2           1
  
  -------- caracteristiques du run DM-------- 1
      DYNAMIQUE MOLECULAIRE VERLET STANDARD
@@ -14,6 +14,7 @@
  
       ANALYSES 
  itetemp=           1  iteprtsigma=           1
+ rang readdm iseed            1           1
  
       CONTROLES 
 tstep=  0.100D-14
@@ -32,7 +33,6 @@ debyetemp=      -1.0
  IMM PARA =        19800       66000
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
- rang readdm iseed            1           1
  
  
  POTENTIEL EAM
@@ -121,8 +121,8 @@ vecteur  3       0.000000       0.000000      91.370176
    117.340205802329     
  rang rangspace            2           2  nbr procs voisins            3
  rang rangspace            3           3  nbr procs voisins            3
- rang rangspace            1           1  nbr procs voisins            3
  rang rangspace            0           0  nbr procs voisins            3
+ rang rangspace            1           1  nbr procs voisins            3
  tempsauv    560.473874886264     
  pas de chgt des vitesses= 
  temperature fin initspeed    560.473874886264     

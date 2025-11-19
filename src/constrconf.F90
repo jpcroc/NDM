@@ -398,7 +398,7 @@ contains
 
        xt(:)=atcomp%xp(:,icomp)
        iti = atcomp%ityp(icomp)
-       call coord_to_cell(xt,numcell,boxrep,cellrep%nox,cellrep%noy,cellrep%noz)
+       call coord_to_cell(xt,numcell,boxrep,cellrep%nox(1),cellrep%nox(2),cellrep%nox(3))
        numproc=cellrep%proc_cell(numcell)
        atcomp%proc_at(icomp)=numproc
        if (numproc == myidsp) then
@@ -505,7 +505,7 @@ contains
     !       atcinr%num_at_glob(1:im_gr)=ibuffer(1:im_gr)
 
     do i=1,im_gr
-       call coord_to_cell(xpr(:,i),numcell,boxcin,celcf%nox,celcf%noy,celcf%noz)
+       call coord_to_cell(xpr(:,i),numcell,boxcin,celcf%nox(1),celcf%nox(2),celcf%nox(3))
 
        proc(i)=celcf%proc_cell(numcell)
        if (proc(i) == myidsp) then

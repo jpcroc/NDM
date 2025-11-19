@@ -509,7 +509,7 @@ contains
                       call comm_space%bcast(0,xpositest)
 
                       if (lspacendm) then
-                         call coord_to_cell(xposItest,numcell,boxndm,celndm%nox,celndm%noy,celndm%noz)
+                         call coord_to_cell(xposItest,numcell,boxndm,celndm%nox(1),celndm%nox(2),celndm%nox(3))
                          numproc=celndm%proc_cell(numcell)
                       else
                          numproc=0

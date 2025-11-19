@@ -213,7 +213,7 @@ contains
           call arret_ndm
        end select
        call caltabtc(celcr,atcr,lperiod,boxcr,lchktrav=.false.)
-       !       write(6,*)' celana0 celcr celperfdef ',celana0%nox,celcr%nox,celperfdef%nox
+       !       write(6,*)' celana0 celcr celperfdef ',celana0%nox(1),celcr%nox(1),celperfdef%nox(1)
        if (lws) then
           if (rang==0)write(6,*)'analyse de Wigner-Seitz'
        else

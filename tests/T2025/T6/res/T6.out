@@ -1,9 +1,10 @@
  Process            0  of            3  is alive
+ Process            1  of            3  is alive
+ Process            2  of            3  is alive
  nom fichier din=
  neb.din                                                                        
   
- Process            1  of            3  is alive
- Process            2  of            3  is alive
+ rang readdm iseed            2   447467005
  
  coordinates can get out of  0-1
  along  a
@@ -14,10 +15,10 @@
       DRAG OR NEB DYNAMICS 
  generation du crystal ; puis run
  
+ rang readdm iseed            1   447466995
       ANALYSES 
  itetemp=          -1  iteprtsigma=           1
  
- rang readdm iseed            1   812667804
       CONTROLES 
 tstep=  0.100D-14
  itmax=           1 timemax=    10000000000.0000       itab=           1 
@@ -31,8 +32,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          11
  fmt_cin           1
- rang readdm iseed            2   812667814
- rang readdm iseed            0   812667794
+ rang readdm iseed            0   447466986
  PARANEB           1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -91,9 +91,9 @@ NEB:     2    4   0.45228       0.34236E-03    -6882.006664      0 0.14103625
  ("NEB:===============================================")
  ("NEB:pas-neb image    force      force_NEB          energie      statut    ene
  rgie/stable")
+NEB:     3    4   0.29591       0.12637E-03    -6882.027727      0 0.11997311    
 NEB:     3    2   0.29486       0.17054E-02    -6882.027705      0 0.11999558    
 NEB:     3    3   0.38831       0.11927E-03    -6881.934969      0 0.21273109    
-NEB:     3    4   0.29591       0.12637E-03    -6882.027727      0 0.11997311    
  ("NEB:===============================================")
  ("NEB:pas-neb image    force      force_NEB          energie      statut    ene
  rgie/stable")

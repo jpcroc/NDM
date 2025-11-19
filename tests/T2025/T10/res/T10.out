@@ -1,10 +1,12 @@
+ Process            2  of            4  is alive
+ Process            3  of            4  is alive
  Process            0  of            4  is alive
+ Process            1  of            4  is alive
  nom fichier din=
  Febulk.din                                                                     
   
- Process            1  of            4  is alive
- Process            2  of            4  is alive
- Process            3  of            4  is alive
+ rang readdm iseed            2           1
+ rang readdm iseed            3           1
  
  -------- caracteristiques du run DM--------23
      FIRE Quenching Vcst
@@ -15,9 +17,6 @@
  
       CONTROLES 
 tstep=  0.100D-14
- rang readdm iseed            1           1
- rang readdm iseed            2           1
- rang readdm iseed            3           1
  itmax=       20000 timemax=    10000000000.0000       itab=           1 
   itetimestep=          -1
 tinit=       0.1
@@ -37,6 +36,7 @@ debyetemp=      -1.0
  
  POTENTIEL EAM
  
+ rang readdm iseed            1           1
  NTYP NPAIR            1           1
  Types d_atomes pour ce potentiel:
  CM, masse,type, NUMERO DU TYPE D ATOME
@@ -131,28 +131,6 @@ TR: force max, energy     1    0.279031190982931E-13   -0.823889874462380E+04
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
           0       0.0000000          20000      0.10000000E+10     10     10
  ****************************************
- VAC
- VAC           1
- VAC           2
- VAC           3
- VAC           4
- VAC           5
- VAC           6
- VAC           7
- VAC           8
- VAC           9
- VAC          10
- INSER
- INT           1
- INT           2
- INT           3
- INT           4
- INT           5
- INT           6
- INT           7
- INT           8
- INT           9
- INT          10
  ***** FIRST ITERATION  ***       20000   1000000000.00000     
  
 TR: force max, energy     1    0.885240251217510E+02   -0.759908680345626E+04
@@ -259,28 +237,6 @@ TR: force max, energy    48    0.196494898571011E+01   -0.818709431987867E+04
  iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
          48       0.0000000          20000      0.10000000E+10     10     10
  ****************************************
- VAC
- VAC           1
- VAC           2
- VAC           3
- VAC           4
- VAC           5
- VAC           6
- VAC           7
- VAC           8
- VAC           9
- VAC          10
- INSER
- INT           1
- INT           2
- INT           3
- INT           4
- INT           5
- INT           6
- INT           7
- INT           8
- INT           9
- INT          10
  ***** FIRST ITERATION  ***       20000   1000000000.00000     
  
 TR: force max, energy    49    0.931213243646967E+02   -0.749756704591407E+04

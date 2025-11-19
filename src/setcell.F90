@@ -104,7 +104,7 @@ contains
 !!$          write (6, *) rang,'wrong noxyz stop'
 !!$          call arret_ndm
 !!$       endif
-!!$       !       celsn%nox=nox;celsn%noy=noy;celsn%noz=noz
+!!$       !       celsn%nox(1)=nox;celsn%nox(2)=noy;celsn%nox(3)=noz
 
        celsn%celsize(1) = boxsn%zl(1)/float(nox)
        celsn%celsize(2) = boxsn%zl(2)/float(noy)
@@ -221,16 +221,16 @@ contains
        call cryst_to_cart (iml, xpnp, boxcf%bg, -1) ! cart vers cryst
        do i = 1, iml
           !     if  ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xpnp(1,i),xpnp(2,i),xpnp(3,i)
-          aux = xpnp(1,i)*celcf%nox
-          auy = xpnp(2,i)*celcf%noy
-          auz = xpnp(3,i)*celcf%noz
+          aux = xpnp(1,i)*celcf%nox(1)
+          auy = xpnp(2,i)*celcf%nox(2)
+          auz = xpnp(3,i)*celcf%nox(3)
           kx = int(aux)
           ky = int(auy)
           kz = int(auz)
-          kx = Modulo(kx,celcf%nox)
-          ky = Modulo(ky,celcf%noy)
-          kz = Modulo(kz,celcf%noz)
-          koo = 1+kx+celcf%nox*(ky+celcf%noy*kz)
+          kx = Modulo(kx,celcf%nox(1))
+          ky = Modulo(ky,celcf%nox(2))
+          kz = Modulo(kz,celcf%nox(3))
+          koo = 1+kx+celcf%nox(1)*(ky+celcf%nox(2)*kz)
 
           IF ( (koo.GT.celcf%noxyz).OR.(koo.LT.0) ) THEN
              WRITE(0,'(a,i0,a,3g20.12)') &

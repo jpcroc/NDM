@@ -2450,12 +2450,12 @@ contains
           call atconf_nplus1%init(atconf_n%im,atconf_n%imm,atconf_n%ltabvois,&
                &im_glob=atconf_n%im_glob,imm_glob=imm_glob)
           call type_switch(idirectionmcgc)
-          call cells_nplus1%init(boxmcgc_P,cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
+          call cells_nplus1%init(boxmcgc_P,cells_n%nox(1),cells_n%nox(2),cells_n%nox(3), cells_n%natperc)
           call cells_n%copy(cells_nplus1,boxmcgc_p)
        else
           call atconf_nplus1%init(atconf_n%im,atconf_n%imm,atconf_n%ltabvois,&
                &im_glob=atconf_n%im_glob,imm_glob=imm_glob)
-          call cells_nplus1%init(boxmcgc_p,cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
+          call cells_nplus1%init(boxmcgc_p,cells_n%nox(1),cells_n%nox(2),cells_n%nox(3), cells_n%natperc)
           call cells_n%copy(cells_nplus1,boxmcgc_p)
        end if
 
@@ -2479,12 +2479,12 @@ contains
              !copie de cell puis caltabtC pour redecouper avec la n+1eme particule
           end do
           call init_vitesse(atconf_nplus1,param = 0)
-          call cells_nplus1%init(boxmcgc_P,cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
+          call cells_nplus1%init(boxmcgc_P,cells_n%nox(1),cells_n%nox(2),cells_n%nox(3), cells_n%natperc)
           call cells_n%copy(cells_nplus1,boxmcgc_p)
        else
           call atconf_nplus1%init(atconf_n%im+nbatplus,atconf_n%imm,atconf_n%ltabvois,&
                &im_glob=atconf_n%im_glob+nbatplus,imm_glob=imm_glob)
-          call cells_nplus1%init(boxmcgc_p,cells_n%nox,cells_n%noy,cells_n%noz, cells_n%natperc)
+          call cells_nplus1%init(boxmcgc_p,cells_n%nox(1),cells_n%nox(2),cells_n%nox(3), cells_n%natperc)
           call cells_n%copy(cells_nplus1,boxmcgc_p)
        end if
 
@@ -2699,7 +2699,7 @@ contains
             &im_glob=atconf_nplus1%im_glob-nbatplus,imm_glob=imm_glob)
     end if
 
-    call cells_n%init(boxmcgc_p,cells_nplus1%nox,cells_nplus1%noy,cells_nplus1%noz, cells_nplus1%natperc)
+    call cells_n%init(boxmcgc_p,cells_nplus1%nox(1),cells_nplus1%nox(2),cells_nplus1%nox(3), cells_nplus1%natperc)
     call cells_nplus1%copy(cells_n,boxmcgc_p)
 
 
