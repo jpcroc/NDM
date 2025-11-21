@@ -57,11 +57,11 @@ debyetemp=      -1.0
  num_at_glob
 volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
  nox,noy,noz dans .din =          -1          -1          -1
- calcul de nox noy noz !!!
-nox noy noz calcules a partir de ru
-  nox = Int(   0.2855E-06/  0.6000E-07) = 4
-  noy = Int(   0.2855E-06/  0.6000E-07) = 4
-  noz = Int(   0.2855E-06/  0.6000E-07) = 4
+nox noy noz and ghost cells from ru
+  nox in direction  1=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+  nox in direction  2=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+  nox in direction  3=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+          64  active cells among           64
 celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
  natperc im/noxyz          76          31
  ltabvois F

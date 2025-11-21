@@ -1,10 +1,9 @@
  Process            0  of            3  is alive
+ nom fichier din=
  Process            1  of            3  is alive
  Process            2  of            3  is alive
- nom fichier din=
  neb.din                                                                        
   
- rang readdm iseed            2   447467005
  
  coordinates can get out of  0-1
  along  a
@@ -15,7 +14,6 @@
       DRAG OR NEB DYNAMICS 
  generation du crystal ; puis run
  
- rang readdm iseed            1   447466995
       ANALYSES 
  itetemp=          -1  iteprtsigma=           1
  
@@ -32,7 +30,9 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          11
  fmt_cin           1
- rang readdm iseed            0   447466986
+ rang readdm iseed            0   173900847
+ rang readdm iseed            1   173900857
+ rang readdm iseed            2   173900866
  PARANEB           1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -51,15 +51,33 @@ debyetemp=      -1.0
  **********construction du reseau************
  repetition de mailles           1           1           1
  nox,noy,noz dans .din =           4           4           4
+nox (  1) dans din =     4
+nox (  2) dans din =     4
+nox (  3) dans din =     4
+nox noy noz and ghost cells from ru
+  nox in direction  1=  4 if not specified =Int(   0.3226E-06/  0.5558E-07) 
+  nox in direction  2=  4 if not specified =Int(   0.3226E-06/  0.5558E-07) 
+  nox in direction  3=  4 if not specified =Int(   0.3226E-06/  0.5558E-07) 
+          64  active cells among           64
 celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
-deb_neb.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+deb_neb.gin                                                                     
+volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
  natperc im/noxyz          66          32
  ltabvois F
  **********construction du reseau************
  repetition de mailles           1           1           1
  nox,noy,noz dans .din =           4           4           4
+nox (  1) dans din =     4
+nox (  2) dans din =     4
+nox (  3) dans din =     4
+nox noy noz and ghost cells from ru
+  nox in direction  1=  4 if not specified =Int(   0.3226E-06/  0.5558E-07) 
+  nox in direction  2=  4 if not specified =Int(   0.3226E-06/  0.5558E-07) 
+  nox in direction  3=  4 if not specified =Int(   0.3226E-06/  0.5558E-07) 
+          64  active cells among           64
 celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
-fin_neb.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+fin_neb.gin                                                                     
+volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
  natperc im/noxyz          72          32
  ltabvois F
  
@@ -91,9 +109,9 @@ NEB:     2    4   0.45228       0.34236E-03    -6882.006664      0 0.14103625
  ("NEB:===============================================")
  ("NEB:pas-neb image    force      force_NEB          energie      statut    ene
  rgie/stable")
-NEB:     3    4   0.29591       0.12637E-03    -6882.027727      0 0.11997311    
 NEB:     3    2   0.29486       0.17054E-02    -6882.027705      0 0.11999558    
 NEB:     3    3   0.38831       0.11927E-03    -6881.934969      0 0.21273109    
+NEB:     3    4   0.29591       0.12637E-03    -6882.027727      0 0.11997311    
  ("NEB:===============================================")
  ("NEB:pas-neb image    force      force_NEB          energie      statut    ene
  rgie/stable")

@@ -1,12 +1,12 @@
 #!/bin/bash
 
-for ((tn=1 ; tn<=18; tn +=1)) ; do
+for ((tn=1 ; tn<=21; tn +=1)) ; do
 cd T$tn
 pwd
 pwd
 pwd
 ./jtest
-cp    TXXX.out res/T$tn.out
+mv    TXXX.out res/T$tn.out
 
 cd ../
 done

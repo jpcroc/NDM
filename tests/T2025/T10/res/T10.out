@@ -1,16 +1,16 @@
- Process            2  of            4  is alive
- Process            3  of            4  is alive
  Process            0  of            4  is alive
  Process            1  of            4  is alive
+ Process            2  of            4  is alive
+ Process            3  of            4  is alive
  nom fichier din=
  Febulk.din                                                                     
   
- rang readdm iseed            2           1
- rang readdm iseed            3           1
  
  -------- caracteristiques du run DM--------23
      FIRE Quenching Vcst
  generation du crystal ; puis run
+ rang readdm iseed            2           1
+ rang readdm iseed            3           1
  
       ANALYSES 
  itetemp=        1000  iteprtsigma=           1
@@ -28,6 +28,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
+ rang readdm iseed            1           1
  rang readdm iseed            0           1
  IMM PARA =          720        2400
  
@@ -36,7 +37,6 @@ debyetemp=      -1.0
  
  POTENTIEL EAM
  
- rang readdm iseed            1           1
  NTYP NPAIR            1           1
  Types d_atomes pour ce potentiel:
  CM, masse,type, NUMERO DU TYPE D ATOME
@@ -57,13 +57,14 @@ debyetemp=      -1.0
  repetition de mailles          10          10          10
   .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +2e-7
  nox,noy,noz dans .din =          -1          -1          -1
- calcul de nox noy noz !!!
-nox noy noz calcules a partir de ru
-  nox = Int(   0.2855E-06/  0.6000E-07) = 4
-  noy = Int(   0.2855E-06/  0.6000E-07) = 4
-  noz = Int(   0.2855E-06/  0.6000E-07) = 4
+nox noy noz and ghost cells from ru
+  nox in direction  1=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+  nox in direction  2=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+  nox in direction  3=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+          64  active cells among           64
 celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
-Febulk.gin                                                                      volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
+Febulk.gin                                                                      
+volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
  sur            4  cpus           0
  
  

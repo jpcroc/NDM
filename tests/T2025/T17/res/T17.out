@@ -5,8 +5,8 @@
  nom fichier din=
  Febulk.din                                                                     
   
- rang readdm iseed            2           1
  rang readdm iseed            3           1
+ rang readdm iseed            2           1
  
  -------- caracteristiques du run DM-------- 1
      DYNAMIQUE MOLECULAIRE VERLET STANDARD
@@ -16,7 +16,6 @@
  itetemp=           1  iteprtsigma=           1
  
       CONTROLES 
- rang readdm iseed            1           1
 tstep=  0.100D-14
  itmax=           1 timemax=    10000000000.0000       itab=           1 
   itetimestep=          -1
@@ -31,6 +30,7 @@ debyetemp=      -1.0
  fmt_cin           1
  rang readdm iseed            0           1
  IMM PARA =        19800       66000
+ rang readdm iseed            1           1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
  
@@ -60,11 +60,11 @@ debyetemp=      -1.0
  config type of  .cin file :            3
 volume= 0.76280474D-18 cm3  0.76280474D+06 Ang3
  nox,noy,noz dans .din =          -1          -1          -1
- calcul de nox noy noz !!!
-nox noy noz calcules a partir de ru
-  nox = Int(   0.9137E-06/  0.6000E-07) = 15
-  noy = Int(   0.9137E-06/  0.6000E-07) = 15
-  noz = Int(   0.9137E-06/  0.6000E-07) = 15
+nox noy noz and ghost cells from ru
+  nox in direction  1= 15 if not specified =Int(   0.9137E-06/  0.6000E-07) 
+  nox in direction  2= 15 if not specified =Int(   0.9137E-06/  0.6000E-07) 
+  nox in direction  3= 15 if not specified =Int(   0.9137E-06/  0.6000E-07) 
+        3375  active cells among         3375
 celsizes   0.6091345E-07  0.6091345E-07  0.6091345E-07
  sur            4  cpus           0
  
