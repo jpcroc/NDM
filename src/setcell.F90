@@ -9,7 +9,7 @@ module setcell
   USE atomconfig,only: atom_config
   USE boxconfig,only:box_config
   USE cellconfig,only:cell_config
-    use cryst_to_cart_mod,only:cryst_to_cart
+  use cryst_to_cart_mod,only:cryst_to_cart
 #ifdef PARA
   use Tpara,only:nprocspace
 #endif
@@ -22,16 +22,16 @@ contains
     type(cell_config)::celsn
     real(double),intent(in)::rum
     integer,optional::noxr,noyr,nozr
-    integer::nox,noy,noz
-    integer::izonr
+    integer::nox(3)
+    integer::izonr,ic
     logical,intent(in),optional::lverbose
     logical::lverb=.true.
-    real(double)::zlmin,zlm2
+    real(double)::zlmin,zlm2,ronl(3)
     if (present(lverbose)) lverb=lverbose
-    nox=0;noy=0;noz=0
-    if (present(noxr))nox=noxr
-    if (present(noyr))noy=noyr
-    if (present(nozr))noz=nozr
+    nox(:)=0
+    if (present(noxr))nox(1)=noxr
+    if (present(noyr))nox(2)=noyr
+    if (present(nozr))nox(3)=nozr
 
     zlmin = distmin(boxsn%at(:,1),boxsn%at(:,2))
     zlm2 = distmin(boxsn%at(:,1),boxsn%at(:,3))
@@ -46,25 +46,15 @@ contains
     !  end if
     !    if (lpotentiel(11).eqv..true.) rut=max(rut,2*rue_pot(11))
     !    if (lpotentiel(12).eqv..true.) rut=max(rut,2*rue_pot(12))
-    izonr = int(zlmin/rum)
+    RonL(:)=rum/boxsn%nzl(:)
+    !    write(6,*)'IZONR',izonr
     ! MPI
-
-    if ((ipotentiel.ne.20).and.(izonr<2)) then
-       !write (6, *) 'trop petite boite !!!'
-       !cosboite  stop
-       if (lrctest) then
-          write (6, *) 'STOP ; supprimer avec lrctest=.false. dans din'
-          call arret_ndm
-       endif
-    end if
-    if ((rang==0).and.(lverb)) write (6, *) 'nox,noy,noz dans .din =', nox, noy, noz
-
-    if (nox<=0.or.noy<=0.or.noz<=0) then
-       ! détermination de nox noy noz qui ne sont pas donnes dans .din
-       !
-       if ((rang==0).and.(lverb))write (6, *) 'calcul de nox noy noz !!!'
-       ! ==== MODIF CLOUET 2 ====================
-       if (izonr<2) then
+    if ((rang==0).and.(lverb)) write (6, *) 'nox,noy,noz dans .din =', nox(1),nox(2),nox(3)
+    do ic=1,3
+       WRITE(6,*)'ghgh1 ',IC,rONL(IC)
+       celsn%ismall(ic)=.true.
+       if (Ronl(ic).Gt.0.5) then  !small direction
+          nox(ic)=1+2*int(2*rum/boxsn%nzl(ic))
 #ifdef PARA
           if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              write(6,*)'trop petite boite pour para'
@@ -72,51 +62,44 @@ contains
           end if
 #endif
 
-          if ((rang==0).and.(lverb)) then
-             WRITE(6,'(a)') "Boite trop petite: le nombre de cellules est fixe a son minimum"
-          endif
-       endif
-       nox = max(1,int(boxsn%nzl(1)/rum))
-       noy = max(1,int(boxsn%nzl(2)/rum))
-       noz = max(1,int(boxsn%nzl(3)/rum))
-       if ((rang==0).and.(lverb)) THEN
-          write (6,'(a)') 'nox noy noz calcules a partir de ru'
-          WRITE(6,'(2(a,g12.4),a,i0)') '  nox = Int( ', boxsn%nzl(1),'/',rum,') = ', nox
-          WRITE(6,'(2(a,g12.4),a,i0)') '  noy = Int( ', boxsn%nzl(2),'/',rum,') = ', noy
-          WRITE(6,'(2(a,g12.4),a,i0)') '  noz = Int( ', boxsn%nzl(3),'/',rum,') = ', noz
-       END IF
+       else
+          celsn%ismall(ic)=.false.
+          if (nox(ic).le.0) then
+             
+             nox(ic) = int(boxsn%nzl(ic)/rum)
+!             if ((rang==0).and.(lverb)) THEN
+!                write (6,*) 'nox (',ic,") calcules a partir de ru= Int( ", boxsn%nzl(1),'/',rum,') = ', nox
+                !          WRITE(6,'(2(a,g12.4),a,i0)') '  nox = Int( ', boxsn%nzl(1),'/',rum,') = ', nox
+!             end if
+          else
+             write (6,*) 'nox (',ic,") dans din =", nox(ic)
+          end if
+
 !!$       IF (nox.LT.3) nox=1
-!!$       IF (noy.LT.3) noy=1
-!!$       IF (noz.LT.3) noz=1
-!!$       if ((rang==0).and.(lverb)) write (6,'(a,3(i0,1x))') 'nox noy noz apres correction = '&
-!!$            , nox, noy, noz
 
-       ! ==== FIN MODIF CLOUET 2 ================
-       celsn%celsize(1) = boxsn%zl(1)/float(nox)
-       celsn%celsize(2) = boxsn%zl(2)/float(noy)
-       celsn%celsize(3) = boxsn%zl(3)/float(noz)
+          celsn%celsize(ic) = boxsn%zl(ic)/float(nox(ic))
 
-    else
-
-       ! *** nox noy noz sont donnes dans.din ***
-!!$
-!!$       if (nox==2.or.noy==2.or.noz==2) then
-!!$          write (6, *) rang,'wrong noxyz stop'
-!!$          call arret_ndm
-!!$       endif
-!!$       !       celsn%nox(1)=nox;celsn%nox(2)=noy;celsn%nox(3)=noz
-
-       celsn%celsize(1) = boxsn%zl(1)/float(nox)
-       celsn%celsize(2) = boxsn%zl(2)/float(noy)
-       celsn%celsize(3) = boxsn%zl(3)/float(noz)
+          celsn%celsize(ic) = boxsn%zl((ic))/float(nox(ic))
 
 
-    endif
-    call celsn%init(boxsn,nox,noy,noz,ltpc=ltpcel)
+       end if
+    end do
+    if((rang==0).and.(lverb)) THEN
+       write (6,'(a)') 'nox noy noz and ghost cells from ru'
+       do ic=1,3
+          if( celsn%ismall(ic)) then
+             WRITE(6,'(a,i3,a,i5,a,g12.4)') ' GHOST DIRECTION',ic,' nox = ', nox(ic), ', =1+2*int(2*rum/boxsn%nzl(:))',rum/boxsn%nzl(ic)
+
+          else
+             WRITE(6,'(a,i2,a,i3,a,g12.4,a,g12.4,a)') '  nox in direction ',ic,'=',nox(ic),' if not specified =Int( ', boxsn%nzl(1),'/',rum,') '
+             !          WRITE(6,'(2(a,g12.4),a,i0)') '  noy = Int( ', boxsn%nzl(2),'/',rum,') = ', noy
+             !          WRITE(6,'(2(a,g12.4),a,i0)') '  noz = Int( ', boxsn%nzl(3),'/',rum,') = ', noz
+          END IF
+       end do
+    end if
+
+    call celsn%init(boxsn,nox(1),nox(2),nox(3),ltpc=ltpcel)
     if ((rang==0).and.(lverb)) write(6,'(A,3G15.7)') 'celsizes ',celsn%celsize(:)
-    ! nox noy et noz sont determines
-
-    !    celsn%noxyz = nox*noy*noz
 
   end subroutine setnox
 
@@ -144,9 +127,9 @@ contains
     !    write(6,*)'TTTTTTTTTTTTTTTTTTTUUUUUUUUUUUUUUUUUUUUUUUUUUUTTTTTTTTTTTTTTT'
     !    write(6,*)celscf%noxyz
     call setnatperc(celscf,atcf,boxcf,natperc)
-!    write(6,*)'natpercN',natperc,celscf%noxyz
-!    natperc= INT(atcf%im_glob/celscf%noxyz)
-!    write(6,*)'natperc0',natperc
+    !    write(6,*)'natpercN',natperc,celscf%noxyz
+    !    natperc= INT(atcf%im_glob/celscf%noxyz)
+    !    write(6,*)'natperc0',natperc
     nvat=3*natperc
     natperc=max(int(2*natperc),20)     ! MODIF Clouet
     !    ELSE                          ! MODIF Clouet
@@ -206,8 +189,9 @@ contains
     integer,intent(out)::natperc
     integer, allocatable :: natdscel(:)
     real(double), dimension(:,:), allocatable :: xpnp !
-    integer::iml,i,kx,ky,kz,koo
-    real(double)::aux,auy,auz
+    integer::iml,i,kxyz(3),koo,midnox(3),ic
+    real(double)::auxyz(3)
+    midnox(:)=(celcf%nox(:)+1)/2
 
     iml=atcf%im
 
@@ -221,16 +205,27 @@ contains
        call cryst_to_cart (iml, xpnp, boxcf%bg, -1) ! cart vers cryst
        do i = 1, iml
           !     if  ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xpnp(1,i),xpnp(2,i),xpnp(3,i)
-          aux = xpnp(1,i)*celcf%nox(1)
-          auy = xpnp(2,i)*celcf%nox(2)
-          auz = xpnp(3,i)*celcf%nox(3)
-          kx = int(aux)
-          ky = int(auy)
-          kz = int(auz)
-          kx = Modulo(kx,celcf%nox(1))
-          ky = Modulo(ky,celcf%nox(2))
-          kz = Modulo(kz,celcf%nox(3))
-          koo = 1+kx+celcf%nox(1)*(ky+celcf%nox(2)*kz)
+          do ic=1,3
+             if  (celcf%ismall(ic)) then
+                kxyz(ic)=midnox(ic)-1
+             else
+                auxyz(ic) = xpnp(ic,i)*celcf%nox(ic)
+                kxyz(ic) = int(auxyz(ic))
+                kxyz(ic) = Modulo(kxyz(ic),celcf%nox(ic))
+             end if
+          end do
+          koo = 1+kxyz(1)+celcf%nox(1)*(kxyz(2)+celcf%nox(2)*kxyz(3))
+          
+!!$          aux = xpnp(1,i)*celcf%nox(1)
+!!$          auy = xpnp(2,i)*celcf%nox(2)
+!!$          auz = xpnp(3,i)*celcf%nox(3)
+!!$          kx = int(aux)
+!!$          ky = int(auy)
+!!$          kz = int(auz)
+!!$          kx = Modulo(kx,celcf%nox(1))
+!!$          ky = Modulo(ky,celcf%nox(2))
+!!$          kz = Modulo(kz,celcf%nox(3))
+
 
           IF ( (koo.GT.celcf%noxyz).OR.(koo.LT.0) ) THEN
              WRITE(0,'(a,i0,a,3g20.12)') &
@@ -242,7 +237,7 @@ contains
 
 
        end do
-!       write(6,*)natdscel
+       write(6,*)'NATPERCA',natdscel
 #ifdef PARA
        if (lspacendm) then
           call comm_space%sum(natdscel)
@@ -250,6 +245,7 @@ contains
 
 #endif
        natperc=maxval(natdscel)
+       write(6,*)'NATPERCB',natperc
     end if
   end subroutine setnatperc
 

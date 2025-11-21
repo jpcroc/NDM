@@ -1130,6 +1130,7 @@ contains
     celcf%nmov=0
 
     do ko=1,celcf%noxyz
+       if ((celcf%nato(ko)==0).or.(celcf%isghost(ko))) cycle
 #ifdef PARA
        if ( celcf%proc_cell(ko).ne.myidsp ) cycle
 #endif

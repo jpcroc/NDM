@@ -39,10 +39,10 @@ contains
     integer :: i,j !atomes
     integer ::iti,itj !types
     integer :: l !paires
-    integer:: koo,ko1,i2,i1 !cel.
+    integer:: koo,ko1,i2,i1,nvi !cel.
     integer :: k ! aux pour splines
 
-!    real(double) :: rue2 !coupure**2
+    !    real(double) :: rue2 !coupure**2
     REAL(double), dimension(1:3) :: dxp, gradij
     real(double) :: r!distance i-j
     real(double) :: Eembi,dEembi ! potentiel et gradient de l'immersion
@@ -55,7 +55,9 @@ contains
     real(double) :: tabdensity(atcf%imm)
     real(double)::rue,alp,aux
     logical ::linter
-    real(double)::sig2p(3,3),sigem(3,3)
+    real(double)::sig2p(3,3),sigem(3,3)!,dxptab(1000,3),xptab(1000,3),deltadist(1000,3)
+!    integer::cellv(1000),indv(1000),m,n
+    !    write(6,*)'INNNI CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'
     sig2p=0;sigem=0
     rue=rue_pot(ipotentiel)
     aux = 23.06134575D-20
@@ -75,27 +77,28 @@ contains
     tabdensity(:)=0.
     potisrep=0.
     potisglue=0.
-!    rue2=rue**2
+    !    rue2=rue**2
 
 
 
     loop1at1: do i=1,atcf%im
+
        if (typ_and_pot(atcf%ityp(i),ipotentiel).eqv..false.)cycle
 
        ! --- Calcul de la densite sur i ---    
 
-       !     nvi=0
+       nvi=0
        densityi=0.0 ; dEembi=0.0
        koo = atcf%ielat(i)                          ! Numero de la cellule
        iti = atcf%ityp(i)
-
+       !       write(6,*)'IXP, koo', atcf%xp(:,1), koo
        ! pour chaque cel. voisine
        loop1cel:   do i1 = 0, celcf%ncelvois(koo)
           ko1 = celcf%ncel(koo,i1)
           ! pour chaque atome ds la cel. voisine
           loop1at2: do i2 = 1, celcf%nato(ko1)
              j = celcf%atincel(i2,ko1)
-!             write(6,*)i,koo,i1, celcf%ncelvois(koo),i2,j
+             !             write(6,*)i,koo,i1, celcf%ncelvois(koo),i2,j
              if (typ_pot_pair(ipo(atcf%ityp(i),atcf%ityp(j))).ne.ipotentiel) cycle
 
              itj=atcf%ityp(j)
@@ -103,33 +106,58 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              !CRC             if(i.eq.j) cycle
+             if (celcf%isghost(ko1)) then
+                !CRC les interactions des ghost doivent toujouts être calculées
+
+             else
 #ifdef PARA
 
-             ! Methode pour ne prendre qu'une seule fois en compte
-             ! le couple i,j en paralle :
-             ! - i est necesairement local (boucle i<=im)
-             ! - si j est local on ne retient que le couple i<j
-             ! - si j n'est pas local, le couple n'est par definition
-             !   pris qu'une fois puisque i est local
-             if (nprocspace.gt.1) then
+                ! Methode pour ne prendre qu'une seule fois en compte
+                ! le couple i,j en paralle :
+                ! - i est necesairement local (boucle i<=im)
+                ! - si j est local on ne retient que le couple i<j
+                ! - si j n'est pas local, le couple n'est par definition
+                !   pris qu'une fois puisque i est local
+                if (nprocspace.gt.1) then
 
-                if (j.le.atcf%im) then
+                   if (j.le.atcf%im) then
 
-                   ! les deux atomes sont locaux
-                   if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme deja calcule
+                      ! les deux atomes sont locaux
+                      if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme deja calcule
+                   else
+                      ! j n'est pas local, on ne fait le calcul normal           
+                   endif
                 else
-                   ! j n'est pas local, on ne fait le calcul normal           
-                endif
-             else
-                if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
-             end if
-                
-#else
-             if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
-#endif
+                   if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
+                end if
 
-           call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp,indcv=i1, lperiod=boxcf%lperiod,rum=rue,linter=linter,dist=r)
-           if(.not.linter) cycle
+#else
+                if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
+#endif
+             end if
+             call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp,indcv=i1, lperiod=boxcf%lperiod,rum=rue,linter=linter,dist=r)
+             if(.not.linter) cycle
+!!$             nvi=nvi+1
+!!$             indv(nvi)=j
+!!$             cellv(nvi)=ko1
+!!$             dxptab(nvi,:)=dxp
+!!$             xptab(nvi,:)=atcf%xp(:,j)
+!!$             deltadist(nvi,:)=celcf%deltadist(:,i1,koo)
+!!$           do m=1,nvi-1
+!!$              if (all(dxptab(m,:)-dxptab(nvi,:)==0)) then
+!!$                 write(6,*) 'm==nvi',m,nvi
+!!$                 write(6,*)'INDV',indv(m),cellv(m)
+!!$                 write(6,'(A,2I4,3E15.7)')'DXP',indv(m),cellv(m),dxptab(m,1:3)
+!!$                 write(6,*)'Xptab',xptab(m,1:3)
+!!$                 write(6,*)'celtadist',deltadist(m,:)
+!!$                 
+!!$                 write(6,*)'INDV',indv(nvi),cellv(nvi)
+!!$                 write(6,'(A,2I4,3E15.7)')'DXP',indv(nvi),cellv(nvi),dxptab(nvi,1:3)
+!!$                 write(6,*)'Xptab',xptab(nvi,1:3)
+!!$                 write(6,*)'celtadist',deltadist(nvi,:)
+!!$                 stop
+!!$              end if
+!!$           end do
              k=min(ngrid,Int(r*inv_ktor))
              gradij(1:3) = dxp(1:3)/r
              drk=r-k*ktor
@@ -139,14 +167,14 @@ contains
              rhoj = eamrho(1,itj,k) + drk*( eamrho(2,itj,k) + drk*( eamrho(3,itj,k) + drk*eamrho(4,itj,k) ) )  !rho de j sur i
              tabdensity(i)=tabdensity(i)+rhoj
              rhoi = eamrho(1,iti,k) + drk*( eamrho(2,iti,k) + drk*( eamrho(3,iti,k) + drk*eamrho(4,iti,k) ) )  !rho de i sur j
-             tabdensity(j)=tabdensity(j)+rhoi
+             if (.not.(celcf%isghost(ko1)))  tabdensity(j)=tabdensity(j)+rhoi
 !!$             write(100,'(2I3,3G17.8)')i,j,r,tabdensity(i),tabdensity(j)
 !!$             write(100,'(2I3,4G17.8)')i,j,eamrho(1,iti,k) , eamrho(2,iti,k),eamrho(3,iti,k),eamrho(4,iti,k)
 !!$             write(100,'(2I3,4G17.8)')i,j,eamrho(1,itj,k) , eamrho(2,itj,k),eamrho(3,itj,k),eamrho(4,itj,k)
              !           nvi=nvi+1
-             !           dxpij(1:3,nvi)=dxp(1:3)
-             !           jvi(nvi)=j
-             !           rij(nvi)=r            
+             !                        dxpij(1:3,nvi)=dxp(1:3)
+             !                        jvi(nvi)=j
+             !                        rij(nvi)=r            
 
              !terme de repulsion 
              l = ipo(iti,itj)
@@ -155,17 +183,22 @@ contains
                 select type (atcf)
                 class is (atom_config_e)
                    atcf%eat(i)=atcf%eat(i)+Erep/2.d0
-                   if (j.le.atcf%im) atcf%eat(j)=atcf%eat(j)+Erep/2.d0
+                   if (.not.(celcf%isghost(ko1)))then
+                      if (j.le.atcf%im) atcf%eat(j)=atcf%eat(j)+Erep/2.d0
+                   end if
                 end select
              end if
              dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
 
-             if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
-                potisrep = potisrep+Erep
-             endif
-
+             if (celcf%isghost(ko1)) then
+                potisrep = potisrep+0.5*Erep                
+             else
+                if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
+                   potisrep = potisrep+Erep
+                endif
+             end if
              atcf%fp(1:3,i)=atcf%fp(1:3,i)-dErep*gradij(1:3)
-             atcf%fp(1:3,j)=atcf%fp(1:3,j)+dErep*gradij(1:3)
+             if (.not.(celcf%isghost(ko1)))             atcf%fp(1:3,j)=atcf%fp(1:3,j)+dErep*gradij(1:3)
 
              if (test_sigma) then        
                 if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then          
@@ -191,6 +224,16 @@ contains
 
           end do loop1at2
        end do loop1cel
+!!$       write(16,*)'NVI',i
+!!$       write(16,*)i,nvi
+!!$       do j=1,nvi
+!!$          write(16,*)
+!!$          write(16,*)'INDV',indv(j),cellv(j)
+!!$          write(16,'(A,2I4,3E15.7)')'DXP',indv(j),cellv(j),dxptab(j,1:3)
+!!$          write(16,*)'Xptab',xptab(j,1:3)
+!!$
+!!$       end do
+!!$       stop
     end do loop1at1
 
 
@@ -198,24 +241,24 @@ contains
     loop2at1: do i=1,atcf%im
        if (typ_and_pot(atcf%ityp(i),ipotentiel).eqv..false.)cycle
        iti=atcf%ityp(i)
-    
-!       k=Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti))
+
+       !       k=Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti))
        k=min(ngrid,Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti)))
-!       if (tabdensity(i).gt.rhmax) then
-!          rhmax=tabdensity(i)
-!          imax=i; kmax=k ; itimax=iti
-!       end if
-       
-!       write(6,*)i,iti,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
-!       write(110,'(2I8,3G17.8)')i,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
-!       if(k.gt.ngrid) then
-!          write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo OU MAX DENS POUR CRG '
-!          write(6,*)'densityi',k,ngrid,tabdensity(i)
-!          call arret_ndm
-!       end if
+       !       if (tabdensity(i).gt.rhmax) then
+       !          rhmax=tabdensity(i)
+       !          imax=i; kmax=k ; itimax=iti
+       !       end if
+
+       !       write(6,*)i,iti,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
+       !       write(110,'(2I8,3G17.8)')i,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
+       !       if(k.gt.ngrid) then
+       !          write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo OU MAX DENS POUR CRG '
+       !          write(6,*)'densityi',k,ngrid,tabdensity(i)
+       !          call arret_ndm
+       !       end if
        drk=tabdensity(i)-(rhomin(iti)+k*ktorho(iti))
        Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
-!       write(120,'(2I8,4G17.8)')i,k, eamglue(1,iti,k) , eamglue(2,iti,k),eamglue(3,iti,k),eamglue(4,iti,k)
+       !       write(120,'(2I8,4G17.8)')i,k, eamglue(1,iti,k) , eamglue(2,iti,k),eamglue(3,iti,k),eamglue(4,iti,k)
 
        if(lprteat.EQV..true.)then
           select type (atcf)
@@ -227,8 +270,8 @@ contains
 
        tabdensity(i) = eamglue(2,iti,k) + drk*( 2.0*eamglue(3,iti,k) + 3.0*drk*eamglue(4,iti,k) )
     end do loop2at1
-!    write(6,'(A,2I2,I4,G17.5,I7)')'rhm', rang, itimax,imax,rhmax,kmax
-!  end block
+    !    write(6,'(A,2I2,I4,G17.5,I7)')'rhm', rang, itimax,imax,rhmax,kmax
+    !  end block
 
 
 #ifdef PARA
@@ -238,12 +281,12 @@ contains
     end if
 
     !    write(3000+i,*)it
-!    do i=1,im
-!       write(6,*)i,num_at_glob(i),tabdensity(i)
-!    end do
+    !    do i=1,im
+    !       write(6,*)i,num_at_glob(i),tabdensity(i)
+    !    end do
 #endif
 
-!    tabdensity=0
+    !    tabdensity=0
     !boucle des forces
 
     loop3at1: do i=1,atcf%im
@@ -263,33 +306,38 @@ contains
              itj=atcf%ityp(j)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              !CRC             if(i.eq.j) cycle
+             if (celcf%isghost(ko1)) then
+                !CRC les interactions des ghost doivent toujouts être calculées
+
+             else
+
 #ifdef PARA
 
-             ! Methode pour ne prendre qu'une seule fois en compte
-             ! le couple i,j en paralle :
-             ! - i est necesairement local (boucle i<=im)
-             ! - si j est local on ne retient que le couple i<j
-             ! - si j n'est pas local, le couple n'est par definition
-             !   pris qu'une fois puisque i est local
-             if (nprocspace.gt.1) then
+                ! Methode pour ne prendre qu'une seule fois en compte
+                ! le couple i,j en paralle :
+                ! - i est necesairement local (boucle i<=im)
+                ! - si j est local on ne retient que le couple i<j
+                ! - si j n'est pas local, le couple n'est par definition
+                !   pris qu'une fois puisque i est local
+                if (nprocspace.gt.1) then
 
-                if (j.le.atcf%im) then
+                   if (j.le.atcf%im) then
 
-                   ! les deux atomes sont locaux
-                   if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme deja calcule
+                      ! les deux atomes sont locaux
+                      if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme deja calcule
+                   else
+                      ! j n'est pas local, on ne fait le calcul normal           
+                   endif
                 else
-                   ! j n'est pas local, on ne fait le calcul normal           
-                endif
-             else
-                if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
-             end if
-                
-#else
-             if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
-#endif
+                   if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
+                end if
 
-           call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp,indcv=i1, lperiod=boxcf%lperiod,rum=rue,linter=linter,dist=r)
-           if(.not.linter) cycle
+#else
+                if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme dÃ£Â©ja calculÃ£Â©
+#endif
+             end if
+             call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp,indcv=i1, lperiod=boxcf%lperiod,rum=rue,linter=linter,dist=r)
+             if(.not.linter) cycle
 
              if (r.eq.zero) & 
                   write(*,*) '2. WARNING IN calfoeamcell TWO ATOMS VERY CLOSE i ,j , dist(angst)', i ,j , r*angst
@@ -300,7 +348,7 @@ contains
              Femb = ( eamrho(2,itj,k) + drk*( 2.0*eamrho(3,itj,k) + 3.0*drk*eamrho(4,itj,k) ) )*tabdensity(i) &
                   + ( eamrho(2,iti,k) + drk*( 2.0*eamrho(3,iti,k) + 3.0*drk*eamrho(4,iti,k) ) )*tabdensity(j)
              atcf%fp(1:3,i) = atcf%fp(1:3,i) - Femb*gradij(1:3)
-             atcf%fp(1:3,j) = atcf%fp(1:3,j) + Femb*gradij(1:3)
+             if (.not.(celcf%isghost(ko1)))             atcf%fp(1:3,j) = atcf%fp(1:3,j) + Femb*gradij(1:3)
 
              if (test_sigma) then                   
                 if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
@@ -334,7 +382,7 @@ contains
        call comm_space%sum(potisrep)
        call comm_space%sum(potisglue)
        if (test_sigma) then 
-!          call comm_space%sum(sig)
+          !          call comm_space%sum(sig)
           call comm_space%sum(sig2p)
           call comm_space%sum(sigem)
 
@@ -350,6 +398,7 @@ contains
 !!$    if (rang==0)    write(6,*)
 !!$    if (rang==0)    write(6,*)'sigem',sigem
     potiseam=potisglue+potisrep
+!    call atcf%print
     return
   end SUBROUTINE calfoeamcel
 end module calfoeamcel_mod

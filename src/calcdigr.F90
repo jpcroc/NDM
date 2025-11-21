@@ -112,7 +112,7 @@ contains
     if (rang==0) write(6,*) 'nkmax incre',rdfc%nkmax,incre
     do i = 1, atrdf%im
        koo = atrdf%ielat(i)
-       do i1 = 0, 26
+       do i1 = 0, celrdf%ncelvmax
           ko1 = celrdf%ncel(koo,i1)
           do i2 = 1, celrdf%nato(ko1)
              j = celrdf%atincel(i2,ko1)

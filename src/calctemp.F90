@@ -71,7 +71,7 @@ contains
        tempEP=0
 
        do ko = 1, cellcf%noxyz
-          if (cellcf%nato(ko)==0) cycle
+          if ((cellcf%nato(ko)==0).or.(cellcf%isghost(ko))) cycle
 
           if (L2T)     call nox_2_nex(ko,ixyze,cellcf)
 
@@ -161,7 +161,7 @@ contains
        end if
        tempEP=0
        do ko = 1, cellcf%noxyz
-          if (cellcf%nato(ko)==0) cycle
+          if ((cellcf%nato(ko)==0).or.(cellcf%isghost(ko))) cycle
 
 #ifdef PARA
 

@@ -22,7 +22,7 @@ contains
     real(double),optional,intent(out)::dist
 
     real(double)::xpnp(3,2),xp(3,2),cv(1,3),dx2(3)
-    integer::ic
+    integer::ic,ic2
     real(double)::distance
 
     if (((present(rum)).and.(.not.(present(linter)))).or.((present(linter)).and.(.not.(present(rum))))) then
@@ -33,10 +33,23 @@ contains
     xp(:,2)=atcf%xp(:,j)
     call notperiod(2,xp,xpnp,boxcf%at,boxcf%bg,lperiod)
     XJI(:)= xpnp(:,1)-xpnp(:,2)
-    !    if ((celcf%noxyz.ne.1).and.(i1.ge.1).and.(i1.le.27)) then
-    if (present(indcv).and.(celcf%nox(1).ge.3).and.(celcf%nox(2).ge.3).and.(celcf%nox(3).ge.3)) then
-       do ic=1,3
-          XJI(ic)=XJI(ic)+sum(boxcf%at(ic,:)*celcf%deltadist(:,indcv,atcf%ielat(i)))
+    if (present(indcv))then
+       do ic2=1,3
+          if (celcf%nox(ic2).ge.3) then 
+             do ic=1,3
+                XJI(ic)=XJI(ic)+boxcf%at(ic,ic2)*celcf%deltadist(ic2,indcv,atcf%ielat(i))
+             end do
+          else
+             cv(1,:) = XJI(:)
+             call cryst_to_cart (1, cv, boxcf%bg, -1) !cart vers cryst cryst vers cart sur cv
+             if (boxcf%ipbc(ic2)==1) then
+                if ( (cv(1,ic2).GT.0.5d0).OR.(cv(1,ic2).LT.-0.5d0) )then
+                   cv(1,ic2) = cv(1,ic2) - Dble(Nint(cv(1,ic2)))
+                end if
+             end if
+             call cryst_to_cart (1, cv, boxcf%at, 1) !cryst vers cart sur cv
+             XJI(:)=cv(1,:)
+          end if
        end do
     else
        cv(1,:) = XJI(:)

@@ -104,6 +104,7 @@ contains
     else
        call caltabtC(celndm,atdml,lperiod,boxndm,lchktrav=.false.)
     end if
+!    call celndm%print
     call init_pot2(boxndm,atdml%imm)
 #ifdef DECOUP
     ! Pas la peine d'aller plus loin dans l'initialisation

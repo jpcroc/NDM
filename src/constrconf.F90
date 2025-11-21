@@ -262,7 +262,8 @@ contains
 
     call setnox(box2b,cel2b,rum,lverbose=lprt,noxr=nox,noyr=noy,nozr=noz)
     if ((rang==0).and.(lprt)) then
-       write (6, '(2A,D15.8,A,D15.8,A)') fnamg,'volume=', box2b%volu,' cm3 ',box2b%volu*1d24,' Ang3'
+       write (6, '(1A)') fnamg
+       write (6, '(A,D15.8,A,D15.8,A)') 'volume=', box2b%volu,' cm3 ',box2b%volu*1d24,' Ang3'
     end if
 
     if (lcs) then ! construction simpple sans repartition en sequentiel
