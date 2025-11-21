@@ -51,7 +51,6 @@ contains
     ! MPI
     if ((rang==0).and.(lverb)) write (6, *) 'nox,noy,noz dans .din =', nox(1),nox(2),nox(3)
     do ic=1,3
-       WRITE(6,*)'ghgh1 ',IC,rONL(IC)
        celsn%ismall(ic)=.true.
        if (Ronl(ic).Gt.0.5) then  !small direction
           nox(ic)=1+2*int(2*rum/boxsn%nzl(ic))
@@ -237,7 +236,7 @@ contains
 
 
        end do
-       write(6,*)'NATPERCA',natdscel
+!       write(6,*)'NATPERCA',natdscel
 #ifdef PARA
        if (lspacendm) then
           call comm_space%sum(natdscel)
@@ -245,7 +244,7 @@ contains
 
 #endif
        natperc=maxval(natdscel)
-       write(6,*)'NATPERCB',natperc
+!       write(6,*)'NATPERCB',natperc
     end if
   end subroutine setnatperc
 

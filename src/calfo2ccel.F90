@@ -65,31 +65,33 @@ contains
              ! - si j est local on ne retient que le couple i<j
              ! - si j n'est pas local, le couple n'est par definition
              !   pris qu'une fois puisque i est local
-             if (nprocspace.gt.1) then
-                if (j.le.atcf%im) then
-                   ! les deux atomes sont locaux
-                   if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme déja calculé
-                else
-                   ! j n'est pas local, on fait le calcul normal           
-                endif
+             if (celcf%isghost(ko1)) then
+                !CRC les interactions des ghost doivent toujouts être calculées
+
              else
-                if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme déja calculé
-             end if
              
-             select type(atcf) ! ARPS dynamics see arps.F90
-             type is (atom_config_arps)
-                if (dmtype==41) then
-                   if((.not.atcf%lgul(i)).and.(.not.atcf%lgul(j)))cycle
+                if (nprocspace.gt.1) then
+                   if (j.le.atcf%im) then
+                      ! les deux atomes sont locaux
+                      if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme déja calculé
+                   else
+                      ! j n'est pas local, on fait le calcul normal           
+                   endif
+                else
+                   if (atcf%num_at_glob(i).ge.atcf%num_at_glob(j)) cycle !terme déja calculé
                 end if
-             end select
+                
+                select type(atcf) ! ARPS dynamics see arps.F90
+                type is (atom_config_arps)
+                   if (dmtype==41) then
+                      if((.not.atcf%lgul(i)).and.(.not.atcf%lgul(j)))cycle
+                   end if
+                end select
+             end if
+             call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp,indcv=i1, lperiod=boxcf%lperiod,rum=rue_pair(l),linter=linter,dist=r)
+             if(.not.linter) cycle
              
-!#else
-!             if (num_at_glob(i).ge.num_at_glob(j)) cycle !terme déja calculé
-!#endif
-           call vect_dist(atcf,celcf,boxcf,i,j,VJI=dxp,indcv=i1, lperiod=boxcf%lperiod,rum=rue_pair(l),linter=linter,dist=r)
-           if(.not.linter) cycle
-           
-           sk = r/csive
+             sk = r/csive
            k = int(sk)
            gradij(1:3) = dxp(1:3)/r
 
@@ -104,60 +106,72 @@ contains
              atcf%fp(1,i) = atcf%fp(1,i)+f1
              atcf%fp(2,i) = atcf%fp(2,i)+f2
              atcf%fp(3,i) = atcf%fp(3,i)+f3
-             potis1 = potis1+deltaepot
-#ifdef PARA
-             if (j.le.atcf%im) then
-#endif
-                potis1 = potis1+deltaepot
-#ifdef PARA
-             endif
-#endif
-             atcf%fp(1,j) = atcf%fp(1,j)-f1
-             atcf%fp(2,j) = atcf%fp(2,j)-f2
-             atcf%fp(3,j) = atcf%fp(3,j)-f3
+             if (celcf%isghost(ko1)) then
+                potis1 = potis1+0.5*deltaepot
+             else
+                if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
+                   potis1 = potis1+deltaepot
+                endif
+             end if
+
+             if (.not.(celcf%isghost(ko1)))  then
+                atcf%fp(1,j) = atcf%fp(1,j)-f1
+                atcf%fp(2,j) = atcf%fp(2,j)-f2
+                atcf%fp(3,j) = atcf%fp(3,j)-f3
+             end if
 !!
              if (lprteat) then
                 select type (atcf)
                 class is (atom_config_e)
                    atcf%eat(i) = atcf%eat(i)+deltaepot
-                   atcf%eat(j) = atcf%eat(j)+deltaepot
+                   if (.not.(celcf%isghost(ko1)))then
+                      if (j.le.atcf%im) atcf%eat(j) = atcf%eat(j)+deltaepot
+                   end if
+
+
                 end select
                 !              end if
              end if
-
-             ! calcul des contraintes
+             if (test_sigma) then        
+                if (celcf%isghost(ko1)) then
+                   sig2p(1,:) = sig2p(1,:)+0.5*phu*gradij(1)*dxp(:)/boxcf%volu
+                   sig2p(2,:) = sig2p(2,:)+0.5*phu*gradij(2)*dxp(:)/boxcf%volu
+                   sig2p(3,:) = sig2p(3,:)+0.5*phu*gradij(3)*dxp(:)/boxcf%volu
+                   if (lcalcsigc.EQV..true.) then
+                      sigc(1,:,koo) = sigc(1,:,koo)+0.5*phu*gradij(1)*dxp(:)*celcf%noxyzact/boxcf%volu
+                      sigc(2,:,koo) = sigc(2,:,koo)+0.5*phu*gradij(2)*dxp(:)*celcf%noxyzact/boxcf%volu
+                      sigc(3,:,koo) = sigc(3,:,koo)+0.5*phu*gradij(3)*dxp(:)*celcf%noxyzact/boxcf%volu
+                   end if
+                   
+                else
+                   if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
+                      sig2p(1,:) = sig2p(1,:)+phu*gradij(1)*dxp(:)/boxcf%volu
+                      sig2p(2,:) = sig2p(2,:)+phu*gradij(2)*dxp(:)/boxcf%volu
+                      sig2p(3,:) = sig2p(3,:)+phu*gradij(3)*dxp(:)/boxcf%volu
+                      if (lcalcsigc.EQV..true.) then
+                         sigc(1,:,koo) = sigc(1,:,koo)+0.5*phu*gradij(1)*dxp(:)*celcf%noxyzact/boxcf%volu
+                         sigc(2,:,koo) = sigc(2,:,koo)+0.5*phu*gradij(2)*dxp(:)*celcf%noxyzact/boxcf%volu
+                         sigc(3,:,koo) = sigc(3,:,koo)+0.5*phu*gradij(3)*dxp(:)*celcf%noxyzact/boxcf%volu
+                         sigc(1,:,ko1) = sigc(1,:,ko1)+0.5*phu*gradij(1)*dxp(:)*celcf%noxyzact/boxcf%volu
+                         sigc(2,:,ko1) = sigc(2,:,ko1)+0.5*phu*gradij(2)*dxp(:)*celcf%noxyzact/boxcf%volu
+                         sigc(3,:,ko1) = sigc(3,:,ko1)+0.5*phu*gradij(3)*dxp(:)*celcf%noxyzact/boxcf%volu
+                      end if
+                   endif
+                end if
+             end if
 
              if (test_sigma) then
                 if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
-                   sig2p(1,1) = sig2p(1,1)+phu*gradij(1)*dxp(1)/boxcf%volu
-                   sig2p(1,2) = sig2p(1,2)+phu*gradij(1)*dxp(2)/boxcf%volu
-                   sig2p(1,3) = sig2p(1,3)+phu*gradij(1)*dxp(3)/boxcf%volu
-                   sig2p(2,1) = sig2p(2,1)+phu*gradij(2)*dxp(1)/boxcf%volu
-                   sig2p(2,2) = sig2p(2,2)+phu*gradij(2)*dxp(2)/boxcf%volu
-                   sig2p(2,3) = sig2p(2,3)+phu*gradij(2)*dxp(3)/boxcf%volu
-                   sig2p(3,1) = sig2p(3,1)+phu*gradij(3)*dxp(1)/boxcf%volu
-                   sig2p(3,2) = sig2p(3,2)+phu*gradij(3)*dxp(2)/boxcf%volu
-                   sig2p(3,3) = sig2p(3,3)+phu*gradij(3)*dxp(3)/boxcf%volu
+                   sig2p(1,:) = sig2p(1,:)+phu*gradij(1)*dxp(:)/boxcf%volu
+                   sig2p(2,:) = sig2p(2,:)+phu*gradij(2)*dxp(:)/boxcf%volu
+                   sig2p(3,:) = sig2p(3,:)+phu*gradij(3)*dxp(:)/boxcf%volu
                    if (lcalcsigc.EQV..true.) then
-                      sigc(1,1,koo) = sigc(1,1,koo)+0.5*phu*gradij(1)*dxp(1)*celcf%noxyzact/boxcf%volu
-                      sigc(1,2,koo) = sigc(1,2,koo)+0.5*phu*gradij(1)*dxp(2)*celcf%noxyzact/boxcf%volu
-                      sigc(1,3,koo) = sigc(1,3,koo)+0.5*phu*gradij(1)*dxp(3)*celcf%noxyzact/boxcf%volu
-                      sigc(2,1,koo) = sigc(2,1,koo)+0.5*phu*gradij(2)*dxp(1)*celcf%noxyzact/boxcf%volu
-                      sigc(2,2,koo) = sigc(2,2,koo)+0.5*phu*gradij(2)*dxp(2)*celcf%noxyzact/boxcf%volu
-                      sigc(2,3,koo) = sigc(2,3,koo)+0.5*phu*gradij(2)*dxp(3)*celcf%noxyzact/boxcf%volu
-                      sigc(3,1,koo) = sigc(3,1,koo)+0.5*phu*gradij(3)*dxp(1)*celcf%noxyzact/boxcf%volu
-                      sigc(3,2,koo) = sigc(3,2,koo)+0.5*phu*gradij(3)*dxp(2)*celcf%noxyzact/boxcf%volu
-                      sigc(3,3,koo) = sigc(3,3,koo)+0.5*phu*gradij(3)*dxp(3)*celcf%noxyzact/boxcf%volu
-                      !                      if (j.le.atcf%im) then
-                      sigc(1,1,ko1) = sigc(1,1,ko1)+0.5*phu*gradij(1)*dxp(1)*celcf%noxyzact/boxcf%volu
-                      sigc(1,2,ko1) = sigc(1,2,ko1)+0.5*phu*gradij(1)*dxp(2)*celcf%noxyzact/boxcf%volu
-                      sigc(1,3,ko1) = sigc(1,3,ko1)+0.5*phu*gradij(1)*dxp(3)*celcf%noxyzact/boxcf%volu
-                      sigc(2,1,ko1) = sigc(2,1,ko1)+0.5*phu*gradij(2)*dxp(1)*celcf%noxyzact/boxcf%volu
-                      sigc(2,2,ko1) = sigc(2,2,ko1)+0.5*phu*gradij(2)*dxp(2)*celcf%noxyzact/boxcf%volu
-                      sigc(2,3,ko1) = sigc(2,3,ko1)+0.5*phu*gradij(2)*dxp(3)*celcf%noxyzact/boxcf%volu
-                      sigc(3,1,ko1) = sigc(3,1,ko1)+0.5*phu*gradij(3)*dxp(1)*celcf%noxyzact/boxcf%volu
-                      sigc(3,2,ko1) = sigc(3,2,ko1)+0.5*phu*gradij(3)*dxp(2)*celcf%noxyzact/boxcf%volu
-                      sigc(3,3,ko1) = sigc(3,3,ko1)+0.5*phu*gradij(3)*dxp(3)*celcf%noxyzact/boxcf%volu
+                      sigc(1,:,koo) = sigc(1,:,koo)+0.5*phu*gradij(1)*dxp(:)*celcf%noxyzact/boxcf%volu
+                      sigc(2,:,koo) = sigc(2,:,koo)+0.5*phu*gradij(2)*dxp(:)*celcf%noxyzact/boxcf%volu
+                      sigc(3,:,koo) = sigc(3,:,koo)+0.5*phu*gradij(3)*dxp(:)*celcf%noxyzact/boxcf%volu
+                      sigc(1,:,ko1) = sigc(1,:,ko1)+0.5*phu*gradij(1)*dxp(:)*celcf%noxyzact/boxcf%volu
+                      sigc(2,:,ko1) = sigc(2,:,ko1)+0.5*phu*gradij(2)*dxp(:)*celcf%noxyzact/boxcf%volu
+                      sigc(3,:,ko1) = sigc(3,:,ko1)+0.5*phu*gradij(3)*dxp(:)*celcf%noxyzact/boxcf%volu
                    end if
                 endif
              end if

@@ -201,26 +201,32 @@ contains
              if (.not.(celcf%isghost(ko1)))             atcf%fp(1:3,j)=atcf%fp(1:3,j)+dErep*gradij(1:3)
 
              if (test_sigma) then        
-                if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then          
-!!$                   sig(1:3,1) = sig(1:3,1)-dErep*gradij(1:3)*dxp(1)/boxcf%volu
-!!$                   sig(1:3,2) = sig(1:3,2)-dErep*gradij(1:3)*dxp(2)/boxcf%volu
-!!$                   sig(1:3,3) = sig(1:3,3)-dErep*gradij(1:3)*dxp(3)/boxcf%volu
-                   sig2p(1:3,1) = sig2p(1:3,1)-dErep*gradij(1:3)*dxp(1)/boxcf%volu
-                   sig2p(1:3,2) = sig2p(1:3,2)-dErep*gradij(1:3)*dxp(2)/boxcf%volu
-                   sig2p(1:3,3) = sig2p(1:3,3)-dErep*gradij(1:3)*dxp(3)/boxcf%volu
+                if (celcf%isghost(ko1)) then
+                   sig2p(1:3,1) = sig2p(1:3,1)-0.5*dErep*gradij(1:3)*dxp(1)/boxcf%volu
+                   sig2p(1:3,2) = sig2p(1:3,2)-0.5*dErep*gradij(1:3)*dxp(2)/boxcf%volu
+                   sig2p(1:3,3) = sig2p(1:3,3)-0.5*dErep*gradij(1:3)*dxp(3)/boxcf%volu
                    if (lcalcsigc.EQV..true.) then
-                      sigc(1:3,1,koo) =sigc(1:3,1,koo) -0.5*dErep*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
-                      sigc(1:3,2,koo) =sigc(1:3,2,koo) -0.5*dErep*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
-                      sigc(1:3,3,koo) =sigc(1:3,3,koo) -0.5*dErep*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
-                      sigc(1:3,1,ko1) =sigc(1:3,1,ko1) -0.5*dErep*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
-                      sigc(1:3,2,ko1) =sigc(1:3,2,ko1) -0.5*dErep*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
-                      sigc(1:3,3,ko1) =sigc(1:3,3,ko1) -0.5*dErep*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
+                      sigc(1:3,1,koo) =sigc(1:3,1,koo) -0.5*dErep*gradij(1:3)*dxp(1)*celcf%noxyzact/boxcf%volu
+                      sigc(1:3,2,koo) =sigc(1:3,2,koo) -0.5*dErep*gradij(1:3)*dxp(2)*celcf%noxyzact/boxcf%volu
+                      sigc(1:3,3,koo) =sigc(1:3,3,koo) -0.5*dErep*gradij(1:3)*dxp(3)*celcf%noxyzact/boxcf%volu
                    end if
-
-                endif
+                   
+                else
+                   if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
+                      sig2p(1:3,1) = sig2p(1:3,1)-dErep*gradij(1:3)*dxp(1)/boxcf%volu
+                      sig2p(1:3,2) = sig2p(1:3,2)-dErep*gradij(1:3)*dxp(2)/boxcf%volu
+                      sig2p(1:3,3) = sig2p(1:3,3)-dErep*gradij(1:3)*dxp(3)/boxcf%volu
+                      if (lcalcsigc.EQV..true.) then
+                         sigc(1:3,1,koo) =sigc(1:3,1,koo) -0.5*dErep*gradij(1:3)*dxp(1)*celcf%noxyzact/boxcf%volu
+                         sigc(1:3,2,koo) =sigc(1:3,2,koo) -0.5*dErep*gradij(1:3)*dxp(2)*celcf%noxyzact/boxcf%volu
+                         sigc(1:3,3,koo) =sigc(1:3,3,koo) -0.5*dErep*gradij(1:3)*dxp(3)*celcf%noxyzact/boxcf%volu
+                         sigc(1:3,1,ko1) =sigc(1:3,1,ko1) -0.5*dErep*gradij(1:3)*dxp(1)*celcf%noxyzact/boxcf%volu
+                         sigc(1:3,2,ko1) =sigc(1:3,2,ko1) -0.5*dErep*gradij(1:3)*dxp(2)*celcf%noxyzact/boxcf%volu
+                         sigc(1:3,3,ko1) =sigc(1:3,3,ko1) -0.5*dErep*gradij(1:3)*dxp(3)*celcf%noxyzact/boxcf%volu
+                      end if
+                   endif
+                end if
              end if
-
-
 
           end do loop1at2
        end do loop1cel
@@ -350,26 +356,34 @@ contains
              atcf%fp(1:3,i) = atcf%fp(1:3,i) - Femb*gradij(1:3)
              if (.not.(celcf%isghost(ko1)))             atcf%fp(1:3,j) = atcf%fp(1:3,j) + Femb*gradij(1:3)
 
-             if (test_sigma) then                   
-                if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
-!!$                   sig(1:3,1) = sig(1:3,1) - Femb*gradij(1:3)*dxp(1)/boxcf%volu
-!!$                   sig(1:3,2) = sig(1:3,2) - Femb*gradij(1:3)*dxp(2)/boxcf%volu
-!!$                   sig(1:3,3) = sig(1:3,3) - Femb*gradij(1:3)*dxp(3)/boxcf%volu
-                   sigem(1:3,1) = sigem(1:3,1) - Femb*gradij(1:3)*dxp(1)/boxcf%volu
-                   sigem(1:3,2) = sigem(1:3,2) - Femb*gradij(1:3)*dxp(2)/boxcf%volu
-                   sigem(1:3,3) = sigem(1:3,3) - Femb*gradij(1:3)*dxp(3)/boxcf%volu
+             if (test_sigma) then        
+                if (celcf%isghost(ko1)) then
+                   sigem(1:3,1) = sigem(1:3,1) - 0.5*Femb*gradij(1:3)*dxp(1)/boxcf%volu
+                   sigem(1:3,2) = sigem(1:3,2) - 0.5*Femb*gradij(1:3)*dxp(2)/boxcf%volu
+                   sigem(1:3,3) = sigem(1:3,3) - 0.5*Femb*gradij(1:3)*dxp(3)/boxcf%volu
                    if (lcalcsigc.EQV..true.) then
-                      sigc(1:3,1,koo) =sigc(1:3,1,koo) - 0.5*Femb*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
-                      sigc(1:3,2,koo) =sigc(1:3,2,koo) - 0.5*Femb*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
-                      sigc(1:3,3,koo) =sigc(1:3,3,koo) - 0.5*Femb*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
-                      sigc(1:3,1,ko1) =sigc(1:3,1,ko1) - 0.5*Femb*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
-                      sigc(1:3,2,ko1) =sigc(1:3,2,ko1) - 0.5*Femb*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
-                      sigc(1:3,3,ko1) =sigc(1:3,3,ko1) - 0.5*Femb*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
+                      sigc(1:3,1,koo) =sigc(1:3,1,koo) - 0.5*Femb*gradij(1:3)*dxp(1)*celcf%noxyzact/boxcf%volu
+                      sigc(1:3,2,koo) =sigc(1:3,2,koo) - 0.5*Femb*gradij(1:3)*dxp(2)*celcf%noxyzact/boxcf%volu
+                      sigc(1:3,3,koo) =sigc(1:3,3,koo) - 0.5*Femb*gradij(1:3)*dxp(3)*celcf%noxyzact/boxcf%volu
                    end if
-
-                endif
+                   
+                else
+                   if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
+                      sigem(1:3,1) = sigem(1:3,1) - Femb*gradij(1:3)*dxp(1)/boxcf%volu
+                      sigem(1:3,2) = sigem(1:3,2) - Femb*gradij(1:3)*dxp(2)/boxcf%volu
+                      sigem(1:3,3) = sigem(1:3,3) - Femb*gradij(1:3)*dxp(3)/boxcf%volu
+                      if (lcalcsigc.EQV..true.) then
+                         sigc(1:3,1,koo) =sigc(1:3,1,koo) - 0.5*Femb*gradij(1:3)*dxp(1)*celcf%noxyzact/boxcf%volu
+                         sigc(1:3,2,koo) =sigc(1:3,2,koo) - 0.5*Femb*gradij(1:3)*dxp(2)*celcf%noxyzact/boxcf%volu
+                         sigc(1:3,3,koo) =sigc(1:3,3,koo) - 0.5*Femb*gradij(1:3)*dxp(3)*celcf%noxyzact/boxcf%volu
+                         sigc(1:3,1,ko1) =sigc(1:3,1,ko1) - 0.5*Femb*gradij(1:3)*dxp(1)*celcf%noxyzact/boxcf%volu
+                         sigc(1:3,2,ko1) =sigc(1:3,2,ko1) - 0.5*Femb*gradij(1:3)*dxp(2)*celcf%noxyzact/boxcf%volu
+                         sigc(1:3,3,ko1) =sigc(1:3,3,ko1) - 0.5*Femb*gradij(1:3)*dxp(3)*celcf%noxyzact/boxcf%volu
+                      end if
+                   endif
+                end if
              end if
-
+             
           end do loop2at2
        end do loop2cel
     end do loop3at1

@@ -233,9 +233,9 @@ contains
           maxdecx(ic)=1          
        end if
     end do
-    write(6,*)'mindecx', mindecx
-    write(6,*)'maxdecx', maxdecx
-    write(6,*)'midnox', midnox
+!    write(6,*)'mindecx', mindecx
+!    write(6,*)'maxdecx', maxdecx
+!    write(6,*)'midnox', midnox
     if (cell%noxyz==1) then
        cell%ncel(1,0)=1
        cell%deltadist=0
