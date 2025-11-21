@@ -73,7 +73,7 @@ contains
 #ifdef DKIO
     logical :: lvelocities=.false.
     character(len=6) :: format
-    real(double),allocatable::xposg(:,:),vpg(:,:)
+    real(double),allocatable::xposg(:,:),vpg(:,:),masses_g(:)
     character*3, dimension(:),allocatable :: tywg
 #endif
 
@@ -448,7 +448,7 @@ contains
              call writepos(ivisum,im_proc,xp_proc,ty_proc,ityp_proc,natg_proc, luvisu,boxmol%at,boxmol%bg,laux,nauxw,aux_proc)
 #ifdef DKIO
           else
-             call reconstruction(atmol%im_glob,im_proc,natg_proc,xp_proc,ty_proc,xposg,tywg,vpg,lvelocities,aux_proc)
+             call reconstruction(atmol%im_glob,im_proc,natg_proc,xp_proc,ty_proc,ityp_proc,xposg,tywg,masses_g,vpg,lvelocities,aux_proc)
 #endif
           end if
 
@@ -466,15 +466,16 @@ contains
                 call writepos(ivisum,im_proc,xp_proc,ty_proc,ityp_proc,natg_proc, luvisu,boxmol%at,boxmol%bg,laux,nauxw,aux_proc)
 #ifdef DKIO
              else
-                call reconstruction(atmol%im_glob,im_proc,natg_proc,xp_proc,ty_proc,xposg,tywg,vpg,lvelocities,aux_proc)
+                call reconstruction(atmol%im_glob,im_proc,natg_proc,xp_proc,ty_proc,ityp_proc,xposg,tywg,masses_g,vpg,lvelocities,aux_proc)
 #endif
              end if
           enddo
 #ifdef DKIO
           if (ivisum > 9 .and. ivisum < 31) then
-             call dk_io_write(nameo,end_name,boxmol%at,boxmol%bg,trim(format),lvelocities,extension,xposg=xposg,vpg=vpg,tywg=tywg,img=atmol%im_glob)
+             call dk_io_write(nameo,end_name,boxmol%at,boxmol%bg,trim(format),lvelocities,extension,xposg=xposg,masses_g=masses_g,vpg=vpg,tywg=tywg,img=atmol%im_glob)
              deallocate(xposg)
              deallocate(tywg)
+             deallocate(masses_g)
              if (allocated(vpg)) deallocate(vpg)
           end if
 #endif
@@ -558,7 +559,7 @@ contains
   end subroutine openfilemol
 
 #ifdef DKIO
-  subroutine dk_io_write(nameo,end_name,box,invbox,format,lvelocities,ext,atcomp,tyw,xposg,vpg,tywg,img)
+  subroutine dk_io_write(nameo,end_name,box,invbox,format,lvelocities,ext,atcomp,tyw,xposg,masses_g,vpg,tywg,img)
     !-----------------------------------------------------
     !  Subroutine for interfacing with the dk_io library
     !-----------------------------------------------------
@@ -569,7 +570,7 @@ contains
     real(double), intent(in) :: box(3,3), invbox(3,3)
     class(atom_config), optional :: atcomp
     character(len=3), dimension(:), intent(in), optional :: tyw
-    real(double),allocatable, optional ::xposg(:,:),vpg(:,:)
+    real(double),allocatable, optional ::xposg(:,:),vpg(:,:), masses_g(:)
     character*3, dimension(:),allocatable, optional :: tywg
     character(len=9), intent(in), optional :: ext
     logical, intent(in) :: lvelocities
@@ -611,7 +612,7 @@ contains
        call cryst_to_cart (atcomp%im, atcomp%xp,  box,  1) !cryst vers cart
        deallocate(masses)
 
-    else ! xposg, tywg, img et vpg => tableaux reconstruits sur proc 0
+    else ! xposg, masses_g, tywg, img et vpg => tableaux reconstruits sur proc 0
        allocate(tags(img))
        ! Convert to fractional coordinates, and get atoms tag
        call cryst_to_cart(img, xposg,  invbox,  -1) !cart vers cryst
@@ -620,18 +621,18 @@ contains
        end do
        
        if(lvelocities) then
-          call write_structure(trim(namef), box*1d8, xposg, tags, format=format, velocities=vpg)
+          call write_structure(trim(namef), box*1d8, xposg, tags, format=format, velocities=vpg, masses=masses_g)
        else
-          call write_structure(trim(namef), box*1d8, xposg, tags, format=format)
+          call write_structure(trim(namef), box*1d8, xposg, tags, format=format, masses=masses_g)
        end if
        
     end if
     deallocate(tags)
   end subroutine dk_io_write
 
-  subroutine reconstruction(img,im_proc,natg_proc,xpos_proc,tyw_proc,xposg,tywg,vpg,lvelocities,aux_proc)
-    integer,intent(in)::img, im_proc, natg_proc(:)
-    real(double),allocatable::xposg(:,:),vpg(:,:)
+  subroutine reconstruction(img,im_proc,natg_proc,xpos_proc,tyw_proc,ityp_proc,xposg,tywg,masses_g,vpg,lvelocities,aux_proc)
+    integer,intent(in)::img, im_proc, natg_proc(:), ityp_proc(:)
+    real(double),allocatable::xposg(:,:),vpg(:,:), masses_g(:)
     character*3, dimension(:),allocatable :: tywg
     real(double), intent(in) :: xpos_proc(:,:)
     real(double), intent(in), optional :: aux_proc(:,:)
@@ -643,6 +644,7 @@ contains
        write(6,*) "Attention : utilisation de dk-io en parallèle => reconstruction du tableau de position complet sur le proc 0"
        allocate(xposg(3,img))
        allocate(tywg(img))
+       allocate(masses_g(img))
        if (lvelocities) then
          write(6,*) "reconstruction du tableau des vitesses complet sur le proc 0"
          allocate(vpg(3,img))
@@ -652,6 +654,7 @@ contains
     do i=1, im_proc
        xposg(:,natg_proc(i))=xpos_proc(:,i)
        tywg(natg_proc(i))=tyw_proc(i)
+       masses_g(natg_proc(i))=cm(ityp_proc(i))/umass        ! Mass (g/mol)
        if(lvelocities) then
           vpg(1,natg_proc(i))= aux_proc(1,i)
           vpg(2,natg_proc(i))= aux_proc(2,i)
