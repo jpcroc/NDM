@@ -98,7 +98,7 @@ contains
              ! spline
              dr = r-float(k)*csive
              phu = -1.0*(pot(2,l,k)+(2.0*pot(3,l,k)+3.0*pot(4,l,k)*dr)*dr)
-             deltaepot=0.5*(pot(1,l,k)+pot(2,l,k)*dr+pot(3,l,k)*dr**2+pot(4,l,k)*dr**3)
+             deltaepot=(pot(1,l,k)+pot(2,l,k)*dr+pot(3,l,k)*dr**2+pot(4,l,k)*dr**3)
              f1 = phu*gradij(1)
              f2 = phu*gradij(2)
              f3 = phu*gradij(3)
@@ -158,22 +158,6 @@ contains
                       end if
                    endif
                 end if
-             end if
-
-             if (test_sigma) then
-                if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
-                   sig2p(1,:) = sig2p(1,:)+phu*gradij(1)*dxp(:)/boxcf%volu
-                   sig2p(2,:) = sig2p(2,:)+phu*gradij(2)*dxp(:)/boxcf%volu
-                   sig2p(3,:) = sig2p(3,:)+phu*gradij(3)*dxp(:)/boxcf%volu
-                   if (lcalcsigc.EQV..true.) then
-                      sigc(1,:,koo) = sigc(1,:,koo)+0.5*phu*gradij(1)*dxp(:)*celcf%noxyzact/boxcf%volu
-                      sigc(2,:,koo) = sigc(2,:,koo)+0.5*phu*gradij(2)*dxp(:)*celcf%noxyzact/boxcf%volu
-                      sigc(3,:,koo) = sigc(3,:,koo)+0.5*phu*gradij(3)*dxp(:)*celcf%noxyzact/boxcf%volu
-                      sigc(1,:,ko1) = sigc(1,:,ko1)+0.5*phu*gradij(1)*dxp(:)*celcf%noxyzact/boxcf%volu
-                      sigc(2,:,ko1) = sigc(2,:,ko1)+0.5*phu*gradij(2)*dxp(:)*celcf%noxyzact/boxcf%volu
-                      sigc(3,:,ko1) = sigc(3,:,ko1)+0.5*phu*gradij(3)*dxp(:)*celcf%noxyzact/boxcf%volu
-                   end if
-                endif
              end if
           end do  ! fin i2=j
     end do ! fin i1=koo
