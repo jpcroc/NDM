@@ -574,6 +574,7 @@ contains
     character(len=9), intent(in), optional :: ext
     logical, intent(in) :: lvelocities
     character(len=80) :: namef
+    real(double), allocatable, dimension(:) :: masses
     character(TAG_LENGTH), dimension(:), allocatable :: tags
     integer :: i
     integer, intent(in), optional :: img
@@ -586,11 +587,13 @@ contains
     
     if (present(atcomp)) then ! atcomp et tyw => en séquentiel
        allocate(tags(atcomp%im))
+       allocate(masses(atcomp%im))
 
        ! Convert to fractional coordinates, and get atoms tag
        call cryst_to_cart(atcomp%im, atcomp%xp,  invbox,  -1) !cart vers cryst
        do i=1, atcomp%im
           tags(i) = tyw(i)
+          masses(i) = cm(atcomp%ityp(i))/umass        ! Mass (g/mol)
        end do
 
        if(lvelocities) then
@@ -599,13 +602,14 @@ contains
              write(6,*)'no velocity in atom-config and export asked with velocities stop'
              call arret_ndm
           class is (atom_config_d)
-             call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d8*1d-12)
+             call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d8*1d-12, masses=masses)
           end select
        else
-          call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format)
+          call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, masses=masses)
        end if
 
        call cryst_to_cart (atcomp%im, atcomp%xp,  box,  1) !cryst vers cart
+       deallocate(masses)
 
     else ! xposg, tywg, img et vpg => tableaux reconstruits sur proc 0
        allocate(tags(img))
