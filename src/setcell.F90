@@ -71,7 +71,7 @@ contains
                 !          WRITE(6,'(2(a,g12.4),a,i0)') '  nox = Int( ', boxsn%nzl(1),'/',rum,') = ', nox
 !             end if
           else
-             write (6,*) 'nox (',ic,") dans din =", nox(ic)
+             if (rang==0)write (6,'(A,I3,A,I6)') 'nox (',ic,") dans din =", nox(ic)
           end if
 
 !!$       IF (nox.LT.3) nox=1

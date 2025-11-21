@@ -343,9 +343,9 @@ module plottpcel_mod
 
     call slice%cell_config%init(box,nx(1),nx(2),nx(3),natperc,ltpc=.true.,latomalloc=.false.)
 
-    slice%ncs=celcf%noxyzact/slice%noxyz
-    allocate(slice%indc(slice%ncs,slice%noxyz))
-    allocate(ncs(slice%noxyz))
+    slice%ncs=celcf%noxyzact/slice%noxyzact
+    allocate(slice%indc(slice%ncs,slice%noxyzact))
+    allocate(ncs(slice%noxyzact))
     ncs(:)=0
     slice%nato(:)=0
     do iko=1,celcf%noxyz
@@ -380,7 +380,7 @@ module plottpcel_mod
        do isc=1,slice%ncs
           ik=slice%indc(isc,is)
           slice%tempc(is)=slice%tempc(is)+ (celcf%tempc(ik)*celcf%nato(ik))/slice%nato(is)
-          slice%sigc(:,:,is)=slice%sigc(:,:,is)+ (celcf%sigc(:,:,ik)*float(slice%noxyz)/celcf%noxyz)
+          slice%sigc(:,:,is)=slice%sigc(:,:,is)+ (celcf%sigc(:,:,ik)*float(slice%noxyzact)/celcf%noxyzact)
        end do
     end do
   end subroutine merge_slice

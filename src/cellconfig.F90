@@ -202,6 +202,8 @@ contains
     if (allocated(cell%deltadist))  deallocate(cell%deltadist)
     if (allocated(cell%sigc))  deallocate(cell%sigc)
     if (allocated(cell%tempc))  deallocate(cell%tempc)
+    if (allocated(cell%isghost))  deallocate(cell%isghost)
+    if (allocated(cell%copyof))  deallocate(cell%copyof)
     select type(cell)
     class is (cell_config_g)
        deallocate(cell%natotot)

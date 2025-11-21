@@ -50,6 +50,8 @@ program ndm
   end if
 
 #else
+  write(6,*)'MPI compilation is mandatory, the rest is legacy'
+  stop
   rang = 0
   myidsp=rang
   nprocs=1
