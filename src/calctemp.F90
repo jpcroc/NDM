@@ -69,9 +69,8 @@ contains
        end if
 
        tempEP=0
-
        do ko = 1, cellcf%noxyz
-          if (cellcf%nato(ko)==0) cycle
+          if ((cellcf%nato(ko)==0).or.(cellcf%isghost(ko))) cycle
 
           if (L2T)     call nox_2_nex(ko,ixyze,cellcf)
 
@@ -130,7 +129,7 @@ contains
        end if
 
        if (nat.ne.atcf%im) then
-          write(6,*)'NAT NE atcf%im STOP'
+          write(6,*)'NAT NE atcf%im STOP',nat,atcf%im
           call arret_ndm
        end if
        temp = sumtat2/float(atcf%im)
@@ -161,7 +160,7 @@ contains
        end if
        tempEP=0
        do ko = 1, cellcf%noxyz
-          if (cellcf%nato(ko)==0) cycle
+          if ((cellcf%nato(ko)==0).or.(cellcf%isghost(ko))) cycle
 
 #ifdef PARA
 
@@ -219,8 +218,6 @@ contains
           call comm_space%sum(sumtat2)
           if (allocated(cellcf%tempc)) then
              call comm_space%sum(cellcf%tempc)
-             !        call MPI_ALLREDUCE(cellcf%tempc,tempc_tot,cellcf%noxyz,NDM_MPI_REAL_DOUBLE,MPI_SUM,MPI_COMM_space,ierr)
-             !        cellcf%tempc=tempc_tot
           end if
           if (l2T.eqv..true.) then
              call comm_space%sum(ecell%tempion)

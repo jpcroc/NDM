@@ -62,7 +62,7 @@ contains
      koo = atcf%ielat(i)
      nci=0
      iti=atcf%ityp(i)
-     do i1 = 0, 26
+     do i1 = 0, celcf%ncelvmax
         ko1 = celcf%ncel(koo,i1)
 
         do i2 = 1, celcf%nato(ko1)

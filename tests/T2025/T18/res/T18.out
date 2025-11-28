@@ -8,6 +8,8 @@
  
  -------- caracteristiques du run DM-------- 1
      DYNAMIQUE MOLECULAIRE VERLET STANDARD
+ rang readdm iseed            2           1
+ rang readdm iseed            3           1
  run a partir du fichier .cin
  
       ANALYSES 
@@ -26,7 +28,8 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
- all ranks readdm iseed            1
+ rang readdm iseed            0           1
+ rang readdm iseed            1           1
  IMM PARA =        19800       66000
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -57,11 +60,11 @@ debyetemp=      -1.0
  config type of  .cin file :            3
 volume= 0.76280474D-18 cm3  0.76280474D+06 Ang3
  nox,noy,noz dans .din =          -1          -1          -1
- calcul de nox noy noz !!!
-nox noy noz calcules a partir de ru
-  nox = Int(   0.9137E-06/  0.6000E-07) = 15
-  noy = Int(   0.9137E-06/  0.6000E-07) = 15
-  noz = Int(   0.9137E-06/  0.6000E-07) = 15
+nox noy noz and ghost cells from ru
+  nox in direction  1= 15 if not specified =Int(   0.9137E-06/  0.6000E-07) 
+  nox in direction  2= 15 if not specified =Int(   0.9137E-06/  0.6000E-07) 
+  nox in direction  3= 15 if not specified =Int(   0.9137E-06/  0.6000E-07) 
+        3375  active cells among         3375
 celsizes   0.6091345E-07  0.6091345E-07  0.6091345E-07
  sur            4  cpus           0
  
@@ -91,7 +94,10 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.7649
  Decoupage           1 :           7           8          15
  Decoupage           2 :           8           7          15
  Decoupage           3 :           7           7          15
- Decoupage           4 :           8          15          96
+ Decoupage           0 :           8           8          15
+ Decoupage           1 :           7           8          15
+ Decoupage           2 :           8           7          15
+ Decoupage           3 :           7           7          15
  ----------------------------------------------
 volume= 0.76280474D-18 cm3  0.76280474D+06 Ang3
  config type of  .cin file :            3
@@ -113,10 +119,10 @@ vecteur  3       0.000000       0.000000      91.370176
               2nd step of potential initialization , dependancy on box size
  calpoeam ktorho and the inverse:   8.522228107257609E-003
    117.340205802329     
- rang rangspace            3           3  nbr procs voisins            3
- rang rangspace            2           2  nbr procs voisins            3
  rang rangspace            1           1  nbr procs voisins            3
+ rang rangspace            3           3  nbr procs voisins            3
  rang rangspace            0           0  nbr procs voisins            3
+ rang rangspace            2           2  nbr procs voisins            3
  tempsauv    560.473874886264     
  pas de chgt des vitesses= 
  temperature fin initspeed    560.473874886264     

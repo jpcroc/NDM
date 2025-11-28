@@ -217,23 +217,23 @@ contains
                       sigcalfo(3,3)=sigcalfo(3,3)-0.5*(virdzdx(i,3,3)*dfp+fdp*dxp(3)*dxp(3))/boxcf%volu
                       if (lcalcsigc.EQV..true.) then
                          sigc(1,1,koo)=sigc(1,1,koo)-&
-                              0.5*(virdzdx(i,1,1)*dfp+fdp*dxp(1)*dxp(1))*celcf%noxyz/boxcf%volu
+                              0.5*(virdzdx(i,1,1)*dfp+fdp*dxp(1)*dxp(1))*celcf%noxyzact/boxcf%volu
                          sigc(1,2,koo)=sigc(1,2,koo)-&
-                              0.5*(virdzdx(i,1,2)*dfp+fdp*dxp(1)*dxp(2))*celcf%noxyz/boxcf%volu
+                              0.5*(virdzdx(i,1,2)*dfp+fdp*dxp(1)*dxp(2))*celcf%noxyzact/boxcf%volu
                          sigc(1,3,koo)=sigc(1,3,koo)-&
-                              0.5*(virdzdx(i,1,3)*dfp+fdp*dxp(1)*dxp(3))*celcf%noxyz/boxcf%volu
+                              0.5*(virdzdx(i,1,3)*dfp+fdp*dxp(1)*dxp(3))*celcf%noxyzact/boxcf%volu
                          sigc(2,1,koo)=sigc(2,1,koo)-&
-                              0.5*(virdzdx(i,2,1)*dfp+fdp*dxp(2)*dxp(1))*celcf%noxyz/boxcf%volu
+                              0.5*(virdzdx(i,2,1)*dfp+fdp*dxp(2)*dxp(1))*celcf%noxyzact/boxcf%volu
                          sigc(2,2,koo)=sigc(2,2,koo)-&
-                              0.5*(virdzdx(i,2,2)*dfp+fdp*dxp(2)*dxp(2))*celcf%noxyz/boxcf%volu
+                              0.5*(virdzdx(i,2,2)*dfp+fdp*dxp(2)*dxp(2))*celcf%noxyzact/boxcf%volu
                          sigc(2,3,koo)=sigc(2,3,koo)-&
-                              0.5*(virdzdx(i,2,3)*dfp+fdp*dxp(2)*dxp(3))*celcf%noxyz/boxcf%volu
+                              0.5*(virdzdx(i,2,3)*dfp+fdp*dxp(2)*dxp(3))*celcf%noxyzact/boxcf%volu
                          sigc(3,1,koo)=sigc(3,1,koo)-&
-                              0.5*(virdzdx(i,3,1)*dfp+fdp*dxp(3)*dxp(1))*celcf%noxyz/boxcf%volu
+                              0.5*(virdzdx(i,3,1)*dfp+fdp*dxp(3)*dxp(1))*celcf%noxyzact/boxcf%volu
                          sigc(3,2,koo)=sigc(3,2,koo)-&
-                              0.5*(virdzdx(i,3,2)*dfp+fdp*dxp(3)*dxp(2))*celcf%noxyz/boxcf%volu
+                              0.5*(virdzdx(i,3,2)*dfp+fdp*dxp(3)*dxp(2))*celcf%noxyzact/boxcf%volu
                          sigc(3,3,koo)=sigc(3,3,koo)-&
-                              0.5*(virdzdx(i,3,3)*dfp+fdp*dxp(3)*dxp(3))*celcf%noxyz/boxcf%volu
+                              0.5*(virdzdx(i,3,3)*dfp+fdp*dxp(3)*dxp(3))*celcf%noxyzact/boxcf%volu
                       end if
                    else
                       sigcalfo(1,1)=sigcalfo(1,1)+0.5*F1*dxp(1)/boxcf%volu
@@ -246,15 +246,15 @@ contains
                       sigcalfo(3,2)=sigcalfo(3,2)+0.5*F3*dxp(2)/boxcf%volu
                       sigcalfo(3,3)=sigcalfo(3,3)+0.5*F3*dxp(3)/boxcf%volu
                       if (lcalcsigc.EQV..true.) then
-                         sigc(1,1,koo)=sigc(1,1,koo)+0.5*F1*dxp(1)*celcf%noxyz/boxcf%volu
-                         sigc(1,2,koo)=sigc(1,2,koo)+0.5*F1*dxp(2)*celcf%noxyz/boxcf%volu
-                         sigc(1,3,koo)=sigc(1,3,koo)+0.5*F1*dxp(3)*celcf%noxyz/boxcf%volu
-                         sigc(2,1,koo)=sigc(2,1,koo)+0.5*F2*dxp(1)*celcf%noxyz/boxcf%volu
-                         sigc(2,2,koo)=sigc(2,2,koo)+0.5*F2*dxp(2)*celcf%noxyz/boxcf%volu
-                         sigc(2,3,koo)=sigc(2,3,koo)+0.5*F2*dxp(3)*celcf%noxyz/boxcf%volu
-                         sigc(3,1,koo)=sigc(3,1,koo)+0.5*F3*dxp(1)*celcf%noxyz/boxcf%volu
-                         sigc(3,2,koo)=sigc(3,2,koo)+0.5*F3*dxp(2)*celcf%noxyz/boxcf%volu
-                         sigc(3,3,koo)=sigc(3,3,koo)+0.5*F3*dxp(3)*celcf%noxyz/boxcf%volu
+                         sigc(1,1,koo)=sigc(1,1,koo)+0.5*F1*dxp(1)*celcf%noxyzact/boxcf%volu
+                         sigc(1,2,koo)=sigc(1,2,koo)+0.5*F1*dxp(2)*celcf%noxyzact/boxcf%volu
+                         sigc(1,3,koo)=sigc(1,3,koo)+0.5*F1*dxp(3)*celcf%noxyzact/boxcf%volu
+                         sigc(2,1,koo)=sigc(2,1,koo)+0.5*F2*dxp(1)*celcf%noxyzact/boxcf%volu
+                         sigc(2,2,koo)=sigc(2,2,koo)+0.5*F2*dxp(2)*celcf%noxyzact/boxcf%volu
+                         sigc(2,3,koo)=sigc(2,3,koo)+0.5*F2*dxp(3)*celcf%noxyzact/boxcf%volu
+                         sigc(3,1,koo)=sigc(3,1,koo)+0.5*F3*dxp(1)*celcf%noxyzact/boxcf%volu
+                         sigc(3,2,koo)=sigc(3,2,koo)+0.5*F3*dxp(2)*celcf%noxyzact/boxcf%volu
+                         sigc(3,3,koo)=sigc(3,3,koo)+0.5*F3*dxp(3)*celcf%noxyzact/boxcf%volu
                       end if
                    endif
                 endif

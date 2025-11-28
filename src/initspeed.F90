@@ -385,13 +385,14 @@ contains
           end if
        end if
        tempsauv=tempinstT(atcf)
-      vv = sqrt(tinit/tempsauv)
-       select type (atcf)
-       class is (atom_config_e)
-          if (atcf%lxpp) atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*vv
-       end select
-       atcf%vp(:,:atcf%im) = atcf%vp(:,:atcf%im)*vv
-       
+       if (tempsauv.ne.0)       then
+          vv = sqrt(tinit/tempsauv)
+          select type (atcf)
+          class is (atom_config_e)
+             if (atcf%lxpp) atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*vv
+          end select
+          atcf%vp(:,:atcf%im) = atcf%vp(:,:atcf%im)*vv
+       end if
     endif
     !     write(6,*)'sortie initspeed'
     select type (atcf)

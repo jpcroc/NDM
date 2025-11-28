@@ -109,9 +109,9 @@ contains
     KeC=KeC*joule2erg*1d-2
     deltaxyz=deltaxyz*1d-8
     if (rang.eq.0)    write(6,*)nexov,neyov
-    if(nexov==0)nex=celndm%nox
-    if(neyov==0)ney=celndm%noy
-    if(nezov==0)nez=celndm%noz
+    if(nexov==0)nex=celndm%nox(1)
+    if(neyov==0)ney=celndm%nox(2)
+    if(nezov==0)nez=celndm%nox(3)
     if (ibc==-1) then
        if (rang.eq.0)       write(6,*)'ibc=-1, stop'
        call arret_ndm
@@ -722,20 +722,20 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     integer::kx,ky,kz,koc
     koc=ko
     !    write(6,*)'ko',ko
-    kx=mod(koc-1,celndm%nox)+1
-    koc=(koc-kx)/celndm%nox
+    kx=mod(koc-1,celndm%nox(1))+1
+    koc=(koc-kx)/celndm%nox(1)
     !    write(6,*)'kx koc',kx,koc
-    ky=mod(koc,celndm%noy)+1
+    ky=mod(koc,celndm%nox(2))+1
     !    write(6,*)'ky,koc',ky,(koc-ky+1)/noy
-    kz=(koc-ky+1)/celndm%noz+1
+    kz=(koc-ky+1)/celndm%nox(3)+1
     !    write(6,*)'kz',kz
 
     !    write(6,*)'ko,kx,ky,kz'
     !    write(6,*)ko,kx,ky,kz
 
-    ixyze(1)=1+(kx-1)*nexov/celndm%nox+nexmp
-    ixyze(2)=1+(ky-1)*neyov/celndm%noy+neymp
-    ixyze(3)=1+(kz-1)*nezov/celndm%noz+nezmp
+    ixyze(1)=1+(kx-1)*nexov/celndm%nox(1)+nexmp
+    ixyze(2)=1+(ky-1)*neyov/celndm%nox(2)+neymp
+    ixyze(3)=1+(kz-1)*nezov/celndm%nox(3)+nezmp
 
 
     !    write(6,*)'           ',ixyze

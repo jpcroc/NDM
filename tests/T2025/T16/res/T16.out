@@ -1,8 +1,8 @@
  Process            0  of            2  is alive
- Process            1  of            2  is alive
  nom fichier din=
  Febulk.din                                                                     
   
+ Process            1  of            2  is alive
  LTABVOIS MIS A FALSE en PARA
  
  -------- caracteristiques du run DM-------- 3
@@ -25,7 +25,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
- all ranks readdm iseed            1
+ rang readdm iseed            0           1
  IMM PARA =         1200        2000
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -33,6 +33,7 @@ debyetemp=      -1.0
  
  POTENTIEL EAM
  
+ rang readdm iseed            1           1
  NTYP NPAIR            1           1
  Types d_atomes pour ce potentiel:
  CM, masse,type, NUMERO DU TYPE D ATOME
@@ -56,11 +57,11 @@ debyetemp=      -1.0
  config type of  .cin file :            5
 volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
  nox,noy,noz dans .din =          -1          -1          -1
- calcul de nox noy noz !!!
-nox noy noz calcules a partir de ru
-  nox = Int(   0.2855E-06/  0.6000E-07) = 4
-  noy = Int(   0.2855E-06/  0.6000E-07) = 4
-  noz = Int(   0.2855E-06/  0.6000E-07) = 4
+nox noy noz and ghost cells from ru
+  nox in direction  1=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+  nox in direction  2=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+  nox in direction  3=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+          64  active cells among           64
 celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
  sur            2  cpus           0
  
@@ -88,7 +89,12 @@ LE_MEILLEUR_DECOUPAGE :    2    1    1    2    0.9286
  Taille des decoupages
  Decoupage           0 :           4           4           2
  Decoupage           1 :           4           4           2
- Decoupage           2 :           4           2           4
+ Decoupage           2 :           4           2           0
+ Decoupage           3 :           4           2           0
+ Decoupage          -2 :    33080464           4           4
+ Decoupage          -1 :           0           4           4
+ Decoupage           0 :           4           4           2
+ Decoupage           1 :           4           4           2
  ----------------------------------------------
 volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
  config type of  .cin file :            5
@@ -111,6 +117,7 @@ vecteur  3       0.000000       0.000000      28.553180
    117.340205802329     
  rang rangspace            0           0  nbr procs voisins            1
  rang rangspace            1           1  nbr procs voisins            1
+          64  active cells among           64
 ******CONJUGATE GRADIENT *** beta init 0.10000000E-05
   FPSTOP=  3.000000000000000E-002 -0.100000001490116     
  NCALLS      ENERGY (eV)       FORCTOT         FORMAX        FORCESIGMA(eV/Ang)       SIGMA(kbar)   ***      energy gain eV]

@@ -1806,7 +1806,8 @@ contains
              if (allocated(ibuffer)) then
                 deallocate(rbuffer);deallocate(ibuffer);deallocate(lbuffer)
              end if
-             call  mpic%probe(11001,sourceout=proc_source)
+             !             call  mpic%probe(11001,sourceout=proc_source)
+             proc_source=iproc
              call mpic%RECV(imrecv,proc_source, 11001)
              call mpic%recv (cst,proc_source,312)
              imtot=imtot+imrecv

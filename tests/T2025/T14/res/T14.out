@@ -6,16 +6,19 @@
  Febulk.din                                                                     
   
  
+ rang readdm iseed            1           1
+ INITMPIFM
+ rang readdm iseed            2           1
+ INITMPIFM
+ rang readdm iseed            3           1
+ INITMPIFM
  -------- caracteristiques du run DM--------19
       FORCE Matrix calculation 
- INITMPIFM
   decal, ndecal lparaFM, naparaFM:  1.000000014901161E-009           1 T
            4
  
  generation du crystal ; puis run
  
- INITMPIFM
- INITMPIFM
       ANALYSES 
  itetemp=           1  iteprtsigma=           1
  
@@ -32,7 +35,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
- all ranks readdm iseed            1
+ rang readdm iseed            0           1
  INITMPIFM
  nparafM,nprocspace, nprocs           4           1           4
  
@@ -53,6 +56,11 @@ debyetemp=      -1.0
  RHO potin points and the step:       249999  2.400000000000000E-005
  paire eam ; paire complete           1           1
  rep
+ IN ForceMatrix           2
+ IN ForceMatrix           3
+ IN ForceMatrix           1
+ decal rang ideb ifin          -1           2         217         324
+ decal rang ideb ifin          -1           3         325         432
  
   *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
  imm,imm_glob,nprocspace        2000        2000           1
@@ -61,13 +69,14 @@ debyetemp=      -1.0
  repetition de mailles           6           6           6
   .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +2e-7
  nox,noy,noz dans .din =          -1          -1          -1
- calcul de nox noy noz !!!
-nox noy noz calcules a partir de ru
-  nox = Int(   0.1713E-06/  0.6000E-07) = 2
-  noy = Int(   0.1713E-06/  0.6000E-07) = 2
-  noz = Int(   0.1713E-06/  0.6000E-07) = 2
+nox noy noz and ghost cells from ru
+  nox in direction  1=  2 if not specified =Int(   0.1713E-06/  0.6000E-07) 
+  nox in direction  2=  2 if not specified =Int(   0.1713E-06/  0.6000E-07) 
+  nox in direction  3=  2 if not specified =Int(   0.1713E-06/  0.6000E-07) 
+           8  active cells among            8
 celsizes   0.8565954E-07  0.8565954E-07  0.8565954E-07
-Febulk.gin                                                                      volume= 0.50282539D-20 cm3  0.50282539D+04 Ang3
+Febulk.gin                                                                      
+volume= 0.50282539D-20 cm3  0.50282539D+04 Ang3
  natperc im/noxyz         108          54
  ltabvois F
  
@@ -83,19 +92,14 @@ vecteur  3       0.000000       0.000000      17.131908
  calpoeam ktorho and the inverse:   8.522228107257609E-003
    117.340205802329     
  random velocities at TINIT =    600.000000000000      K
- IN ForceMatrix           1
- temperature fin initspeed    606.920649061559     
+ temperature fin initspeed    600.000000000000     
  IN ForceMatrix           0
- IN ForceMatrix           3
- IN ForceMatrix           2
- decal rang ideb ifin          -1           0           1         108
- decal rang ideb ifin          -1           3         325         432
- decal rang ideb ifin          -1           2         217         324
  decal rang ideb ifin          -1           1         109         216
+ decal rang ideb ifin          -1           0           1         108
  decal rang ideb ifin           1           2         217         324
- decal rang ideb ifin           1           0           1         108
  decal rang ideb ifin           1           3         325         432
  decal rang ideb ifin           1           1         109         216
+ decal rang ideb ifin           1           0           1         108
  PRE MKL
  zero frequency=  0.000000000000000E+000
  3 non positive frequencies OK for periodic bulk 

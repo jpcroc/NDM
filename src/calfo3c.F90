@@ -35,7 +35,7 @@ contains
          Rayij,Rayik,inv_Rij,inv_Rik, &
          INTER1j,INTER1k,INTER2exp,INTER2,INTER3j,INTER3k
 
-    real (double), dimension(26*celcf%natperc) :: &
+    real (double), dimension(celcf%ncelvmax*celcf%natperc) :: &
          rtc,xtc, ytc, ztc, indic
 
     logical::linter
