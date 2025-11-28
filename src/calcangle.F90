@@ -92,7 +92,7 @@ contains
 
     do i = 1, atadf%im-1
        koo = atadf%ielat(i)
-       do i1 = 0, 26
+       do i1 = 0, celadf%ncelvmax
           ko1 = celadf%ncel(koo,i1)
           do i2 = 1, celadf%nato(ko1) 
              j = celadf%atincel(i2,ko1)
@@ -102,7 +102,7 @@ contains
 
              if(.not.linterij) cycle
              
-             do i3 = 0,26
+             do i3 = 0,celadf%ncelvmax
                 ko2 = celadf%ncel(koo,i3)
                 do i4 = 1, celadf%nato(ko2)
                    k = celadf%atincel(i4,ko2)

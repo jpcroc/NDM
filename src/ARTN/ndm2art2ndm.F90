@@ -147,7 +147,7 @@ contains
     atcf%xp(3,1:NATOMS)=    pos(1+2*NATOMS:3*NATOMS)/angst
     boxcf%at(:,:)=cell(:,:)/angst
     call boxcf%init(boxcf%at,ipbc)
-    call celcf%init(boxcf,celart%nox,celart%noy,celart%noz,celart%natperc)
+    call celcf%init(boxcf,celart%nox(1),celart%nox(2),celart%nox(3),celart%natperc)
     call caltabtc(celcf,atcf,lperiod,boxcf,lchktrav=.false.)
 
 

@@ -217,7 +217,7 @@ contains
     if ((div%mpi_image%nproc.gt.1).and.(lspaceNDM.eqv..true.)) then
        !    if (div%mpi_image%nproc.gt.1) then
        if (lord) then
-          call cellcomp%init(box,cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
+          call cellcomp%init(box,cellocin%nox(1),cellocin%nox(2),cellocin%nox(3),cellocin%natperc,cellocin%ltpcel)
           select type (atcomp)
           type is (atom_config)
              atb=atcomp
@@ -241,7 +241,7 @@ contains
           end if
 
        else
-          call cellcomp%init(box,cellocin%nox,cellocin%noy,cellocin%noz,cellocin%natperc,cellocin%ltpcel)
+          call cellcomp%init(box,cellocin%nox(1),cellocin%nox(2),cellocin%nox(3),cellocin%natperc,cellocin%ltpcel)
           call atlocin%vers_master(atcomp,div,carac)
           if (div%mpi_image%rank==0) then
              call caltabtC(cellcomp,atcomp,lperiod,box,lchktrav=.false.)

@@ -36,13 +36,14 @@ subroutine init_voisinage (cellv,psc,lwrite)
   if (present(lwrite))lwrt=lwrite
   ! intialisations preliminaires
   if( allocated(psc%proc_voisin)) deallocate(psc%proc_voisin)
-  allocate(psc%proc_voisin(min(nprocspace,26)))
+  allocate(psc%proc_voisin(min(nprocspace,cellv%ncelvmax)))
+!  call cellv%print
   psc%proc_voisin(:)=-1
   psc%nbr_proc_voisin = 0
   psc%nbr_cell_ftm  = 0
 
   if (allocated(psc%nbr_cell_frontiere)) deallocate(psc%nbr_cell_frontiere)
-  allocate(psc%nbr_cell_frontiere(min(nprocspace,26)))
+  allocate(psc%nbr_cell_frontiere(min(nprocspace,cellv%ncelvmax)))
 
   psc%nbr_cell_frontiere(:) = 0
   ! Calcul du nombre de cellules frontieres
@@ -68,7 +69,6 @@ subroutine init_voisinage (cellv,psc,lwrite)
      if ( cellv%proc_cell(cell)==myidsp ) then
         ! si la cellule est locale
 
-!        do icell=1,26
         do icell=1,cellv%ncelvois(cell)
            ! boucle sur les cellules voisines
 
@@ -113,7 +113,6 @@ subroutine init_voisinage (cellv,psc,lwrite)
 
      else  ! la cellule est non locale
         ! On regarde si elle est fantome
-!        do icell=1,26
         do icell=1,cellv%ncelvois(cell)
            ! boucle sur les cellules voisines
 

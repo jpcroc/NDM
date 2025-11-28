@@ -9,6 +9,8 @@
  -------- caracteristiques du run DM--------23
      FIRE Quenching Vcst
  generation du crystal ; puis run
+ rang readdm iseed            2           1
+ rang readdm iseed            3           1
  
       ANALYSES 
  itetemp=        1000  iteprtsigma=           1
@@ -26,7 +28,8 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
- all ranks readdm iseed            1
+ rang readdm iseed            1           1
+ rang readdm iseed            0           1
  IMM PARA =          720        2400
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -54,13 +57,14 @@ debyetemp=      -1.0
  repetition de mailles          10          10          10
   .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +2e-7
  nox,noy,noz dans .din =          -1          -1          -1
- calcul de nox noy noz !!!
-nox noy noz calcules a partir de ru
-  nox = Int(   0.2855E-06/  0.6000E-07) = 4
-  noy = Int(   0.2855E-06/  0.6000E-07) = 4
-  noz = Int(   0.2855E-06/  0.6000E-07) = 4
+nox noy noz and ghost cells from ru
+  nox in direction  1=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+  nox in direction  2=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+  nox in direction  3=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+          64  active cells among           64
 celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
-Febulk.gin                                                                      volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
+Febulk.gin                                                                      
+volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
  sur            4  cpus           0
  
  
@@ -89,7 +93,10 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
  Decoupage           1 :           2           2           4
  Decoupage           2 :           2           2           4
  Decoupage           3 :           2           2           4
- Decoupage           4 :           2           4           0
+ Decoupage           0 :           2           2           4
+ Decoupage           1 :           2           2           4
+ Decoupage           2 :           2           2           4
+ Decoupage           3 :           2           2           4
  ----------------------------------------------
  natperc im/noxyz          70          31
  ltabvois F
@@ -147,7 +154,7 @@ TR: force max, energy     9    0.563337332151624E+02   -0.788424638844815E+04
  
 TR: force max, energy    10    0.504302169929368E+02   -0.794679451593986E+04
  
-TR: force max, energy    11    0.436728834209769E+02   -0.801099934181384E+04
+TR: force max, energy    11    0.436728834209769E+02   -0.801099934181383E+04
  
 TR: force max, energy    12    0.359355142314211E+02   -0.807326554795287E+04
  
@@ -249,7 +256,7 @@ TR: force max, energy    55    0.251952593746099E+02   -0.809530729704464E+04
  
 TR: force max, energy    56    0.893241747189607E+01   -0.810293060444584E+04
  
-TR: force max, energy    57    0.792200675021673E+01   -0.811084873331683E+04
+TR: force max, energy    57    0.792200675021673E+01   -0.811084873331682E+04
  
 TR: force max, energy    58    0.693922523016499E+01   -0.811670990084940E+04
  
@@ -277,7 +284,7 @@ TR: force max, energy    69    0.413809987258792E+01   -0.813253532962554E+04
  
 TR: force max, energy    70    0.411947591206035E+01   -0.813266063995607E+04
  
-TR: force max, energy    71    0.409785032938100E+01   -0.813279487326033E+04
+TR: force max, energy    71    0.409785032938100E+01   -0.813279487326034E+04
  
 TR: force max, energy    72    0.407134375440104E+01   -0.813296331731593E+04
  

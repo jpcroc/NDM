@@ -10,7 +10,7 @@ module cellconfig
   !  integer:: incr=20 ! incrément des tailles de tableau 
 
   type cell_config
-     integer:: nox=0,noy=0,noz=0,noxyz=0 
+     integer:: nox(3)=0,noxyz=0 ,noxyzact
      integer::natperc !nombre (max) d'atomes par cellule
      integer(long)::icaltabt 
      integer,allocatable::nato (:) ! nombre d'atomes dans la cellule ko
@@ -23,6 +23,10 @@ module cellconfig
      real(double):: celsize(3)
 #ifdef PARA
      integer,allocatable::proc_cell(:)
+     logical:: ismall(3)=.false.
+     logical,allocatable::isghost(:)
+     integer,allocatable::copyof(:)
+     integer::ncelvmax ! maximum number of cells neighbouring a cell, for large cells=26, for small nox*noy*noz-1
      
 #endif     
 
@@ -60,9 +64,13 @@ contains
     integer:: ic,ic2
     real(double)::flx(3)
     kox=cell%koxyz(ko)
-    flx(1)=float(kox(1))/cell%nox
-    flx(2)=float(kox(2))/cell%noy
-    flx(3)=float(kox(3))/cell%noz
+    do ic=1,3
+       if (cell%ismall(ic)) then
+          flx(ic)=kox(ic)-0.5*(cell%nox(ic)-1)
+       else
+          flx(ic)=float(kox(ic))/cell%nox(ic)
+       end if
+    end do
     edgec=0.
     do ic=1,3
        do ic2=1,3
@@ -77,7 +85,7 @@ contains
 
     integer:: kx,ky,kz,kyz,km1,km2,nox,noy
     !    do ko=1,cell%noxyz
-    nox=cell%nox;noy=cell%noy
+    nox=cell%nox(1);noy=cell%nox(2)
     km1=ko-1
     kx=mod(km1,nox)
     km2=(km1-kx)/nox
@@ -102,7 +110,9 @@ contains
     if (present(latomalloc))lata=latomalloc
     if (present (ltpc))ltpcel=ltpc
     if (present(nox)) then
-       cell%nox=nox; cell%noy=noy; cell%noz=noz;cell%noxyz=nox*noy*noz
+       cell%nox(1)=nox;cell%noxyz=nox*noy*noz
+       cell%nox(2)=noy
+       cell%nox(3)=noz
     end if
     if (present(natperc)) then
        cell%natperc=natperc
@@ -110,7 +120,7 @@ contains
        cell%natperc=0
     end if
     cell%icaltabt=0
-    !write(6,*) 'nox', cell%nox
+    !write(6,*) 'nox', cell%nox(1)
     cell%ltpcel=ltpcel
     call dealloc_cel(cell)
     call allocatecelN(cell,lata)
@@ -123,14 +133,25 @@ contains
   subroutine allocatecelN(cell,latomalloc)
     class(cell_config)::cell
     !    integer,intent(in)::nox,noy,noz,natperc
-    integer::nsize
+    integer::nsize,ic
     logical,optional::latomalloc
     logical::lata=.true.
     if (present(latomalloc))lata=latomalloc
-    cell%noxyz=cell%nox*cell%noy*cell%noz
+    cell%noxyz=cell%nox(1)*cell%nox(2)*cell%nox(3)
+!    write(6,*)'NOX',cell%nox,cell%noxyz
+    cell%ncelvmax=1
+    do ic=1,3
+       if(cell%ismall(ic)) then
+          cell%ncelvmax=cell%ncelvmax*cell%nox(ic)
+       else
+          cell%ncelvmax=cell%ncelvmax*3
+       end if
+    end do
+    cell%ncelvmax=cell%ncelvmax-1
+    
     nsize=cell%noxyz
     if (nsize.ne.0) then
-       allocate(cell%ncel(nsize,0:26))
+       allocate(cell%ncel(nsize,0:cell%ncelvmax))
        cell%ncel=0
        allocate(cell%nato(nsize))
        cell%nato=0
@@ -140,8 +161,15 @@ contains
           cell%natotot=0
        end select
        allocate(cell%ncelvois(nsize))
-       allocate(cell%deltadist(3,0:26,nsize))
+       allocate(cell%deltadist(3,0:cell%ncelvmax,nsize))
        cell%deltadist=0
+       allocate (cell%isghost(nsize))
+       cell%isghost=.false.
+       if (any(cell%ismall(:)))then
+          allocate (cell%copyof(nsize))
+          cell%copyof(:)=-1
+
+       end if
             
        
        if (cell%ltpcel) then
@@ -174,6 +202,8 @@ contains
     if (allocated(cell%deltadist))  deallocate(cell%deltadist)
     if (allocated(cell%sigc))  deallocate(cell%sigc)
     if (allocated(cell%tempc))  deallocate(cell%tempc)
+    if (allocated(cell%isghost))  deallocate(cell%isghost)
+    if (allocated(cell%copyof))  deallocate(cell%copyof)
     select type(cell)
     class is (cell_config_g)
        deallocate(cell%natotot)
@@ -192,147 +222,196 @@ contains
     class(cell_config)::cell
     class(box_config),intent(in)::box
     integer :: kx, ky, kz, koo, l, lz, mz, ly, my, lx, mx, kxy!,ldx,lfx,ldy,lfy,ldz,lfz
-
+    integer::midnox(3),mindecx(3),maxdecx(3)
+    integer:: vx,vy,vz,vxyz,ic,koxyz(3),kcp,koxyzv(3)
+    cell%ncelvois=-1
+    do ic=1,3
+       if (cell%ismall(ic)) then
+          midnox(ic)=(cell%nox(ic)+1)/2
+          mindecx(ic)=-(cell%nox(ic)-1)/2
+          maxdecx(ic)=(cell%nox(ic)-1)/2
+       else
+          mindecx(ic)=-1
+          maxdecx(ic)=1          
+       end if
+    end do
+!    write(6,*)'mindecx', mindecx
+!    write(6,*)'maxdecx', maxdecx
+!    write(6,*)'midnox', midnox
     if (cell%noxyz==1) then
        cell%ncel(1,0)=1
        cell%deltadist=0
        cell%ncelvois(1)=0
     else
        cell%deltadist(:,:,:) = 0 ! par défaut celldeltadist=0
-       do kz = 1, cell%noz
-          do ky = 1, cell%noy
-             do kx = 1, cell%nox
-                koo = 1+(kx-1)+cell%nox*((ky-1)+cell%noy*(kz-1))
+       do kz = 1, cell%nox(3)
+          do ky = 1, cell%nox(2)
+             loopext:do kx = 1, cell%nox(1)
+                koo = 1+(kx-1)+cell%nox(1)*((ky-1)+cell%nox(2)*(kz-1))
+                if (any(cell%ismall)) then
+                   if((cell%ismall(1)).and.(kx.ne.midnox(1)))then
+                      cell%isghost(koo)=.true.
+                   end if
+                   if((cell%ismall(2)).and.(ky.ne.midnox(2)))then
+                      cell%isghost(koo)=.true.
+                   end if
+                   if((cell%ismall(3)).and.(kz.ne.midnox(3)))then
+                      cell%isghost(koo)=.true.
+                   end if
+                   if (cell%isghost(koo)) then
+                      if (cell%ismall(1)) then
+                         vx=midnox(1)
+                      else
+                         vx=kx
+                      end if
+                      if (cell%ismall(2)) then
+                         vy=midnox(2)
+                      else
+                         vy=ky
+                      end if
+                      if (cell%ismall(3)) then
+                         vz=midnox(3)
+                      else
+                         vz=kz
+                      end if
+                      vxyz = 1+(vx-1)+cell%nox(1)*((vy-1)+cell%nox(2)*(vz-1))
+                      cell%copyof(koo)=vxyz
+                      cycle loopext 
+                   end if
+                      
+                end if
+
                 cell%ncel(koo,0) = koo
                 !                cell%deltadist(:,0,koo) = 0
-!                cell%ncelvois(koo)= min(celcf%noxyz,27)-1
                 l = 0 
 
-                do lz = -1, 1
-                   do ly = -1, 1
-                      loopin:  do lx = -1, 1
+                do lz = mindecx(3),maxdecx(3)
+                   do ly = mindecx(2),maxdecx(2)
+                      loopin:  do lx = mindecx(1),maxdecx(1)
                          if((lx==0).and.(ly==0).and.(lz==0)) cycle loopin !cellule en cours d'analyse (lignes au dessus)
                          mz = kz+lz
                          mx = kx+lx
                          my = ky+ly
                          if(box%ipbc(1).ne.1) then
-                            if((mx<1).or.(mx>cell%nox)) then !débordement
+                            if ((cell%ismall(1)).and.(lx.ne.0)) then
                                cycle loopin
+                            else
+                               if((mx<1).or.(mx>cell%nox(1))) then !débordement
+                                  cycle loopin
+                               end if
                             end if
                          else
-                            select case(cell%nox)
-                            case(1)
-                               if ((lx==-1).or.(lx==1)) cycle loopin
-                            case(2)
-                               if (lx==-1) cycle loopin
-                            end select
+                            if (.Not.cell%ismall(1)) then
+                               select case(cell%nox(1))
+                               case(1)
+                                  if ((lx==-1).or.(lx==1)) cycle loopin
+                               case(2)
+                                  if (lx==-1) cycle loopin
+                               end select
+                            end if
                          end if
-                         
                          if(box%ipbc(2).ne.1) then
-                            if((my<1).or.(my>cell%noy)) then !débordement
+                            if ((cell%ismall(2)).and.(ly.ne.0)) then
                                cycle loopin
+                            else
+                               if((my<1).or.(my>cell%nox(2))) then !débordement
+                                  cycle loopin
+                               end if
                             end if
                          else
-                            select case(cell%noy)
-                            case(1)
-                               if ((ly==-1).or.(ly==1)) cycle loopin
-                            case(2)
-                               if (ly==-1) cycle loopin
-                            end select
+                            if (.Not.cell%ismall(2)) then
+                               select case(cell%nox(2))
+                               case(1)
+                                  if ((ly==-1).or.(ly==1)) cycle loopin
+                               case(2)
+                                  if (ly==-1) cycle loopin
+                               end select
+                            end if
                          end if
                          
                          if(box%ipbc(3).ne.1) then
-                            if((mz<1).or.(mz>cell%noz)) then !débordement
+                            if ((cell%ismall(3)).and.(lz.ne.0)) then
                                cycle loopin
+                            else
+                               if((mz<1).or.(mz>cell%nox(3))) then !débordement
+                                  cycle loopin
+                               end if
                             end if
                          else
-                            select case(cell%noz)
-                            case(1)
-                               if ((lz==-1).or.(lz==1)) cycle loopin
-                            case(2)
-                               if (lz==-1) cycle loopin
-                            end select
+                            if (.Not.cell%ismall(3)) then
+                               select case(cell%nox(3))
+                               case(1)
+                                  if ((lz==-1).or.(lz==1)) cycle loopin
+                               case(2)
+                                  if (lz==-1) cycle loopin
+                               end select
+                            end if
                          end if
 
-                         l=l+1 ! on est dans une vraie cellule voisine !
-                         if (mz<1) then ! on ne peut pas être ici si ipbc(3).ne.1
-                            mz = mz+cell%noz
-                            cell%deltadist(3,l,koo) = 1
-                         endif
-                         if (mz>cell%noz) then
-                            mz = mz-cell%noz
-                            cell%deltadist(3,l,koo) = -1
-                         endif
+                         l=l+1 ! on est dans une cellule voisine
+!!$                         write(6,*)'kx ky kz koo', kx,ky,kz,koo
+!!$                         write(6,*)'mx my mz ', mx,my,mz
+                         if (cell%ismall(3)) then
+                            cell%deltadist(3,l,koo) = -1*(mz-midnox(3))
+                         else
+                            if (mz<1) then ! on ne peut pas être ici si ipbc(3).ne.1
+                               mz = mz+cell%nox(3)
+                               cell%deltadist(3,l,koo) = 1
+                            endif
+                            if (mz>cell%nox(3)) then
+                               mz = mz-cell%nox(3)
+                               cell%deltadist(3,l,koo) = -1
+                            endif
+                         end if
+                         if (cell%ismall(2)) then
+                            cell%deltadist(2,l,koo) = -1*(my-midnox(2))
+                         else
+                            if (my<1) then
+                               my = my+cell%nox(2)
+                               cell%deltadist(2,l,koo) = 1
+                            endif
+                            if (my>cell%nox(2)) then
+                               my = my-cell%nox(2)
+                               cell%deltadist(2,l,koo) = -1
+                            endif
+                         end if
 
-                         if (my<1) then
-                            my = my+cell%noy
-                            cell%deltadist(2,l,koo) = 1
-                         endif
-                         if (my>cell%noy) then
-                            my = my-cell%noy
-                            cell%deltadist(2,l,koo) = -1
-                         endif
-
-                         if (mx<1) then
-                            mx = mx+cell%nox
-                            cell%deltadist(1,l,koo) = 1
-                         endif
-                         if (mx>cell%nox) then
-                            mx = mx-cell%nox
-                            cell%deltadist(1,l,koo) = -1
-                         endif
-
-                         kxy = 1+(mx-1)+cell%nox*((my-1)+cell%noy*(mz-1))
+                         if (cell%ismall(1)) then
+                            cell%deltadist(1,l,koo) = -1*(mx-midnox(1))
+                         else
+                            if (mx<1) then
+                               mx = mx+cell%nox(1)
+                               cell%deltadist(1,l,koo) = 1
+                            endif
+                            if (mx>cell%nox(1)) then
+                               mx = mx-cell%nox(1)
+                               cell%deltadist(1,l,koo) = -1
+                            endif
+                         end if
+                         kxy = 1+(mx-1)+cell%nox(1)*((my-1)+cell%nox(2)*(mz-1))
 !                         if (kxy==koo) cycle
                          cell%ncel(koo,l) = kxy
                          !                        write(6,*)koo,lz,ly,lx,l,kxy
-                         !                        if ((kz==cell%noz).and.(lz==1))write(6,*)koo,lz,l,kxy
+                         !                        if ((kz==cell%nox(3)).and.(lz==1))write(6,*)koo,lz,l,kxy
                          !                        if ((kz==1).and.(lz==-1))write(6,*)koo,lz,l,kxy
                       end do loopin
                    end do
                 end do
                 cell%ncelvois(koo)=l
-             end do
+             end do loopext
           end do
        end do
     end if
-!!$    do kx=1,cell%noxyz
-!!$       write(6,*)'ncelvois', cell%ncelvois(kx)
-!!$       write(6,*)cell%ncel(kx,:)
-!!$    end do
+    if (allocated(cell%isghost)) then
+       cell%noxyzact = COUNT(.NOT. cell%isghost)
+    else
+       cell%noxyzact = cell%noxyz
+    end if
+    if (rang==0)write(6,*)cell%noxyzact ,' active cells among ', cell%noxyz
+
+
+    
           
-    !      if (ltranche) then
-    !         do kz = 1, noz
-    !            do ky = 1, noy
-    !               do kx = 1, nox
-    !                  if (kz==noz) then
-    !                     koo = 1+(kx-1)+nox*((ky-1)+noy*(kz-1))
-    !                     ncel(koo,1) = 0
-    !                     ncel(koo,2) = 0
-    !                     ncel(koo,3) = 0
-    !                     ncel(koo,4) = 0
-    !                     ncel(koo,5) = 0
-    !                     ncel(koo,6) = 0
-    !                     ncel(koo,7) = 0
-    !                     ncel(koo,8) = 0
-    !                     ncel(koo,9) = 0
-    !                  endif
-    !                  if (kz/=1) cycle
-    !                  koo = 1+(kx-1)+nox*((ky-1)+noy*(kz-1))
-    !                  ncel(koo,18) = 0
-    !                  ncel(koo,19) = 0
-    !                  ncel(koo,20) = 0
-    !                  ncel(koo,21) = 0
-    !                  ncel(koo,22) = 0
-    !                  ncel(koo,23) = 0
-    !                  ncel(koo,24) = 0
-    !                  ncel(koo,25) = 0
-    !                  ncel(koo,26) = 0
-    ! 
-    !               end do
-    !            end do
-    !         end do
-    !     endif
 
     return
   end subroutine neigcelN
@@ -355,11 +434,15 @@ contains
     logical::lchktrav
     logical::lextrait=.false.
 
-    integer :: i,  kx, ky, kz, koo
-    real(double) :: aux, auy, auz
+    integer :: i,  koo,kxyz(3)
+    real(double) :: auxyz(3)
     real(double), dimension(:,:), allocatable :: xpnp !
     integer(long), save:: icaltabt=0
-    integer::iml
+    integer::iml,midnox(3)
+    integer::indor,ic
+
+
+
     integer :: ntrav,ntravtot,itrav
     integer,parameter::maxtrav=10
     integer,allocatable:: indtrav(:),proccib(:)
@@ -367,6 +450,7 @@ contains
     !
     ! --------- Initialisation --------------
     !
+    midnox(:)=(cell%nox(:)+1)/2
     if (present(lextr))lextrait=lextr
     if (lextrait) then
        iml=atcf%imm
@@ -419,21 +503,17 @@ contains
 
        do i = 1, iml
           !     if  ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xpnp(1,i),xpnp(2,i),xpnp(3,i)
-          aux = xpnp(1,i)*cell%nox
-          auy = xpnp(2,i)*cell%noy
-          auz = xpnp(3,i)*cell%noz
-          kx = int(aux)
-          ky = int(auy)
-          kz = int(auz)
-!!$          write(*,*) i, cell%nox,cell%noy,cell%noz, kx,ky,kz
-!!$          write(*,*) i, aux,auy,auz, xpnp(1,i), xpnp(2,i), xpnp(3,i)
-!!$          write(6,*)
-          kx = Modulo(kx,cell%nox)
-          ky = Modulo(ky,cell%noy)
-          kz = Modulo(kz,cell%noz)
-          !          if  ((it.ge.1000).and.(i.lt.20))  write(6,'(I5,3G15.7)')i, kx,ky,kz
-          !==============================================================
-          koo = 1+kx+cell%nox*(ky+cell%noy*kz)
+          do ic=1,3
+             if  (cell%ismall(ic)) then
+                kxyz(ic)=midnox(ic)-1
+             else
+                auxyz(ic) = xpnp(ic,i)*cell%nox(ic)
+                kxyz(ic) = int(auxyz(ic))
+                kxyz(ic) = Modulo(kxyz(ic),cell%nox(ic))
+             end if
+          end do
+          koo = 1+kxyz(1)+cell%nox(1)*(kxyz(2)+cell%nox(2)*kxyz(3))
+
           IF ( (koo.GT.cell%noxyz).OR.(koo.LT.0) ) THEN
              WRITE(0,'(a,i0,a,3g20.12)') &
                   'Problem with atom ', i, ', x,y,z = ', atcf%xp(1:3,i)
@@ -517,6 +597,18 @@ contains
        
        DEALLOCATE(xpnp)   ! MODIF CLOUET
     endif
+    if (any(cell%ismall)) then
+       do koo=1,cell%noxyz
+          if (cell%isghost(koo)) then
+             indor=cell%copyof(koo)
+             cell%atincel(:,koo)=cell%atincel(:,indor)
+             cell%nato(koo)=cell%nato(indor)
+          end if
+       end do
+    end if
+    !    do koo=1,cell%noxyz
+    !       write(6,*)'nato',koo,cell%nato(koo)
+    !    end do
 
 101 continue
     cell%icaltabt=icaltabt
@@ -553,11 +645,11 @@ contains
     else
        ltpcel=cellsource%ltpcel
     end if
-    call cellcible%init(box,cellsource%nox,cellsource%noy,cellsource%noz,cellsource%natperc,ltpc=ltpcel,latomalloc=latcp)
+    call cellcible%init(box,cellsource%nox(1),cellsource%nox(2),cellsource%nox(3),cellsource%natperc,ltpc=ltpcel,latomalloc=latcp)
 
-    cellcible%nox=cellsource%nox
-    cellcible%noy=cellsource%noy
-    cellcible%noz=cellsource%noz
+    cellcible%nox(1)=cellsource%nox(1)
+    cellcible%nox(2)=cellsource%nox(2)
+    cellcible%nox(3)=cellsource%nox(3)
     cellcible%noxyz=cellsource%noxyz
     cellcible%natperc=cellsource%natperc
     cellcible%icaltabt=cellsource%icaltabt
@@ -585,7 +677,7 @@ contains
     type(para_space_config),optional::psc    
 
     integer::iko
-    call celcomp%init(box,celloc%nox,celloc%noy,celloc%noz,celloc%natperc,ltpc=celloc%ltpcel,latomalloc=latomcp)
+    call celcomp%init(box,celloc%nox(1),celloc%nox(2),celloc%nox(3),celloc%natperc,ltpc=celloc%ltpcel,latomalloc=latomcp)
 
 #ifdef PARA
     celcomp%celsize=celloc%celsize
@@ -617,12 +709,12 @@ contains
   subroutine cellprint(cellv,unit,mess)
     class(cell_config)::cellv
     integer,intent(in),optional::unit
-    integer::i,un
+    integer::i,un,j,ko(3)
     character(len=*),optional::mess
     un=6
     if (present(unit))un=unit
     write(un,*)'in cellprint ',mess
-    write(un,*)'nox noy noz noxyz',cellv%nox,cellv%noy,cellv%noz,cellv%noxyz
+    write(un,*)'nox noy noz noxyz',cellv%nox(1),cellv%nox(2),cellv%nox(3),cellv%noxyz
     write(un,*)'natperc',cellv%natperc
     write(un,*)'celsize',cellv%celsize
     write(un,*)'icaltabt',cellv%icaltabt
@@ -650,7 +742,19 @@ contains
           end do
        end if
     end if
-!    write(6,*)'deltadist',cellv%deltadist
+    write(un,*)
+    write(un,*)'DELTADIST et ghost'
+    do i=1,cellv%noxyz
+       if (cellv%isghost(i)) then
+          write(un,*)'cell i',i,'is ghost, copy of ', cellv%copyof(i)
+       else
+          ko(:)=cellv%koxyz(i)
+          write(un,'(A,5I4)')'CELL i ko(3) ncellvois',i,ko(1),ko(2),ko(3),cellv%ncelvois(i)
+          do j=0,cellv%ncelvois(i)
+             write(un,'(A,3I4,A,3I4)')'VOISCELL',i,j,cellv%ncel(i,j),'deltadist',cellv%deltadist(:,j,i)
+          end do
+       end if
+    end do
 #ifdef PARA
     if (allocated(cellv%proc_cell))then 
        do i=1,cellv%noxyz
@@ -658,6 +762,12 @@ contains
        end do
     end if
 #endif
+!    write(un,*)
+!    do i=1,cellv%noxyz
+!       if (cellv%isghost(i)) then
+!          write(un,*)'cell i',i,'is ghost, copy of ', cellv%copyof(i)
+!       end if
+!    end do
     
     
   end subroutine cellprint
@@ -681,7 +791,7 @@ contains
     if (cell%ltpcel) sizer=sizer+size(cell%sigc)+size(cell%tempc)
 
     allocate (ibuffer(sizeI)) ; allocate (rbuffer(sizeR))
-    ibuffer(1)=cell%nox; ibuffer(2)=cell%noy ; ibuffer(3)=cell%noz
+    ibuffer(1)=cell%nox(1); ibuffer(2)=cell%nox(2) ; ibuffer(3)=cell%nox(3)
     ibuffer(4)=cell%noxyz
     ibuffer(5)=cell%natperc
     ibuffer(6)=int(cell%icaltabt)
@@ -691,13 +801,13 @@ contains
        ibuffer(ibi)=cell%nato(ip)
     end do
     do ip=1,nsize
-       do ip2=0,26
+       do ip2=0,cell%ncelvmax
           ibi=ibi+1
           ibuffer(ibi)=cell%ncel(ip,ip2)
        end do
     end do
     do ip=1,nsize
-       do ip2=0,26
+       do ip2=0,cell%ncelvmax
           do ip3=1,3
              ibi=ibi+1
              ibuffer(ibi)=cell%deltadist(ip3,ip2,ip)
@@ -763,7 +873,7 @@ contains
     call mpic%recv(cell%ltpcel,rgem,202)
     call mpic%recv(rbuffer,rgem,203)
     
-    cell%nox=ibuffer(1); cell%noy=ibuffer(2) ; cell%noz=ibuffer(3)
+    cell%nox(1)=ibuffer(1); cell%nox(2)=ibuffer(2) ; cell%nox(3)=ibuffer(3)
     cell%noxyz=ibuffer(4)
     cell%natperc=ibuffer(5)
     cell%icaltabt=ibuffer(6)
@@ -773,13 +883,13 @@ contains
        cell%nato(ip)=ibuffer(ibi)
     end do
     do ip=1,nsize
-       do ip2=0,26
+       do ip2=0,cell%ncelvmax
           ibi=ibi+1
           cell%ncel(ip,ip2)=ibuffer(ibi)
        end do
     end do
     do ip=1,nsize
-       do ip2=0,26
+       do ip2=0,cell%ncelvmax
           do ip3=1,3
              ibi=ibi+1
              cell%deltadist(ip3,ip2,ip)=ibuffer(ibi)
@@ -833,7 +943,7 @@ contains
     sizeR=3
     if (cell%ltpcel) sizer=sizer+size(cell%sigc)+size(cell%tempc)
     allocate (ibuffer(sizeI)) ; allocate (rbuffer(sizeR))
-    ibuffer(1)=cell%nox; ibuffer(2)=cell%noy ; ibuffer(3)=cell%noz
+    ibuffer(1)=cell%nox(1); ibuffer(2)=cell%nox(2) ; ibuffer(3)=cell%nox(3)
     ibuffer(4)=cell%noxyz
     ibuffer(5)=cell%natperc
     ibuffer(6)=int(cell%icaltabt)
@@ -843,13 +953,13 @@ contains
        ibuffer(ibi)=cell%nato(ip)
     end do
     do ip=1,nsize
-       do ip2=0,26
+       do ip2=0,cell%ncelvmax
           ibi=ibi+1
           ibuffer(ibi)=cell%ncel(ip,ip2)
        end do
     end do
     do ip=1,nsize
-       do ip2=0,26
+       do ip2=0,cell%ncelvmax
           do ip3=1,3
              ibi=ibi+1
              ibuffer(ibi)=cell%deltadist(ip3,ip2,ip)
@@ -889,7 +999,7 @@ contains
     call mpic%bcast(rgem,cell%ltpcel)
     call mpic%bcast(rgem,rbuffer)
     ibi=0;ibr=0
-        cell%nox=ibuffer(1); cell%noy=ibuffer(2) ; cell%noz=ibuffer(3)
+        cell%nox(1)=ibuffer(1); cell%nox(2)=ibuffer(2) ; cell%nox(3)=ibuffer(3)
     cell%noxyz=ibuffer(4)
     cell%natperc=ibuffer(5)
     cell%icaltabt=ibuffer(6)
@@ -899,13 +1009,13 @@ contains
        cell%nato(ip)=ibuffer(ibi)
     end do
     do ip=1,nsize
-       do ip2=0,26
+       do ip2=0,cell%ncelvmax
           ibi=ibi+1
           cell%ncel(ip,ip2)=ibuffer(ibi)
        end do
     end do
     do ip=1,nsize
-       do ip2=0,26
+       do ip2=0,cell%ncelvmax
           do ip3=1,3
              ibi=ibi+1
              cell%deltadist(ip3,ip2,ip)=ibuffer(ibi)
@@ -971,7 +1081,7 @@ contains
           end if
        end if
        call comm_space%bcast(iproc,lwrk)
-       if (lwrk.eqv..true.) then
+       if (lwrk) then
           nemp=ntrav ! ne sert que pour iproc, mais effacé la ligne suivant
           call comm_space%bcast(iproc,nemp)
           allocate(procvis(nemp))

@@ -416,11 +416,11 @@ contains
                   cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
              if (lTPcel.EQV..true.) then
                 celndm%sigc(1:3,1,atdml%ielat(ilocal)) = celndm%sigc(1:3,1,atdml%ielat(ilocal)) + &
-                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*celndm%noxyz/boxndm%volu
+                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*celndm%noxyzact/boxndm%volu
                 celndm%sigc(1:3,2,atdml%ielat(ilocal)) = celndm%sigc(1:3,2,atdml%ielat(ilocal)) + &
-                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*celndm%noxyz/boxndm%volu
+                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*celndm%noxyzact/boxndm%volu
                 celndm%sigc(1:3,3,atdml%ielat(ilocal)) = celndm%sigc(1:3,3,atdml%ielat(ilocal)) + &
-                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*celndm%noxyz/boxndm%volu
+                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*celndm%noxyzact/boxndm%volu
              end if
           end do
           sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu
@@ -653,24 +653,8 @@ contains
              tabdensity(i)=tabdensity(i)+rhoj
              rhoi = eamrho(1,iti,k) + drk*( eamrho(2,iti,k) + drk*( eamrho(3,iti,k) + drk*eamrho(4,iti,k) ) )  !rho de i sur j
              tabdensity(j)=tabdensity(j)+rhoi
-!!$             write(100,'(2I3,3G17.8)')i,j,r,tabdensity(i),tabdensity(j)
-!!$             write(100,'(2I3,4G17.8)')i,j,eamrho(1,iti,k) , eamrho(2,iti,k),eamrho(3,iti,k),eamrho(4,iti,k)
-!!$             write(100,'(2I3,4G17.8)')i,j,eamrho(1,itj,k) , eamrho(2,itj,k),eamrho(3,itj,k),eamrho(4,itj,k)
-             !           nvi=nvi+1
-             !           dxpij(1:3,nvi)=dxp(1:3)
-             !           jvi(nvi)=j
-             !           rij(nvi)=r            
-
-             !terme de repulsion 
              l = ipo(iti,itj)
              Erep = eamrep(1,l,k) + drk*( eamrep(2,l,k) + drk*( eamrep(3,l,k) + drk*eamrep(4,l,k) ) )
-!!$             if(lprteat.EQV..true.)then
-!!$                select type (atcf)
-!!$                class is (atom_config_e)
-!!$                   atcf%eat(i)=atcf%eat(i)+Erep/2.d0
-!!$                   if (j.le.atcf%im) atcf%eat(j)=atcf%eat(j)+Erep/2.d0
-!!$                end select
-!!$             end if
              dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
 
              if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
@@ -685,14 +669,6 @@ contains
                    sig2p(1:3,1) = sig2p(1:3,1)-dErep*gradij(1:3)*dxp(1)/boxcf%volu
                    sig2p(1:3,2) = sig2p(1:3,2)-dErep*gradij(1:3)*dxp(2)/boxcf%volu
                    sig2p(1:3,3) = sig2p(1:3,3)-dErep*gradij(1:3)*dxp(3)/boxcf%volu
-!!$                   if (lTPcel.EQV..true.) then
-!!$                      sigc(1:3,1,koo) =sigc(1:3,1,koo) -0.5*dErep*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
-!!$                      sigc(1:3,2,koo) =sigc(1:3,2,koo) -0.5*dErep*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
-!!$                      sigc(1:3,3,koo) =sigc(1:3,3,koo) -0.5*dErep*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
-!!$                      sigc(1:3,1,ko1) =sigc(1:3,1,ko1) -0.5*dErep*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
-!!$                      sigc(1:3,2,ko1) =sigc(1:3,2,ko1) -0.5*dErep*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
-!!$                      sigc(1:3,3,ko1) =sigc(1:3,3,ko1) -0.5*dErep*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
-!!$                   end if
 !!$
                 endif
              end if
@@ -895,14 +871,6 @@ contains
                    sigem(1:3,2) = sigem(1:3,2) - Femb*gradij(1:3)*dxp(2)/boxcf%volu
                    sigem(1:3,3) = sigem(1:3,3) - Femb*gradij(1:3)*dxp(3)/boxcf%volu
 !!$                   if (lTPcel.EQV..true.) then
-!!$                      sigc(1:3,1,koo) =sigc(1:3,1,koo) - 0.5*Femb*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
-!!$                      sigc(1:3,2,koo) =sigc(1:3,2,koo) - 0.5*Femb*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
-!!$                      sigc(1:3,3,koo) =sigc(1:3,3,koo) - 0.5*Femb*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
-!!$                      sigc(1:3,1,ko1) =sigc(1:3,1,ko1) - 0.5*Femb*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
-!!$                      sigc(1:3,2,ko1) =sigc(1:3,2,ko1) - 0.5*Femb*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
-!!$                      sigc(1:3,3,ko1) =sigc(1:3,3,ko1) - 0.5*Femb*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
-!!$                   end if
-!!$
                 endif
              end if
 
@@ -1130,6 +1098,7 @@ contains
     celcf%nmov=0
 
     do ko=1,celcf%noxyz
+       if ((celcf%nato(ko)==0).or.(celcf%isghost(ko))) cycle
 #ifdef PARA
        if ( celcf%proc_cell(ko).ne.myidsp ) cycle
 #endif

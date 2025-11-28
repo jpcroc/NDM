@@ -8,10 +8,13 @@ T7 NEB para sur 3*4  images*space
 T8 CREADP sequentiel; dmtype=1
 T9 CREADP para 4; dmtype=1
 T10 CREADP para=4; dmtype=23 (fire
-T11 somme Ewald sur UO2 Morelon sequentiel
-T12 somme Ewald sur UO2 Morelon para
-T13 somme WOLF sur UO2 Morelon para
+T11 somme Ewald sur UO2 Morelon sequentiel boite 8 8 8 
+T12 somme Ewald sur UO2 Morelon para boite 8 8 8 
+T13 somme WOLF sur UO2 Morelon para  boite 8 8 8 
 T14 ForceMatrix sur Febulk para
 T15 langevin LPR
 T16 WGC para
-T17 et T18 tests rasmol 
+T17 et T18 tests rasmol
+T19 somme Ewald sur UO2 Morelon sequentiel boite 4 4 4 self interact
+T20 somme Ewald sur UO2 Morelon sequentiel boite 4 4 4 self interact
+T21 DMbase eamtab en Verlet standard avec boite ghost; nox=2 et nox=3

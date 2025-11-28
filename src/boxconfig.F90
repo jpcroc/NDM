@@ -12,7 +12,7 @@ module boxconfig
      real(double):: zl(3),zls2(3),nzl(3),volu,normat(3),normbg(3)
      integer(long)::icaltabt
      logical::lperiod
-     logical::islarge=.true.
+     logical::ismall=.false.
      integer::ipbc(3) ! conditions périodiques sur les plan b-c,a-c,a-b
    contains
      procedure, pass::print=>boxprint

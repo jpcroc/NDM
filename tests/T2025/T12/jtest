@@ -1,1 +1,1 @@
-mpirun -np 2  ~/NDM/ndm2025/build/bin/rundm90_ndm_mpi >TXXX.out
+mpirun -np 2 ~/NDM/ndm2025/build/bin/rundm90_ndm_mpi >TXXX.out

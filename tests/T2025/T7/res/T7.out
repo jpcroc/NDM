@@ -1,16 +1,18 @@
  Process            0  of           12  is alive
- Process            1  of           12  is alive
- Process            2  of           12  is alive
- Process            3  of           12  is alive
- Process            4  of           12  is alive
- Process            7  of           12  is alive
- Process            8  of           12  is alive
- Process            9  of           12  is alive
- Process           10  of           12  is alive
- Process           11  of           12  is alive
  nom fichier din=
  neb.din                                                                        
   
+ Process            1  of           12  is alive
+ Process            2  of           12  is alive
+ rang readdm iseed            2   173963514
+ Process            3  of           12  is alive
+ rang readdm iseed            3   173963524
+ Process            9  of           12  is alive
+ rang readdm iseed            9   173963584
+ Process           10  of           12  is alive
+ rang readdm iseed           10   173963594
+ Process           11  of           12  is alive
+ rang readdm iseed           11   173963604
  
  coordinates can get out of  0-1
  along  a
@@ -37,6 +39,13 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          11
  fmt_cin           1
+ rang readdm iseed            0   173963495
+ rang readdm iseed            1   173963504
+ rang readdm iseed            4   173963534
+ rang readdm iseed            5   173963544
+ rang readdm iseed            6   173963554
+ rang readdm iseed            7   173963564
+ rang readdm iseed            8   173963574
  PARANEB           4
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -64,8 +73,17 @@ debyetemp=      -1.0
  **********construction du reseau************
  repetition de mailles           1           1           1
  nox,noy,noz dans .din =           4           4           4
+nox (  1) dans din =     4
+nox (  2) dans din =     4
+nox (  3) dans din =     4
+nox noy noz and ghost cells from ru
+  nox in direction  1=  4 if not specified =Int(   0.3226E-06/  0.5558E-07) 
+  nox in direction  2=  4 if not specified =Int(   0.3226E-06/  0.5558E-07) 
+  nox in direction  3=  4 if not specified =Int(   0.3226E-06/  0.5558E-07) 
+          64  active cells among           64
 celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
-deb_neb.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+deb_neb.gin                                                                     
+volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
  sur            4  cpus           0
  
  
@@ -94,15 +112,27 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
  Decoupage           1 :           2           2           4
  Decoupage           2 :           2           2           4
  Decoupage           3 :           2           2           4
- Decoupage           4 :           2           4           0
+ Decoupage           0 :           2           2           4
+ Decoupage           1 :           2           2           4
+ Decoupage           2 :           2           2           4
+ Decoupage           3 :           2           2           4
  ----------------------------------------------
  natperc im/noxyz         264          32
  ltabvois F
  **********construction du reseau************
  repetition de mailles           1           1           1
  nox,noy,noz dans .din =           4           4           4
+nox (  1) dans din =     4
+nox (  2) dans din =     4
+nox (  3) dans din =     4
+nox noy noz and ghost cells from ru
+  nox in direction  1=  4 if not specified =Int(   0.3226E-06/  0.5558E-07) 
+  nox in direction  2=  4 if not specified =Int(   0.3226E-06/  0.5558E-07) 
+  nox in direction  3=  4 if not specified =Int(   0.3226E-06/  0.5558E-07) 
+          64  active cells among           64
 celsizes   0.8064000E-07  0.8064000E-07  0.8064000E-07
-fin_neb.gin                                                                     volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
+fin_neb.gin                                                                     
+volume= 0.33560740D-19 cm3  0.33560740D+05 Ang3
  sur            4  cpus           0
  
  
@@ -120,32 +150,46 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
  rhomm  -20.5955397268345        1.29742094557351     
  calpoeam ktorho and the inverse:   1.094648033620400E-003
    913.535647337378     
+ rang rangspace            2           2  nbr procs voisins            3
+ rang rangspace            7           3  nbr procs voisins            3
+ rang rangspace            6           2  nbr procs voisins            3
  NEB: deplacement max entre configurations =    1.11836008295241      
   pour l atome         2049
+ rang rangspace            5           1  nbr procs voisins            3
+ rang rangspace           11           3  nbr procs voisins            3
  NEB: The kspring is in the eV/A^2                          :     1.00000
  NEB: The kspring is in the NDM internal units (cgs)  : 16021.76463
+ rang rangspace            0           0  nbr procs voisins            3
  NEB: nebrelaxation /= 1
+ rang rangspace            1           1  nbr procs voisins            3
  NEB: relaxation NEB pour TOUS les atomes
+ rang rangspace            8           0  nbr procs voisins            3
+ rang rangspace            9           1  nbr procs voisins            3
+ rang rangspace           10           2  nbr procs voisins            3
+ rang rangspace            3           3  nbr procs voisins            3
+ rang rangspace            4           0  nbr procs voisins            3
+          64  active cells among           64
+          64  active cells among           64
  NEB: -------this is NEB--V2-------
  NEB: The MAX steps in NEB        :         100
  ("NEB:===============================================")
  ("NEB:pas-neb image    force      force_NEB          energie      statut    ene
  rgie/stable")
 NEB:     1    2   0.55069       0.22924E-14    -6881.990120      0 0.15757997    
-NEB:     1    4   0.55107       0.12894E-14    -6881.990033      0 0.15766740    
 NEB:     1    3   0.74561       0.63040E-14    -6881.873259      0 0.27444099    
+NEB:     1    4   0.55107       0.12894E-14    -6881.990033      0 0.15766740    
  ("NEB:===============================================")
  ("NEB:pas-neb image    force      force_NEB          energie      statut    ene
  rgie/stable")
-NEB:     2    4   0.45228       0.34236E-03    -6882.006664      0 0.14103625    
 NEB:     2    2   0.45144       0.46918E-03    -6882.006743      0 0.14095701    
 NEB:     2    3   0.60747       0.42765E-04    -6881.900818      0 0.24688192    
+NEB:     2    4   0.45228       0.34236E-03    -6882.006664      0 0.14103625    
  ("NEB:===============================================")
  ("NEB:pas-neb image    force      force_NEB          energie      statut    ene
  rgie/stable")
 NEB:     3    2   0.29486       0.17054E-02    -6882.027705      0 0.11999558    
-NEB:     3    4   0.29591       0.12637E-03    -6882.027727      0 0.11997311    
 NEB:     3    3   0.38831       0.11927E-03    -6881.934969      0 0.21273109    
+NEB:     3    4   0.29591       0.12637E-03    -6882.027727      0 0.11997311    
  ("NEB:===============================================")
  ("NEB:pas-neb image    force      force_NEB          energie      statut    ene
  rgie/stable")
@@ -155,23 +199,23 @@ NEB:     4    4   0.11327       0.25217E-02    -6882.044711      0 0.10298943
  ("NEB:===============================================")
  ("NEB:pas-neb image    force      force_NEB          energie      statut    ene
  rgie/stable")
-NEB:     5    4   0.12494       0.92252E-02    -6882.053633      0 0.94067508E-01
 NEB:     5    2   0.12474       0.13042E-01    -6882.053521      0 0.94179253E-01
 NEB:     5    3   0.14545       0.21791E-03    -6881.973401      0 0.17429919    
+NEB:     5    4   0.12494       0.92252E-02    -6882.053633      0 0.94067508E-01
  ("NEB:===============================================")
  ("NEB:pas-neb image    force      force_NEB          energie      statut    ene
  rgie/stable")
-NEB:     6    4   0.93579E-01   0.14278E-01    -6882.058968      0 0.88731937E-01
 NEB:     6    2   0.92871E-01   0.16557E-01    -6882.058889      0 0.88811376E-01
 NEB:     6    3   0.11164       0.85958E-04    -6881.980602      0 0.16709835    
+NEB:     6    4   0.93579E-01   0.14278E-01    -6882.058968      0 0.88731937E-01
  ("NEB:===============================================")
  ("NEB:pas-neb image    force      force_NEB          energie      statut    ene
  rgie/stable")
-NEB:     7    4   0.56262E-01   0.19916E-01    -6882.062507      1 0.85193366E-01
 NEB:     7    2   0.55045E-01   0.23717E-01    -6882.062441      1 0.85259377E-01
 NEB:=== bye,bye sweety is finished=================
-NEB:     7    3   0.70659E-01   0.11788E-02    -6881.985048      1 0.16265251    
 NEB:===============================================
+NEB:     7    3   0.70659E-01   0.11788E-02    -6881.985048      1 0.16265251    
+NEB:     7    4   0.56262E-01   0.19916E-01    -6882.062507      1 0.85193366E-01
 NEB:--IMAGE-----REACT-COORD------ENERGY------ENERGY-ENERGY(1)-------------STRESS-sVoigt(1:6)-(units:-kbar )
     1       0.0000000           -6882.1477            0.0000000           0.82344326           0.78652994           0.78652994           0.10419918E-05       0.96748382E-05       0.96748382E-05
     2      0.24960743           -6882.0624           0.85259377E-01       0.82109918           0.78394311           0.81156822          -0.74705791E-04       0.12851566E-03       0.22788252E-01
