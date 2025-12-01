@@ -105,7 +105,7 @@ module gen_com_m
   real(double), dimension(3) :: vh ! vitesse de la boite
   real(double) :: pext, wboxf, tbox ! pext poids de la boite temps d'amortissment de la boite
   logical ::  lpcon2 ! pression constante sans et avec amortissement
-  logical ::lpcube ! pression constante avec forme de la boite constante seul le volume change
+  logical ::lpcube,lpconxyz ! pression constante avec forme de la boite constante seul le volume change
   logical :: lTcon, lTberendsen,lTandersen,lTNose,lTHoover,landerscou ! temp constante (3 algorithmes differents)
   real(double) :: Text ! T exterieure
   logical :: lLangevin ! Langevin MD
@@ -135,7 +135,8 @@ module gen_com_m
   logical :: lprahman! l Parinello Rahman
   real(double), dimension(3,3) :: att, ati    !vitesse de la forme de la boite ; ati=(at^-1)
   integer, dimension(3,3) :: ihbox0 ! integer pour bétonner les tests      ! the degree of freebom of the box. If is 1 everywhere all the shape  can change.
-
+  real(double)::sig0dir(3),thsig !
+  logical::astarsig(3)
   real(double), dimension(3,3) :: sigext, pext_hydro  !contraintes externes appliques; contraintes calculees
 
 !ci-dessous choses à modulariser

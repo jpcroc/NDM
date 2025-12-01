@@ -22,14 +22,14 @@ contains
          &nhoover,nitmax,nuandersen,pext,&
          &rskin,rulayer,sigext,sigstop,tbox,tempdeplainit,tempstop,tempstopcel,tgc,&
          &timemax,tinit,tsfact,tsmin,two,units_lammps,usdh,utemps,wboxf,wnose,&
-         &ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,&
+         &ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,sig0dir,astarsig,&
          &iteanapos,iteangle,itebdv,itecoordo,itedepla,&
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,iteprtsigma,itetemp,itetemp2,itmax,ivisu,l2t,lcalcjq,&
          &lcasca,lcontr,ldemitab,leev,leparat,lfilm,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,nfda,h0,&
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou,iteprtkin&
-         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart&
+         &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart,lpconxyz&
          &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit,lmaxvp,vplim
 #ifdef LAMMPS_VERSION
      USE gen_com_m, ONLY: energy_conversion_lammps, position_conversion_lammps, pressure_conversion_lammps
@@ -68,7 +68,8 @@ contains
     character :: fnamdin*80
     logical :: lginread,ltriclin,lpcon,lfissure,tpot,lpr,lseedcom
     integer::itecfg,np2
-    logical :: lpconx,lpcony,lpconz,lpconxyz,ltest,lseecom
+    logical :: ltest,lseecom
+    logical::sig0stara,sig0starb,sig0starc
     !-----------------------------------------------
     !
     !
@@ -80,7 +81,7 @@ contains
          tinit,  tfcou, epcou, couxyz,lcasca, lfissure, itmax,nitmax, itean, kspring,  &
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda, itesauv,  &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
-         rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz,lpconx,lpcony,lpconz, tbox, &
+         rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz, tbox, &
          iteangle,  itesauvposition, itesauvforce,  tdepla2, lpcube,&
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
          maxorder, ipotentiel,lpotentiel,beta35,R0mcgc,izlins,zlcenter,fdfactmcgc,ins_typ,bublcenter,&
@@ -97,7 +98,8 @@ contains
          ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,itypcalc,gamprfact,TinitBox,&
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
          &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
-         &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag,protocol_mcc,lmaxvp,vplim
+         &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag,protocol_mcc,lmaxvp,vplim,&
+         sig0stara,sig0starb,sig0starc
 
 
     !
@@ -201,9 +203,6 @@ contains
     lpcon = .FALSE.             !algorithm a pression constante a la hache
     lpcon2 = .FALSE.            !amortissement de la deformation de la boite
     lpconxyz = .FALSE.          !the relaxation are allowed only along the X, Y and Z axis
-    lpconx = .FALSE.          !the relaxation are allowed only along the X axis 
-    lpcony = .FALSE.          !the relaxation are allowed only along the  Y  axis
-    lpconz = .FALSE.          !the relaxation are allowed only along the  Z axis
     lpcube=.false.
 
     pext = 0.0                  !pression  par defaut
@@ -402,13 +401,13 @@ contains
 
     lmaxvp=.false. ! if true velocities are caped at vplim in pr2.F90 (very crude way of stabilizing dynamics)
     vplim=5d6 
-    
+    sig0dir(:)=0
+    astarsig(:)=.false.
     if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
     
     read (ludin, nml=input)
-
     rcangle=rcangle*1d-8
     rcrdf=rcrdf*1d-8
     lprahman=lpr
@@ -999,18 +998,26 @@ contains
        Pext = (sigext(1,1)+sigext(2,2)+sigext(3,3))/3.d0
        !=== Fin des modifications ================
        h0(1:3,1:3) = 1e-8*h0(1:3,1:3)
+       if (sig0stara) then
+          astarsig(1)=.true.
+          ihbox0(:,2)=0
+          ihbox0(:,3)=0
+       end if
+       if (sig0starb) then
+          astarsig(2)=.true.
+          ihbox0(:,1)=0
+          ihbox0(:,3)=0
+       end if
+       if (sig0starc) then
+          astarsig(3)=.true.
+          ihbox0(:,2)=0
+          ihbox0(:,1)=0
+       end if
        if (lpconxyz) then
           ihbox0(:,:)=0   ! ALL the dimension are blockef except ...
           ihbox0(1,1)=1   ! X ...
           ihbox0(2,2)=1   ! Y ...
           ihbox0(3,3)=1   ! and Z.
-       end if
-       if ((lpconx).or.(lpcony).or.(lpconz)) then
-          ihbox0(:,:)=0   ! ALL the dimension are blockef except ...
-          if (lpconx) ihbox0(1,1)=1   ! X ...
-          if (lpcony)ihbox0(2,2)=1   ! Y ...
-          if (lpconz)  ihbox0(3,3)=1   ! and Z.
-
        end if
        if (lpcube) then
           ihbox0(:,:)=0   ! ALL the dimension are blockef except ...
@@ -1033,6 +1040,8 @@ contains
              call arret_ndm
           end if
        end do
+       
+       
     else
        iteprtsigma=1
        itesigma=1

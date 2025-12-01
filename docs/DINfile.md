@@ -122,11 +122,8 @@ lcontr=.false.  dynamique contrainte (routine contrainte)
 **lpr=.false.  ! forces parinello-Rahman calculation for dynamics or quenching**  
 **pext = 0.0  extrernal pressure in kbar**
 lpcon2 = .FALSE. if true a damping term is added on the dynamics of the box  
-lpconxyz = .FALSE. T: the relaxation are allowed only along the X, Y and Z axis  
-lpconx = .FALSE.  T: the relaxation are allowed only along the X axis  
-lpcony = .FALSE.  T: the relaxation are allowed only along the  Y  axis  
-lpconz = .FALSE.  T:  the relaxation are allowed only along the  Z axis  
-lpcube=.false. !  T: volume relaxation only  
+lpconxyz = .FALSE. T: the relaxation are allowed only along the X, Y and Z axis wonceived for a tetragonal box  
+sig0stara (sig0starb or sig0starc) =.false. If sig0stara=.true. , the cell vectors b and c are constant,. cell vector a is changed so that the force normal to the (b,c) plane (along stara) goes to zero  
 lpr=lprahman  
 ihbox0(:,:) = 1 all the dimension of the box can change. Set to zero to fix a cell lenght or angle  
 sigext = 0.0 Symetric tensor of  the external stress  

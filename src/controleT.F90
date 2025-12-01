@@ -27,7 +27,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,iteration,&
          &itetemp,fsumstop,fpstop,itetimestep,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang,itesigma,&
-         &itetemp2,ihbox0,tfcou
+         &itetemp2,ihbox0,tfcou,thsig
 
     USE var_pot, ONLY:
     implicit none
@@ -44,6 +44,7 @@ contains
     !-----------------------------------------------
     !
     !
+    
     sigtoth0(1:3,1:3)=sigtot(1:3,1:3)*ihbox0(1:3,1:3)
     
     if (present(lreturn))lreturn=.false.
@@ -133,7 +134,7 @@ contains
           fpn=fpSmax*erg2eV/angst
           if (myidsp==0)      write(6,'("TR: force max, energy",i6,3E25.15)') iteration,fpn, potist*erg2eV
 !          if ( myidsp==0)     write (6, *) 'energie ',potist*erg2eV
-          if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*maxval(abs(sigtot)), 1d-9*maxval(abs(sigtoth0))
+          if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*thsig
 !!$                 write (unitgc, *)
 !!$       write (unitgc, *) '************ STRESS in ', cunitP
 !!$       do ic = 1, 3
@@ -146,7 +147,7 @@ contains
           if (fpn.le.fpstop)then
              select case(dmtype)
              case(22,24)
-                if(maxval(abs(sigtoth0)).le.sigstop/1d-9) then
+                if(thsig.le.sigstop/1d-9) then
                    it1=itetemp;it2=itesigma;it3=itetemp2
                    itetemp=1;itesigma=1;itetemp2=1
                    call analyseT(atdml,celndm,boxndm,psc)
@@ -193,11 +194,11 @@ contains
           fpn=fpsmax*erg2eV/angst
           !          if (myidsp==0)      write(6,*)
           if (myidsp==0)      write(6,*)'TR:  sqrt ( sum_f F_i^2 ):  cgs  ev/Ang ', iteration,fpn, potist*erg2eV
-          if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar',1d-9* maxval(abs(sigtot)), 1d-9*maxval(abs(sigtoth0))
+          if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar',1d-9*thsig
           if (fpn.le.fsumstop) then
              select case(dmtype)
              case(22,24)
-                if(maxval(abs(sigtoth0)).le.sigstop/1d-9) then
+                if(thsig.le.sigstop/1d-9) then
                    itetemp=1;itesigma=1;itetemp2=1
                    call analyseT(atdml,celndm,boxndm,psc)
                    if (present(lreturn)) then

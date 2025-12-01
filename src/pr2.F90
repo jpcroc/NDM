@@ -41,7 +41,7 @@ module Parrinello_Rahman
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
        &potist,sig,sigtot,text,tstep,iteration,potist,rang,sig,text,sigkine,lpcube,&
        &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype,usdh,llangevin,gamlg,gamprfact,unitP,&
-       & lmaxvp,vplim
+       & lmaxvp,vplim,astarsig,sig0dir,thsig,lpconxyz
   
   use FireModule,only:alph_start,f_alph,fdec,finc,nstepmin,tstep_mm,tstep0,init_trempe_fire
 
@@ -54,7 +54,6 @@ module Parrinello_Rahman
 #endif
   USE calfo_mod,only: calfo
   USE scalebox_mod,only: scalebox
-  USE Mat_utils_mod,only:  MatInv
   USE atomconfig,only : atom_config_d,atom_config_e
   USE cellconfig, only:cell_config,caltabtc
   USE boxconfig,only:box_config_lpr,box_config,periodbox,updatebox
@@ -67,6 +66,7 @@ module Parrinello_Rahman
   USE calpo_ew_mod,only: calpo_ew
   use sigkinetot_mod,only:sigkinetot
   USE tempinstT_mod,only: tempinstT
+  use mat_utils_mod
 
   implicit none
 !!$  ! Vecteurs de la boîte et leurs dérivées
@@ -361,11 +361,29 @@ contains
     real(double):: norme_de_fp, norme_de_vp, pscal,tempcell,pint,gs3
     real(double), dimension(ntyp) :: aux
     integer,save::nstep=0
-    real(double)::maxvploc,maxvp,nrmvp
+    real(double)::maxvploc,maxvp,nrmvp,sigrel(3,3)
     integer::ib
 
+    
+    if (lpconxyz) then
+       sigtot(2,1)=0
+       sigtot(1,2)=0
+       sigtot(3,1)=0
+       sigtot(1,3)=0
+       sigtot(2,3)=0
+       sigtot(3,2)=0
+    end if
+
+    sigrel=sigtot
+    if (any(astarsig.eqv..true.)) then
+       call set_MP(boxndm,astarsig,sigtot,sigrel)
+    end if
+!!$    write(6,*) 'sigrel' ,sigrel(:,1)
+!!$    write(6,*) 'sigrel' ,sigrel(:,2)
+!!$    write(6,*) 'sigrel' ,sigrel(:,3)
     select case(dmtype)
     case(24)
+          
        !       write(6,*)'IN',atpr%xp(1,1)
        ! Coordonnées réduites des atomes (au cas où elles ont été modifiées à l'extérieur)
        sp(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%xp(:,1:atpr%im) )
@@ -422,7 +440,7 @@ contains
           fire_alph=alph_start
           nstep=0
        end if
-       forcebox(:,:)=MatMul( sigtot(:,:) - sigext(:,:), boxndm%invtrh(:,:) )*boxndm%volu
+       forcebox(:,:)=MatMul( sigrel(:,:) - sigext(:,:), boxndm%invtrh(:,:) )*boxndm%volu
        do i = 1, 3
           do ic = 1, 3
              if (boxndm%hdot(ic,i)*forcebox(ic,i)<0) then
@@ -433,7 +451,9 @@ contains
 
        !          write(6,*)'hdot',hdot(1,1),tstep/(1*wBox)*forcebox(1,1)*ihbox0(1,1),invtrh(1,1),sigtot(1,1),tstep,tstepN
        boxndm%hdot(:,:) = boxndm%hdot(:,:)*ihbox0(:,:)+ tstep/(1*boxndm%wBox)*forcebox(:,:)*ihbox0(:,:)
-
+!!$          write(6,*)'hdot', boxndm%hdot(:,1)
+!!$          write(6,*)'hdot', boxndm%hdot(:,2)
+!!$          write(6,*)'hdot', boxndm%hdot(:,3)
        ! Tenseur h à l'instant t+dt
        boxndm%h(:,:) = boxndm%h(:,:) + boxndm%hdot(:,:)*tstep*ihbox0(:,:)
        !          write(6,*)'FHdot',hdot(1,1),tstep,(1*wBox),forcebox(1,1)*ihbox0(1,1),h(1,1)
@@ -476,16 +496,25 @@ contains
        end if
 
 #endif
-          if (lpcube) then
-             pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
-             sigkine=0
-             do ic=1,3
-                sigkine(ic,ic)=pint
-             end do
-          end if
+!!$          if (lpcube) then
+!!$             pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
+!!$             sigkine=0
+!!$             do ic=1,3
+!!$                sigkine(ic,ic)=pint
+!!$             end do
+!!$          end if
 
        sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
+!!$    write(6,*) 'sigtot' ,sigtot(:,1)
+!!$    write(6,*) 'sigtot' ,sigtot(:,2)
+!!$    write(6,*) 'sigtot' ,sigtot(:,3)
 
+       if ((any(astarsig.eqv..true.)).or.(any(sig0dir.ne.0))) then
+       else
+          thsig=maxval(abs(sigtot-sigext))   
+       end if
+       
+       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        ! LPR +LANGEVIN : evolution de VP en corrdonnées réelles pour éviter de se tromper dans les dimensions       
     case(88)
@@ -773,7 +802,7 @@ contains
              call comm_space%sum(sigkine)
           end if
 #endif
-                    if (lpcube) then
+          if (lpcube) then
              pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
              sigkine=0
              do ic=1,3
@@ -875,6 +904,91 @@ contains
 
   end subroutine pr1
 
+
+
+  subroutine set_MP(box,astarsig,sig,sigr)
+    class(box_config_lpr)::box
+    logical::astarsig(3)
+    real(double)::sig(3,3),sigr(3,3)
+    real(double)::sigt(3,3),sigt0(3,3)
+    real(double)::MP(3,3),tMP(3,3),atp(3,3),vp(3)
+    integer::ichk,ic,i
+    ichk=0
+!    do i=1,3
+!       write(6,*)'SIG',sig(1:3,i)
+!    end do
+    
+    if (astarsig(1)) then
+       ichk=ichk+1
+       atp(:,1)=box%as(:,1)/norm2(box%as(:,1))
+       atp(:,2)=box%at(:,2)/norm2(box%at(:,2))
+    end if
+    if (astarsig(2)) then
+       ichk=ichk+1
+       atp(:,1)=box%as(:,2)/norm2(box%as(:,2))
+       atp(:,2)=box%at(:,3)/norm2(box%at(:,3))
+    end if
+    if (astarsig(3)) then
+       ichk=ichk+1
+       atp(:,1)=box%as(:,3)/norm2(box%as(:,3))
+       atp(:,2)=box%at(:,1)/norm2(box%at(:,1))
+    end if
+    if (ichk.ne.1) then
+       write(6,*)'ichk',ichk
+       call arret_ndm
+    end if
+    call vectprod(atp(:,1),atp(:,2),atp(:,3))
+    atp(:,3)=atp(:,3)/norm2(atp(:,3))
+ !   write(6,*)'NORMatp ',norm2(atp(:,1)),norm2(atp(:,2)),norm2(atp(:,3))
+
+    call mattrp(atp,tMP)
+    sigt=matmul(tMP,sig)
+    sigt=matmul(sigt,atp)
+    sigt0(:,:)=0
+    sigt0(1,1)=sigt(1,1)
+    thsig=sigt(1,1)
+ !   write(6,*)'thsig',thsig*unitP
+    sigr=matmul(atp,sigt0)
+    sigr=matmul(sigr,tMP)
+ !   do i=1,3
+ !      write(6,*)'SIGR',sigr(1:3,i)
+ !   end do
+    return
+  end subroutine set_MP
+!!$  subroutine set_MP2(box,sig0dir,sigt,sigr)
+!!$    class(box_config_lpr)::box
+!!$    real(double)::sig(3,3),sigr(3,3),sig0dir(3)
+!!$    real(double)::sigt(3,3),sigt0(3,3)
+!!$    real(double)::MP(3,3),tMP(3,3),atp(3,3),vp(3)
+!!$    integer::ichk=0,ic,i
+!!$    do i=1,3
+!!$       write(6,*)'SIG',sig(1:3,i)
+!!$    end do
+!!$    
+!!$    atp(:,1)=sig0dir(:)/norm2(sig0dir)
+!!$    call vectprod(atp(:,1),box%at(:,3),atp(:,2))
+!!$    atp(:,2)=atp(:,2)/norm2(atp(:,2))
+!!$    call vectprod(atp(:,1),atp(:,2),atp(:,3))
+!!$    atp(:,3)=atp(:,3)/norm2(atp(:,3))
+!!$    write(6,*)'NORMatp ',norm2(atp(:,1)),norm2(atp(:,2)),norm2(atp(:,3))
+!!$
+!!$    call mattrp(atp,tMP)
+!!$    sigt=matmul(tMP,sig)
+!!$    sigt=matmul(sigt,atp)
+!!$    sigt0(:,:)=0
+!!$    sigt0(1,1)=sigt(1,1)
+!!$    write(6,*)'thsig',thsig*unitP
+!!$    sigr=matmul(atp,sigt0)
+!!$    sigr=matmul(sigr,tMP)
+!!$    do i=1,3
+!!$       write(6,*)'SIGR',sigr(1:3,i)
+!!$    end do
+!!$    return
+!!$    
+!!$  end subroutine set_MP2
+!!$    
+!!$       
+       
 end module Parrinello_Rahman !Parrinello_Rahman
 
 

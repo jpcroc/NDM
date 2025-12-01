@@ -638,4 +638,16 @@ END FUNCTION matdet
     call matmult3(am1,b,x)
 !    write(6,*)'X2',x
   end subroutine reslin33
+
+
+  subroutine vectprod(a,b,c)
+    real(double),intent(in)::a(3),b(3)
+    real(double),intent(out)::c(3)! =a^b
+    integer::ipol
+    c(1) = (a(2)*b(3)-a(3)*b(2))
+    c(2) = (a(3)*b(1)-a(3)*b(1))
+    c(3) = (a(1)*b(2)-a(2)*b(1))
+  end subroutine vectprod
+
+
 end module Mat_utils_mod
