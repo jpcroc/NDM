@@ -150,7 +150,10 @@ contains
                 j = 0
             end if
         end do
-        if (string(len(string):len(string)) /= separator) n = n + 1
+        if (string(len(string):len(string)) /= separator) then
+            n = n + 1
+            l = max(l, j)
+        end if
 
         ! Allocate the substrings array
         allocate(character(l) :: strings(n))
