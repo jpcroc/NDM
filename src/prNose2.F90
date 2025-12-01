@@ -34,7 +34,8 @@ module Parrinello_Rahman_Nose
   USE T_kind_param_m
   USE gen_com_m, ONLY:   ecellpr,enose,fnose,kcell,kine,knose,lpcon2,sigext,sigtot,tbox,text,&
        &tstep,ucell,unose,wboxf,wnose,enose,erg2ev,fnose,iteration,kcell,knose,leev,&
-       &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM,h0,ihbox0,lpcube
+       &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM,h0,ihbox0,lpcube,&
+       &astarsig
   USE var_pot, ONLY:cm
   USE tempinstT_mod,only: tempinstT
   USE Mat_utils_mod,only:  matinv
@@ -48,12 +49,13 @@ module Parrinello_Rahman_Nose
   use Tpara,only:nprocspace,para_space_config
 #endif
   USE scalebox_mod,only: scalebox
+  use  Parrinello_Rahman,only :set_MP
   implicit none
 
   real(double), dimension(3,3), save , private ::h,trh,invh,invtrh,Gmat,invGmat,Area,hnew,hlast,hold,invhold
   real(double), dimension(3,3), save , private ::hpoint, h2point, whpointpoint, Gpoint
   real(double), allocatable, save, private :: sp(:,:),sold(:,:),snew(:,:),sdot(:,:)
-
+  
   ! Variables uniquement nécessaires au calcul de l'énergie potentielle de la
   ! boîte
   real(double), dimension(3,3), save , private ::trh0,invh0,invtrh0,epsi, tension
@@ -189,6 +191,12 @@ end if
   end subroutine initlprNose
 
   !-----------------------------------------------
+  !-----------------------------------------------
+  !-----------------------------------------------
+  !-----------------------------------------------
+  !-----------------------------------------------
+  !-----------------------------------------------
+  
 
   subroutine prNose(atpr,celndm,boxndm,psc)
 
@@ -201,7 +209,7 @@ end if
 
     real(double),dimension(3,3)::maux1,maux2,mf,mfi, grsig
     REAL(double), dimension(1:3,1:3) ::  Gpoint
-    real(double):: diff,tdiff, invVolu, fNose2, f2point,pint
+    real(double):: diff,tdiff, invVolu, fNose2, f2point,pint,sigrel(3,3)
     integer:: i,j,ia, iter,ic
     !real(double) , external ::  calcvol
 
@@ -212,6 +220,19 @@ end if
 
     ! Paramètres du thermostat
     fNose2=fNose*fNose
+    if (lpconxyz) then
+       sigtot(2,1)=0
+       sigtot(1,2)=0
+       sigtot(3,1)=0
+       sigtot(1,3)=0
+       sigtot(2,3)=0
+       sigtot(3,2)=0
+    end if
+
+    sigrel=sigtot
+    if (any(astarsig.eqv..true.)) then
+       call set_MP(boxndm,astarsig,sigtot,sigrel)
+    end if
 
     ! Vecteurs de la boîte
     h(:,:)=boxndm%at(:,:)

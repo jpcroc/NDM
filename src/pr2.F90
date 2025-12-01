@@ -38,7 +38,8 @@ module Parrinello_Rahman
   !     Mol. Phys., 1984, 52, 255-268tabv
   USE T_kind_param_m
   USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lthoover,nhoover,sigext,ucell,erg2ev,&
-       &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0,tbox, bk,&
+       &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox
+0 ,tbox, bk,&
        &potist,sig,sigtot,text,tstep,iteration,potist,rang,sig,text,sigkine,lpcube,&
        &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype,usdh,llangevin,gamlg,gamprfact,unitP,&
        & lmaxvp,vplim,astarsig,sig0dir,thsig,lpconxyz
@@ -173,26 +174,29 @@ contains
 !!$    invVolu = 1.d0/boxndm%volu
 
     ! Initialisation de la vitesse de la boîte
+    
     IF(RANG==0) WRITE(6,'(a,f0.3,a)') 'Initialisation de la vitesse de la boîte pour la température ', TinitBox, ' K'
     boxndm%hdot(:,:) = 0.d0
     !#ifdef PARA
-    if (myidsp==0) then
-       !#endif
-       DO i=1, 3
-          DO j=1, 3
-             call random_number(z1)
-             call random_number(z2)
-             if(z1.eq.0.d0) z1=0.000000001d0
-             if(z2.eq.0.d0) z2=0.000000001d0
-
-             v1 =  sqrt(-2*log(z1))*cos(2*pi*z2)
-
-             boxndm%hdot(1:3,1:3)=sqrt(2*bk*Tinitbox/boxndm%Wbox)*v1
+    if (all(ihbox0==1))then 
+       if (myidsp==0) then
+          !#endif
+          DO i=1, 3
+             DO j=1, 3
+                call random_number(z1)
+                call random_number(z2)
+                if(z1.eq.0.d0) z1=0.000000001d0
+                if(z2.eq.0.d0) z2=0.000000001d0
+                
+                v1 =  sqrt(-2*log(z1))*cos(2*pi*z2)
+                
+                boxndm%hdot(1:3,1:3)=sqrt(2*bk*Tinitbox/boxndm%Wbox)*v1
+             end DO
           end DO
-       end DO
-       !#ifdef PARA
-    endif
- !   boxndm%hdot=0
+          !#ifdef PARA
+       endif
+    end if
+    !   boxndm%hdot=0
     call comm_space%bcast(0,boxndm%hdot)
 
     !#endif
