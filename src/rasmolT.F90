@@ -564,7 +564,7 @@ contains
     !-----------------------------------------------------
     !  Subroutine for interfacing with the dk_io library
     !-----------------------------------------------------
-    use dk_structure_io, only: write_structure, TAG_LENGTH
+    use dk_structure_io, only: write_structure, TAG_LENGTH, Element
     use T_kind_param_m, only:  double
     
     character(len=*), intent(in) :: nameo,end_name,format
@@ -580,13 +580,19 @@ contains
     character(TAG_LENGTH), dimension(:), allocatable :: tags
     integer :: i
     integer, intent(in), optional :: img
+    type(Element), dimension(:), allocatable :: elements
 
     if (present(ext)) then
        namef=trim(nameo)//'.'//trim(ext)//trim(end_name)
     else
        namef=trim(nameo)//trim(end_name)
     end if
-    
+
+    allocate(elements(size(ty)))
+    do i=1, size(ty)
+       elements(i)%tag=ty(i)
+    end do
+
     if (present(atcomp)) then ! atcomp et tyw => en séquentiel
        allocate(tags(atcomp%im))
        allocate(masses(atcomp%im))
@@ -604,10 +610,10 @@ contains
              write(6,*)'no velocity in atom-config and export asked with velocities stop'
              call arret_ndm
           class is (atom_config_d)
-             call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d8*1d-12, masses=masses)
+             call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d8*1d-12, masses=masses, elements=elements)
           end select
        else
-          call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, masses=masses)
+          call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, masses=masses, elements=elements)
        end if
 
        call cryst_to_cart (atcomp%im, atcomp%xp,  box,  1) !cryst vers cart
@@ -622,13 +628,14 @@ contains
        end do
        
        if(lvelocities) then
-          call write_structure(trim(namef), box*1d8, xposg, tags, format=format, velocities=vpg, masses=masses_g)
+          call write_structure(trim(namef), box*1d8, xposg, tags, format=format, velocities=vpg, masses=masses_g, elements=elements)
        else
-          call write_structure(trim(namef), box*1d8, xposg, tags, format=format, masses=masses_g)
+          call write_structure(trim(namef), box*1d8, xposg, tags, format=format, masses=masses_g, elements=elements)
        end if
        
     end if
     deallocate(tags)
+    deallocate(elements)
   end subroutine dk_io_write
 
   subroutine reconstruction(img,im_proc,natg_proc,xpos_proc,tyw_proc,ityp_proc,xposg,tywg,masses_g,vpg,lvelocities,aux_proc)
