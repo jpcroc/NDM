@@ -762,11 +762,19 @@ contains
   end subroutine constrandrepart_dkio
 
   integer function get_ityp(tag)
-    ! Retourne ityp de l'atome 'tag' par correspondance avec ty, qui est la pulpart du temps lu dans le fichier .potin
+    !---- Retourne ityp de l'atome 'tag':
+    !> soit par la conversion directe de tag en entier si lu depuis le format de fichier lammps
+    !> soit par correspondance avec ty, qui est la plupart du temps lu dans le fichier .potin
     use dk_structure_io, only: TAG_LENGTH
-    USE var_pot, ONLY:ntyp,ty
+    use var_pot, only: ntyp,ty
+    use gen_com_m, only: igen
     character(len=TAG_LENGTH), intent(in) :: tag
     integer :: i
+
+    if (igen == 17) then
+       read(tag, *) get_ityp
+       return
+    end if
 
     get_ityp = -1
     do i = 1, ntyp
