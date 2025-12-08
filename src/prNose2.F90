@@ -35,7 +35,7 @@ module Parrinello_Rahman_Nose
   USE gen_com_m, ONLY:   ecellpr,enose,fnose,kcell,kine,knose,lpcon2,sigext,sigtot,tbox,text,&
        &tstep,ucell,unose,wboxf,wnose,enose,erg2ev,fnose,iteration,kcell,knose,leev,&
        &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM,h0,ihbox0,lpcube,&
-       &astarsig
+       &astarsig,lpconxyz
   USE var_pot, ONLY:cm
   USE tempinstT_mod,only: tempinstT
   USE Mat_utils_mod,only:  matinv

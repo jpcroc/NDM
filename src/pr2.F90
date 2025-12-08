@@ -38,8 +38,7 @@ module Parrinello_Rahman
   !     Mol. Phys., 1984, 52, 255-268tabv
   USE T_kind_param_m
   USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lthoover,nhoover,sigext,ucell,erg2ev,&
-       &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox
-0 ,tbox, bk,&
+       &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0 ,tbox, bk,&
        &potist,sig,sigtot,text,tstep,iteration,potist,rang,sig,text,sigkine,lpcube,&
        &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype,usdh,llangevin,gamlg,gamprfact,unitP,&
        & lmaxvp,vplim,astarsig,sig0dir,thsig,lpconxyz
@@ -383,7 +382,7 @@ contains
        call set_MP(boxndm,astarsig,sigtot,sigrel)
     end if
 !!$    write(6,*) 'sigrel' ,sigrel(:,1)
-!!$    write(6,*) 'sigrel' ,sigrel(:,2)
+!!$    write(6,*) 'sigrel' ,sigrel(:,2)p
 !!$    write(6,*) 'sigrel' ,sigrel(:,3)
     select case(dmtype)
     case(24)
@@ -911,7 +910,7 @@ contains
 
 
   subroutine set_MP(box,astarsig,sig,sigr)
-    class(box_config_lpr)::box
+    class(box_config)::box
     logical::astarsig(3)
     real(double)::sig(3,3),sigr(3,3)
     real(double)::sigt(3,3),sigt0(3,3)
