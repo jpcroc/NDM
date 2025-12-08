@@ -4,6 +4,8 @@ CMAKE_minimum_required( VERSION 3.20 )
 list( APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_files" )        
 message(STATUS "CMAKE_MODULE_PATH : ${CMAKE_MODULE_PATH}" )
 include( utils )
+include( TraceNewMacros )   # colorful logs
+setcolors()                 # setting log colors
 
 ################################################
 # Auto configuration
@@ -16,6 +18,13 @@ if ("LAMMPS" IN_LIST NDM_PACKAGE_LIST)
     list(APPEND languages "CXX")
 endif()
 
+# met CMAKE_BUILD_TYPE en majuscules
+if(CMAKE_BUILD_TYPE)
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" _tmp)
+    set(CMAKE_BUILD_TYPE "${_tmp}" CACHE STRING "RELEASE or DEBUG" FORCE)
+endif()
+
+# release mode by default
 set(CMAKE_BUILD_TYPE "RELEASE" CACHE STRING "RELEASE or DEBUG")
 set(compile_configuration_list INTEL GNU)
 
@@ -36,13 +45,15 @@ macro(CONFIG_INTEL)
     set(NDM_PRESET_TITLE "Compile NDM INTEL: ${compiler_name}" CACHE STRING "")
     set(CMAKE_Fortran_FLAGS_RELEASE " -O3" CACHE STRING "")
     set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0 -check bounds -traceback" CACHE STRING "")
+    set(NDM_OPT_DK-IO OFF CACHE BOOL "" FORCE) #Car DK-IO ne compile pas avec les compilateurs INTEL
+    log_warning("DK-IO désactivé, car ne compile pas encore avec les compilateurs INTEL")
 endmacro(CONFIG_INTEL)
 
 macro(CONFIG_GNU)
     cmake_path(GET CMAKE_Fortran_COMPILER FILENAME compiler_name)     
     set(NDM_PRESET_TITLE "Compile NDM GNU: ${compiler_name}" CACHE STRING "")
     set(CMAKE_Fortran_FLAGS_RELEASE " -O3 -ffree-line-length-512 -funroll-all-loops" CACHE STRING "")
-    set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0 -ffree-line-length-512 -fcheck=all -fbacktrace" CACHE STRING "")
+    set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -ffree-line-length-512 -fcheck=all -fbacktrace" CACHE STRING "")
     set(MKL_MPI "openmpi" CACHE STRING "MPI")
 endmacro(CONFIG_GNU)
 
@@ -110,6 +121,7 @@ option( ${PROJECT_NAME}_OPT_TRACE "trace all variables for cmake debug" OFF )
 option( ${PROJECT_NAME}_OPT_TEST "Prepare tests" ON )
 option( ${PROJECT_NAME}_OPT_COVERAGE "code coverage option" OFF)
 option( ${PROJECT_NAME}_OPT_COMPILE_DOC "Compile documentation" OFF )
+option( ${PROJECT_NAME}_OPT_DK-IO "Dynamics Kit - input/output" ON )
 
 
 ################################################
@@ -122,8 +134,6 @@ get_property(${PROJECT_NAME}_LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
 # Import cmake scripts
 include(doxygen_doc)        # to compile documentation with Doxygen
 include( CTest )            # testing with CTest
-include( TraceNewMacros )   # colorful logs
-setcolors()                 # setting log colors
 
 
 ################################################
@@ -195,6 +205,28 @@ endif()
 
 # Defines target to install
 install( TARGETS ${MAIN_LIBRARY_NAME} ${MAIN_EXECUTABLE_NAME})
+
+################################################
+# Dk-io integration
+################################################
+
+if (${PROJECT_NAME}_OPT_DK-IO)
+    find_package(DKIO QUIET)
+    if(DKIO_FOUND)
+        add_compile_definitions(DKIO=1)
+        target_link_libraries(${MAIN_LIBRARY_NAME} DKIO::dk_io)
+    else()
+        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/dk_io/CMakeLists.txt")
+            add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/external/dk_io)
+            add_compile_definitions(DKIO=1)
+            target_link_libraries(${MAIN_LIBRARY_NAME} dk_io)
+            set(${PROJECT_NAME}_LANGUAGES "Fortran" "C" "CXX")
+        else()
+            log_warning( "DK_IO ou DKCore non trouvé, fonctionnalités associées désactivées.")
+            set(${PROJECT_NAME}_OPT_DK-IO OFF CACHE BOOL "" FORCE)
+        endif()
+    endif()
+endif()
 
 ################################################
 # Tests and coverage

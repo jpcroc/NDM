@@ -69,6 +69,14 @@ contains
 
 
 #endif
+
+#ifdef DKIO
+    logical :: lvelocities=.false.
+    character(len=6) :: format
+    real(double),allocatable::xposg(:,:),vpg(:,:),masses_g(:)
+    character*3, dimension(:),allocatable :: tywg
+#endif
+
     !    class(atom_config),allocatable::atcomp
     integer :: i, luvisu, luvisu2,lenfn2,iaux,iaux2,i_proc,proc_source
     real(double) :: xp1, xp2, xp3,pat
@@ -96,7 +104,11 @@ contains
     end if
     laux=.false.
     nauxw=0 ; nauxv=0
+#ifdef DKIO
+    if ((ivisum==41).or.(ivisum==61).or.(ivisum==21).or.(ivisum==22).or.(ivisum==23).or.(ivisum==25))then
+#else
     if ((ivisum==41).or.(ivisum==61))then
+#endif
        laux=.true.
        nauxw=nauxw+3
     end if
@@ -125,7 +137,11 @@ contains
       if (laux) then 
          allocate (vauxw(nauxw,atmol%im))
          allocate(charauxw(nauxw))
+#ifdef DKIO
+         if ((ivisum==41).or.(ivisum==61).or.(ivisum==21).or.(ivisum==22).or.(ivisum==23).or.(ivisum==25))then
+#else
          if ((ivisum==41).or.(ivisum==61))then
+#endif
             charauxw(1)='VPX';          charauxw(2)='VPX';          charauxw(3)='VPZ'
             jaux=3
          else
@@ -155,7 +171,11 @@ contains
     end block
 
     iaux=0
+#ifdef DKIO
+    if ((ivisum==41).or.(ivisum==61).or.(ivisum==21).or.(ivisum==22).or.(ivisum==23).or.(ivisum==25))then
+#else
     if ((ivisum==41).or.(ivisum==61))then
+#endif
        select type (atmol)
        type is(atom_config)
           write(6,*)' no velocity in atom-config and cfg with velocities stop'
@@ -299,28 +319,74 @@ contains
           end_name='.xfg'
        case(7)
           end_name='.xyz'
+#ifdef DKIO
+!       case(10) ----------------------------------- Soon availible
+!          ! Dk_io Abinit format
+!          end_name='.'
+       case(11,21)
+          ! Dk_io Atomeye's CFG format
+          end_name='.cfg'
+          format='xfg'
+          if (ivisum==21) lvelocities=.true.
+       case(12,22)
+          ! Dk_io Atomeye's extended CFG format
+          end_name='.xfg'
+          format='xfg'
+          if (ivisum==22) lvelocities=.true.
+       case(13,23)
+          ! Dk_io CASTEP format
+          end_name='.cell'
+          format='castep'
+          if (ivisum==23) lvelocities=.true.
+       case(14)
+          ! Dk_io CIF format
+          end_name='.cif'
+          format='cif'
+       case(15,25)
+          ! Dk_io DL_POLY format
+          end_name='.CONFIG'
+          format='dlpoly'
+          if (ivisum==25) lvelocities=.true.
+       case(16)
+          ! Dk_io GULP format
+          end_name='.gulp'
+          format='gulp'
+       case(17)
+          ! Dk_io LAMMPS format
+          end_name='.lmp'
+          format='lammps'
+       case(18)
+          ! Dk_io VASP format
+          end_name='.POSCAR'
+          format='vasp'
+       case(19)
+          ! Dk_io XYZ format
+          end_name='.xyz'
+          format='xyz'
+#endif
        case default
           write(6,*)'wrong ivisu',ivisum,ivisu
           call arret_ndm
        end select
+       
+       if (ivisum < 10 .or. ivisum > 30)then
+          if (present(itapp))then
+             call openfilemol( luvisu,nameo,end_name,extension)
+          else
+             call openfilemol( luvisu,nameo,end_name)
+          end if
 
-       if (present(itapp))then
-          call openfilemol( luvisu,nameo,end_name,extension)
-       else
-          call openfilemol( luvisu,nameo,end_name)
+         !       if (ivisum.ne.5) then
+         !          tyw='000'
+         !    do i=1,im
+         !       write(6,*)i,atmol%ityp(i),ty(atmol%ityp(i))
+         !    end do
+         !       if (naux.gt.0)then
+         call write_header(ivisum,at,im_glob,luvisu, itapp,atmol,nauxv,nauxw,laux,charauxw)
+         !       else
+         !          call write_header(ivisum,at,im_glob,luvisu, itapp,atmol,nauxv,nauxw,laux)
+         !       end if
        end if
-
-       !       if (ivisum.ne.5) then
-       !          tyw='000'
-       !    do i=1,im
-       !       write(6,*)i,atmol%ityp(i),ty(atmol%ityp(i))
-       !    end do
-       !       if (naux.gt.0)then
-       call write_header(ivisum,at,im_glob,luvisu, itapp,atmol,nauxv,nauxw,laux,charauxw)
-       !       else
-       !          call write_header(ivisum,at,im_glob,luvisu, itapp,atmol,nauxv,nauxw,laux)
-       !       end if
-
 
     end if
     if (present (rty))then
@@ -345,7 +411,13 @@ contains
     end select
     
     if (latc) then
-       call writepos(ivisum, im_glob,atmol%xp,tyw,atmol%ityp,atmol%num_at_glob,luvisu,boxmol%at,boxmol%bg,laux,nauxw,vauxw)
+       if (ivisum < 10 .or. ivisum > 30) then
+         call writepos(ivisum, im_glob,atmol%xp,tyw,atmol%ityp,atmol%num_at_glob,luvisu,boxmol%at,boxmol%bg,laux,nauxw,vauxw)
+#ifdef DKIO
+       else
+         call dk_io_write(nameo,end_name,boxmol%at,boxmol%bg,trim(format),lvelocities,extension,atmol,tyw)
+#endif
+       end if
     else
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!§§LATC FALSE!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -371,8 +443,14 @@ contains
              aux_proc(1:nauxw,1:im_proc)=vauxw(1:nauxw,1:im_proc)
           end if
           natg_proc(1:im_proc)=atmol%num_at_glob(1:im_proc)
-
-          call writepos(ivisum,im_proc,xp_proc,ty_proc,ityp_proc,natg_proc, luvisu,boxmol%at,boxmol%bg,laux,nauxw,aux_proc)
+          
+          if (ivisum < 10 .or. ivisum > 30) then
+             call writepos(ivisum,im_proc,xp_proc,ty_proc,ityp_proc,natg_proc, luvisu,boxmol%at,boxmol%bg,laux,nauxw,aux_proc)
+#ifdef DKIO
+          else
+             call reconstruction(atmol%im_glob,im_proc,natg_proc,xp_proc,ty_proc,ityp_proc,xposg,tywg,masses_g,vpg,lvelocities,aux_proc)
+#endif
+          end if
 
           do i_proc=1,nprocspace-1
              !             call comm_space%probe(11001,sourceout=proc_source)
@@ -385,10 +463,23 @@ contains
              if (laux) then
                 call comm_space%recv(aux_proc(1:nauxw,1:im_proc),proc_source,11006)
              end if
-             call writepos(ivisum,im_proc,xp_proc,ty_proc,ityp_proc,natg_proc, luvisu,boxmol%at,boxmol%bg,laux,nauxw,aux_proc)
-
-
+             if (ivisum < 10 .or. ivisum > 30) then
+                call writepos(ivisum,im_proc,xp_proc,ty_proc,ityp_proc,natg_proc, luvisu,boxmol%at,boxmol%bg,laux,nauxw,aux_proc)
+#ifdef DKIO
+             else
+                call reconstruction(atmol%im_glob,im_proc,natg_proc,xp_proc,ty_proc,ityp_proc,xposg,tywg,masses_g,vpg,lvelocities,aux_proc)
+#endif
+             end if
           enddo
+#ifdef DKIO
+          if (ivisum > 9 .and. ivisum < 31) then
+             call dk_io_write(nameo,end_name,boxmol%at,boxmol%bg,trim(format),lvelocities,extension,xposg=xposg,masses_g=masses_g,vpg=vpg,tywg=tywg,img=atmol%im_glob)
+             deallocate(xposg)
+             deallocate(tywg)
+             deallocate(masses_g)
+             if (allocated(vpg)) deallocate(vpg)
+          end if
+#endif
 
        else ! myidsp different de 0 :
           im_proc=atmol%im
@@ -468,6 +559,118 @@ contains
          &         status='unknown')
   end subroutine openfilemol
 
+#ifdef DKIO
+  subroutine dk_io_write(nameo,end_name,box,invbox,format,lvelocities,ext,atcomp,tyw,xposg,masses_g,vpg,tywg,img)
+    !-----------------------------------------------------
+    !  Subroutine for interfacing with the dk_io library
+    !-----------------------------------------------------
+    use dk_structure_io, only: write_structure, TAG_LENGTH, Element
+    use T_kind_param_m, only:  double
+    
+    character(len=*), intent(in) :: nameo,end_name,format
+    real(double), intent(in) :: box(3,3), invbox(3,3)
+    class(atom_config), optional :: atcomp
+    character(len=3), dimension(:), intent(in), optional :: tyw
+    real(double),allocatable, optional ::xposg(:,:),vpg(:,:), masses_g(:)
+    character*3, dimension(:),allocatable, optional :: tywg
+    character(len=9), intent(in), optional :: ext
+    logical, intent(in) :: lvelocities
+    character(len=80) :: namef
+    real(double), allocatable, dimension(:) :: masses
+    character(TAG_LENGTH), dimension(:), allocatable :: tags
+    integer :: i
+    integer, intent(in), optional :: img
+    type(Element), dimension(:), allocatable :: elements
+
+    if (present(ext)) then
+       namef=trim(nameo)//'.'//trim(ext)//trim(end_name)
+    else
+       namef=trim(nameo)//trim(end_name)
+    end if
+
+    allocate(elements(size(ty)))
+    do i=1, size(ty)
+       elements(i)%tag=ty(i)
+    end do
+
+    if (present(atcomp)) then ! atcomp et tyw => en séquentiel
+       allocate(tags(atcomp%im))
+       allocate(masses(atcomp%im))
+
+       ! Convert to fractional coordinates, and get atoms tag
+       call cryst_to_cart(atcomp%im, atcomp%xp,  invbox,  -1) !cart vers cryst
+       do i=1, atcomp%im
+          tags(i) = tyw(i)
+          masses(i) = cm(atcomp%ityp(i))/umass        ! Mass (g/mol)
+       end do
+
+       if(lvelocities) then
+          select type (atcomp)
+          type is(atom_config)
+             write(6,*)'no velocity in atom-config and export asked with velocities stop'
+             call arret_ndm
+          class is (atom_config_d)
+             call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d8*1d-12, masses=masses, elements=elements)
+          end select
+       else
+          call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, masses=masses, elements=elements)
+       end if
+
+       call cryst_to_cart (atcomp%im, atcomp%xp,  box,  1) !cryst vers cart
+       deallocate(masses)
+
+    else ! xposg, masses_g, tywg, img et vpg => tableaux reconstruits sur proc 0
+       allocate(tags(img))
+       ! Convert to fractional coordinates, and get atoms tag
+       call cryst_to_cart(img, xposg,  invbox,  -1) !cart vers cryst
+       do i=1, img
+          tags(i) = tywg(i)
+       end do
+       
+       if(lvelocities) then
+          call write_structure(trim(namef), box*1d8, xposg, tags, format=format, velocities=vpg, masses=masses_g, elements=elements)
+       else
+          call write_structure(trim(namef), box*1d8, xposg, tags, format=format, masses=masses_g, elements=elements)
+       end if
+       
+    end if
+    deallocate(tags)
+    deallocate(elements)
+  end subroutine dk_io_write
+
+  subroutine reconstruction(img,im_proc,natg_proc,xpos_proc,tyw_proc,ityp_proc,xposg,tywg,masses_g,vpg,lvelocities,aux_proc)
+    integer,intent(in)::img, im_proc, natg_proc(:), ityp_proc(:)
+    real(double),allocatable::xposg(:,:),vpg(:,:), masses_g(:)
+    character*3, dimension(:),allocatable :: tywg
+    real(double), intent(in) :: xpos_proc(:,:)
+    real(double), intent(in), optional :: aux_proc(:,:)
+    character*3, dimension(:),intent(in) :: tyw_proc
+    logical, intent(in) :: lvelocities
+    integer :: i
+
+    if (.not. allocated(xposg)) then
+       write(6,*) "Attention : utilisation de dk-io en parallèle => reconstruction du tableau de position complet sur le proc 0"
+       allocate(xposg(3,img))
+       allocate(tywg(img))
+       allocate(masses_g(img))
+       if (lvelocities) then
+         write(6,*) "reconstruction du tableau des vitesses complet sur le proc 0"
+         allocate(vpg(3,img))
+       end if
+    end if
+
+    do i=1, im_proc
+       xposg(:,natg_proc(i))=xpos_proc(:,i)
+       tywg(natg_proc(i))=tyw_proc(i)
+       masses_g(natg_proc(i))=cm(ityp_proc(i))/umass        ! Mass (g/mol)
+       if(lvelocities) then
+          vpg(1,natg_proc(i))= aux_proc(1,i)
+          vpg(2,natg_proc(i))= aux_proc(2,i)
+          vpg(3,natg_proc(i))= aux_proc(3,i)
+       end if
+    end do
+  end subroutine reconstruction
+#endif
 
   subroutine writexred(im,xpos,tyw,luvisu,atw,bgw)
     integer,intent(in)::im

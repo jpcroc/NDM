@@ -1,16 +1,17 @@
  Process            0  of            4  is alive
- Process            1  of            4  is alive
- Process            2  of            4  is alive
- Process            3  of            4  is alive
  nom fichier din=
  Febulk.din                                                                     
   
+ Process            1  of            4  is alive
+ Process            2  of            4  is alive
+ Process            3  of            4  is alive
  
  -------- caracteristiques du run DM--------23
      FIRE Quenching Vcst
- generation du crystal ; puis run
+ rang readdm iseed            1           1
  rang readdm iseed            2           1
  rang readdm iseed            3           1
+ generation du crystal ; puis run
  
       ANALYSES 
  itetemp=        1000  iteprtsigma=           1
@@ -28,7 +29,6 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
- rang readdm iseed            1           1
  rang readdm iseed            0           1
  IMM PARA =          720        2400
  

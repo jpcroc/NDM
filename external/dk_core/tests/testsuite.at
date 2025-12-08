@@ -1,0 +1,7 @@
+AT_INIT
+AT_COLOR_TESTS
+AT_COPYRIGHT([Copyright (c) 2023-2024 CEA])
+
+AT_SETUP([DataTable])
+AT_CHECK([DataTable], [0], [ignore])
+AT_CLEANUP

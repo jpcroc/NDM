@@ -647,7 +647,151 @@ contains
     
     
   end subroutine constrandrepart
+
+#ifdef DKIO
+  subroutine constrandrepart_dkio(atrin,vpin,atcf,celcf,boxcf,tags,psc)
+    USE gen_com_m, ONLY:imm_glob,rang,ldecoup,lvpread
+    use dk_structure_io, only: TAG_LENGTH
+    USE atomconfig,only: atom_config,atom_config_d
+    logical:: ltabvois=.false.
+    type(para_space_config)::psc
+    class(box_config)::boxcf
+    type(cell_config)::celcf
+    class(atom_config):: atcf
+    character(TAG_LENGTH), dimension(:), intent(in) :: tags
+    real(double), dimension(:,:), allocatable :: atrin,vpin
+    integer::i,icell,nvois0,ii,cellules_max,cellules_int,im0,im_glob,imm_loc,imm,ig
+
+    real(double)::rvn,xpcur(3,1),itypcur,rvois=0.
+
+    integer::natlocm,icomp,numcell,numproc,imm_loc1,nox,noy,noz,noxyz,im
+    integer,allocatable::natloc(:) !indice de boucle
+    allocate (natloc(0:nprocspace-1))
+    natloc=0
+
+    nox=celcf%nox(1);noy=celcf%nox(2);noz=celcf%nox(3); noxyz=nox*noy*noz
+    im0=0
+    nvois0=0
+    cellules_max=0
+    cellules_int=0
+    do ii = 0,nprocspace-1
+       cellules_max = max(cellules_max,(psc%res_cpu(ii,1)+2) * (psc%res_cpu(ii,2)+2)* (psc%res_cpu(ii,3)+2))
+       cellules_int = max(cellules_int,(psc%res_cpu(ii,1)+0) * (psc%res_cpu(ii,2)+0)* (psc%res_cpu(ii,3)+0))
+    enddo
+    cellules_max = min (cellules_max, noxyz)
     
+    if (atcf%rvois.gT.0)then
+       rvn=atcf%rvois
+    else
+       rvn=0
+    end if
+    i=0
+    !im_glob=atrgin%im*lat(1)*lat(2)*lat(3)
+    im_glob=size(atrin,2)
+    do icell = 1, im_glob
+       i  = i + 1
+       xpcur(1,1) = atrin(1,icell)
+       xpcur(2,1) = atrin(2,icell)
+       xpcur(3,1) = atrin(3,icell)
+       call cryst_to_cart (1, xpcur, boxcf%at, 1)
+       call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox(1),celcf%nox(2),celcf%nox(3))
+       numproc=celcf%proc_cell(numcell)
+
+       if (numproc == myidsp) then
+          natloc(myidsp)=natloc(myidsp)+1
+       endif
+    end do
+    call comm_space%sum(natloc)
+    !             if (rang==0) write(6,*)'natloc',natloc
+    natlocm=maxval(natloc)
+    natlocm=int(natlocm*float(cellules_max)/cellules_int)
+    imm_loc=min( imm_glob, int(1.2 * natlocm))
+    imm = imm_loc
+    
+    call atcf%dealloc
+    call atcf%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob,imm_glob=imm_glob)
+
+!REPARTITION
+    i=0;im=0;ig=0
+    if (lvpread) then
+       select type (atcf)
+       type is(atom_config)
+          if (rang==0) write(6,*)'no velocity in atom-config and import asked with velocities stop'
+          call arret_ndm
+       class is (atom_config_d)
+          do icell = 1, im_glob
+             ig=ig+1
+             xpcur(1,1) = atrin(1,icell)
+             xpcur(2,1) = atrin(2,icell)
+             xpcur(3,1) = atrin(3,icell)
+             call cryst_to_cart (1, xpcur, boxcf%at, 1)
+             call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox(1),celcf%nox(2),celcf%nox(3))
+             numproc=celcf%proc_cell(numcell)
+             if (numproc == myidsp) then
+                i=i+1
+                im=im+1
+                atcf%xp(:,i)=xpcur(:,1)
+                atcf%vp(:,i) = vpin(:,icell)*1d4 ! car *1d8*1d-12 à l'écriture
+                atcf%ityp(i)=get_ityp(tags(icell))
+                atcf%num_at_glob(i)=ig
+                atcf%proc_at(i)=myidsp
+             endif
+          end do
+       end select
+    else ! No velocities
+       do icell = 1, im_glob
+          ig=ig+1
+          xpcur(1,1) = atrin(1,icell)
+          xpcur(2,1) = atrin(2,icell)
+          xpcur(3,1) = atrin(3,icell)
+          call cryst_to_cart (1, xpcur, boxcf%at, 1)
+          call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox(1),celcf%nox(2),celcf%nox(3))
+          numproc=celcf%proc_cell(numcell)
+          if (numproc == myidsp) then
+             i=i+1
+             im=im+1
+             atcf%xp(:,i)=xpcur(:,1)
+             atcf%ityp(i)=get_ityp(tags(icell))
+             atcf%num_at_glob(i)=ig
+             atcf%proc_at(i)=myidsp
+          endif
+       end do
+    end if
+    atcf%im=im
+
+  end subroutine constrandrepart_dkio
+
+  integer function get_ityp(tag)
+    !---- Retourne ityp de l'atome 'tag':
+    !> soit par la conversion directe de tag en entier si lu depuis le format de fichier lammps
+    !> soit par correspondance avec ty, qui est la plupart du temps lu dans le fichier .potin
+    use dk_structure_io, only: TAG_LENGTH
+    use var_pot, only: ntyp,ty
+    use gen_com_m, only: igen
+    character(len=TAG_LENGTH), intent(in) :: tag
+    integer :: i
+
+    if (igen == 17) then
+       read(tag, *) get_ityp
+       return
+    end if
+
+    get_ityp = -1
+    do i = 1, ntyp
+       if (trim(tag) == trim(ty(i))) then
+          get_ityp = i
+          return
+       end if
+    end do
+
+    if (get_ityp == -1) then
+       if (rang==0) then
+          write (6, *) 'Error: no match found between the atom tag read from the input position file and the atom types stored in ty:', tag, ty
+       end if
+       call arret_ndm
+    end if
+  end function
+#endif
 
 
 end module decoupage_mod

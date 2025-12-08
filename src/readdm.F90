@@ -590,10 +590,18 @@ contains
        igen = 1
        if (rang == 0) write (6, *) '****** RESTART FROM FILE **'
     endif
+
+#ifdef DKIO               
+    if ((igen<-1).or.(1<igen.and.igen<11).or.(igen>29)) then     !+1 from file -1 generate then stop 0 generate then run [11;29] generate from kd_io then run
+       if (rang==0) write (6, *) rang,'wrong igen stop'
+       call arret_ndm
+    endif
+#else
     if ((igen<-1).or.igen>2) then                    !+1 from file -1 generate then stop 0 generate then run
        if (rang==0) write (6, *) rang,'wrong igen stop'
        call arret_ndm
     endif
+#endif
 
     if (itab <= 0) then
        if (rang==0) write (6, *) rang,'wrong itab < 1 '
@@ -1300,6 +1308,10 @@ contains
        if (rang==0) write (6, *) 'écriture de gin à partir du fichier .cin'
     case (3)
        if (rang==0) write (6, *) 'modification du fichier .cin'
+#ifdef DKIO
+    case (11,12,13,14,15,16,17,18,19,21,22,23,25)
+       if (rang==0) write (6, *) 'generation du crystal a partir de dk_io ; puis run'
+#endif
     case default
        if (rang==0) write (6, *) 'mauvais igen=', igen
        call arret_ndm

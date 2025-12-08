@@ -292,7 +292,7 @@ module plottpcel_mod
     open(unitlp,file=namef,form='formatted')
     
     do i=1,domain%ndom
-       write(unitlp,'(I12,G18.5,I8)'),i,domain%pr(i)*unitP,domain%nato(i)
+       write(unitlp,'(I12,G18.5,I8)')i,domain%pr(i)*unitP,domain%nato(i)
     end do
     close(unitlt)
   end subroutine plotdomain
@@ -491,9 +491,9 @@ module plottpcel_mod
 #ifdef PARA
           select type (celcf)
           type is (cell_config)
-             write(unitlt,'(I12,3I5,G21.5)'),i,koxyz(1:3),celcf%tempc(i)
+             write(unitlt,'(I12,3I5,G21.5)')i,koxyz(1:3),celcf%tempc(i)
           type is (slice_config)
-             write(unitlt,'(I12,3I5,G21.5)'),i,koxyz(1:3),celcf%tempc(i)
+             write(unitlt,'(I12,3I5,G21.5)')i,koxyz(1:3),celcf%tempc(i)
           type is (cell_config_arps)
              write(unitlt,'(I12,3I5,G21.5)')i,koxyz(1:3),celcf%tempc(i)
           end select
@@ -525,9 +525,9 @@ module plottpcel_mod
 #ifdef PARA
           select type (celcf)
           type is (cell_config)
-             write(unitlp,'(I12,3I5,G21.5,I8,9E18.5)'),i,koxyz(1:3),pcell,celcf%nato(i),celcf%sigc(:,:,i)*unitP
+             write(unitlp,'(I12,3I5,G21.5,I8,9E18.5)')i,koxyz(1:3),pcell,celcf%nato(i),celcf%sigc(:,:,i)*unitP
           type is (slice_config)
-             write(unitlp,'(I12,3I5,G21.5,I8,9E18.5)'),i,koxyz(1:3),pcell,celcf%nato(i),celcf%sigc(:,:,i)*unitP
+             write(unitlp,'(I12,3I5,G21.5,I8,9E18.5)')i,koxyz(1:3),pcell,celcf%nato(i),celcf%sigc(:,:,i)*unitP
           type is (cell_config_arps)
              write(unitlp,'(I12,3I5,G21.5,4I8,9E18.5)')i,koxyz(1:3),pcell,celcf%nato(i),celcf%nmov(0,i),&
                   &celcf%nmov(1,i),celcf%nmov(2,i),celcf%sigc(:,:,i)*unitP

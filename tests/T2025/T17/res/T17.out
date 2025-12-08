@@ -5,8 +5,6 @@
  nom fichier din=
  Febulk.din                                                                     
   
- rang readdm iseed            3           1
- rang readdm iseed            2           1
  
  -------- caracteristiques du run DM-------- 1
      DYNAMIQUE MOLECULAIRE VERLET STANDARD
@@ -31,6 +29,8 @@ debyetemp=      -1.0
  rang readdm iseed            0           1
  IMM PARA =        19800       66000
  rang readdm iseed            1           1
+ rang readdm iseed            2           1
+ rang readdm iseed            3           1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
  

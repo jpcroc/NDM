@@ -6,8 +6,8 @@
 	imm=150,iseed=1
 	igen=0, tinit=600.0
 	dmtype=4   ! 7 ph ; 3 CG
-	itmax=5000 
-	itetemp=100,itesigma=100
+	itmax=100 
+	itetemp=10,itesigma=50
 	lEev=.true. 
 	lEparat=.true.,
         lPkbar=.true. 	

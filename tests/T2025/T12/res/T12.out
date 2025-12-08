@@ -1,7 +1,7 @@
  Process            0  of            2  is alive
+ Process            1  of            2  is alive
  nom fichier din=
  UO2M.din                                                                       
- Process            1  of            2  is alive
   
  rang readdm iseed            1          11
  
@@ -95,7 +95,7 @@ LE_MEILLEUR_DECOUPAGE :    2    1    1    2    0.4110
  Decoupage           1 :           3           3           1
  Decoupage           2 :           3           2           0
  Decoupage           3 :           3           1           0
- Decoupage          -2 :    13038480           3           3
+ Decoupage          -2 :    12559248           3           3
  Decoupage          -1 :           0           3           3
  Decoupage           0 :           3           3           2
  Decoupage           1 :           3           3           1

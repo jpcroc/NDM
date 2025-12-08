@@ -1,0 +1,13 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+
+# Si chemin vers DKCore connu à la configuration, on le garde en mémoire ici.
+set(_DKCore_HINT "@DKCore_HINT_DIR@")
+
+if(EXISTS "${_DKCore_HINT}/DKCoreConfig.cmake")
+    find_dependency(DKCore REQUIRED PATHS "${_DKCore_HINT}" NO_DEFAULT_PATH)
+else()
+    find_dependency(DKCore REQUIRED)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/DKIOTargets.cmake")
