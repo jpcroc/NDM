@@ -828,7 +828,7 @@ contains
 !******************************************************************************!
 !> Write a structure to a file.
 !******************************************************************************!
-    subroutine write_structure(filename, box, positions, tags, format, options, compression, velocities, forces, masses, aux, stat)
+    subroutine write_structure(filename, box, positions, tags, format, options, compression, velocities, forces, masses, aux, elements, stat)
         character(*), intent(in) :: filename
         real(e), dimension(3,3), intent(in) :: box
         real(e), dimension(:,:), intent(in) :: positions
@@ -839,6 +839,7 @@ contains
         real(e), dimension(:,:), intent(in), optional :: forces
         real(e), dimension(:), intent(in), optional :: masses
         type(DataTable), intent(in), optional :: aux
+        type(Element), dimension(:), intent(in), optional :: elements
         integer, intent(in), optional :: options
         type(FException), intent(out), optional :: stat
 !------
@@ -968,7 +969,7 @@ contains
             case (STRUCTURE_GULP)
                 call write_gulp(filename, box, positions, tags, stat=istat)
             case (STRUCTURE_LAMMPS)
-                call write_lammps(filename, box, positions, tags, stat=istat)
+                call write_lammps(filename, box, positions, tags, elements=elements, stat=istat)
             case (STRUCTURE_VASP, "poscar")
                 call write_vasp(filename, box, positions, tags, stat=istat)
             case (STRUCTURE_XFG)

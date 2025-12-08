@@ -200,7 +200,11 @@ contains
             end do
 
             ! Set the token
-            word%value = line(word%start:i-1)
+            if (i==len(line)) then
+                word%value = line(word%start:i)
+            else
+                word%value = line(word%start:i-1)
+            end if
             word%line = trim(line)
             word%line_number = input_file%current_line
         end subroutine
