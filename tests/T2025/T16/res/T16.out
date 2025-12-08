@@ -1,8 +1,9 @@
  Process            0  of            2  is alive
+ Process            1  of            2  is alive
  nom fichier din=
  Febulk.din                                                                     
   
- Process            1  of            2  is alive
+ rang readdm iseed            1           1
  LTABVOIS MIS A FALSE en PARA
  
  -------- caracteristiques du run DM-------- 3
@@ -33,7 +34,6 @@ debyetemp=      -1.0
  
  POTENTIEL EAM
  
- rang readdm iseed            1           1
  NTYP NPAIR            1           1
  Types d_atomes pour ce potentiel:
  CM, masse,type, NUMERO DU TYPE D ATOME
@@ -91,7 +91,7 @@ LE_MEILLEUR_DECOUPAGE :    2    1    1    2    0.9286
  Decoupage           1 :           4           4           2
  Decoupage           2 :           4           2           0
  Decoupage           3 :           4           2           0
- Decoupage          -2 :    33080464           4           4
+ Decoupage          -2 :    36324496           4           4
  Decoupage          -1 :           0           4           4
  Decoupage           0 :           4           4           2
  Decoupage           1 :           4           4           2
