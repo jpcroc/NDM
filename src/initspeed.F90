@@ -133,7 +133,7 @@ contains
       if (myidsp==0) write(6,*)'tempsauv ',tempsauv
        select type (atcf)
        class is (atom_config_e)
-          atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-atcf%vp(:,:atcf%im)*tstep
+                   if (atcf%lxpp)  atcf%xpp(1:3,1:atcf%im) = atcf%xp(1:3,1:atcf%im)-atcf%vp(1:3,1:atcf%im)*tstep
        end select
        !     vp(:,:im)=vp(:,:im)*tstep/oldtstep
 
@@ -154,7 +154,7 @@ contains
           
           select type (atcf)
           class is (atom_config_e)
-             atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-atcf%vp(:,:atcf%im)*tstep
+                   if (atcf%lxpp)              atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-atcf%vp(:,:atcf%im)*tstep
           end select
        endif
 
@@ -391,7 +391,7 @@ contains
           atcf%vp(:,:atcf%im) = atcf%vp(:,:atcf%im)*vv
           select type (atcf)
           class is (atom_config_e)
-          atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-atcf%vp(:,:atcf%im)*tstep
+                   if (atcf%lxpp)           atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-atcf%vp(:,:atcf%im)*tstep
           end select
 
        end if
