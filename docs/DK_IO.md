@@ -10,8 +10,9 @@ NDM can be compiled with the DynamicsKit IO library allowing new input/output fo
 
 ### Compile NDM with DK_IO:
 
+
+##Works only with GNU compilers for now
 ```bash
-#Works only with GNU compilers for now
 mkdir build
 cd build
 cmake .. #Check that NDM_OPT_DK-IO=ON or add -D NDM_OPT_DK-IO=ON

@@ -24,6 +24,10 @@ using command lines and/or ASCII files.
 
 NDM can be compiled and run on any Unix-like system .
 
+### Documentation 
+
+See the docs directory for help files 
+
 ### Compilation
 
 NDM can be compiled using cmake (version 3.20).
