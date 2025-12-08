@@ -133,7 +133,7 @@ contains
       if (myidsp==0) write(6,*)'tempsauv ',tempsauv
        select type (atcf)
        class is (atom_config_e)
-          if (atcf%lxpp)       atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*tstep/oldtstep
+          atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-atcf%vp(:,:atcf%im)*tstep
        end select
        !     vp(:,:im)=vp(:,:im)*tstep/oldtstep
 
@@ -150,11 +150,12 @@ contains
              lvpread=.false. ; goto 1
           end if
           vv = sqrt(tinit/tempsauv)
-       select type (atcf)
-       class is (atom_config_e)
-          if (atcf%lxpp) atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*vv
-       end select
           atcf%vp(:,:atcf%im) = atcf%vp(:,:atcf%im)*vv
+          
+          select type (atcf)
+          class is (atom_config_e)
+             atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-atcf%vp(:,:atcf%im)*tstep
+          end select
        endif
 
     else
@@ -387,20 +388,19 @@ contains
        tempsauv=tempinstT(atcf)
        if (tempsauv.ne.0)       then
           vv = sqrt(tinit/tempsauv)
+          atcf%vp(:,:atcf%im) = atcf%vp(:,:atcf%im)*vv
           select type (atcf)
           class is (atom_config_e)
-             if (atcf%lxpp) atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-(atcf%xp(:,:atcf%im)-atcf%xpp(:,:atcf%im))*vv
+          atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-atcf%vp(:,:atcf%im)*tstep
           end select
-          atcf%vp(:,:atcf%im) = atcf%vp(:,:atcf%im)*vv
+
        end if
     endif
     !     write(6,*)'sortie initspeed'
     select type (atcf)
     class is (atom_config_e)
        if (atcf%lxpp) then 
-          atcf%xpp(1,:atcf%im) = atcf%xp(1,:atcf%im)-atcf%vp(1,:atcf%im)*tstep
-          atcf%xpp(2,:atcf%im) = atcf%xp(2,:atcf%im)-atcf%vp(2,:atcf%im)*tstep
-          atcf%xpp(3,:atcf%im) = atcf%xp(3,:atcf%im)-atcf%vp(3,:atcf%im)*tstep
+          atcf%xpp(:,:atcf%im) = atcf%xp(:,:atcf%im)-atcf%vp(:,:atcf%im)*tstep
        end if
     end select
     
