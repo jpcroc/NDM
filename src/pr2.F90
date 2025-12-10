@@ -39,7 +39,7 @@ module Parrinello_Rahman
   USE T_kind_param_m
   USE gen_com_m, ONLY:ecellpr,kcell,kine,knose,lpcon2,lthoover,nhoover,sigext,ucell,erg2ev,&
        &kcell,kine,knose,leev,lthoover,lucell,nhoover,timel,wboxf,wnose,zhoover, ihbox0 ,tbox, bk,&
-       &potist,sig,sigtot,text,tstep,iteration,potist,rang,sig,text,sigkine,lpcube,&
+       &potist,sigtot,text,tstep,iteration,potist,rang,sig,text,sigkine,lpcube,&
        &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype,usdh,llangevin,gamlg,gamprfact,unitP,&
        & lmaxvp,vplim,astarsig,sig0dir,thsig,lpconxyz
   
@@ -368,24 +368,37 @@ contains
     integer::ib
 
     
-    if (lpconxyz) then
-       sigtot(2,1)=0
-       sigtot(1,2)=0
-       sigtot(3,1)=0
-       sigtot(1,3)=0
-       sigtot(2,3)=0
-       sigtot(3,2)=0
-    end if
-
-    sigrel=sigtot
-    if (any(astarsig.eqv..true.)) then
-       call set_MP(boxndm,astarsig,sigtot,sigrel)
-    end if
+!!$    if (lpconxyz) then
+!!$       sigtot(2,1)=0
+!!$       sigtot(1,2)=0
+!!$       sigtot(3,1)=0
+!!$       sigtot(1,3)=0
+!!$       sigtot(2,3)=0
+!!$       sigtot(3,2)=0
+!!$    end if
+!!$
+!!$    sigrel=sigtot
+!!$    if (any(astarsig.eqv..true.)) then
+!!$       call set_MP(boxndm,astarsig,sigtot,sigrel)
+!!$    end if
 !!$    write(6,*) 'sigrel' ,sigrel(:,1)
 !!$    write(6,*) 'sigrel' ,sigrel(:,2)p
 !!$    write(6,*) 'sigrel' ,sigrel(:,3)
     select case(dmtype)
     case(24)
+    if (lpconxyz) then
+       sig(2,1)=0
+       sig(1,2)=0
+       sig(3,1)=0
+       sig(1,3)=0
+       sig(2,3)=0
+       sig(3,2)=0
+    end if
+
+    sigrel=sig
+    if (any(astarsig.eqv..true.)) then
+       call set_MP(boxndm,astarsig,sig,sigrel)
+    end if
           
        !       write(6,*)'IN',atpr%xp(1,1)
        ! Coordonnées réduites des atomes (au cas où elles ont été modifiées à l'extérieur)
@@ -514,13 +527,27 @@ contains
 
        if ((any(astarsig.eqv..true.)).or.(any(sig0dir.ne.0))) then
        else
-          thsig=maxval(abs(sigtot-sigext))   
+          thsig=maxval(abs(sig-sigext))   
        end if
        
        
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        ! LPR +LANGEVIN : evolution de VP en corrdonnées réelles pour éviter de se tromper dans les dimensions       
     case(88)
+    if (lpconxyz) then
+       sigtot(2,1)=0
+       sigtot(1,2)=0
+       sigtot(3,1)=0
+       sigtot(1,3)=0
+       sigtot(2,3)=0
+       sigtot(3,2)=0
+    end if
+
+    sigrel=sigtot
+    if (any(astarsig.eqv..true.)) then
+       call set_MP(boxndm,astarsig,sigtot,sigrel)
+    end if
+
        call comm_space%barrier
        select type(atpr)
        class is (atom_config_e)
@@ -636,8 +663,22 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     case(22,8)
+       
        if (dmtype==22) then
-
+          if (lpconxyz) then
+             sig(2,1)=0
+             sig(1,2)=0
+             sig(3,1)=0
+             sig(1,3)=0
+             sig(2,3)=0
+             sig(3,2)=0
+          end if
+          
+          sigrel=sig
+          if (any(astarsig.eqv..true.)) then
+             call set_MP(boxndm,astarsig,sig,sigrel)
+          end if
+          
           do i = 1, atpr%im
              do ic = 1, 3
                 if (atpr%vp(ic,i)*atpr%fp(ic,i)<0) then
@@ -645,7 +686,7 @@ contains
                 end if
              end do
           end do
-          forcebox(:,:)=MatMul( sigtot(:,:) - sigext(:,:), boxndm%invtrh(:,:) )
+          forcebox(:,:)=MatMul( sigrel(:,:) - sigext(:,:), boxndm%invtrh(:,:) )
           do i = 1, 3
              do ic = 1, 3
                 if (boxndm%hdot(ic,i)*forcebox(ic,i)<0) then
@@ -653,6 +694,21 @@ contains
                 end if
              end do
           end do
+       else
+          if (lpconxyz) then
+             sigtot(2,1)=0
+             sigtot(1,2)=0
+             sigtot(3,1)=0
+             sigtot(1,3)=0
+             sigtot(2,3)=0
+             sigtot(3,2)=0
+          end if
+          
+          sigrel=sigtot
+          if (any(astarsig.eqv..true.)) then
+             call set_MP(boxndm,astarsig,sigtot,sigrel)
+          end if
+          
        end if
 
        !    case(8)
@@ -673,11 +729,11 @@ contains
        IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
           boxndm%hdot(:,:) = ( 1.d0 - 0.5d0*tstep*zHoover(1) - 0.5d0/tbox )* boxndm%hdot(:,:)*ihbox0(:,:) &
                + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( &
-               &sigtot(:,:) - sigext(:,:), boxndm%invtrh(:,:) )*ihbox0(:,:)
+               &sigrel(:,:) - sigext(:,:), boxndm%invtrh(:,:) )*ihbox0(:,:)
        ELSE        ! Équation sans force de friction supplémentaire
           boxndm%hdot(:,:) = ( 1.d0 - 0.5d0*tstep*zHoover(1) )* boxndm%hdot(:,:)*ihbox0(:,:) &
                + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul(&
-               &sigtot(:,:) - sigext(:,:), boxndm%invtrh(:,:) )*ihbox0(:,:)
+               &sigrel(:,:) - sigext(:,:), boxndm%invtrh(:,:) )*ihbox0(:,:)
        END IF
        !          write(6,*)'hdot',hdot
        ! Coordonnées réduites des atomes à l'instant t+dt
@@ -748,14 +804,27 @@ contains
        ! (la contrainte cinétique est calculée à l'instant t
        ! et la contrainte potentielle à l'instant t+dt)
        sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
+    if (lpconxyz) then
+       sigtot(2,1)=0
+       sigtot(1,2)=0
+       sigtot(3,1)=0
+       sigtot(1,3)=0
+       sigtot(2,3)=0
+       sigtot(3,2)=0
+    end if
+
+    sigrel=sigtot
+    if (any(astarsig.eqv..true.)) then
+       call set_MP(boxndm,astarsig,sigrel,sigrel)
+    end if
 
        ! Estimation de la dérivée du tenseur h à l'instant t+dt
        IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
           hdot_new(:,:) = 1.d0/(1.d0+0.5d0*tstep*zHoover(1)+ 0.5d0/tbox )*( boxndm%hdot(:,:)*ihbox0(:,:) &
-               + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul(sigtot(:,:)-sigext(:,:),boxndm%invtrh(:,:)))*ihbox0(:,:)
+               + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul(sigrel(:,:)-sigext(:,:),boxndm%invtrh(:,:)))*ihbox0(:,:)
        ELSE        ! Équation sans force de friction supplémentaire
           hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) )*( boxndm%hdot(:,:)*ihbox0(:,:) &
-               + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul(sigtot(:,:)-sigext(:,:),boxndm%invtrh(:,:)))*ihbox0(:,:)
+               + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul(sigrel(:,:)-sigext(:,:),boxndm%invtrh(:,:)))*ihbox0(:,:)
        END IF
        ! Estimation de la dérivée du tenseur Gmat à l'instant t+dt
        DO i=1, 3
@@ -949,7 +1018,7 @@ contains
     sigt=matmul(sigt,atp)
     sigt0(:,:)=0
     sigt0(1,1)=sigt(1,1)
-    thsig=sigt(1,1)
+    thsig=abs(sigt(1,1))
  !   write(6,*)'thsig',thsig*unitP
     sigr=matmul(atp,sigt0)
     sigr=matmul(sigr,tMP)
