@@ -389,27 +389,38 @@ contains
        end if
 
     end if
-    if (present (rty))then
-       tyw=>rty
-    else
+
+#ifdef DKIO
+    ! Pour l'export au format lammps, DK_IO fait correspondre tyw avec ty pour retrouver ityp (qui n'est pas transmis).
+    ! Il faut donc que tyw contienne ty(atmol%ityp(1:atmol%im)).
+    if (format=='lammps') then
        allocate(tyw(atmol%imm))
        tyw(1:atmol%im)=ty(atmol%ityp(1:atmol%im))
+    else
+#endif
+       if (present (rty))then
+          tyw=>rty
+       else
+          allocate(tyw(atmol%imm))
+          tyw(1:atmol%im)=ty(atmol%ityp(1:atmol%im))
+       end if
+       !      end if
+       select type (atmol)
+       class is (atom_config_arps)
+          do i=1,atmol%im
+             select case (atmol%mov(i))
+             case(0)
+                tyw(i)=' Re'
+             case(1)
+                tyw(i)=' In'
+             case(2)
+                tyw(i)=' Mo'
+             end select
+          end do
+       end select
+#ifdef DKIO
     end if
-    !      end if
-    select type (atmol)
-    class is (atom_config_arps)
-       do i=1,atmol%im
-          select case (atmol%mov(i))
-          case(0)
-             tyw(i)=' Re'
-          case(1)
-             tyw(i)=' In'             
-          case(2)
-             tyw(i)=' Mo'
-          end select
-       end do
-    end select
-    
+#endif
     if (latc) then
        if (ivisum < 10 .or. ivisum > 30) then
          call writepos(ivisum, im_glob,atmol%xp,tyw,atmol%ityp,atmol%num_at_glob,luvisu,boxmol%at,boxmol%bg,laux,nauxw,vauxw)
