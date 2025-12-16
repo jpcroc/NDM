@@ -62,7 +62,7 @@ contains
         type(FileInfo), intent(out), optional :: info
         type(FException), intent(out), optional :: stat
 !------
-        integer :: a, i, iostat, nFields, atoms_count
+        integer :: a, i, iostat, nFields, atoms_count, start, end
         integer :: x, y, z, vx, vy, vz, fx, fy, fz, mass, read
         character(:), allocatable :: buffer
         type(FException) :: stat_, istat
@@ -139,9 +139,18 @@ contains
                     exit body
                 end if
 
-                tags(i) = buffer(:8)
+                ! Read atom tag
+                start = 1
+                do while(start < len(buffer) .and. is_whitespace(buffer(start:start)))
+                    start = start + 1
+                end do
+                end = start + 1
+                do while (end < len(buffer) .and. .not. is_whitespace(buffer(end:end)))
+                    end = end + 1
+                end do
 
-                buffer(:8) = " "
+                tags(i) = buffer(start:end-1)
+                buffer(start:end-1) = " "
 
                 call read_array(buffer, data_array, read)
 
@@ -428,7 +437,7 @@ contains
 
             if (size(tags) /= size(positions, 2)) then
                 call istat%raise(FExceptionDescription("The tags array has the wrong size.", &
-                    "When writing the extended CFG file " // bold(filename) // ":"))
+                    "When writing the extended XYZ file " // bold(filename) // ":"))
                 exit body
             end if
 
@@ -461,7 +470,7 @@ contains
             if (present(include)) then
                 if (size(include) /= size(positions, 2)) then
                     call istat%raise(FExceptionDescription("The atomic mask has the wrong size.", &
-                        "When writing the extended CFG file " // bold(filename) // ":"))
+                        "When writing the extended XYZ file " // bold(filename) // ":"))
                     exit body
                 end if
                 allocate(mask, source=include)
