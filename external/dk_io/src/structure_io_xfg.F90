@@ -41,7 +41,7 @@ submodule (dk_structure_io) dk_structure_io_xfg
     use dk_string, only: FString
     
     use dk_exception, only: FException, FExceptionDescription
-    use ext_character, only: operator(//), bold, colour, upper_case
+    use ext_character, only: operator(//), bold, colour, upper_case, is_whitespace
 
     implicit none(external, type)
 
@@ -131,7 +131,7 @@ contains
         type(FileInfo), intent(out), optional :: info
         type(FException), intent(out), optional :: stat
 !------
-        integer :: a, i, j, iostat, n, nFields, atoms_count
+        integer :: a, i, j, iostat, n, nFields, atoms_count, begin, end
         integer :: fx, fy, fz, vx, vy, vz, read
         character(:), allocatable :: buffer, comp, keyword, value
         type(FException) :: stat_, istat
@@ -448,9 +448,17 @@ contains
             ! Prepare the data arrays
             allocate(dataArray(nFields))
 
-            ! Read the mass and species of the first atom
+            ! Read the species of the first atom
             call input_file%read_line(buffer, stat=stat_)
-            current_tag = trim(adjustl(buffer))
+            begin = 1
+            do while(begin < len(buffer) .and. is_whitespace(buffer(begin:begin)))
+                begin = begin + 1
+            end do
+            end = begin + 1
+            do while (end < len(buffer) .and. .not. is_whitespace(buffer(end:end)))
+                end = end + 1
+            end do
+            current_tag = buffer(begin:end-1)
 
             ! Read all the atoms
             i = 0
@@ -482,7 +490,15 @@ contains
 
                     ! The next line should be the species of the next atom
                     call input_file%read_line(buffer, stat=stat_)
-                    current_tag = trim(adjustl(buffer))
+                    begin = 1
+                    do while(begin < len(buffer) .and. is_whitespace(buffer(begin:begin)))
+                        begin = begin + 1
+                    end do
+                    end = begin + 1
+                    do while (end < len(buffer) .and. .not. is_whitespace(buffer(end:end)))
+                        end = end + 1
+                    end do
+                    current_tag = buffer(begin:end-1)
 
                     ! The line after that should be the definition of the next atom
                     call input_file%read_line(buffer, stat=stat_)

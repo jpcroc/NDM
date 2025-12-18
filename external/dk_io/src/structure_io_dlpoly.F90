@@ -143,7 +143,7 @@ contains
         type(FException) :: istat
         character(:), allocatable :: line, config_keys_line, history_keys_line, timestep_line
         integer :: iostat, num_fields, pbc, num_atoms, num_frames, num_records, i, j, read_atoms
-        integer :: n
+        integer :: n, start, end
         real(e), dimension(3,3) :: ibox
         type(Token) :: error_token
 !------
@@ -272,20 +272,32 @@ contains
 !------- Read atomic data
             read_atoms = 0
             do i=1, num_atoms
-                if (len_trim(line) < 9) then
+
+                ! Read the tag of the current atom
+                start = 1
+                do while(start < len(line) .and. is_whitespace(line(start:start)))
+                    start = start + 1
+                end do
+                end = start + 1
+                do while (end < len(line) .and. .not. is_whitespace(line(end:end)))
+                    end = end + 1
+                end do
+
+                if (is_whitespace(line(start:end-1))) then
                     call istat%raise(DlpolyFileError(input_file, &
-                        "Expected atom tag.", line, trim(adjustl(line))))
+                        "Expected atom tag.", line, line(start:end-1)))
                     exit body
                 end if
 
-                read(line(9:),*,iostat=iostat) j
-                read_atoms = read_atoms + 1
+                ! Read the identifier of the current atom
+                read(line(end:),*,iostat=iostat) j
                 if (iostat /= 0) then
                     call istat%raise(DlpolyFileError(input_file, &
                         "Invalid atom identifier.", line, trim(adjustl(line(9:)))))
                     exit body
                 end if
-                tags(j) = line(:8)
+                tags(j) = line(start:end-1)
+                read_atoms = read_atoms + 1
 
                 call input_file%read_line(line, stat=istat)
                 if (istat /= 0) then

@@ -154,7 +154,10 @@ contains
             if (string(i:i) == " ") cycle
 
             c = c + 1
-            if (c == n) start = i
+            if (c == n) then
+                start = i
+                end = i
+            end if
 
             do while(i < len(string))
                 i = i + 1
