@@ -175,11 +175,11 @@ contains
     real(double),dimension(3)::x0,xi
 
     integer,allocatable::nb_at_typ(:),last_at_typ(:),iatvac(:)
-    integer :: iclose
+    integer :: iclose,k
     logical::l2close,lcloseP
-    integer::numproc,iatint,icelj,jjj
+    integer::numproc,iatint,icelj,jjj,icelj2
     integer::formatsauv=5
-    integer::jint,iinttot,numcell,imt,iold,irang,pvactot,dvactot
+    integer::jint,iinttot,numcell,imt,iold,irang,pvactot,dvactot,ilocvac
     logical::lsuiv,lcrea0
     character::fnamcout*80
     character :: extension*7
@@ -434,13 +434,27 @@ contains
              end do lty
 
              do ivactot=1,nvactot
+                ilocvac=atomvac%iloc(ivactot)
                 if (comm_space%rank==atomvac%iproc(ivactot)) then
-                   icelj=atdml%ielat(atomvac%iloc(ivactot))
+                   icelj=atdml%ielat(ilocvac)
+                   icelj2=atdml%ielat(atdml%im)
                    call atdml%switch_atom(atomvac%iloc(ivactot),atdml%im)
                    atdml%im=atdml%im-1
-                   do jjj=1,celndm%nato(icelj)
-                      if (celndm%atincel(jjj,icelj)==atdml%im+1) celndm%atincel(jjj,icelj)=atomvac%iloc(ivactot)
-                   end do
+                   loopj1: do jjj=1,celndm%nato(icelj)
+                      if (celndm%atincel(jjj,icelj)==ilocvac) then  !celndm%atincel(jjj,icelj)=atomvac%iloc(ivactot)
+                         do k=jjj,celndm%nato(icelj)-1
+                            celndm%atincel(k,icelj)=celndm%atincel(k+1,icelj)
+                         end do
+                         celndm%nato(icelj)=celndm%nato(icelj)-1
+                         exit loopj1
+                      end if
+                   end do loopj1
+                   loopj2: do jjj=1,celndm%nato(icelj2)
+                      if (celndm%atincel(jjj,icelj2)==atdml%im+1) then
+                         celndm%atincel(jjj,icelj2)=ilocvac
+                         exit loopj2
+                      end if
+                   end do loopj2
                 end if
              end do
              if (myidsp==0) then

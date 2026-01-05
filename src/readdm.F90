@@ -411,7 +411,7 @@ contains
     rcangle=rcangle*1d-8
     rcrdf=rcrdf*1d-8
     lprahman=lpr
-
+    sig0stara=.false.; sig0starb=.false.;  sig0starc=.false.; 
     distminat=distminat*1d-8
     tsmin=tsmin*1d-15
     depmaxts=depmaxts*1d-8

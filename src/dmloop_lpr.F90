@@ -72,6 +72,7 @@ contains
        !  write(6,*)'dml potist ',potist,atpr%potist
        call prNose(atpr,celndm,boxndm%box_config,psc)
     ELSE ! Parinello-Rahman with Nose-Hoover thermostat or constant energy
+       call analyseT(atpr,celndm,boxndm%box_config,psc)
        call pr1(atpr,celndm,boxndm,psc)
        timel=timel+tstep
     END IF
