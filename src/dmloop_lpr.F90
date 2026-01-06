@@ -61,7 +61,6 @@ contains
     iteration = iteration+1
     IF (lTNose) THEN ! Parrinello-Rahman with Nose thermostat
        CALL CalFo(sig,potist,atpr,celndm,boxndm%box_config,t_sigma=.true.,psc=psc)
-
        !  CALL CalFo(sig,potist,atpr,celndm)
        if (l2t)then
           if (i2t==1)  call calceloss (celndm,atpr)
