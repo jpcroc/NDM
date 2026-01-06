@@ -1023,11 +1023,13 @@ contains
           if (dir == 0) then
              call config_atom_old_1%copy_config(config_atom_nplus1(ipchemin), lrescl=.true.)
              boxmcgcpath(ipchemin)=box_old1
-             call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgcpath(ipchemin),lchktrav=.false.)
+             call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),&
+                  &lperiod,boxmcgcpath(ipchemin),lchktrav=.false.)
           else
              call config_atom_old_0%copy_config(config_atom_n(ipchemin), lrescl=.true.)
              boxmcgcpath(ipchemin)=box_old0
-             call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgcpath(ipchemin),lchktrav=.false.)
+             call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),&
+                  &lperiod,boxmcgcpath(ipchemin),lchktrav=.false.)
           end if
 
 !!!!! etape 2 pot chimique !!!!!!!!!
@@ -1182,11 +1184,13 @@ contains
               
              call config_atom_old_1%copy_config(config_atom_nplus1(ipchemin), lrescl=.true.)
              boxmcgcpath(ipchemin)=box_old1
-             call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),lperiod,boxmcgcpath(ipchemin),lchktrav=.false.)
+             call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),&
+                  &lperiod,boxmcgcpath(ipchemin),lchktrav=.false.)
           else
              call config_atom_old_0%copy_config(config_atom_n(ipchemin), lrescl=.true.)
              boxmcgcpath(ipchemin)=box_old0
-             call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgcpath(ipchemin),lchktrav=.false.)
+             call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),lperiod,boxmcgcpath(ipchemin),&
+                  &lchktrav=.false.)
           end if
           !on envoie l'ancienne conf a tous les procs
 #ifdef PARA

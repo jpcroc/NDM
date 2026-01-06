@@ -87,10 +87,12 @@ contains
        write (6,'(a)') 'nox noy noz and ghost cells from ru'
        do ic=1,3
           if( celsn%ismall(ic)) then
-             WRITE(6,'(a,i3,a,i5,a,g12.4)') ' GHOST DIRECTION',ic,' nox = ', nox(ic), ', =1+2*int(2*rum/boxsn%nzl(:))',rum/boxsn%nzl(ic)
+             WRITE(6,'(a,i3,a,i5,a,g12.4)') ' GHOST DIRECTION',ic,' nox = ', nox(ic), &
+                  &', =1+2*int(2*rum/boxsn%nzl(:))',rum/boxsn%nzl(ic)
 
           else
-             WRITE(6,'(a,i2,a,i3,a,g12.4,a,g12.4,a)') '  nox in direction ',ic,'=',nox(ic),' if not specified =Int( ', boxsn%nzl(1),'/',rum,') '
+             WRITE(6,'(a,i2,a,i3,a,g12.4,a,g12.4,a)') '  nox in direction ',ic,'=',nox(ic),&
+                  &' if not specified =Int( ', boxsn%nzl(1),'/',rum,') '
              !          WRITE(6,'(2(a,g12.4),a,i0)') '  noy = Int( ', boxsn%nzl(2),'/',rum,') = ', noy
              !          WRITE(6,'(2(a,g12.4),a,i0)') '  noz = Int( ', boxsn%nzl(3),'/',rum,') = ', noz
           END IF
