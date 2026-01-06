@@ -426,9 +426,12 @@ module plottpcel_mod
        write(unitlt,*)iteration,timel
        write(unitlt,*)'TEMP PER CELL'
        write(unitlt,*) '2 0.0 0.0 0.0'
-       write(unitlt,'(I6,3G17.9)')celcf%nox(1),1d8*boxcf%at(1,1)/celcf%nox(1),1d8*boxcf%at(2,1)/celcf%nox(1),1d8*boxcf%at(3,1)/celcf%nox(1)
-       write(unitlt,'(I6,3G17.9)')celcf%nox(2),1d8*boxcf%at(1,2)/celcf%nox(2),1d8*boxcf%at(2,2)/celcf%nox(2),1d8*boxcf%at(3,2)/celcf%nox(2)
-       write(unitlt,'(I6,3G17.9)')celcf%nox(3),1d8*boxcf%at(1,3)/celcf%nox(3),1d8*boxcf%at(2,3)/celcf%nox(3),1d8*boxcf%at(3,3)/celcf%nox(3)
+       write(unitlt,'(I6,3G17.9)')celcf%nox(1),1d8*boxcf%at(1,1)/celcf%nox(1),1d8&
+            &*boxcf%at(2,1)/celcf%nox(1),1d8*boxcf%at(3,1)/celcf%nox(1)
+       write(unitlt,'(I6,3G17.9)')celcf%nox(2),1d8*boxcf%at(1,2)/celcf%nox(2),1d8&
+            &*boxcf%at(2,2)/celcf%nox(2),1d8*boxcf%at(3,2)/celcf%nox(2)
+       write(unitlt,'(I6,3G17.9)')celcf%nox(3),1d8*boxcf%at(1,3)/celcf%nox(3),1d8&
+            &*boxcf%at(2,3)/celcf%nox(3),1d8*boxcf%at(3,3)/celcf%nox(3)
        write(unitlt,'(A)') '1 0.0 0.0 0.0'
        opedg(:)=boxcf%at(:,1)+boxcf%at(:,2)+boxcf%at(:,3)
        write(unitlt,'(A,3G17.9)') '1 ', 1d8*opedg(1:3)
@@ -455,9 +458,12 @@ module plottpcel_mod
        write(unitlt,*)iteration,timel
        write(unitlt,*)'PRESS PER CELL'
        write(unitlt,*) '2 0.0 0.0 0.0'
-       write(unitlt,'(I6,3G17.9)')celcf%nox(1),1d8*boxcf%at(1,1)/celcf%nox(1),1d8*boxcf%at(2,1)/celcf%nox(1),1d8*boxcf%at(3,1)/celcf%nox(1)
-       write(unitlt,'(I6,3G17.9)')celcf%nox(2),1d8*boxcf%at(1,2)/celcf%nox(2),1d8*boxcf%at(2,2)/celcf%nox(2),1d8*boxcf%at(3,2)/celcf%nox(2)
-       write(unitlt,'(I6,3G17.9)')celcf%nox(3),1d8*boxcf%at(1,3)/celcf%nox(3),1d8*boxcf%at(2,3)/celcf%nox(3),1d8*boxcf%at(3,3)/celcf%nox(3)
+       write(unitlt,'(I6,3G17.9)')celcf%nox(1),1d8*boxcf%at(1,1)/celcf%nox(1),&
+            &1d8*boxcf%at(2,1)/celcf%nox(1),1d8*boxcf%at(3,1)/celcf%nox(1)
+       write(unitlt,'(I6,3G17.9)')celcf%nox(2),1d8*boxcf%at(1,2)/celcf%nox(2),&
+            &1d8*boxcf%at(2,2)/celcf%nox(2),1d8*boxcf%at(3,2)/celcf%nox(2)
+       write(unitlt,'(I6,3G17.9)')celcf%nox(3),1d8*boxcf%at(1,3)/celcf%nox(3),&
+            &1d8*boxcf%at(2,3)/celcf%nox(3),1d8*boxcf%at(3,3)/celcf%nox(3)
        write(unitlt,*) '1 0.0 0.0 0.0'
        opedg(:)=boxcf%at(:,1)+boxcf%at(:,2)+boxcf%at(:,3)
        write(unitlt,'(A,3G17.9)') '1 ', opedg(1:3)

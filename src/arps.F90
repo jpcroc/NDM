@@ -797,7 +797,7 @@ contains
 #ifdef PARA
 
     if (nprocspace.gt.1) then
-       call maj_tabdensity_ftm(tabdensity,atcf%imm,celcf%nato,atcf%num_at_glob,psc,atcf%im)
+       call maj_tabdensity_ftm(tabdensity,atcf%imm,atcf%num_at_glob,psc,atcf%im)
     end if
 
     !    write(3000+i,*)it
