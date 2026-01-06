@@ -113,9 +113,7 @@ contains
     distance0=1d10
     do i=1,atcf%im
        
-       if (present(itypt)) then
-          if (atcf%ityp(i).ne.itypt) cycle
-       end if
+       if (present(itypt).and.(atcf%ityp(i).ne.itypt)) cycle
        xp(:,1)=xptest(:)
        xp(:,2)=atcf%xp(:,i)
        call notperiod(2,xp,xpnp,boxcf%at,boxcf%bg,lperiod)

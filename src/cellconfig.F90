@@ -525,10 +525,8 @@ contains
 !                write(6,*)'atout',i,atcf%num_at_glob(i),rang,cell%proc_cell(koo),koo
 
                 if(.not.(any(psc%cell_ftm(:)==koo))) then
-                   write(6,'(A,6I7)')'WARNING ::: attrrav:i natg ielat rangem rangf newcell',i,&
-                        &atcf%num_at_glob(i),atcf%ielat(i),rang,cell%proc_cell(koo),koo
-                   write(6,'(A,6G15.7)')'WARNING ::: travelled from cell to cell ',cell%edge(atcf%ielat(i),boxcf)&
-                        &,cell%edge(koo,boxcf)
+                   write(6,'(A,6I7)')'WARNING ::: attrrav:i natg ielat rangem rangf newcell',i,atcf%num_at_glob(i),atcf%ielat(i),rang,cell%proc_cell(koo),koo
+                   write(6,'(A,6G15.7)')'WARNING ::: travelled from cell to cell ',cell%edge(atcf%ielat(i),boxcf) ,cell%edge(koo,boxcf)
                    ntrav=ntrav+1
                    if (ntrav==1) then
                       allocate(indtrav(maxtrav));allocate(proccib(maxtrav)); proccib=-1
