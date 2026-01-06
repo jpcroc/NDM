@@ -32,6 +32,9 @@ See the docs directory for help files
 
 NDM can be compiled using cmake (version 3.20).
 
+
+Git cloning is made with  "git clone git@github.com:jpcroc/NDM.git"
+
 #### Prerequisities
 It is recommended to use Intel's oneAPI suite including Intel's mpi implementation, the mpiifort wrapper and MKL but GNU compilers are also available.
 
@@ -104,9 +107,12 @@ examples:
   
   cmake .. -D NDM_PACKAGE_LIST=MILADY
   
-  cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS_DEBUG="-O0 -g -C -fpe-all=0 -traceback"
+  cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS_DEBUG="-O0 -g -C -fpe-all=0 -traceback" ! for intel debug version
 
-in this last example the debug options are passed explicitly (for ifort) 
+  cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS_DEBUG="-O0 -g -fcheck=all -fbacktrace -Wall -Wextra" ! for gfortran debug version
+
+
+in thess last examples the debug options are passed explicitly (for ifort and gfortran respectively) 
 
 To specify multiple values, for example for preprocessor definitions or packages, use semicolon separator:
 ```
