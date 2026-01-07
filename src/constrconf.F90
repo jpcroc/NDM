@@ -1053,11 +1053,13 @@ contains
 
     if (ldecalcor) then
        if (any(atrin(1:3,1:imcell)==0)) then
-          if ((rang==0).and.(lprt))  write(6,*)' atom configuration file with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +2e-7'
+          if ((rang==0).and.(lprt))  write(6,*)' atom configuration file with 0 coordinates; &
+&creates FAILURES,  POSITIONS SHIFTED By +2e-7'
           atrin(1:3,1:imcell)=atrin(1:3,1:imcell)+2e-7
        end if
        if (any(atrin(1:3,1:imcell)==1)) then
-          if ((rang==0).and.(lprt))  write(6,*)' atom configuration file with 1 coordinates; creates FAILURES,  POSITIONS SHIFTED By -1e-7'
+          if ((rang==0).and.(lprt))  write(6,*)' atom configuration file with 1 &
+&coordinates; creates FAILURES,  POSITIONS SHIFTED By -1e-7'
           atrin(1:3,1:imcell)=atrin(1:3,1:imcell)-1e-7
        end if
     end if

@@ -1,6 +1,8 @@
 #ifdef PARA
 module init_vois_mod
   use cellconfig,only:cell_config
+   USE arret_ndm_mod,only:arret_ndm
+
   use Tpara,only:para_space_config
   implicit none
 
@@ -141,7 +143,64 @@ subroutine init_voisinage (cellv,psc,lwrite)
      endif ! la cellule est locale
 
   enddo
+  block
+    integer::idx(1:psc%nbr_proc_voisin),unw
+
+!    unw=700+myidsp
+!    write(unw,*)'PVOIS',psc%proc_voisin
+!    write(unw,*)'nbrcf',psc%nbr_cell_frontiere
+ !   write(unw,*)psc%cell_frontiere
+!    write(unw,*)
+    call sort(psc%proc_voisin(1:psc%nbr_proc_voisin),idx)
+    psc%nbr_cell_frontiere(1:psc%nbr_proc_voisin)= psc%nbr_cell_frontiere(idx(1:psc%nbr_proc_voisin))
+    psc%cell_frontiere(1:psc%nbr_proc_voisin,:)=    psc%cell_frontiere(idx(1:psc%nbr_proc_voisin),:)
+
+!    write(unw,*)'PVOIS',psc%proc_voisin
+!    write(unw,*)'nbrcf',psc%nbr_cell_frontiere
+!    write(unw,*)psc%cell_frontiere
+
+  end block
+
+    
   if ((myidsp.le.2).or.(rang.ge.nprocspace-2))write(6,*)'rang rangspace ',rang, myidsp,' nbr procs voisins ', psc%nbr_proc_voisin
+
+!call arret_ndm
+!  call psc%print(unit=700+myidsp)
+
 end subroutine init_voisinage
+
+subroutine sort(Q,idx)
+  implicit none
+  integer::n
+  integer, intent(inout) :: Q(:)
+  integer, intent(out) :: idx(size(Q))
+
+    integer :: i, j
+    real    :: key
+    integer :: keyidx
+
+    ! Initialize index array
+    do i = 1, size(Q)
+        idx(i) = i
+    end do
+
+    ! Insertion sort
+    do i = 2, size(Q)
+        key    = Q(i)
+        keyidx = idx(i)
+        j = i - 1
+
+        do while (j >= 1 )
+           if (Q(j) <= key) exit
+            Q(j+1)   = Q(j)
+            idx(j+1) = idx(j)
+            j = j - 1
+        end do
+
+        Q(j+1)   = key
+        idx(j+1) = keyidx
+    end do
+  end subroutine sort
+
 end module init_vois_mod
 #endif
