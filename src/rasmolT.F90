@@ -459,7 +459,8 @@ contains
              call writepos(ivisum,im_proc,xp_proc,ty_proc,ityp_proc,natg_proc, luvisu,boxmol%at,boxmol%bg,laux,nauxw,aux_proc)
 #ifdef DKIO
           else
-             call reconstruction(atmol%im_glob,im_proc,natg_proc,xp_proc,ty_proc,ityp_proc,xposg,tywg,masses_g,vpg,lvelocities,aux_proc)
+             call reconstruction(atmol%im_glob,im_proc,natg_proc,xp_proc,ty_proc,ityp_proc,xposg,&
+                  &tywg,masses_g,vpg,lvelocities,aux_proc)
 #endif
           end if
 
@@ -478,13 +479,15 @@ contains
                 call writepos(ivisum,im_proc,xp_proc,ty_proc,ityp_proc,natg_proc, luvisu,boxmol%at,boxmol%bg,laux,nauxw,aux_proc)
 #ifdef DKIO
              else
-                call reconstruction(atmol%im_glob,im_proc,natg_proc,xp_proc,ty_proc,ityp_proc,xposg,tywg,masses_g,vpg,lvelocities,aux_proc)
+                call reconstruction(atmol%im_glob,im_proc,natg_proc,xp_proc,ty_proc,&
+                     &ityp_proc,xposg,tywg,masses_g,vpg,lvelocities,aux_proc)
 #endif
              end if
           enddo
 #ifdef DKIO
           if (ivisum > 9 .and. ivisum < 31) then
-             call dk_io_write(nameo,end_name,boxmol%at,boxmol%bg,trim(format),lvelocities,extension,xposg=xposg,masses_g=masses_g,vpg=vpg,tywg=tywg,img=atmol%im_glob)
+             call dk_io_write(nameo,end_name,boxmol%at,boxmol%bg,trim(format),lvelocities,extension,xposg=xposg,&
+                  &masses_g=masses_g,vpg=vpg,tywg=tywg,img=atmol%im_glob)
              deallocate(xposg)
              deallocate(tywg)
              deallocate(masses_g)
@@ -621,10 +624,13 @@ contains
              write(6,*)'no velocity in atom-config and export asked with velocities stop'
              call arret_ndm
           class is (atom_config_d)
-             call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, velocities=atcomp%vp(:,1:atcomp%im)*1d8*1d-12, masses=masses, elements=elements)
+             call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), &
+                  &tags, format=format, &
+                  &velocities=atcomp%vp(:,1:atcomp%im)*1d8*1d-12, masses=masses, elements=elements)
           end select
        else
-          call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), tags, format=format, masses=masses, elements=elements)
+          call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im),&
+               &tags, format=format, masses=masses, elements=elements)
        end if
 
        call cryst_to_cart (atcomp%im, atcomp%xp,  box,  1) !cryst vers cart

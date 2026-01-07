@@ -786,7 +786,8 @@ contains
 
     if (get_ityp == -1) then
        if (rang==0) then
-          write (6, *) 'Error: no match found between the atom tag read from the input position file and the atom types stored in ty:', tag, ty
+          write (6, *) 'Error: no match found between the atom tag read from the input position &
+&file and the atom types stored in ty:', tag, ty
        end if
        call arret_ndm
     end if

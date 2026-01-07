@@ -1006,6 +1006,7 @@ contains
        Pext = (sigext(1,1)+sigext(2,2)+sigext(3,3))/3.d0
        !=== Fin des modifications ================
        h0(1:3,1:3) = 1e-8*h0(1:3,1:3)
+
        if (sig0stara) then
           astarsig(1)=.true.
           ihbox0(:,2)=0
