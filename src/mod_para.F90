@@ -45,7 +45,7 @@ module mod_para
 !!$  real(double)::celsize(3)
 !!$  logical::ltpcel
 !!$  real(double),allocatable::sigc(:,:,:),tempc(:)
-  integer::ic1,ic2,ic3,ival
+  integer::ic1,ic2,ic3,ival,unw
   !---------------------------------------------------------!
   !               Routines spécifique à MPI                 !
   !---------------------------------------------------------!
@@ -71,19 +71,26 @@ contains
 
     atmp=> atcf
     celmp=>cellcf
-
-    call transfert_atomes_fantomes(psc)
+!    write(6,*)'IN MAJ1', rang
+!    call transfert_atomes_fantomes(psc)
     !The two commented routines below work with Irecv and Isend. I suspect they are creating bugs. Idem below. I replace them with blocking alternatives transfert_*
-    !    call envoi_atomes_fantomes(psc) ! On envoit les atomes qui n'appartiennent plus au processeur courant (qui sont passés  dans des cellules fantomes) caltabt les a mis dans ces cellules fantomes alors qu'ils étaient locaux avant
-    !    call reception_nouveaux_atomes(psc) ! On recoit les nouveaux atomes locaux (qui viennent des fantomes des procs voisins)
-    call elimine_atomes_fantomes(psc) ! On retire les atomes qui ne sont plus locaux (qui ont été envoyés par envoi_atomes_fantomes)
-    !    ne=4
-    !    call finalisation_envoi_atomes(ne,psc)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
+    call envoi_atomes_fantomes(psc) ! On envoit les atomes qui n'appartiennent plus au processeur courant (qui sont passés  dans des cellules fantomes) caltabt les a mis dans ces cellules fantomes alors qu'ils étaient locaux avant
+!    write(6,*)'IN MAJ2', rang
+    call reception_nouveaux_atomes(psc) ! On recoit les nouveaux atomes locaux (qui viennent des fantomes des procs voisins)
+!        write(6,*)'IN MAJ3', rang
+        call elimine_atomes_fantomes(psc) ! On retire les atomes qui ne sont plus locaux (qui ont été envoyés par envoi_atomes_fantomes)
+!        write(6,*)'IN MAJ4', rang
+        ne=4
+        call finalisation_envoi_atomes(ne,psc)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
+!        write(6,*)'IN MAJ5', rang
     ! En ce point les atomes du proc local sont à jours
-!    call envoi_atomes_frontieres(psc)     ! On envoit les atomes frontieres aux processeurs voisins
-    !    call reception_atomes_fantomes (psc)    ! On receptionne les nouveaux atomes fantomes
-    call transfert_atomes_frontieres(psc)
-!    call finalisation_envoi_atomes(ne,psc)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
+        call envoi_atomes_frontieres(psc)     ! On envoit les atomes frontieres aux processeurs voisins
+ !           write(6,*)'IN MAJ6', rang
+            call reception_atomes_fantomes (psc)    ! On receptionne les nouveaux atomes fantomes
+   !             write(6,*)'IN MAJ7', rang
+    !call transfert_atomes_frontieres(psc)
+                call finalisation_envoi_atomes(ne,psc)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
+  !              write(6,*)'IN MAJ8', rang
 
   end subroutine maj_atomes_frt_ftm
 
@@ -122,111 +129,301 @@ contains
     integer, intent(in)     :: imm, im
     integer, intent(in)     :: num_at_glob(imm)
     real(double)            :: tabdensity(imm)
-
-    call exchange_tabdensity_blocking(tabdensity, imm, num_at_glob, psc, im)
-
+!    write(6,*)'IN MAJa1', rang
+!    write(unw,*)'prec exch '; flush(unw)
+    call exchange_tabdensity_blocking_ordered(tabdensity, imm, num_at_glob, psc, im)
+!    write(6,*)'IN MAJa2', rang
   end subroutine maj_tabdensity_ftm
 
 
-  subroutine exchange_tabdensity_blocking(tabdensity, imm, num_at_glob, psc, im)
+subroutine exchange_tabdensity_blocking_ordered(tabdensity, imm, num_at_glob, psc, im)
 
-    use T_kind_param_m, only : double
-    implicit none
+  use T_kind_param_m, only : double
+  implicit none
 
-    type(para_space_config) :: psc
-    integer, intent(in)     :: imm, im
-    integer, intent(in)     :: num_at_glob(imm)
-    real(double)            :: tabdensity(imm)
+  type(para_space_config), intent(in) :: psc
+  integer, intent(in)     :: imm, im
+  integer, intent(in)     :: num_at_glob(imm)
+  real(double)            :: tabdensity(imm)
 
-    integer :: nproc_voisin, procv
-    integer :: nb_at_send, nb_at_recv
-    integer :: ncell_front, koo, n_at, i_at
-    integer :: i, ind_loc, ftm_at
+  integer :: nproc_voisin, procv
+  integer :: nb_at_send, nb_at_recv
+  integer :: ncell_front, koo, n_at, i_at
+  integer :: i, ind_loc, ftm_at
 
-    integer, allocatable :: send_ids(:), recv_ids(:)
-    real(double), allocatable :: send_val(:), recv_val(:)
+  integer, allocatable :: send_ids(:), recv_ids(:)
+  real(double), allocatable :: send_val(:), recv_val(:)
+  unw=700+myidsp
+  !====================================================
+  ! Pass 1: neighbors with LOWER ranks
+  !====================================================
+  do nproc_voisin = 1, psc%nbr_proc_voisin
+!     write(unw,*)'pass1.1 ',nproc_voisin ; flush(unw)
+     procv = psc%proc_voisin(nproc_voisin)
+     if (procv >= myidsp) cycle
+ !    write(unw,*)'pass1.2 ',nproc_voisin; flush(unw)
+     call exchange_one_neighbor_sendrecv_ordered( &
+          procv, tabdensity, imm, im, psc, &
+          send_ids, send_val, recv_ids, recv_val,nproc_voisin)
+  !   write(unw,*)'pass1.3 ',nproc_voisin; flush(unw)
+  end do
+!  write(6,*)'Pcall1',rang
+  !====================================================
+  ! Pass 2: neighbors with HIGHER ranks
+  !====================================================
+  do nproc_voisin = 1, psc%nbr_proc_voisin
+!     write(unw,*)'pass2.1 ',nproc_voisin
+     procv = psc%proc_voisin(nproc_voisin)
+     if (procv <= myidsp) cycle
+!     write(unw,*)'pass2.2 ',nproc_voisin; flush(unw)
+     call exchange_one_neighbor_sendrecv_ordered( &
+          procv, tabdensity, imm, im, psc, &
+          send_ids, send_val, recv_ids, recv_val,nproc_voisin)
+!     write(unw,*)'pass2.3 ',nproc_voisin; flush(unw)
+  end do
+ !    write(6,*)'Pcall2',rang
+end subroutine exchange_tabdensity_blocking_ordered
 
-    do nproc_voisin = 1, psc%nbr_proc_voisin
+subroutine exchange_one_neighbor_sendrecv_ordered( &
+     procv, tabdensity, imm, im, psc, &
+     send_ids, send_val, recv_ids, recv_val,iproc_voisin)
 
-       procv = psc%proc_voisin(nproc_voisin)
+  use T_kind_param_m, only : double
+  implicit none
 
-       !--------------------------------------------------
-       ! Build send buffers
-       !--------------------------------------------------
-       nb_at_send = 0
-       do ncell_front = 1, psc%nbr_cell_frontiere(nproc_voisin)
-          koo = psc%cell_frontiere(nproc_voisin, ncell_front)
-          nb_at_send = nb_at_send + celmp%nato(koo)
-       end do
+  integer, intent(in) :: procv, imm, im,iproc_voisin
+  type(para_space_config), intent(in) :: psc
+  real(double) :: tabdensity(imm)
 
-       allocate(send_ids(nb_at_send))
-       allocate(send_val(nb_at_send))
+  integer :: nb_at_send, nb_at_recv
+  integer :: ncell_front, koo, n_at, i_at
+  integer :: i, ind_loc, ftm_at
 
-       i = 0
-       do ncell_front = 1, psc%nbr_cell_frontiere(nproc_voisin)
-          koo = psc%cell_frontiere(nproc_voisin, ncell_front)
-          do n_at = 1, celmp%nato(koo)
-             i_at = celmp%atincel(n_at, koo)
-             i = i + 1
-             send_ids(i) = atmp%num_at_glob(i_at)
-             send_val(i) = tabdensity(i_at)
-          end do
-       end do
+  integer, allocatable :: send_ids(:), recv_ids(:)
+  real(double), allocatable :: send_val(:), recv_val(:)
 
-       !--------------------------------------------------
-       ! Ordered blocking communication (deadlock-safe)
-       !--------------------------------------------------
-       if (myidsp < procv) then
+  !----------------------------------------
+  ! Build send buffers
+  !----------------------------------------
+  nb_at_send = 0
+  do ncell_front = 1, psc%nbr_cell_frontiere(iproc_voisin)
+     koo = psc%cell_frontiere(iproc_voisin, ncell_front)
+     nb_at_send = nb_at_send + celmp%nato(koo)
+  end do
 
-          call MPI_SEND(nb_at_send, 1, MPI_INTEGER, procv, 3001, MPI_COMM_space, ierr)
-          call MPI_SEND(send_ids, nb_at_send, MPI_INTEGER, procv, 3002, MPI_COMM_space, ierr)
-          call MPI_SEND(send_val, nb_at_send, NDM_MPI_REAL_DOUBLE, procv, 3003, MPI_COMM_space, ierr)
+  allocate(send_ids(nb_at_send))
+  allocate(send_val(nb_at_send))
 
-          call MPI_RECV(nb_at_recv, 1, MPI_INTEGER, procv, 3001, MPI_COMM_space, status, ierr)
-          allocate(recv_ids(nb_at_recv), recv_val(nb_at_recv))
-          call MPI_RECV(recv_ids, nb_at_recv, MPI_INTEGER, procv, 3002, MPI_COMM_space, status, ierr)
-          call MPI_RECV(recv_val, nb_at_recv, NDM_MPI_REAL_DOUBLE, procv, 3003, MPI_COMM_space, status, ierr)
+  i = 0
+  do ncell_front = 1, psc%nbr_cell_frontiere(iproc_voisin)
+     koo = psc%cell_frontiere(iproc_voisin, ncell_front)
+     do n_at = 1, celmp%nato(koo)
+        i_at = celmp%atincel(n_at, koo)
+        i = i + 1
+        send_ids(i) = atmp%num_at_glob(i_at)
+        send_val(i) = tabdensity(i_at)
+     end do
+  end do
+!  write(unw,*)'avant echange piloté parproc', myidsp,' vers/depuis inice voisin indice genéral',iproc_voisin,procv; flush(unw)
+  !----------------------------------------
+  ! Ordered blocking exchange
+  !----------------------------------------
+  if (myidsp < procv) then
+     ! I SEND FIRST
+!     write(unw,*)'proc', myidsp,' va envoyer à ',iproc_voisin,procv; flush(unw)
+     call MPI_SEND(nb_at_send, 1, MPI_INTEGER, procv, 3001, MPI_COMM_space, ierr)
+     call MPI_SEND(send_ids, nb_at_send, MPI_INTEGER, procv, 3002, MPI_COMM_space, ierr)
+     call MPI_SEND(send_val, nb_at_send, NDM_MPI_REAL_DOUBLE, procv, 3003, MPI_COMM_space, ierr)
+!     write(unw,*)'proc', myidsp,' A ENVOYE à/ va recevoir ',iproc_voisin,procv; flush(unw)
+     call MPI_RECV(nb_at_recv, 1, MPI_INTEGER, procv, 3001, MPI_COMM_space, status, ierr)
+     allocate(recv_ids(nb_at_recv))
+     allocate(recv_val(nb_at_recv))
+     call MPI_RECV(recv_ids, nb_at_recv, MPI_INTEGER, procv, 3002, MPI_COMM_space, status, ierr)
+     call MPI_RECV(recv_val, nb_at_recv, NDM_MPI_REAL_DOUBLE, procv, 3003, MPI_COMM_space, status, ierr)
+!     write(unw,*)'proc', myidsp,' a recu de ',iproc_voisin,procv; flush(unw)
+  else
+     ! I RECV FIRST
+ !    write(unw,*)'proc', myidsp,' va recevoir de ',iproc_voisin,procv; flush(unw)
+     call MPI_RECV(nb_at_recv, 1, MPI_INTEGER, procv, 3001, MPI_COMM_space, status, ierr)
+     allocate(recv_ids(nb_at_recv))
+     allocate(recv_val(nb_at_recv))
+     call MPI_RECV(recv_ids, nb_at_recv, MPI_INTEGER, procv, 3002, MPI_COMM_space, status, ierr)
+     call MPI_RECV(recv_val, nb_at_recv, NDM_MPI_REAL_DOUBLE, procv, 3003, MPI_COMM_space, status, ierr)
+  !   write(unw,*)'proc', myidsp,' a recu de/va envoyé ',iproc_voisin,procv; flush(unw)
+     call MPI_SEND(nb_at_send, 1, MPI_INTEGER, procv, 3001, MPI_COMM_space, ierr)
+     call MPI_SEND(send_ids, nb_at_send, MPI_INTEGER, procv, 3002, MPI_COMM_space, ierr)
+     call MPI_SEND(send_val, nb_at_send, NDM_MPI_REAL_DOUBLE, procv, 3003, MPI_COMM_space, ierr)
+   !  write(unw,*)'proc', myidsp,' a envoyé à ',iproc_voisin,procv; flush(unw)
+  end if
+!  write(unw,*)'proc', myidsp,' fin des echanges avec ',iproc_voisin,procv; flush(unw)
 
-       else
+  !----------------------------------------
+  ! Update ghost atoms
+  !----------------------------------------
+  do i = 1, nb_at_recv
+     ind_loc = -1
+     do ftm_at = im+1, imm
+        if (atmp%num_at_glob(ftm_at) == recv_ids(i)) then
+           ind_loc = ftm_at
+           exit
+        end if
+     end do
 
-          call MPI_RECV(nb_at_recv, 1, MPI_INTEGER, procv, 3001, MPI_COMM_space, status, ierr)
-          allocate(recv_ids(nb_at_recv), recv_val(nb_at_recv))
-          call MPI_RECV(recv_ids, nb_at_recv, MPI_INTEGER, procv, 3002, MPI_COMM_space, status, ierr)
-          call MPI_RECV(recv_val, nb_at_recv, NDM_MPI_REAL_DOUBLE, procv, 3003, MPI_COMM_space, status, ierr)
+     if (ind_loc < 0) then
+        write(6,*) myidsp, 'Error: ghost atom not found', recv_ids(i)
+        call MPI_ABORT(MPI_COMM_space, 1, ierr)
+     end if
 
-          call MPI_SEND(nb_at_send, 1, MPI_INTEGER, procv, 3001, MPI_COMM_space, ierr)
-          call MPI_SEND(send_ids, nb_at_send, MPI_INTEGER, procv, 3002, MPI_COMM_space, ierr)
-          call MPI_SEND(send_val, nb_at_send, NDM_MPI_REAL_DOUBLE, procv, 3003, MPI_COMM_space, ierr)
+     tabdensity(ind_loc) = recv_val(i)
+  end do
 
-       end if
+  deallocate(send_ids, send_val, recv_ids, recv_val)
 
-       !--------------------------------------------------
-       ! Update ghost atoms
-       !--------------------------------------------------
-       do i = 1, nb_at_recv
-          ind_loc = -1
-          do ftm_at = im+1, imm
-             if (atmp%num_at_glob(ftm_at) == recv_ids(i)) then
-                ind_loc = ftm_at
-                exit
-             end if
-          end do
+end subroutine exchange_one_neighbor_sendrecv_ordered
 
-          if (ind_loc < 0) then
-             write(6,*) myidsp, 'Error: ghost atom not found',i,recv_ids(i),nproc_voisin,procv
-             write(6,*)recv_ids
-             call MPI_ABORT(MPI_COMM_space, 1, ierr)
-          end if
-
-          tabdensity(ind_loc) = recv_val(i)
-       end do
-
-       deallocate(send_ids, send_val, recv_ids, recv_val)
-
-    end do
-
-  end subroutine exchange_tabdensity_blocking
-
+!!$
+!!$
+!!$  subroutine exchange_tabdensity_blocking(tabdensity, imm, num_at_glob, psc, im)
+!!$
+!!$    use T_kind_param_m, only : double
+!!$    implicit none
+!!$
+!!$    type(para_space_config) :: psc
+!!$    integer, intent(in)     :: imm, im
+!!$    integer, intent(in)     :: num_at_glob(imm)
+!!$    real(double)            :: tabdensity(imm)
+!!$
+!!$    integer :: nproc_voisin, procv
+!!$    integer :: nb_at_send, nb_at_recv
+!!$    integer :: ncell_front, koo, n_at, i_at
+!!$    integer :: i, ind_loc, ftm_at
+!!$
+!!$    integer, allocatable :: send_ids(:), recv_ids(:)
+!!$    real(double), allocatable :: send_val(:), recv_val(:)
+!!$
+!!$    do nproc_voisin = 1, psc%nbr_proc_voisin
+!!$
+!!$       procv = psc%proc_voisin(nproc_voisin)
+!!$       if (procv < myidsp) then 
+!!$       !--------------------------------------------------
+!!$       ! Build send buffers
+!!$       !--------------------------------------------------
+!!$       nb_at_send = 0
+!!$       do ncell_front = 1, psc%nbr_cell_frontiere(nproc_voisin)
+!!$          koo = psc%cell_frontiere(nproc_voisin, ncell_front)
+!!$          nb_at_send = nb_at_send + celmp%nato(koo)
+!!$       end do
+!!$
+!!$       allocate(send_ids(nb_at_send))
+!!$       allocate(send_val(nb_at_send))
+!!$
+!!$       i = 0
+!!$       do ncell_front = 1, psc%nbr_cell_frontiere(nproc_voisin)
+!!$          koo = psc%cell_frontiere(nproc_voisin, ncell_front)
+!!$          do n_at = 1, celmp%nato(koo)
+!!$             i_at = celmp%atincel(n_at, koo)
+!!$             i = i + 1
+!!$             send_ids(i) = atmp%num_at_glob(i_at)
+!!$             send_val(i) = tabdensity(i_at)
+!!$          end do
+!!$       end do
+!!$       write(6,*)'P0',myidsp
+!!$     !--------------------------------------------------
+!!$     ! Exchange counts (SAFE)
+!!$     !--------------------------------------------------
+!!$     call MPI_SENDRECV( &
+!!$          nb_at_send, 1, MPI_INTEGER, procv, 3001, &
+!!$          nb_at_recv, 1, MPI_INTEGER, procv, 3001, &
+!!$          MPI_COMM_space, status, ierr)
+!!$
+!!$     allocate(recv_ids(nb_at_recv))
+!!$     allocate(recv_val(nb_at_recv))
+!!$     write(6,*)'P1',myidsp
+!!$     !--------------------------------------------------
+!!$     ! Exchange payloads (SAFE)
+!!$     !--------------------------------------------------
+!!$     ! First: talk to lower ranks
+!!$
+!!$! Second: talk to higher ranks
+!!$
+!!$   call MPI_SENDRECV( &
+!!$        send_ids, nb_at_send, MPI_INTEGER, procv, 3002, &
+!!$        recv_ids, nb_at_recv, MPI_INTEGER, procv, 3002, &
+!!$        MPI_COMM_space, status, ierr)
+!!$   write(6,*)'P2',myidsp
+!!$   call MPI_SENDRECV( &
+!!$        send_val, nb_at_send, NDM_MPI_REAL_DOUBLE, procv, 3003, &
+!!$        recv_val, nb_at_recv, NDM_MPI_REAL_DOUBLE, procv, 3003, &
+!!$        MPI_COMM_space, status, ierr)
+!!$   write(6,*)'P3',myidsp
+!!$end if
+!!$end do
+!!$
+!!$
+!!$do nproc_voisin = 1, psc%nbr_proc_voisin
+!!$   procv = psc%proc_voisin(nproc_voisin)
+!!$
+!!$
+!!$   if (procv > myidsp) call MPI_SENDRECV(...)
+!!$end do
+!!$
+!!$
+!!$
+!!$       !--------------------------------------------------
+!!$       ! Ordered blocking communication (deadlock-safe)
+!!$       !--------------------------------------------------
+!!$       if (myidsp < procv) then
+!!$          write(6,*)'IN MAJb1', myidsp,procv
+!!$          call MPI_SEND(nb_at_send, 1, MPI_INTEGER, procv, 3001, MPI_COMM_space, ierr)
+!!$          call MPI_SEND(send_ids, nb_at_send, MPI_INTEGER, procv, 3002, MPI_COMM_space, ierr)
+!!$          call MPI_SEND(send_val, nb_at_send, NDM_MPI_REAL_DOUBLE, procv, 3003, MPI_COMM_space, ierr)
+!!$          write(6,*)'IN MAJb2', myidsp,procv
+!!$          call MPI_RECV(nb_at_recv, 1, MPI_INTEGER, procv, 3001, MPI_COMM_space, status, ierr)
+!!$          allocate(recv_ids(nb_at_recv), recv_val(nb_at_recv))
+!!$          call MPI_RECV(recv_ids, nb_at_recv, MPI_INTEGER, procv, 3002, MPI_COMM_space, status, ierr)
+!!$          call MPI_RECV(recv_val, nb_at_recv, NDM_MPI_REAL_DOUBLE, procv, 3003, MPI_COMM_space, status, ierr)
+!!$          write(6,*)'IN MAJb3', myidsp,procv
+!!$       else if (myidsp>procv) then
+!!$          write(6,*)'IN MAJc1', myidsp,procv
+!!$          call MPI_RECV(nb_at_recv, 1, MPI_INTEGER, procv, 3001, MPI_COMM_space, status, ierr)
+!!$          allocate(recv_ids(nb_at_recv), recv_val(nb_at_recv))
+!!$          call MPI_RECV(recv_ids, nb_at_recv, MPI_INTEGER, procv, 3002, MPI_COMM_space, status, ierr)
+!!$          call MPI_RECV(recv_val, nb_at_recv, NDM_MPI_REAL_DOUBLE, procv, 3003, MPI_COMM_space, status, ierr)
+!!$          write(6,*)'IN MAJc2', myidsp,procv
+!!$          call MPI_SEND(nb_at_send, 1, MPI_INTEGER, procv, 3001, MPI_COMM_space, ierr)
+!!$          call MPI_SEND(send_ids, nb_at_send, MPI_INTEGER, procv, 3002, MPI_COMM_space, ierr)
+!!$          call MPI_SEND(send_val, nb_at_send, NDM_MPI_REAL_DOUBLE, procv, 3003, MPI_COMM_space, ierr)
+!!$          write(6,*)'IN MAJc3', myidsp,procv
+!!$       end if
+!!$
+!!$       write(6,*)'IN MAJD', myidsp
+!!$       !--------------------------------------------------
+!!$       ! Update ghost atoms
+!!$       !--------------------------------------------------
+!!$       do i = 1, nb_at_recv
+!!$          ind_loc = -1
+!!$          do ftm_at = im+1, imm
+!!$             if (atmp%num_at_glob(ftm_at) == recv_ids(i)) then
+!!$                ind_loc = ftm_at
+!!$                exit
+!!$             end if
+!!$          end do
+!!$
+!!$          if (ind_loc < 0) then
+!!$             write(6,*) myidsp, 'Error: ghost atom not found',i,recv_ids(i),nproc_voisin,procv
+!!$             write(6,*)recv_ids
+!!$             call MPI_ABORT(MPI_COMM_space, 1, ierr)
+!!$          end if
+!!$
+!!$          tabdensity(ind_loc) = recv_val(i)
+!!$       end do
+!!$
+!!$       deallocate(send_ids, send_val, recv_ids, recv_val)
+!!$
+!!$    end do
+!!$
+!!$  end subroutine exchange_tabdensity_blocking
+!!$
 
 
 
