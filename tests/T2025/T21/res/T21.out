@@ -76,6 +76,7 @@ vecteur  3       0.000000       0.000000      22.842544
  random velocities at TINIT =    600.000000000000      K
  temperature fin initspeed    600.000000000000     
  ***** FIRST ITERATION  ***           6   10000000000.0000     
+ TEMP1   600.000000000000     
  
  
 <<<<<<<<  ITERATION =      1  time =   0.1000000E-14

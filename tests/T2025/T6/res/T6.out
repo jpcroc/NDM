@@ -1,10 +1,10 @@
  Process            0  of            3  is alive
  Process            1  of            3  is alive
  Process            2  of            3  is alive
+ rang readdm iseed            2  2081514111
  nom fichier din=
  neb.din                                                                        
   
- rang readdm iseed            2  1967706494
  
  coordinates can get out of  0-1
  along  a
@@ -21,6 +21,7 @@
       CONTROLES 
 tstep=  0.100D-14
  itmax=           1 timemax=    10000000000.0000       itab=           1 
+ rang readdm iseed            1  2081514103
   itetimestep=          -1
 tinit=      -1.0
 tempdeplainit=      -1.0
@@ -31,8 +32,7 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          11
  fmt_cin           1
- rang readdm iseed            0  1967706476
- rang readdm iseed            1  1967706485
+ rang readdm iseed            0  2081514093
  PARANEB           1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-

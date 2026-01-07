@@ -1,19 +1,21 @@
+ Process            2  of            4  is alive
+ Process            3  of            4  is alive
  Process            0  of            4  is alive
+ Process            1  of            4  is alive
+ rang readdm iseed            3           1
+ rang readdm iseed            2           1
  nom fichier din=
  Febulk.din                                                                     
   
- Process            1  of            4  is alive
- Process            2  of            4  is alive
- Process            3  of            4  is alive
  
  -------- caracteristiques du run DM-------- 1
      DYNAMIQUE MOLECULAIRE VERLET STANDARD
  generation du crystal ; puis run
- rang readdm iseed            1           1
  
       ANALYSES 
  itetemp=           1  iteprtsigma=           1
  
+ rang readdm iseed            1           1
       CONTROLES 
 tstep=  0.100D-14
  itmax=          19 timemax=    10000000000.0000       itab=           1 
@@ -35,8 +37,6 @@ debyetemp=      -1.0
  
  POTENTIEL EAM
  
- rang readdm iseed            2           1
- rang readdm iseed            3           1
  NTYP NPAIR            1           1
  Types d_atomes pour ce potentiel:
  CM, masse,type, NUMERO DU TYPE D ATOME
@@ -65,15 +65,15 @@ nox noy noz and ghost cells from ru
 celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
 Febulk.gin                                                                      
 volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
- sur            4  cpus           0
+ sur            4  cpus     9023968
  
  
  -----------------------------------------------------------
  Procedure de decoupage pour une boite de taille  :           4           4
            4
- sur            4  cpus           0
+ sur            4  cpus     9023968
  Nbre de solutions possibles :            6
-LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
+LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.0000
  -----------------------------------------------
            FIN DU CALCUL DU DECOUPAGE :         
  
@@ -84,7 +84,7 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
  Le cas choisit :           2           2           1
  Nombre de cellules max echg  par proc :           4          80
  Taux d'equilibrage :           4   1.00000000000000     
- valeur            4  0.920000000000000     
+ valeur            4  4.078028645491651E-007
  Nbre Min/Max de cel. locales. :          16          16
  Nbre Min/Max de cel. fantomes. :          80          80
  locmin/fantomax :           4  0.200000000000000     
@@ -131,6 +131,10 @@ vecteur  3       0.000000       0.000000      28.553180
           0       0.0000000              4      0.10000000E+10     10      7
  ****************************************
  ***** FIRST ITERATION  ***           4   1000000000.00000     
+ TEMP1   599.627404491473     
+ TEMP1   599.627404491473     
+ TEMP1   599.627404491473     
+ TEMP1   599.627404491473     
  
  
 <<<<<<<<  ITERATION =      1  time =   0.1000000E-14
@@ -219,11 +223,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-         3 0.250E-14*Epot =    -7777.250324213661      eV 
+         3 0.250E-14*Epot =    -7777.250324213660      eV 
     *energie PAIRE EAM =     807.354730614      eV 
     *energie GLUE  =    -8584.60505483      eV 
          3 0.250E-14*Ec =     191.050058705      eV   (740.139 K)
-         3 0.250E-14*Etot =    -7586.200265508211      eV 
+         3 0.250E-14*Etot =    -7586.200265508210      eV 
  
          3 0.250E-14*Epot/at =    -3.89446686240      eV 
  
@@ -258,7 +262,7 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-         4 0.300E-14*Epot =    -7796.468844794586      eV 
+         4 0.300E-14*Epot =    -7796.468844794587      eV 
     *energie PAIRE EAM =     788.255758941      eV 
     *energie GLUE  =    -8584.72460374      eV 
          4 0.300E-14*Ec =     210.238584636      eV   (814.477 K)
@@ -339,6 +343,10 @@ vecteur  3       0.000000       0.000000      28.553180
           5      0.35000000E-14          9      0.10000000E+10     10      7
  ****************************************
  ***** FIRST ITERATION  ***           9   1000000000.00000     
+ TEMP1   897.802405063998     
+ TEMP1   897.802405063998     
+ TEMP1   897.802405063998     
+ TEMP1   897.802405063998     
  
  
 <<<<<<<<  ITERATION =      6  time =   0.4000000E-14
@@ -388,11 +396,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-         7 0.420E-14*Epot =    -7466.013876325440      eV 
+         7 0.420E-14*Epot =    -7466.013876325439      eV 
     *energie PAIRE EAM =     1148.28841075      eV 
     *energie GLUE  =    -8614.30228708      eV 
          7 0.420E-14*Ec =     269.250279289      eV   (1044.661 K)
-         7 0.420E-14*Etot =    -7196.763597036732      eV 
+         7 0.420E-14*Etot =    -7196.763597036731      eV 
  
          7 0.420E-14*Epot/at =    -3.74423965713      eV 
  
@@ -431,7 +439,7 @@ vecteur  3       0.000000       0.000000      28.553180
     *energie PAIRE EAM =     1135.65160785      eV 
     *energie GLUE  =    -8614.37047399      eV 
          8 0.440E-14*Ec =     281.952360144      eV   (1093.943 K)
-         8 0.440E-14*Etot =    -7196.766505996293      eV 
+         8 0.440E-14*Etot =    -7196.766505996294      eV 
  
          8 0.440E-14*Epot/at =    -3.75061126687      eV 
  
@@ -547,6 +555,10 @@ vecteur  3       0.000000       0.000000      28.553180
          10      0.48000000E-14         14      0.10000000E+10     10      7
  ****************************************
  ***** FIRST ITERATION  ***          14   1000000000.00000     
+ TEMP1   1203.10663371152     
+ TEMP1   1203.10663371152     
+ TEMP1   1203.10663371152     
+ TEMP1   1203.10663371152     
  
  
 <<<<<<<<  ITERATION =     11  time =   0.5000000E-14
@@ -554,7 +566,7 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        11 0.500E-14*Epot =    -7007.711278365585      eV 
+        11 0.500E-14*Epot =    -7007.711278365583      eV 
     *energie PAIRE EAM =     1641.05619985      eV 
     *energie GLUE  =    -8648.76747822      eV 
         11 0.500E-14*Ec =     325.085966148      eV   (1263.198 K)
@@ -752,6 +764,10 @@ vecteur  3       0.000000       0.000000      28.553180
          15      0.58000000E-14         19      0.10000000E+10     10      7
  ****************************************
  ***** FIRST ITERATION  ***          19   1000000000.00000     
+ TEMP1   1560.74279534052     
+ TEMP1   1560.74279534052     
+ TEMP1   1560.74279534052     
+ TEMP1   1560.74279534052     
  
  
 <<<<<<<<  ITERATION =     16  time =   0.6000000E-14
@@ -798,11 +814,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        17 0.620E-14*Epot =    -6617.098657096921      eV 
+        17 0.620E-14*Epot =    -6617.098657096922      eV 
     *energie PAIRE EAM =     2064.78712288      eV 
     *energie GLUE  =    -8681.88577998      eV 
         17 0.620E-14*Ec =     447.149171345      eV   (1740.125 K)
-        17 0.620E-14*Etot =    -6169.949485751636      eV 
+        17 0.620E-14*Etot =    -6169.949485751637      eV 
  
         17 0.620E-14*Epot/at =    -3.32852045126      eV 
  
@@ -880,7 +896,7 @@ vecteur  3       0.000000       0.000000      28.553180
     *energie PAIRE EAM =     2012.33718971      eV 
     *energie GLUE  =    -8682.75676605      eV 
         19 0.660E-14*Ec =     500.457375162      eV   (1947.579 K)
-        19 0.660E-14*Etot =    -6169.962201186413      eV 
+        19 0.660E-14*Etot =    -6169.962201186414      eV 
  
         19 0.660E-14*Epot/at =    -3.35534183921      eV 
  
@@ -915,11 +931,11 @@ vecteur  3       0.000000       0.000000      28.553180
  
  --------- Temperatures et Pression--------
  ----------valeurs instantanees------------
-        20 0.680E-14*Epot =    -6699.715450773961      eV 
+        20 0.680E-14*Epot =    -6699.715450773959      eV 
     *energie PAIRE EAM =     1983.59689019      eV 
     *energie GLUE  =    -8683.31234096      eV 
         20 0.680E-14*Ec =     529.717867473      eV   (2061.449 K)
-        20 0.680E-14*Etot =    -6169.997583300910      eV 
+        20 0.680E-14*Etot =    -6169.997583300908      eV 
  
         20 0.680E-14*Epot/at =    -3.37007819455      eV 
  
