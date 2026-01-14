@@ -160,6 +160,7 @@ contains
     
     itesauv=0
     boxndm=boxcg
+    call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp=.true.)
     return
 
   end subroutine NGC

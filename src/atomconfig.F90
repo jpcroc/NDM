@@ -1018,7 +1018,7 @@ contains
     call intermediaire%copy_atom(1,atsource,ind_switch_2)
     atsource%num_at_glob(ind_switch_1)=nag2
     atsource%num_at_glob(ind_switch_2)=nag1
-  end subroutine
+  end subroutine switch_atom
 
 
 

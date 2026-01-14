@@ -43,7 +43,7 @@ timemax=1d25 maximum simulated time in fs
    22 -> quench constant pressure   
    ***23*** ->  fire quench algorithm constant volume  
    ***24*** -> fire quench constant pressure  
-   3 -> old style conjugate gradient ==31 , remains for historical reasons, use at your own risks  
+   3 -> alias for 33  new conjugate gradient 
   30 ->old style conjugate gradient on reduced coodinates  , remains for historical reasons, use at your own risks  
   31 ->old style conjugate gradient on cartesian  coodinates  , remains for historical reasons, use at your own risks  
   32 -> steepest descent  

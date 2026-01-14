@@ -1443,7 +1443,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
 
     ! On verifie qu'il n'y a plus d'atomes a l'exterieur du domaine local
     do koo=1,celmp%noxyz
-       if (celmp%proc_cell(koo).ne.myidsp .and. celmp%nato(koo).ne.0) print *,'ERREUR !!!',&
+       if (celmp%proc_cell(koo).ne.myidsp .and. celmp%nato(koo)>0) write(6,*)'ERREUR !!!',&
             myidsp,'possede encore',celmp%nato(koo),'at. dans la cellule',koo
     enddo
 

@@ -137,7 +137,7 @@ contains
        end select
        !     vp(:,:im)=vp(:,:im)*tstep/oldtstep
 
-       if (tinit<=0) then
+       if (tinit<0) then
           ! velocities are read from file and not modified
        if ((rang==0).and.(lprint)) write (6,*) 'pas de chgt des vitesses= '
           !        return
