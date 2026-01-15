@@ -154,6 +154,7 @@ contains
         vx = 0
         vy = 0
         vz = 0
+        x = 1
 
         body: block
 
@@ -383,6 +384,9 @@ contains
                     exit body
                 end if
             end do headerLoop
+
+            ! Multiplication by the scale factor
+            box=x*box
 
             ! Make sure the entry_count line is present
             if (nFields == 0) then
