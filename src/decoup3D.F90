@@ -732,7 +732,7 @@ contains
                 im=im+1
                 atcf%xp(:,i)=xpcur(:,1)
                 atcf%vp(:,i) = vpin(:,icell)*1d4 ! car *1d8*1d-12 à l'écriture
-                atcf%ityp(i)=get_ityp(tags(icell))
+                atcf%ityp(i)=get_ityp(tags(icell),icell)
                 atcf%num_at_glob(i)=ig
                 atcf%proc_at(i)=myidsp
              endif
@@ -751,7 +751,7 @@ contains
              i=i+1
              im=im+1
              atcf%xp(:,i)=xpcur(:,1)
-             atcf%ityp(i)=get_ityp(tags(icell))
+             atcf%ityp(i)=get_ityp(tags(icell),icell)
              atcf%num_at_glob(i)=ig
              atcf%proc_at(i)=myidsp
           endif
@@ -761,7 +761,7 @@ contains
 
   end subroutine constrandrepart_dkio
 
-  integer function get_ityp(tag)
+  integer function get_ityp(tag, num)
     !---- Retourne ityp de l'atome 'tag':
     !> soit par la conversion directe de tag en entier si lu depuis le format de fichier lammps
     !> soit par correspondance avec ty, qui est la plupart du temps lu dans le fichier .potin
@@ -769,6 +769,7 @@ contains
     use var_pot, only: ntyp,ty
     use gen_com_m, only: igen
     character(len=TAG_LENGTH), intent(in) :: tag
+    integer, intent(in) :: num
     integer :: i
 
     if (igen == 17) then
@@ -786,8 +787,8 @@ contains
 
     if (get_ityp == -1) then
        if (rang==0) then
-          write (6, *) 'Error: no match found between the atom tag read from the input position &
-&file and the atom types stored in ty:', tag, ty
+          write (6, *) 'Error: no match found between the atom number:', num, 'with tag:', tag, 'read from the input position &
+&file and the atom types stored in ty:', ty
        end if
        call arret_ndm
     end if

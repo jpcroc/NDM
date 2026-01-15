@@ -1183,7 +1183,7 @@ contains
        atrcf%xp(2,i) = atrin(2,i)
        atrcf%xp(3,i) = atrin(3,i)
        atrcf%num_at_glob(i)=i
-       atrcf%ityp(i)=get_ityp(tags(i))
+       atrcf%ityp(i)=get_ityp(tags(i),i)
     end do
 
     if (lvpread) then
