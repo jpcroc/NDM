@@ -35,7 +35,7 @@ module parautils
   integer,parameter::WORKER_TAG=-1
 
 contains
-  subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod,ldistrib,psc,lcalcvois,lboxchange)
+  subroutine initloc(atcomp,cellcomp,atloc,celloc,box,div,rum,lperiod,ldistrib,psc,lcalcvois,lboxchange,linit)
     USE setcell,only:setcellconf
     class(atom_config),intent(in),target::atcomp
     type(cell_config),intent(in),target::cellcomp
@@ -44,19 +44,21 @@ contains
     class(atom_config),pointer::atloc
     type(cell_config),pointer::celloc
     type(para_config),intent(in)::div
-    real(double),intent(in)::rum
+    real(double),intent(in),optional::rum
     logical,intent(in),optional :: lcalcvois
     logical,intent(in)::lperiod
-    logical,optional,intent(in)::ldistrib
+    logical,optional,intent(in)::ldistrib,linit
     logical::ldistr
     logical,optional,intent(in)::lboxchange
-    logical::lboxch
+    logical::lboxch,linit1
 
     logical::lcalcv
 
     
     lboxch=.false.
     if(present(lboxchange))lboxch=lboxchange
+    linit1=.true.
+    if(present(linit))linit1=linit
 
     if (present(lcalcvois)) then
        lcalcv=lcalcvois
@@ -75,9 +77,9 @@ contains
        endif
        if (lspaceNDM.eqv..true.) then
           call cellcomp%copy(celloc,box)
-          call decoupage(div%mpi_image%nproc,0,celloc,atloc,lverbose=.false.,psc=psc)
+          if (linit1)           call decoupage(div%mpi_image%nproc,0,celloc,atloc,lverbose=.false.,psc=psc)
           call repartition(atcomp,atloc,box,celloc) ! mettre les éléments de la répartition dans un type
-          call setcellconf(celloc,atloc,box,rum,lverbose=.false.)
+         if (linit1)           call setcellconf(celloc,atloc,box,rum,lverbose=.false.)
        else
           atloc=>atcomp
           celloc=>cellcomp
@@ -87,6 +89,10 @@ contains
        celloc=>cellcomp
     end if
     atloc%im_glob=atcomp%im_glob
+    call atcomp%print(unit=100)
+    call atloc%print(unit=200)
+    call cellcomp%print(unit=101)
+    call celloc%print(unit=201)
     if (lspacendm.and.div%mpi_image%nproc.gt.1) then
        call caltabtC(celloc,atloc,lperiod,box,psc=psc,lchktrav=.true.)
     else

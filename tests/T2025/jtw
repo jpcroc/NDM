@@ -1,0 +1,13 @@
+#!/bin/bash
+
+for ((tn=1 ; tn<=21; tn +=1)) ; do
+cd T$tn
+pwd
+pwd
+pwd
+./jtest
+mv    TXXX.out res/T$tn.out
+rm -f *out *cfg *mol *~ *newgin *xfg fort*
+cd ../
+done
+

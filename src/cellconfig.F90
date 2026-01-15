@@ -27,7 +27,7 @@ module cellconfig
      logical,allocatable::isghost(:)
      integer,allocatable::copyof(:)
      integer::ncelvmax ! maximum number of cells neighbouring a cell, for large cells=26, for small nox*noy*noz-1
-     
+
 #endif     
 
    contains
@@ -50,8 +50,8 @@ module cellconfig
   type, extends (cell_config):: cell_config_arps !
      integer,allocatable::nmov(:,:) ! nombre d'atomes dans la cellule ko
   end type cell_config_arps
-     
-     
+
+
 contains
 
   function edgec(cell,ko,box)
@@ -60,7 +60,7 @@ contains
     real(double):: edgec(3)
     integer::ko
     integer::kox(3)
-    
+
     integer:: ic,ic2
     real(double)::flx(3)
     kox=cell%koxyz(ko)
@@ -93,8 +93,8 @@ contains
     kz=(km2-ky)/noy
     kox(1)=kx;kox(2)=ky;kox(3)=kz
 
- !   end do
-    
+    !   end do
+
   end function kox
 
 
@@ -125,7 +125,7 @@ contains
     call dealloc_cel(cell)
     call allocatecelN(cell,lata)
     call neigcelN(cell,box)
-       
+
     return
 
   end subroutine init_cel
@@ -138,7 +138,7 @@ contains
     logical::lata=.true.
     if (present(latomalloc))lata=latomalloc
     cell%noxyz=cell%nox(1)*cell%nox(2)*cell%nox(3)
-!    write(6,*)'NOX',cell%nox,cell%noxyz
+    !    write(6,*)'NOX',cell%nox,cell%noxyz
     cell%ncelvmax=1
     do ic=1,3
        if(cell%ismall(ic)) then
@@ -148,7 +148,7 @@ contains
        end if
     end do
     cell%ncelvmax=cell%ncelvmax-1
-    
+
     nsize=cell%noxyz
     if (nsize.ne.0) then
        allocate(cell%ncel(nsize,0:cell%ncelvmax))
@@ -170,8 +170,8 @@ contains
           cell%copyof(:)=-1
 
        end if
-            
-       
+
+
        if (cell%ltpcel) then
           allocate(cell%sigc(3,3,nsize))
           cell%sigc=0
@@ -183,10 +183,10 @@ contains
           cell%atincel=0
        end if
 #ifdef PARA
-          allocate(cell%proc_cell(nsize))
-          cell%proc_cell=0
+       allocate(cell%proc_cell(nsize))
+       cell%proc_cell=0
 #endif       
-       end if
+    end if
     return
   end subroutine allocatecelN
 
@@ -194,7 +194,7 @@ contains
 
   subroutine dealloc_cel(cell)
     class(cell_config)::cell
-    
+
     if (allocated(cell%ncel))       deallocate(cell%ncel)
     if (allocated(cell%ncelvois))       deallocate(cell%ncelvois)
     if (allocated(cell%nato))       deallocate(cell%nato)
@@ -207,9 +207,9 @@ contains
     select type(cell)
     class is (cell_config_g)
        deallocate(cell%natotot)
-!       cell%natotot=0
+       !       cell%natotot=0
     end select
-       
+
 #ifdef PARA
     if (allocated(cell%proc_cell))  deallocate(cell%proc_cell)
 #endif
@@ -235,9 +235,9 @@ contains
           maxdecx(ic)=1          
        end if
     end do
-!    write(6,*)'mindecx', mindecx
-!    write(6,*)'maxdecx', maxdecx
-!    write(6,*)'midnox', midnox
+    !    write(6,*)'mindecx', mindecx
+    !    write(6,*)'maxdecx', maxdecx
+    !    write(6,*)'midnox', midnox
     if (cell%noxyz==1) then
        cell%ncel(1,0)=1
        cell%deltadist=0
@@ -278,7 +278,7 @@ contains
                       cell%copyof(koo)=vxyz
                       cycle loopext 
                    end if
-                      
+
                 end if
 
                 cell%ncel(koo,0) = koo
@@ -328,7 +328,7 @@ contains
                                end select
                             end if
                          end if
-                         
+
                          if(box%ipbc(3).ne.1) then
                             if ((cell%ismall(3)).and.(lz.ne.0)) then
                                cycle loopin
@@ -389,7 +389,7 @@ contains
                             endif
                          end if
                          kxy = 1+(mx-1)+cell%nox(1)*((my-1)+cell%nox(2)*(mz-1))
-!                         if (kxy==koo) cycle
+                         !                         if (kxy==koo) cycle
                          cell%ncel(koo,l) = kxy
                          !                        write(6,*)koo,lz,ly,lx,l,kxy
                          !                        if ((kz==cell%nox(3)).and.(lz==1))write(6,*)koo,lz,l,kxy
@@ -410,8 +410,8 @@ contains
     if (rang==0)write(6,*)cell%noxyzact ,' active cells among ', cell%noxyz
 
 
-    
-          
+
+
 
     return
   end subroutine neigcelN
@@ -422,9 +422,9 @@ contains
     USE cryst_to_cart_mod,only: cryst_to_cart
     use gen_com_m,only:lspacendm
 #ifdef PARA
-  USE Tpara,only:comm_space
+    USE Tpara,only:comm_space
 #endif
-    
+
     class(cell_config), intent(inout):: cell
     class(atom_config),intent(inout)::atcf
     class(box_config),intent(inout)::boxcf
@@ -443,10 +443,11 @@ contains
 
 
 
-    integer :: ntrav,ntravtot,itrav
+    integer :: ntravtot,itrav
+    integer,allocatable:: ntrav(:)
     integer,parameter::maxtrav=10
     integer,allocatable:: indtrav(:),proccib(:)
-    ntrav=0
+    allocate (ntrav(0:comm_space%nproc-1)) ; ntrav(:)=0
     !
     ! --------- Initialisation --------------
     !
@@ -458,11 +459,11 @@ contains
        iml=atcf%im
     end if
     icaltabt=icaltabt+1
-!       write(6,*)'caltabt',icaltabt
+    !       write(6,*)'caltabt',icaltabt
 
     cell%nato(1:cell%noxyz) = 0
     cell%atincel(1:cell%natperc,1:cell%noxyz) = 0
-    
+
     !  -------- cas sans cellule  -----------
     if (atcf%im==0) then
        cell%nato(:)=0
@@ -489,10 +490,10 @@ contains
        call cryst_to_cart (iml, xpnp, boxcf%bg, -1) ! cart vers cryst
        if (any(xpnp(:,1:iml).gt.1).or.any(xpnp(:,1:iml).lt.0)) then
           write(6,*)'PLANTE',rang
-          write(300+RANG,*)'PLANTE'
-          do i=1,iml
-             if (any(xpnp(:,i).gt.1).or.any(xpnp(:,i).lt.0))  write(6,*) i,xpnp(:,i)
-          end do
+          !          write(300+RANG,*)'PLANTE'
+!          do i=1,iml
+!             if (any(xpnp(:,i).gt.1).or.any(xpnp(:,i).lt.0))  write(6,*) i,xpnp(:,i)
+!          end do
           write(6,*)'caltabtc xpnp <0 ou >1 stop'
           call arret_ndm
        end if
@@ -522,27 +523,27 @@ contains
           END IF
           if ((present(psc)).and.(lspacendm).and.lchktrav) then 
              if (cell%proc_cell(koo).ne.myidsp) then
-!                write(6,*)'atout',i,atcf%num_at_glob(i),rang,cell%proc_cell(koo),koo
+                !                write(6,*)'atout',i,atcf%num_at_glob(i),rang,cell%proc_cell(koo),koo
 
                 if(.not.(any(psc%cell_ftm(:)==koo))) then
                    write(6,'(A,6I7)')'WARNING ::: attrrav:i natg ielat rangem rangf newcell',i,&
                         &atcf%num_at_glob(i),atcf%ielat(i),rang,cell%proc_cell(koo),koo
                    write(6,'(A,6G20.7)')'WARNING ::: travelled from cell to cell ',cell%edge(atcf%ielat(i),boxcf)&
                         &,cell%edge(koo,boxcf)
-                   ntrav=ntrav+1
-                   if (ntrav==1) then
+                   ntrav(myidsp)=ntrav(myidsp)+1
+                   if (ntrav(myidsp)==1) then
                       allocate(indtrav(maxtrav));allocate(proccib(maxtrav)); proccib=-1
                    end if
-                   proccib(ntrav)=cell%proc_cell(koo)
-                   indtrav(ntrav)=i
+                   proccib(ntrav(myidsp))=cell%proc_cell(koo)
+                   indtrav(ntrav(myidsp))=i
                    atcf%ielat(i) = koo
-!                   cell%nato(koo) = cell%nato(koo)+1
-!                   cell%atincel(cell%nato(koo),koo) = i                   
+                   !                   cell%nato(koo) = cell%nato(koo)+1
+                   !                   cell%atincel(cell%nato(koo),koo) = i                   
                    IF (cell%nato(koo).GT.cell%natperc) THEN
-                   WRITE(0,'(a)') 'caltabtC : You need to increase the maximal number of atoms per cell'
-                   WRITE(0,'(a,i0)') 'current value: natperc=', cell%natperc
-                   STOP '< CaltabtC >'
-                END IF
+                      WRITE(0,'(a)') 'caltabtC : You need to increase the maximal number of atoms per cell'
+                      WRITE(0,'(a,i0)') 'current value: natperc=', cell%natperc
+                      STOP '< CaltabtC >'
+                   END IF
 
 
                    !                   write(6,*)'atom', i,atcf%num_at_glob(i),'in cell', koo, ' originally in proc', &
@@ -550,14 +551,14 @@ contains
                    !                        &'RANG actuel = ',rang
                    !                   call arret_ndm
                 else
-!                   if (cell%proc_cell(koo).ne.myidsp)       write(6,'(A,6I7)')'afrt:i natg ielat rangem rangf newcell',i,atcf%num_at_glob(i),atcf%ielat(i),rang,cell%proc_cell(koo),koo
+                   !                   if (cell%proc_cell(koo).ne.myidsp)       write(6,'(A,6I7)')'afrt:i natg ielat rangem rangf newcell',i,atcf%num_at_glob(i),atcf%ielat(i),rang,cell%proc_cell(koo),koo
                    atcf%ielat(i) = koo
                    cell%nato(koo) = cell%nato(koo)+1
                    cell%atincel(cell%nato(koo),koo) = i
                 end if
-                
+
              else
-               
+
                 atcf%ielat(i) = koo
                 cell%nato(koo) = cell%nato(koo)+1
                 IF (cell%nato(koo).GT.cell%natperc) THEN
@@ -582,7 +583,7 @@ contains
 
        end do
 
-       ntravtot=ntrav
+       ntravtot=ntrav(myidsp)
 #ifdef PARA
        if (lchktrav) then 
           call comm_space%sum(ntravtot)
@@ -596,7 +597,7 @@ contains
        end if
 #endif
 
-       
+
        DEALLOCATE(xpnp)   ! MODIF CLOUET
     endif
     if (any(cell%ismall)) then
@@ -699,15 +700,15 @@ contains
     if (allocated(celcomp%tempc))call comm_space%sum(celcomp%tempc)
     if (allocated(celcomp%sigc))call comm_space%sum(celcomp%sigc)
     if(latomcp)call comm_space%sum(celcomp%atincel)
-       
+
 #else
     call celloc%copy(celcomp,box,latomcp=latomcp)
 #endif
 
   end subroutine cococe
-       
-       
-  
+
+
+
   subroutine cellprint(cellv,unit,mess)
     class(cell_config)::cellv
     integer,intent(in),optional::unit
@@ -764,14 +765,14 @@ contains
        end do
     end if
 #endif
-!    write(un,*)
-!    do i=1,cellv%noxyz
-!       if (cellv%isghost(i)) then
-!          write(un,*)'cell i',i,'is ghost, copy of ', cellv%copyof(i)
-!       end if
-!    end do
-    
-    
+    !    write(un,*)
+    !    do i=1,cellv%noxyz
+    !       if (cellv%isghost(i)) then
+    !          write(un,*)'cell i',i,'is ghost, copy of ', cellv%copyof(i)
+    !       end if
+    !    end do
+
+
   end subroutine cellprint
 
 
@@ -827,7 +828,7 @@ contains
        ibi=ibi+1
        ibuffer(ibi)=cell%proc_cell(ip)
     end do
-   
+
 #endif
     rbuffer(1)=cell%celsize(1);     rbuffer(2)=cell%celsize(2) ;    rbuffer(3)=cell%celsize(3)
     ibr=3
@@ -849,7 +850,7 @@ contains
     call mpic%send(cell%ltpcel,rgcib,202)
     call mpic%send(rbuffer,rgcib,203)
   end subroutine cells2p
-    
+
 
   subroutine cellrecv(cell,rgem,mpic)
     class(cell_config)::cell
@@ -874,7 +875,7 @@ contains
     call mpic%recv(ibuffer,rgem,201)
     call mpic%recv(cell%ltpcel,rgem,202)
     call mpic%recv(rbuffer,rgem,203)
-    
+
     cell%nox(1)=ibuffer(1); cell%nox(2)=ibuffer(2) ; cell%nox(3)=ibuffer(3)
     cell%noxyz=ibuffer(4)
     cell%natperc=ibuffer(5)
@@ -909,7 +910,7 @@ contains
        ibi=ibi+1
        cell%proc_cell(ip)=ibuffer(ibi)
     end do
-   
+
 #endif
     cell%celsize(1)=rbuffer(1);     cell%celsize(2)=rbuffer(2) ;    cell%celsize(3)=rbuffer(3)
     ibr=3
@@ -928,7 +929,7 @@ contains
        end do
     end if
   end subroutine cellrecv
-    
+
   subroutine cells2a(cell,rgem,mpic)
     type(mpi_communicator),intent(in)::mpic
     class(cell_config)::cell
@@ -979,7 +980,7 @@ contains
        ibi=ibi+1
        ibuffer(ibi)=cell%proc_cell(ip)
     end do
-   
+
 #endif
     rbuffer(1)=cell%celsize(1);     rbuffer(2)=cell%celsize(2) ;    rbuffer(3)=cell%celsize(3)
     ibr=3
@@ -1001,7 +1002,7 @@ contains
     call mpic%bcast(rgem,cell%ltpcel)
     call mpic%bcast(rgem,rbuffer)
     ibi=0;ibr=0
-        cell%nox(1)=ibuffer(1); cell%nox(2)=ibuffer(2) ; cell%nox(3)=ibuffer(3)
+    cell%nox(1)=ibuffer(1); cell%nox(2)=ibuffer(2) ; cell%nox(3)=ibuffer(3)
     cell%noxyz=ibuffer(4)
     cell%natperc=ibuffer(5)
     cell%icaltabt=ibuffer(6)
@@ -1035,7 +1036,7 @@ contains
        ibi=ibi+1
        cell%proc_cell(ip)=ibuffer(ibi)
     end do
-   
+
 #endif
     cell%celsize(1)=rbuffer(1);     cell%celsize(2)=rbuffer(2) ;    cell%celsize(3)=rbuffer(3)
     ibr=3
@@ -1053,7 +1054,7 @@ contains
           cell%tempc(ip)=rbuffer(ibr)
        end do
     end if
-    
+
   end subroutine cells2a
 
 
@@ -1061,12 +1062,13 @@ contains
     class(atom_config):: atcf
     class(cell_config)::cellcf
     integer,allocatable::indtrav(:),proccib(:)
-    integer::ntravtot,ntrav
+    integer::ntravtot
+    integer,allocatable::ntrav(:)
 
     integer::nemp
     integer,allocatable::procvis(:) !,procem(:)=iproc
-    
-!    integer, allocatable:: indtravtot(:),proccibtot(:),procemtot(:)
+
+    !    integer, allocatable:: indtravtot(:),proccibtot(:),procemtot(:)
     integer::iproc,nprocs,natem,natrecv
     integer::iatem,j,i,k,rgcib,itrf,nato,icelj,jjj
     logical :: lwrk
@@ -1075,16 +1077,14 @@ contains
     natem=0;natrecv=0
     nprocs=comm_space%nproc
     do iproc=0,nprocs-1
-       if (myidsp==iproc) then
-          if (ntrav.ne.0) then
-             lwrk=.true.
-          else
-             lwrk=.false.
-          end if
+       if (ntrav(iproc).ne.0) then
+          lwrk=.true.
+       else
+          lwrk=.false.
        end if
        call comm_space%bcast(iproc,lwrk)
        if (lwrk) then
-          nemp=ntrav ! ne sert que pour iproc, mais effacé la ligne suivant
+          nemp=ntrav(iproc) ! ne sert que pour iproc, mais effacé la ligne suivant
           call comm_space%bcast(iproc,nemp)
           allocate(procvis(nemp))
           procvis=0
@@ -1101,7 +1101,7 @@ contains
                 do jjj=1,cellcf%nato(icelj)
                    if (cellcf%atincel(jjj,icelj)==atcf%im+1) cellcf%atincel(jjj,icelj)=itrf
                 end do
-                
+
              end if
              if (myidsp==procvis(iatem)) then
                 write(6,*)'recpt,em',myidsp,iproc,atcf%im
@@ -1124,8 +1124,8 @@ contains
        call arret_ndm
     end if
   end subroutine transfer_atoms
-    
-  
+
+
 end module cellconfig
 
 

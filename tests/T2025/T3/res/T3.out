@@ -127,6 +127,7 @@ vecteur  3       0.000000       0.000000      28.553180
  RELAXED AFTER           11  DIRECTIONS and           33  force calculations
  MINIMUM REACHED after           33  force calculations
  *****************ENERGY erg eV  -1.320000262598013E-008  -8238.79449580854     
+ lperiod T
  
  
  ####### END OF RUN  ######## =           33   time =   0.000000000000000E+000

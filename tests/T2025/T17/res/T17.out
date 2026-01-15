@@ -1,19 +1,18 @@
  Process            0  of            4  is alive
- nom fichier din=
- Febulk.din                                                                     
-  
  Process            1  of            4  is alive
  Process            2  of            4  is alive
  Process            3  of            4  is alive
+ nom fichier din=
+ Febulk.din                                                                     
+  
+ rang readdm iseed            3           1
+ rang readdm iseed            2           1
  
  -------- caracteristiques du run DM-------- 1
      DYNAMIQUE MOLECULAIRE VERLET STANDARD
  run a partir du fichier .cin
  
       ANALYSES 
- rang readdm iseed            1           1
- rang readdm iseed            2           1
- rang readdm iseed            3           1
  itetemp=           1  iteprtsigma=           1
  
       CONTROLES 
@@ -31,6 +30,7 @@ debyetemp=      -1.0
  fmt_cin           1
  rang readdm iseed            0           1
  IMM PARA =        19800       66000
+ rang readdm iseed            1           1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
  
@@ -121,16 +121,12 @@ vecteur  3       0.000000       0.000000      91.370176
    117.340205802329     
  rang rangspace            2           2  nbr procs voisins            3
  rang rangspace            3           3  nbr procs voisins            3
- rang rangspace            0           0  nbr procs voisins            3
  rang rangspace            1           1  nbr procs voisins            3
+ rang rangspace            0           0  nbr procs voisins            3
  tempsauv    560.473874886264     
  scaling read velocities at TINIT =   0.000000000000000E+000 K
  temperature fin initspeed   0.000000000000000E+000
  ***** FIRST ITERATION  ***           1   10000000000.0000     
- TEMP1  0.000000000000000E+000
- TEMP1  0.000000000000000E+000
- TEMP1  0.000000000000000E+000
- TEMP1  0.000000000000000E+000
  
  
 <<<<<<<<  ITERATION =      1  time =   0.1000000E-14

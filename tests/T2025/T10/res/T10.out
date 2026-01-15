@@ -1,21 +1,19 @@
- Process            2  of            4  is alive
- Process            3  of            4  is alive
  Process            0  of            4  is alive
  Process            1  of            4  is alive
- rang readdm iseed            3           1
- rang readdm iseed            2           1
+ Process            2  of            4  is alive
+ Process            3  of            4  is alive
  nom fichier din=
  Febulk.din                                                                     
   
  
  -------- caracteristiques du run DM--------23
- rang readdm iseed            1           1
      FIRE Quenching Vcst
  generation du crystal ; puis run
  
       ANALYSES 
  itetemp=        1000  iteprtsigma=           1
  
+ rang readdm iseed            1           1
       CONTROLES 
 tstep=  0.100D-14
  itmax=       20000 timemax=    10000000000.0000       itab=           1 
@@ -31,6 +29,8 @@ debyetemp=      -1.0
  fmt_cin           1
  rang readdm iseed            0           1
  IMM PARA =          720        2400
+ rang readdm iseed            3           1
+ rang readdm iseed            2           1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
  
@@ -65,13 +65,13 @@ nox noy noz and ghost cells from ru
 celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
 Febulk.gin                                                                      
 volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
- sur            4  cpus     9023968
+ sur            4  cpus     9028064
  
  
  -----------------------------------------------------------
  Procedure de decoupage pour une boite de taille  :           4           4
            4
- sur            4  cpus     9023968
+ sur            4  cpus     9028064
  Nbre de solutions possibles :            6
 LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.0000
  -----------------------------------------------
@@ -84,7 +84,7 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.0000
  Le cas choisit :           2           2           1
  Nombre de cellules max echg  par proc :           4          80
  Taux d'equilibrage :           4   1.00000000000000     
- valeur            4  4.078028645491651E-007
+ valeur            4  4.076178458637422E-007
  Nbre Min/Max de cel. locales. :          16          16
  Nbre Min/Max de cel. fantomes. :          80          80
  locmin/fantomax :           4  0.200000000000000     
@@ -113,10 +113,10 @@ vecteur  3       0.000000       0.000000      28.553180
  calpoeam ktorho and the inverse:   8.522228107257609E-003
    117.340205802329     
  rang rangspace            0           0  nbr procs voisins            3
- random velocities at TINIT =   0.100000000000000      K
  rang rangspace            1           1  nbr procs voisins            3
  rang rangspace            2           2  nbr procs voisins            3
  rang rangspace            3           3  nbr procs voisins            3
+ random velocities at TINIT =   0.100000000000000      K
  temperature fin initspeed   0.100000000000000     
  
  POINT DEFECT CREATION
@@ -125,10 +125,6 @@ vecteur  3       0.000000       0.000000      28.553180
  NFP VAC INT for all types
  rang iseed CREADP           0         124
  ***** FIRST ITERATION  ***    40000000   100000000.000000     
- TEMP1  0.100000000000000     
- TEMP1  0.100000000000000     
- TEMP1  0.100000000000000     
- TEMP1  0.100000000000000     
 TR: force max, energy     1    0.279031190982931E-13   -0.823889874462380E+04
  *******return CDP**** 
  ITER           0    40000000    40000000
@@ -139,10 +135,6 @@ TR: force max, energy     1    0.279031190982931E-13   -0.823889874462380E+04
           0       0.0000000          20000      0.10000000E+10     10     10
  ****************************************
  ***** FIRST ITERATION  ***       20000   1000000000.00000     
- TEMP1  6.158335326575353E-002
- TEMP1  6.158335326575353E-002
- TEMP1  6.158335326575353E-002
- TEMP1  6.158335326575353E-002
  
 TR: force max, energy     1    0.899423093523267E+02   -0.752555281571037E+04
  
@@ -257,10 +249,6 @@ TR: force max, energy    52    0.189624669405717E+01   -0.818335198483689E+04
          52       0.0000000          20000      0.10000000E+10     10     10
  ****************************************
  ***** FIRST ITERATION  ***       20000   1000000000.00000     
- TEMP1   10.9188421112618     
- TEMP1   10.9188421112618     
- TEMP1   10.9188421112618     
- TEMP1   10.9188421112618     
  
 TR: force max, energy    53    0.878594417932693E+02   -0.750286373694521E+04
  

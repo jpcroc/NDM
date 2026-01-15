@@ -202,7 +202,7 @@ contains
                 call gcII (atdml,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
              case(32,33,34,35)
                 call NGC(atdml,celndm,boxndm,psc0)
-!                call endrunT(atdml,celndm,boxndm,latcomp)
+                call endrunT(atdml,celndm,boxndm,latcomp)
              end select
           end if
        class is (atom_config_d) !velocities

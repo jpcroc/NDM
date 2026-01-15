@@ -1,21 +1,19 @@
  Process            0  of           12  is alive
- Process            1  of           12  is alive
- Process            2  of           12  is alive
- Process            3  of           12  is alive
- Process            9  of           12  is alive
- Process           10  of           12  is alive
- Process           11  of           12  is alive
  nom fichier din=
  neb.din                                                                        
   
- rang readdm iseed            4  2081573714
- rang readdm iseed            5  2081573724
- rang readdm iseed            6  2081573734
- rang readdm iseed            7  2081573744
- rang readdm iseed            8  2081573754
- rang readdm iseed            9  2081573765
- rang readdm iseed           10  2081573775
- rang readdm iseed           11  2081573785
+ Process            1  of           12  is alive
+ rang readdm iseed            1   221339128
+ Process            2  of           12  is alive
+ rang readdm iseed            2   221339138
+ Process            3  of           12  is alive
+ rang readdm iseed            3   221339148
+ Process            9  of           12  is alive
+ rang readdm iseed            9   221339208
+ Process           10  of           12  is alive
+ rang readdm iseed           10   221339218
+ Process           11  of           12  is alive
+ rang readdm iseed           11   221339228
  
  coordinates can get out of  0-1
  along  a
@@ -42,21 +40,12 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          11
  fmt_cin           1
- rang readdm iseed            0  2081573675
- rang readdm iseed            1  2081573685
- rang readdm iseed            2  2081573695
- rang readdm iseed            3  2081573705
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
- PARANEB           4
+ rang readdm iseed            0   221339119
+ rang readdm iseed            4   221339158
+ rang readdm iseed            5   221339168
+ rang readdm iseed            6   221339178
+ rang readdm iseed            7   221339188
+ rang readdm iseed            8   221339198
  PARANEB           4
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -64,6 +53,17 @@ debyetemp=      -1.0
  
  POTENTIEL EAM ERCOLESI
  
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
+ PARANEB           4
  Types d_atomes :
    1   26.982   13.000  Al 
     0.900    2.200
@@ -150,8 +150,6 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
  rhomm  -20.5955397268345        1.29742094557351     
  calpoeam ktorho and the inverse:   1.094648033620400E-003
    913.535647337378     
- rang rangspace            1           1  nbr procs voisins            3
- rang rangspace            2           2  nbr procs voisins            3
  NEB: deplacement max entre configurations =    1.11836008295241      
   pour l atome         2049
  NEB: The kspring is in the eV/A^2                          :     1.00000
@@ -161,13 +159,15 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
  NEB: relaxation NEB pour TOUS les atomes
  rang rangspace            7           3  nbr procs voisins            3
  rang rangspace            4           0  nbr procs voisins            3
- rang rangspace            9           1  nbr procs voisins            3
  rang rangspace            5           1  nbr procs voisins            3
- rang rangspace           10           2  nbr procs voisins            3
- rang rangspace            8           0  nbr procs voisins            3
- rang rangspace            3           3  nbr procs voisins            3
- rang rangspace           11           3  nbr procs voisins            3
+ rang rangspace            1           1  nbr procs voisins            3
+ rang rangspace            2           2  nbr procs voisins            3
  rang rangspace            6           2  nbr procs voisins            3
+ rang rangspace           11           3  nbr procs voisins            3
+ rang rangspace           10           2  nbr procs voisins            3
+ rang rangspace            9           1  nbr procs voisins            3
+ rang rangspace            3           3  nbr procs voisins            3
+ rang rangspace            8           0  nbr procs voisins            3
           64  active cells among           64
           64  active cells among           64
  NEB: -------this is NEB--V2-------

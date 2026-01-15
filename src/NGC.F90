@@ -2,7 +2,7 @@ module NGC_mod
   USE arret_ndm_mod,only:arret_ndm
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   USE cellconfig,only:cell_config
-  USE boxconfig,only:box_config
+  USE boxconfig,only:box_config,periodbox
   USE endrunT_mod,only:endrunT
   use Tpara,only:para_space_config
   USE recips_mod,only: calcvol
@@ -18,12 +18,13 @@ module NGC_mod
     use steepestdescent_mod, only: conjugategradient,adamrel
 #ifdef PARA
     use paraconfig,only:para_config,initparapuresp
-    USE parautils,only:initcomp,WORKER_TAG,tolstoi,STOP_TAG
+    USE parautils,only:initcomp,WORKER_TAG,tolstoi,STOP_TAG,initloc
     use Tpara,only:nprocspace,COMM_space
 #else
     use Tpara,only:nprocspace
 #endif
     USE cryst_to_cart_mod,only: cryst_to_cart
+    USE rasmolT_mod,only:rasmolT
 
 
   implicit none
@@ -41,11 +42,14 @@ contains
     type(box_config),target::boxndm
     type(para_space_config)::psc
     logical ::lover
-	integer::irel
+    integer::irel
+
+    type(cell_config),pointer::celcginloc
+
     !-----------------------------------------------
     !
     !
-
+    celcginloc=>celcgin
 #ifdef PARA
 
 
@@ -160,7 +164,11 @@ contains
     
     itesauv=0
     boxndm=boxcg
-    call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp=.true.)
+    call periodbox(boxcg,atcgcomp)
+    call initloc(atcgcomp,cellcgcomp,atcgloc,celcginloc,boxcg,gcpara,ldistrib=.true.,psc=psc,lperiod=lperiod)
+    call atcgloc%copy_config(atcgin,lrescl=.false.)
+!    call rasmolT (atcgin,boxcg,99999,latcomp=.false.)
+!    call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp=.true.)
     return
 
   end subroutine NGC

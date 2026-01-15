@@ -1,0 +1,12 @@
+#!/bin/bash
+
+for ((tn=1 ; tn<=21; tn +=1)) ; do
+cd T$tn
+pwd
+pwd
+pwd
+mv   *cfg  res/
+
+cd ../
+done
+
