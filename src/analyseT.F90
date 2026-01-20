@@ -18,7 +18,7 @@ module analyseT_mod
        &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,rcangle,&
        &tpseuils,sigtot,unitP,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,linstantfda,&
        &itloopmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,itedepla,tdepla,tdepla2,&
-       & itesauvforce,itesauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,iteration,l2T,iteprtkin
+       & itesauvforce,itesauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,iteration,l2T,iteprtkin,lpcube
 
   USE cellconfig,only:cell_config, caltabtC,cell_config_arps
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
@@ -312,7 +312,7 @@ contains
                    write(6,'(I10,G10.3,A,2F11.4)') iteration,timel,'*ang_ca,m  ',tca,tcamean
                    write(6,'(I10,G10.3,A,2F11.4)') iteration,timel,'*ang_ab,m  ',tab,tabmean
                    write(6,'(I10,G10.3,A,2G21.12)') iteration,timel,'*volume  ',boxndm%volu*1d24,volumean*1d24
-
+                   if (lpcube)write(6,*)'abbc ', amod/bmod, bmod/cmod
                 endif    ! if (lprahman)
 
                 IF (lTNose) THEN

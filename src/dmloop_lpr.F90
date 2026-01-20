@@ -42,6 +42,8 @@ contains
     logical,optional::linit
     logical::lini=.false.
     logical:: lreturn
+!    integer::icall
+!    icall=0
     if (present(linit))lini=linit
     
 
@@ -71,7 +73,8 @@ contains
        !  write(6,*)'dml potist ',potist,atpr%potist
        call prNose(atpr,celndm,boxndm%box_config,psc)
     ELSE ! Parinello-Rahman with Nose-Hoover thermostat or constant energy
-       call analyseT(atpr,celndm,boxndm%box_config,psc)
+!       if (icall==0)call analyseT(atpr,celndm,boxndm%box_config,psc)
+!       icall=icall+1
        call pr1(atpr,celndm,boxndm,psc)
        timel=timel+tstep
     END IF

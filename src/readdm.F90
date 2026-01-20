@@ -947,6 +947,9 @@ contains
        if (rang==0) write(6,*)'Langevin avec Text pas defini : stop'
        call arret_ndm
     end if
+    if (dmtype==88) then
+       llangevin=.true.; lpr=.true.
+    end if
     if(llangevin) then
        if (lpr) then
           dmtype=88
@@ -1712,6 +1715,20 @@ contains
     else
        write(6,*)'rang readdm iseed ',rang,iseed
     end if
+
+    if (lpcube) then
+       select case(dmtype)
+       case(22,24,8)
+          if (LTnose) then
+             write(6,*)'No LPCUBE for LTNose'
+             call arret_ndm
+          end if
+       case default
+          write(6,*)'LPCUBE only for dmtype =22, 24 or 8, i.e. VV-Parinello-Rahman or fire or fast quenching'
+          call arret_ndm
+       end select
+    end if
+
     
     return
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'

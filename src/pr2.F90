@@ -42,7 +42,7 @@ module Parrinello_Rahman
        &potist,sigtot,text,tstep,iteration,potist,rang,sig,text,sigkine,lpcube,&
        &pi,l2t,ltberendsen,lperiod,lspaceNDM,h0,dmtype,usdh,llangevin,gamlg,gamprfact,unitP,&
        & lmaxvp,vplim,astarsig,sig0dir,thsig,lpconxyz
-  
+
   use FireModule,only:alph_start,f_alph,fdec,finc,nstepmin,tstep_mm,tstep0,init_trempe_fire
 
   USE var_pot, ONLY:cm,ntyp,gamlt
@@ -78,6 +78,7 @@ module Parrinello_Rahman
   real(double), allocatable :: sp(:,:), sdot(:,:), sdot_new(:,:),sfp(:,:),spp(:,:)
 
   real(double)::kinx,tempx,pre,pint
+  real(double)::ppot
 
   ! Variable associée au thermostat de Nosé-Hoover
   !  (zHoover est défini dans gen_com_m.F90)
@@ -96,7 +97,7 @@ module Parrinello_Rahman
   REAL(double) ::  fire_alph
   INTEGER :: fire_nstep,ic
 
-  real(double)::TInitBox
+  real(double)::TInitBox,fbox
 
 contains
 
@@ -173,7 +174,7 @@ contains
 !!$    invVolu = 1.d0/boxndm%volu
 
     ! Initialisation de la vitesse de la boîte
-    
+
     IF(RANG==0) WRITE(6,'(a,f0.3,a)') 'Initialisation de la vitesse de la boîte pour la température ', TinitBox, ' K'
     boxndm%hdot(:,:) = 0.d0
     !#ifdef PARA
@@ -186,9 +187,9 @@ contains
                 call random_number(z2)
                 if(z1.eq.0.d0) z1=0.000000001d0
                 if(z2.eq.0.d0) z2=0.000000001d0
-                
+
                 v1 =  sqrt(-2*log(z1))*cos(2*pi*z2)
-                
+
                 boxndm%hdot(1:3,1:3)=sqrt(2*bk*Tinitbox/boxndm%Wbox)*v1
              end DO
           end DO
@@ -202,7 +203,7 @@ contains
 
     Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
     Tempcell=Kcell*2./(9.*bk)
-!    if (Tinitbox.gt.0)     boxndm%hdot(1:3,1:3)=sqrt(tinitbox/Tempcell)*boxndm%hdot(1:3,1:3)
+    !    if (Tinitbox.gt.0)     boxndm%hdot(1:3,1:3)=sqrt(tinitbox/Tempcell)*boxndm%hdot(1:3,1:3)
     DO i=1, 3
        DO j=1, 3
 
@@ -321,13 +322,14 @@ contains
        end if
 
 #endif
-          if (lpcube) then
-             pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
-             sigkine=0
-             do ic=1,3
-                sigkine(ic,ic)=pint
-             end do
-          end if
+       if (lpcube) then
+          pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
+          sigkine=0
+          do ic=1,3
+             sigkine(ic,ic)=pint
+          end do
+          ppot=(sig(1,1)+sig(2,2)+sig(3,3))/3.0
+       end if
 
        ! Énergie cinétique des atomes à l'instant initial
        !       kine = 0.5d0*boxndm%volu*( sigKine(1,1) + sigKine(2,2) + sigKine(3,3) )
@@ -367,7 +369,7 @@ contains
     real(double)::maxvploc,maxvp,nrmvp,sigrel(3,3)
     integer::ib
 
-    
+
 !!$    if (lpconxyz) then
 !!$       sigtot(2,1)=0
 !!$       sigtot(1,2)=0
@@ -386,20 +388,24 @@ contains
 !!$    write(6,*) 'sigrel' ,sigrel(:,3)
     select case(dmtype)
     case(24)
-    if (lpconxyz) then
-       sig(2,1)=0
-       sig(1,2)=0
-       sig(3,1)=0
-       sig(1,3)=0
-       sig(2,3)=0
-       sig(3,2)=0
-    end if
+       if (lpcube) then
+          fbox=(1/3.0)*boxndm%volu*ppot*(1/(boxndm%h(1,1)**2+boxndm%h(2,2)**2+boxndm%h(3,3)**2))
+       end if
 
-    sigrel=sig
-    if (any(astarsig.eqv..true.)) then
-       call set_MP(boxndm,astarsig,sig,sigrel)
-    end if
-          
+       if (lpconxyz) then
+          sig(2,1)=0
+          sig(1,2)=0
+          sig(3,1)=0
+          sig(1,3)=0
+          sig(2,3)=0
+          sig(3,2)=0
+       end if
+
+       sigrel=sig
+       if (any(astarsig.eqv..true.)) then
+          call set_MP(boxndm,astarsig,sig,sigrel)
+       end if
+
        !       write(6,*)'IN',atpr%xp(1,1)
        ! Coordonnées réduites des atomes (au cas où elles ont été modifiées à l'extérieur)
        sp(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%xp(:,1:atpr%im) )
@@ -456,17 +462,43 @@ contains
           fire_alph=alph_start
           nstep=0
        end if
-       forcebox(:,:)=MatMul( sigrel(:,:) - sigext(:,:), boxndm%invtrh(:,:) )*boxndm%volu
-       do i = 1, 3
-          do ic = 1, 3
-             if (boxndm%hdot(ic,i)*forcebox(ic,i)<0) then
-                boxndm%hdot(ic,i)=0.
-             end if
+       if (lpcube) then
+          boxndm%hdot(2,1)=0
+          boxndm%hdot(1,2)=0
+          boxndm%hdot(3,1)=0
+          boxndm%hdot(1,3)=0
+          boxndm%hdot(2,3)=0
+          boxndm%hdot(3,2)=0
+          if (boxndm%hdot(1,1)*fbox<0) boxndm%hdot(:,:)=0
+       else
+
+          do i = 1, 3
+             do ic = 1, 3
+                if (boxndm%hdot(ic,i)*forcebox(ic,i)<0) then
+                   boxndm%hdot(ic,i)=0.
+                end if
+             end do
           end do
-       end do
+       end if
+
+!!$       do i = 1, 3
+!!$          do ic = 1, 3
+!!$             if (boxndm%hdot(ic,i)*forcebox(ic,i)<0) then
+!!$                boxndm%hdot(ic,i)=0.
+!!$             end if
+!!$          end do
+!!$       end do
 
        !          write(6,*)'hdot',hdot(1,1),tstep/(1*wBox)*forcebox(1,1)*ihbox0(1,1),invtrh(1,1),sigtot(1,1),tstep,tstepN
-       boxndm%hdot(:,:) = boxndm%hdot(:,:)*ihbox0(:,:)+ tstep/(1*boxndm%wBox)*forcebox(:,:)*ihbox0(:,:)
+       if (lpcube) then
+          do ic=1,3
+             boxndm%hdot(ic,ic) = boxndm%h(ic,ic)*(( 1.d0  )* boxndm%hdot(ic,ic)  + tstep/(1.d0*boxndm%wBox)*fbox)
+          end do
+       else
+          boxndm%hdot(:,:) = boxndm%hdot(:,:)*ihbox0(:,:)+ tstep/(1*boxndm%wBox)*forcebox(:,:)*ihbox0(:,:)          
+       end if
+
+
 !!$          write(6,*)'hdot', boxndm%hdot(:,1)
 !!$          write(6,*)'hdot', boxndm%hdot(:,2)
 !!$          write(6,*)'hdot', boxndm%hdot(:,3)
@@ -497,6 +529,16 @@ contains
        ! Calcul des forces et des contraintes à l'instant t+dt
        CALL CalFo(sig,potist,atpr,celndm,boxndm%box_config,t_sigma=.true.,psc=psc)
        if (dmtype==24) tstep=tstepN
+       if (lpcube) then
+          pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
+          sigkine=0
+          do ic=1,3
+             sigkine(ic,ic)=pint
+          end do
+          ppot=(sig(1,1)+sig(2,2)+sig(3,3))/3.0
+          fbox=(1/3.0)*boxndm%volu*ppot*(1/(boxndm%h(1,1)**2+boxndm%h(2,2)**2+boxndm%h(3,3)**2))
+
+       end if
 
 
        sigkine(:,:)=0.d0
@@ -529,25 +571,28 @@ contains
        else
           thsig=maxval(abs(sig-sigext))   
        end if
-       
-       
+
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        ! LPR +LANGEVIN : evolution de VP en corrdonnées réelles pour éviter de se tromper dans les dimensions       
     case(88)
-    if (lpconxyz) then
-       sigtot(2,1)=0
-       sigtot(1,2)=0
-       sigtot(3,1)=0
-       sigtot(1,3)=0
-       sigtot(2,3)=0
-       sigtot(3,2)=0
-    end if
+       if (lpcube) then
+          fbox=(1/3.0)*boxndm%volu*ppot*(1/(boxndm%h(1,1)**2+boxndm%h(2,2)**2+boxndm%h(3,3)**2))
+       end if
 
-    sigrel=sigtot
-    if (any(astarsig.eqv..true.)) then
-       call set_MP(boxndm,astarsig,sigtot,sigrel)
-    end if
+       if (lpconxyz) then
+          sigtot(2,1)=0
+          sigtot(1,2)=0
+          sigtot(3,1)=0
+          sigtot(1,3)=0
+          sigtot(2,3)=0
+          sigtot(3,2)=0
+       end if
 
+       sigrel=sigtot
+       if (any(astarsig.eqv..true.)) then
+          call set_MP(boxndm,astarsig,sigtot,sigrel)
+       end if
        call comm_space%barrier
        select type(atpr)
        class is (atom_config_e)
@@ -582,20 +627,37 @@ contains
                 end do
              end do
              if (lpcube) then
-                gs3=(glanh(1,1)+glanh(2,2)+glanh(3,3))/3.
-                glanh=0.
-                do ic=1,3
-                   glanh(ic,ic)=gs3
-                end do
+!!$                gs3=(glanh(1,1)+glanh(2,2)+glanh(3,3))/3.
+!!$                glanh=0.
+!!$                do ic=1,3
+!!$                   glanh(ic,ic)=gs3
+!!$                end do
+!!$                boxndm%hdot(2,1)=0
+!!$                boxndm%hdot(1,2)=0
+!!$                boxndm%hdot(3,1)=0
+!!$                boxndm%hdot(1,3)=0
+!!$                boxndm%hdot(2,3)=0
+!!$                boxndm%hdot(3,2)=0
+!!$                do ic=1,3
+!!$                   boxndm%hdot(ic,ic) =( boxndm%h(ic,ic)* rgah&
+!!$                        &+ tstep/(2.d0*boxndm%wBox)*fbox &
+!!$                        + (glanh(ic,ic)/boxndm%wbox)*sqrt(boxndm%wbox*bk*text*(1-rgah))  )*boxndm%h(ic,ic)*ihbox0(ic,ic)
+!!$                end do
+                write(6,*)'langevin +lpcube =STOP'
+                stop
+
+             else
+
+
+                boxndm%hdot(:,:) = (  boxndm%hdot(:,:)*rgah  &
+                     + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:),boxndm%invtrh(:,:) ) &
+                     + (glanh(:,:)/boxndm%wbox)*sqrt(boxndm%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
              end if
-                
-             boxndm%hdot(:,:) = (  boxndm%hdot(:,:)*rgah  &
-                  + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:),boxndm%invtrh(:,:) ) &
-                  + (glanh(:,:)/boxndm%wbox)*sqrt(boxndm%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
           end if
+
           call comm_space%bcast(0,boxndm%hdot)
           call comm_space%bcast(0,glanh)
-         tempx= tempinstT(atpr)
+          tempx= tempinstT(atpr)
           Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
           Tempcell=Kcell*2./(sum(ihbox0)*bk)
 
@@ -635,10 +697,35 @@ contains
           !    sdot(:,1:atpr%im) = MatMul(boxndm%invh(:,:), atpr%vp(:,1:atpr%im) )
 
           call sigkinetot(atpr,boxndm,sig,sigkine,sigtot)
+          if (lpcube) then
+             !                gs3=(glanh(1,1)+glanh(2,2)+glanh(3,3))/3.
+             !                glanh=0.
+             !                do ic=1,3
+             !                   glanh(ic,ic)=gs3
+             !                end do
+             boxndm%hdot(2,1)=0
+             boxndm%hdot(1,2)=0
+             boxndm%hdot(3,1)=0
+             boxndm%hdot(1,3)=0
+             boxndm%hdot(2,3)=0
+             boxndm%hdot(3,2)=0
+             do ic=1,3
+                boxndm%hdot(ic,ic) =( boxndm%h(ic,ic)* rgah&
+                     &+ tstep/(2.d0*boxndm%wBox)*fbox &
+                     + (glanh(ic,ic)/boxndm%wbox)*sqrt(boxndm%wbox*bk*text*(1-rgah))  )*boxndm%h(ic,ic)*ihbox0(ic,ic)
+             end do
 
-          boxndm%hdot(:,:) = (boxndm%hdot(:,:)*rgah  &
-               + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:), boxndm%invtrh(:,:) ) &
-               + (glanh(:,:)/boxndm%wbox)*sqrt(boxndm%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
+          else
+
+
+             boxndm%hdot(:,:) = (  boxndm%hdot(:,:)*rgah  &
+                  + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:),boxndm%invtrh(:,:) ) &
+                  + (glanh(:,:)/boxndm%wbox)*sqrt(boxndm%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
+          end if
+
+          !!          boxndm%hdot(:,:) = (boxndm%hdot(:,:)*rgah  &
+          !!               + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( sigtot(:,:) - sigext(:,:), boxndm%invtrh(:,:) ) &
+          !!              + (glanh(:,:)/boxndm%wbox)*sqrt(boxndm%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
           ! Estimation de la dérivée du tenseur Gmat à l'instant t+dt
           DO i=1, 3
              DO j=1, 3
@@ -663,7 +750,11 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     case(22,8)
-       
+       if (lpcube) then
+          fbox=(1/3.0)*boxndm%volu*ppot*(1/(boxndm%h(1,1)**2+boxndm%h(2,2)**2+boxndm%h(3,3)**2))
+       end if
+
+
        if (dmtype==22) then
           if (lpconxyz) then
              sig(2,1)=0
@@ -673,12 +764,12 @@ contains
              sig(2,3)=0
              sig(3,2)=0
           end if
-          
+
           sigrel=sig
           if (any(astarsig.eqv..true.)) then
              call set_MP(boxndm,astarsig,sig,sigrel)
           end if
-          
+
           do i = 1, atpr%im
              do ic = 1, 3
                 if (atpr%vp(ic,i)*atpr%fp(ic,i)<0) then
@@ -687,13 +778,24 @@ contains
              end do
           end do
           forcebox(:,:)=MatMul( sigrel(:,:) - sigext(:,:), boxndm%invtrh(:,:) )
-          do i = 1, 3
-             do ic = 1, 3
-                if (boxndm%hdot(ic,i)*forcebox(ic,i)<0) then
-                   boxndm%hdot(ic,i)=0.
-                end if
+          if (lpcube) then
+             boxndm%hdot(2,1)=0
+             boxndm%hdot(1,2)=0
+             boxndm%hdot(3,1)=0
+             boxndm%hdot(1,3)=0
+             boxndm%hdot(2,3)=0
+             boxndm%hdot(3,2)=0
+             if (boxndm%hdot(1,1)*fbox<0) boxndm%hdot(:,:)=0
+          else
+
+             do i = 1, 3
+                do ic = 1, 3
+                   if (boxndm%hdot(ic,i)*forcebox(ic,i)<0) then
+                      boxndm%hdot(ic,i)=0.
+                   end if
+                end do
              end do
-          end do
+          end if
        else
           if (lpconxyz) then
              sigtot(2,1)=0
@@ -703,12 +805,21 @@ contains
              sigtot(2,3)=0
              sigtot(3,2)=0
           end if
-          
+          if (lpcube) then
+             boxndm%hdot(2,1)=0
+             boxndm%hdot(1,2)=0
+             boxndm%hdot(3,1)=0
+             boxndm%hdot(1,3)=0
+             boxndm%hdot(2,3)=0
+             boxndm%hdot(3,2)=0
+          end if
+
+
           sigrel=sigtot
           if (any(astarsig.eqv..true.)) then
              call set_MP(boxndm,astarsig,sigtot,sigrel)
           end if
-          
+
        end if
 
        !    case(8)
@@ -726,15 +837,31 @@ contains
                + tstep/(2.d0*cm(atpr%ityp(ia))) * MatMul( boxndm%invh(:,:), atpr%fp(:,ia) )
        END DO
        ! Dérivée du tenseur h à l'instant t+dt/2
-       IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
-          boxndm%hdot(:,:) = ( 1.d0 - 0.5d0*tstep*zHoover(1) - 0.5d0/tbox )* boxndm%hdot(:,:)*ihbox0(:,:) &
-               + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( &
-               &sigrel(:,:) - sigext(:,:), boxndm%invtrh(:,:) )*ihbox0(:,:)
-       ELSE        ! Équation sans force de friction supplémentaire
-          boxndm%hdot(:,:) = ( 1.d0 - 0.5d0*tstep*zHoover(1) )* boxndm%hdot(:,:)*ihbox0(:,:) &
-               + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul(&
-               &sigrel(:,:) - sigext(:,:), boxndm%invtrh(:,:) )*ihbox0(:,:)
-       END IF
+       if (lpcube) then
+          IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
+             do ic=1,3
+                boxndm%hdot(ic,ic) = boxndm%h(ic,ic)*(( 1.d0 - 0.5d0*tstep*zHoover(1)- 0.5d0/tbox )* boxndm%hdot(ic,ic) &
+                     + tstep/(2.d0*boxndm%wBox)*fbox)
+             end do
+          ELSE        ! Équation sans force de friction supplémentaire
+             do ic=1,3
+                boxndm%hdot(ic,ic) = boxndm%h(ic,ic)*(( 1.d0 - 0.5d0*tstep*zHoover(1) )* boxndm%hdot(ic,ic) &
+                     + tstep/(2.d0*boxndm%wBox)*fbox)
+             end do
+          END IF
+
+       else
+
+          IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
+             boxndm%hdot(:,:) = ( 1.d0 - 0.5d0*tstep*zHoover(1) - 0.5d0/tbox )* boxndm%hdot(:,:)*ihbox0(:,:) &
+                  + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( &
+                  &sigrel(:,:) - sigext(:,:), boxndm%invtrh(:,:) )*ihbox0(:,:)
+          ELSE        ! Équation sans force de friction supplémentaire
+             boxndm%hdot(:,:) = ( 1.d0 - 0.5d0*tstep*zHoover(1) )* boxndm%hdot(:,:)*ihbox0(:,:) &
+                  + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul(&
+                  &sigrel(:,:) - sigext(:,:), boxndm%invtrh(:,:) )*ihbox0(:,:)
+          END IF
+       end if
        !          write(6,*)'hdot',hdot
        ! Coordonnées réduites des atomes à l'instant t+dt
        sp(:,1:atpr%im) = sp(:,1:atpr%im) + sdot(:,1:atpr%im)*tstep
@@ -783,9 +910,20 @@ contains
 !!$             maxvp=maxval(normvp)
 !!$             call comm_space%max(maxvp)
 !!$             if (rang==0) write(6,*)'MAXVP', maxvp
-!           end block
-    
+       !           end block
+
        CALL CalFo(sig,potist,atpr,celndm,boxndm%box_config,t_sigma=.true.,psc=psc)
+       if (lpcube) then
+          pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
+          sigkine=0
+          do ic=1,3
+             sigkine(ic,ic)=pint
+          end do
+          ppot=(sig(1,1)+sig(2,2)+sig(3,3))/3.0
+          fbox=(1/3.0)*boxndm%volu*ppot*(1/(boxndm%h(1,1)**2+boxndm%h(2,2)**2+boxndm%h(3,3)**2))
+
+       end if
+
        if (l2t)then
           if (i2t==1)  call calceloss(celndm,atpr)
        else
@@ -804,29 +942,48 @@ contains
        ! (la contrainte cinétique est calculée à l'instant t
        ! et la contrainte potentielle à l'instant t+dt)
        sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
-    if (lpconxyz) then
-       sigtot(2,1)=0
-       sigtot(1,2)=0
-       sigtot(3,1)=0
-       sigtot(1,3)=0
-       sigtot(2,3)=0
-       sigtot(3,2)=0
-    end if
+       if (lpconxyz) then
+          sigtot(2,1)=0
+          sigtot(1,2)=0
+          sigtot(3,1)=0
+          sigtot(1,3)=0
+          sigtot(2,3)=0
+          sigtot(3,2)=0
+       end if
 
-    sigrel=sigtot
-    if (any(astarsig.eqv..true.)) then
-       call set_MP(boxndm,astarsig,sigrel,sigrel)
-    end if
+       sigrel=sigtot
+       if (any(astarsig.eqv..true.)) then
+          call set_MP(boxndm,astarsig,sigrel,sigrel)
+       end if
 
        ! Estimation de la dérivée du tenseur h à l'instant t+dt
-       IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
-          hdot_new(:,:) = 1.d0/(1.d0+0.5d0*tstep*zHoover(1)+ 0.5d0/tbox )*( boxndm%hdot(:,:)*ihbox0(:,:) &
-               + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul(sigrel(:,:)-sigext(:,:),boxndm%invtrh(:,:)))*ihbox0(:,:)
-       ELSE        ! Équation sans force de friction supplémentaire
-          hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) )*( boxndm%hdot(:,:)*ihbox0(:,:) &
-               + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul(sigrel(:,:)-sigext(:,:),boxndm%invtrh(:,:)))*ihbox0(:,:)
-       END IF
-       ! Estimation de la dérivée du tenseur Gmat à l'instant t+dt
+       if (lpcube) then
+          IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
+             hdot_new=0.
+             do ic=1,3
+                hdot_new(ic,ic) = boxndm%h(ic,ic)*(( 1.d0 - 0.5d0*tstep*zHoover(1)- 0.5d0/tbox )* boxndm%hdot(ic,ic) &
+                     + tstep/(2.d0*boxndm%wBox)*fbox)
+             end do
+          ELSE        ! Équation sans force de friction supplémentaire
+             hdot_new=0.
+             do ic=1,3
+                hdot_new(ic,ic) = boxndm%h(ic,ic)*(( 1.d0 - 0.5d0*tstep*zHoover(1) )* boxndm%hdot(ic,ic) &
+                     + tstep/(2.d0*boxndm%wBox)*fbox)
+             end do
+          END IF
+
+       else
+          IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
+             hdot_new(:,:) = 1.d0/(1.d0+0.5d0*tstep*zHoover(1)+ 0.5d0/tbox )*( boxndm%hdot(:,:)*ihbox0(:,:) &
+                  + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul(sigrel(:,:)-sigext(:,:),boxndm%invtrh(:,:)))*ihbox0(:,:)
+          ELSE        ! Équation sans force de friction supplémentaire
+             hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) )*( boxndm%hdot(:,:)*ihbox0(:,:) &
+                  + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul(sigrel(:,:)-sigext(:,:),boxndm%invtrh(:,:)))*ihbox0(:,:)
+          END IF
+       end if
+
+!!$       
+!!$       ! Estimation de la dérivée du tenseur Gmat à l'instant t+dt
        DO i=1, 3
           DO j=1, 3
              boxndm%Gdot(i,j) = Sum(boxndm%h(1:3,i)*hdot_new(1:3,j) + hdot_new(1:3,i)*boxndm%h(1:3,j) )
@@ -837,7 +994,7 @@ contains
        DO iter=1, Max_Iter
           ! Valeurs de la dernière itération du cycle d'autocohérence
           hdot_last(:,:) = hdot_new(:,:)*ihbox0(:,:)
-
+          write(6,*)'hdotnew',hdot_new
           ! Dérivée des coordonnées réduites des atomes à l'instant t+dt
           mf(:,:) = 0.5d0*tstep*MatMul(boxndm%invGmat,boxndm%Gdot)
           DO i=1, 3
@@ -884,14 +1041,33 @@ contains
 
           ! Contrainte totale à l'instant t+dt
           sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
-          ! Dérivée du tenseur h à l'instant t+dt
-          IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
-             hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) + 0.5d0/tbox )*(boxndm%hdot(:,:)*ihbox0(:,:) &
-                  + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( sigtot(:,:)-sigext(:,:),boxndm%invtrh(:,:)))*ihbox0(:,:)
-          ELSE        ! Équation sans force de friction supplémentaire
-             hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) )*(boxndm%hdot(:,:) &
-                  + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul(sigtot(:,:)-sigext(:,:),boxndm%invtrh(:,:)))*ihbox0(:,:)
-          END IF
+          if (lpcube) then
+             IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
+                hdot_new=0
+                do ic=1,3
+                   hdot_new(ic,ic) = boxndm%h(ic,ic)*(( 1.d0 - 0.5d0*tstep*zHoover(1)- 0.5d0/tbox )* boxndm%hdot(ic,ic) &
+                        + tstep/(2.d0*boxndm%wBox)*fbox)
+                end do
+
+             ELSE        ! Équation sans force de friction supplémentaire
+                hdot_new=0
+                do ic=1,3
+                   hdot_new(ic,ic) = boxndm%h(ic,ic)*(( 1.d0 - 0.5d0*tstep*zHoover(1) )* boxndm%hdot(ic,ic) &
+                        + tstep/(2.d0*boxndm%wBox)*fbox)
+                end do
+             END IF
+
+          else
+             ! Dérivée du tenseur h à l'instant t+dt
+             IF (lpcon2.EQV..true.) THEN    ! On ajoute une force de friction
+                hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) + 0.5d0/tbox )*(boxndm%hdot(:,:)*ihbox0(:,:) &
+                     + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul( sigtot(:,:)-sigext(:,:),boxndm%invtrh(:,:)))*ihbox0(:,:)
+             ELSE        ! Équation sans force de friction supplémentaire
+                hdot_new(:,:) = 1.d0/( 1.d0 + 0.5d0*tstep*zHoover(1) )*(boxndm%hdot(:,:) &
+                     + tstep/(2.d0*boxndm%wBox)*boxndm%volu*MatMul(sigtot(:,:)-sigext(:,:),boxndm%invtrh(:,:)))*ihbox0(:,:)
+             END IF
+          end if
+
 
           ! Dérivée du tenseur Gmat à l'instant t+dt
           DO i=1, 3
@@ -903,11 +1079,14 @@ contains
           ! Vérifie l'autocohérence de h
           diff = Sum( abs( hdot_new(1:3,1:3) - hdot_last(1:3,1:3) ) )
           tdiff = Sum( abs( hdot_last(1:3,1:3) ) )
-          if (tdiff .eq. 0.0d0) then
-             if (diff .LE. tol) exit
-          else
-             if (diff/tdiff .LE. tol) exit
-          endif
+          !          write(6,*)'hdotnew',hdot_new
+          !          write(6,*)'hdotlast',hdot_last
+          !          write(6,*)'conv',diff/tdiff,hdot_new(1,1),hdot_last(1,1)
+          !          if (tdiff .eq. 0.0d0) then
+          !             if (diff .LE. tol) exit
+          !          else
+          if (abs(diff/tdiff) .LE. tol) exit
+          !          endif
 
        END DO
 
@@ -986,10 +1165,10 @@ contains
     real(double)::MP(3,3),tMP(3,3),atp(3,3),vp(3)
     integer::ichk,ic,i
     ichk=0
-!    do i=1,3
-!       write(6,*)'SIG',sig(1:3,i)
-!    end do
-    
+    !    do i=1,3
+    !       write(6,*)'SIG',sig(1:3,i)
+    !    end do
+
     if (astarsig(1)) then
        ichk=ichk+1
        atp(:,1)=box%as(:,1)/norm2(box%as(:,1))
@@ -1011,7 +1190,7 @@ contains
     end if
     call vectprod(atp(:,1),atp(:,2),atp(:,3))
     atp(:,3)=atp(:,3)/norm2(atp(:,3))
- !   write(6,*)'NORMatp ',norm2(atp(:,1)),norm2(atp(:,2)),norm2(atp(:,3))
+    !   write(6,*)'NORMatp ',norm2(atp(:,1)),norm2(atp(:,2)),norm2(atp(:,3))
 
     call mattrp(atp,tMP)
     sigt=matmul(tMP,sig)
@@ -1019,12 +1198,12 @@ contains
     sigt0(:,:)=0
     sigt0(1,1)=sigt(1,1)
     thsig=abs(sigt(1,1))
- !   write(6,*)'thsig',thsig*unitP
+    !   write(6,*)'thsig',thsig*unitP
     sigr=matmul(atp,sigt0)
     sigr=matmul(sigr,tMP)
- !   do i=1,3
- !      write(6,*)'SIGR',sigr(1:3,i)
- !   end do
+    !   do i=1,3
+    !      write(6,*)'SIGR',sigr(1:3,i)
+    !   end do
     return
   end subroutine set_MP
 !!$  subroutine set_MP2(box,sig0dir,sigt,sigr)
@@ -1060,7 +1239,7 @@ contains
 !!$  end subroutine set_MP2
 !!$    
 !!$       
-       
+
 end module Parrinello_Rahman !Parrinello_Rahman
 
 
