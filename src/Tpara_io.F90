@@ -13,6 +13,11 @@ implicit none
   character(len=*), parameter :: NDM_MPI_DATA_REPRESENTATIONS = "external32"
 #endif
 
+  interface file_write
+     module procedure file_write_i
+     module procedure file_write_dp
+     module procedure file_write_char
+  end interface
 
 contains
 
@@ -71,7 +76,6 @@ contains
   end subroutine file_close
 
 
-
   !=========================================================================
 #if defined(PARA)
   subroutine file_set_view(fh, offset, etype, filetype)
@@ -88,6 +92,56 @@ contains
   end subroutine file_set_view
 #endif
 
+
+  !=========================================================================
+#if defined(PARA)
+  subroutine file_write_i(fh, array)
+    integer, intent(in) :: fh
+    integer,intent(in) :: array(..)
+    !=====
+    integer :: ierror=0
+    !=====
+
+    call MPI_File_write(fh, array, size(array), MPI_INTEGER, MPI_STATUS_IGNORE, ierror)
+    call error_check(ierror)
+
+  end subroutine file_write_i
+#endif
+
+
+  !=========================================================================
+#if defined(PARA)
+  subroutine file_write_dp(fh, array)
+    integer, intent(in) :: fh
+    real(double), intent(in) :: array(..)
+    !=====
+    integer :: ierror=0
+    !=====
+
+    call MPI_File_write(fh, array, size(array), MPI_REAL8, MPI_STATUS_IGNORE, ierror)
+    call error_check(ierror)
+
+  end subroutine file_write_dp
+#endif
+
+  !=========================================================================
+#if defined(PARA)
+  subroutine file_write_char(fh, array)
+    integer, intent(in) :: fh
+    character(*),intent(in) :: array(:)
+    !=====
+    integer :: ierror=0
+    integer :: nsize,longueur,nsizetot
+    !=====
+
+    nsize = SIZE(array)
+    longueur=len(array)
+    nsizetot=nsize*longueur
+    call MPI_File_write(fh, array, nsizetot, MPI_CHARACTER, MPI_STATUS_IGNORE, ierror)
+    call error_check(ierror)
+
+  end subroutine file_write_char
+#endif
 
 
   !=========================================================================
