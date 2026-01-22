@@ -269,6 +269,15 @@ contains
     !-----------------------------------------------
     !   Version parallèle (MPI-IO) de sauvegardeT
     !-----------------------------------------------
+    implicit none
+    class(box_config)::boxndm
+    class(atom_config)::atdml
+    type(cell_config):: celndm
+    character::fnamcout*80
+    logical, intent(in):: latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
+    integer :: formatsauv
+
+    print *, "ok"
 
   end subroutine sauvegardeT_para
 
