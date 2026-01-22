@@ -21,8 +21,24 @@ module sauvegardeT_mod
   implicit none
 
 contains
-  ! ********************************************************************
+
   subroutine sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp)
+    implicit none
+    class(box_config)::boxndm
+    class(atom_config)::atdml
+    type(cell_config):: celndm
+    character::fnamcout*80
+    logical, intent(in):: latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
+    integer :: formatsauv
+
+    call sauvegardeT_para(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp)
+    !call sauvegardeT_originale(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp)
+
+  end subroutine sauvegardeT
+
+
+  ! ********************************************************************
+  subroutine sauvegardeT_originale(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp)
     !-----------------------------------------------
     !   M o d u l e s
 
@@ -246,9 +262,14 @@ contains
     close(unit=lucout)
     if (l2T)call sauveelec
     return
-  end subroutine sauvegardeT
+  end subroutine sauvegardeT_originale
 
+  ! ********************************************************************
+  subroutine sauvegardeT_para(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp)
+    !-----------------------------------------------
+    !   Version parallèle (MPI-IO) de sauvegardeT
+    !-----------------------------------------------
 
-
+  end subroutine sauvegardeT_para
 
 end module sauvegardeT_mod
