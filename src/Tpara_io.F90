@@ -19,6 +19,12 @@ implicit none
      module procedure file_write_char
   end interface
 
+  interface file_write_all
+     module procedure file_write_all_i
+     module procedure file_write_all_dp
+     module procedure file_write_all_char
+  end interface
+
 contains
 
 
@@ -141,6 +147,57 @@ contains
     call error_check(ierror)
 
   end subroutine file_write_char
+#endif
+
+
+  !=========================================================================
+#if defined(PARA)
+  subroutine file_write_all_i(fh, array)
+    integer, intent(in) :: fh
+    integer,intent(in) :: array(..)
+    !=====
+    integer :: ierror=0
+    !=====
+
+    call MPI_File_write_all(fh, array, size(array), MPI_INTEGER, MPI_STATUS_IGNORE, ierror)
+    call error_check(ierror)
+
+  end subroutine file_write_all_i
+#endif
+
+
+  !=========================================================================
+#if defined(PARA)
+  subroutine file_write_all_dp(fh, array)
+    integer, intent(in) :: fh
+    real(double), intent(in) :: array(..)
+    !=====
+    integer :: ierror=0
+    !=====
+
+    call MPI_File_write_all(fh, array, size(array), MPI_REAL8, MPI_STATUS_IGNORE, ierror)
+    call error_check(ierror)
+
+  end subroutine file_write_all_dp
+#endif
+
+  !=========================================================================
+#if defined(PARA)
+  subroutine file_write_all_char(fh, array)
+    integer, intent(in) :: fh
+    character(*),intent(in) :: array(:)
+    !=====
+    integer :: ierror=0
+    integer :: nsize,longueur,nsizetot
+    !=====
+
+    nsize = SIZE(array)
+    longueur=len(array)
+    nsizetot=nsize*longueur
+    call MPI_File_write_all(fh, array, nsizetot, MPI_CHARACTER, MPI_STATUS_IGNORE, ierror)
+    call error_check(ierror)
+
+  end subroutine file_write_all_char
 #endif
 
 
