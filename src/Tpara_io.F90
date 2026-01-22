@@ -6,8 +6,13 @@ module Tpara_io
   use mpi
 #endif
 
-
 implicit none
+
+#ifdef PARA
+  ! Deux possibilités principales : "native" et "external32"
+  character(len=*), parameter :: NDM_MPI_DATA_REPRESENTATIONS = "external32"
+#endif
+
 
 contains
 
@@ -64,6 +69,25 @@ contains
     close(unit=fh)
 #endif
   end subroutine file_close
+
+
+
+  !=========================================================================
+#if defined(PARA)
+  subroutine file_set_view(fh, offset, etype, filetype)
+    integer, intent(in) :: fh
+    integer(KIND=MPI_OFFSET_KIND), intent(in):: offset
+    integer, intent(in) :: etype, filetype
+    !=====
+    integer :: ierror=0
+    !=====
+
+    call MPI_File_set_view(fh, offset, etype, filetype, NDM_MPI_DATA_REPRESENTATIONS, MPI_INFO_NULL, ierror)
+    call error_check(ierror)
+
+  end subroutine file_set_view
+#endif
+
 
 
   !=========================================================================
