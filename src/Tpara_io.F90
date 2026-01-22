@@ -25,6 +25,18 @@ implicit none
      module procedure file_write_all_char
   end interface
 
+  interface file_read
+     module procedure file_read_i
+     module procedure file_read_dp
+     module procedure file_read_char
+  end interface
+
+  interface file_read_all
+     module procedure file_read_all_i
+     module procedure file_read_all_dp
+     module procedure file_read_all_char
+  end interface
+
 contains
 
 
@@ -130,6 +142,7 @@ contains
   end subroutine file_write_dp
 #endif
 
+
   !=========================================================================
 #if defined(PARA)
   subroutine file_write_char(fh, array)
@@ -181,6 +194,7 @@ contains
   end subroutine file_write_all_dp
 #endif
 
+
   !=========================================================================
 #if defined(PARA)
   subroutine file_write_all_char(fh, array)
@@ -198,6 +212,109 @@ contains
     call error_check(ierror)
 
   end subroutine file_write_all_char
+#endif
+
+  !=========================================================================
+#if defined(PARA)
+  subroutine file_read_i(fh, array)
+    integer, intent(in) :: fh
+    integer,intent(in) :: array(..)
+    !=====
+    integer :: ierror=0
+    !=====
+
+    call MPI_File_read(fh, array, size(array), MPI_INTEGER, MPI_STATUS_IGNORE, ierror)
+    call error_check(ierror)
+
+  end subroutine file_read_i
+#endif
+
+
+  !=========================================================================
+#if defined(PARA)
+  subroutine file_read_dp(fh, array)
+    integer, intent(in) :: fh
+    real(double), intent(in) :: array(..)
+    !=====
+    integer :: ierror=0
+    !=====
+
+    call MPI_File_read(fh, array, size(array), MPI_REAL8, MPI_STATUS_IGNORE, ierror)
+    call error_check(ierror)
+
+  end subroutine file_read_dp
+#endif
+
+
+  !=========================================================================
+#if defined(PARA)
+  subroutine file_read_char(fh, array)
+    integer, intent(in) :: fh
+    character(*),intent(in) :: array(:)
+    !=====
+    integer :: ierror=0
+    integer :: nsize,longueur,nsizetot
+    !=====
+
+    nsize = SIZE(array)
+    longueur=len(array)
+    nsizetot=nsize*longueur
+    call MPI_File_read(fh, array, nsizetot, MPI_CHARACTER, MPI_STATUS_IGNORE, ierror)
+    call error_check(ierror)
+
+  end subroutine file_read_char
+#endif
+
+
+  !=========================================================================
+#if defined(PARA)
+  subroutine file_read_all_i(fh, array)
+    integer, intent(in) :: fh
+    integer,intent(in) :: array(..)
+    !=====
+    integer :: ierror=0
+    !=====
+
+    call MPI_File_read_all(fh, array, size(array), MPI_INTEGER, MPI_STATUS_IGNORE, ierror)
+    call error_check(ierror)
+
+  end subroutine file_read_all_i
+#endif
+
+
+  !=========================================================================
+#if defined(PARA)
+  subroutine file_read_all_dp(fh, array)
+    integer, intent(in) :: fh
+    real(double), intent(in) :: array(..)
+    !=====
+    integer :: ierror=0
+    !=====
+
+    call MPI_File_read_all(fh, array, size(array), MPI_REAL8, MPI_STATUS_IGNORE, ierror)
+    call error_check(ierror)
+
+  end subroutine file_read_all_dp
+#endif
+
+
+  !=========================================================================
+#if defined(PARA)
+  subroutine file_read_all_char(fh, array)
+    integer, intent(in) :: fh
+    character(*),intent(in) :: array(:)
+    !=====
+    integer :: ierror=0
+    integer :: nsize,longueur,nsizetot
+    !=====
+
+    nsize = SIZE(array)
+    longueur=len(array)
+    nsizetot=nsize*longueur
+    call MPI_File_read_all(fh, array, nsizetot, MPI_CHARACTER, MPI_STATUS_IGNORE, ierror)
+    call error_check(ierror)
+
+  end subroutine file_read_all_char
 #endif
 
 
