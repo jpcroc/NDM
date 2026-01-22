@@ -50,6 +50,22 @@ contains
   end subroutine mpic_file_open
 
 
+!=========================================================================
+  subroutine file_close(fh)
+    integer, intent(inout) :: fh
+    !=====
+    integer :: ierror=0
+    !=====
+
+#if defined(PARA)
+    call MPI_File_close(fh, ierror)
+    call error_check(ierror)
+#else
+    close(unit=fh)
+#endif
+  end subroutine file_close
+
+
   !=========================================================================
   subroutine error_check(errorcode)
 
