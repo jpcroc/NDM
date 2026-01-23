@@ -264,20 +264,63 @@ contains
     return
   end subroutine sauvegardeT_originale
 
+
+
+
   ! ********************************************************************
   subroutine sauvegardeT_para(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp)
     !-----------------------------------------------
     !   Version parallèle (MPI-IO) de sauvegardeT
     !-----------------------------------------------
+
+    use Tpara_io
+
     implicit none
     class(box_config)::boxndm
     class(atom_config)::atdml
     type(cell_config):: celndm
     character::fnamcout*80
     logical, intent(in):: latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
-    integer :: formatsauv
 
-    print *, "ok"
+    integer :: lucout, formatsauvmod,formatsauv,im
+    logical :: lwax
+
+    formatsauvmod = mod(formatsauv,2)
+    im =atdml%im
+    if (atdml%im_glob==0) then
+       write(6,*)'sauvegarde imglob=0 stop'
+       call arret_ndm
+    end if
+
+#ifdef PARA
+
+
+
+
+#else
+
+    ! sauvegarde SEQ
+    lucout = 87
+    open(unit=lucout, file=fnamcout, form='unformatted', status='unknown')
+    write (lucout) formatsauv
+    write (lucout) boxndm%at
+    write (lucout) atdml%im
+    write (lucout) atdml%ityp
+    write (lucout) atdml%xp
+    write (lucout) atdml%num_at_glob
+    if (formatsauvmod==1) then
+      lwax=.false.
+      select type (atdml)
+      class is (atom_config_d) ! atom_config_e extends atom_config_d, donc on entre ici aussi avec atom_config_e
+        write (lucout) atdml%vp
+      end select
+      !if (.not.lwax)write (lucout) atdml%xp ! écris sur 1 proc PARA, pas pas sur plusieurs et pas sans PARA ?
+      write (lucout) tstep
+      write (lucout) tmean, pmean, iteration, timel
+    endif
+    close(unit=lucout)
+    if (l2T)call sauveelec ! A faire absolument sur le proc rang=0
+#endif
 
   end subroutine sauvegardeT_para
 
