@@ -4,6 +4,7 @@ module Tpara_io
   use Tpara, only: mpi_communicator, endmpi
 #ifdef PARA
   use mpi
+  use Tpara,only: NDM_MPI_REAL_DOUBLE
 #endif
 
 implicit none
@@ -136,7 +137,7 @@ contains
     integer :: ierror=0
     !=====
 
-    call MPI_File_write(fh, array, size(array), MPI_REAL8, MPI_STATUS_IGNORE, ierror)
+    call MPI_File_write(fh, array, size(array), NDM_MPI_REAL_DOUBLE, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
   end subroutine file_write_dp
@@ -188,7 +189,7 @@ contains
     integer :: ierror=0
     !=====
 
-    call MPI_File_write_all(fh, array, size(array), MPI_REAL8, MPI_STATUS_IGNORE, ierror)
+    call MPI_File_write_all(fh, array, size(array), NDM_MPI_REAL_DOUBLE, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
   end subroutine file_write_all_dp
@@ -239,7 +240,7 @@ contains
     integer :: ierror=0
     !=====
 
-    call MPI_File_read(fh, array, size(array), MPI_REAL8, MPI_STATUS_IGNORE, ierror)
+    call MPI_File_read(fh, array, size(array), NDM_MPI_REAL_DOUBLE, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
   end subroutine file_read_dp
@@ -291,7 +292,7 @@ contains
     integer :: ierror=0
     !=====
 
-    call MPI_File_read_all(fh, array, size(array), MPI_REAL8, MPI_STATUS_IGNORE, ierror)
+    call MPI_File_read_all(fh, array, size(array), NDM_MPI_REAL_DOUBLE, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
   end subroutine file_read_all_dp
