@@ -14,28 +14,28 @@ implicit none
   character(len=*), parameter :: NDM_MPI_DATA_REPRESENTATIONS = "external32"
 #endif
 
-  interface file_write
-     module procedure file_write_i
-     module procedure file_write_dp
-     module procedure file_write_char
+  interface file_write_at
+     module procedure file_write_at_i
+     module procedure file_write_at_dp
+     module procedure file_write_at_char
   end interface
 
-  interface file_write_all
-     module procedure file_write_all_i
-     module procedure file_write_all_dp
-     module procedure file_write_all_char
+  interface file_write_at_all
+     module procedure file_write_at_all_i
+     module procedure file_write_at_all_dp
+     module procedure file_write_at_all_char
   end interface
 
-  interface file_read
-     module procedure file_read_i
-     module procedure file_read_dp
-     module procedure file_read_char
+  interface file_read_at
+     module procedure file_read_at_i
+     module procedure file_read_at_dp
+     module procedure file_read_at_char
   end interface
 
-  interface file_read_all
-     module procedure file_read_all_i
-     module procedure file_read_all_dp
-     module procedure file_read_all_char
+  interface file_read_at_all
+     module procedure file_read_at_all_i
+     module procedure file_read_at_all_dp
+     module procedure file_read_at_all_char
   end interface
 
 contains
@@ -114,40 +114,43 @@ contains
 
   !=========================================================================
 #if defined(PARA)
-  subroutine file_write_i(fh, array)
+  subroutine file_write_at_i(fh, offset, array)
     integer, intent(in) :: fh
+    integer(KIND=MPI_OFFSET_KIND), intent(in):: offset
     integer,intent(in) :: array(..)
     !=====
     integer :: ierror=0
     !=====
 
-    call MPI_File_write(fh, array, size(array), MPI_INTEGER, MPI_STATUS_IGNORE, ierror)
+    call MPI_file_write_at(fh, offset, array, size(array), MPI_INTEGER, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
-  end subroutine file_write_i
+  end subroutine file_write_at_i
 #endif
 
 
   !=========================================================================
 #if defined(PARA)
-  subroutine file_write_dp(fh, array)
+  subroutine file_write_at_dp(fh, offset, array)
     integer, intent(in) :: fh
+    integer(KIND=MPI_OFFSET_KIND), intent(in):: offset
     real(double), intent(in) :: array(..)
     !=====
     integer :: ierror=0
     !=====
 
-    call MPI_File_write(fh, array, size(array), NDM_MPI_REAL_DOUBLE, MPI_STATUS_IGNORE, ierror)
+    call MPI_file_write_at(fh, offset, array, size(array), NDM_MPI_REAL_DOUBLE, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
-  end subroutine file_write_dp
+  end subroutine file_write_at_dp
 #endif
 
 
   !=========================================================================
 #if defined(PARA)
-  subroutine file_write_char(fh, array)
+  subroutine file_write_at_char(fh, offset, array)
     integer, intent(in) :: fh
+    integer(KIND=MPI_OFFSET_KIND), intent(in):: offset
     character(*),intent(in) :: array(:)
     !=====
     integer :: ierror=0
@@ -157,49 +160,52 @@ contains
     nsize = SIZE(array)
     longueur=len(array)
     nsizetot=nsize*longueur
-    call MPI_File_write(fh, array, nsizetot, MPI_CHARACTER, MPI_STATUS_IGNORE, ierror)
+    call MPI_file_write_at(fh, offset, array, nsizetot, MPI_CHARACTER, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
-  end subroutine file_write_char
+  end subroutine file_write_at_char
 #endif
 
 
   !=========================================================================
 #if defined(PARA)
-  subroutine file_write_all_i(fh, array)
+  subroutine file_write_at_all_i(fh, offset, array)
     integer, intent(in) :: fh
+    integer(KIND=MPI_OFFSET_KIND), intent(in):: offset
     integer,intent(in) :: array(..)
     !=====
     integer :: ierror=0
     !=====
 
-    call MPI_File_write_all(fh, array, size(array), MPI_INTEGER, MPI_STATUS_IGNORE, ierror)
+    call MPI_file_write_at_all(fh, offset, array, size(array), MPI_INTEGER, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
-  end subroutine file_write_all_i
+  end subroutine file_write_at_all_i
 #endif
 
 
   !=========================================================================
 #if defined(PARA)
-  subroutine file_write_all_dp(fh, array)
+  subroutine file_write_at_all_dp(fh, offset, array)
     integer, intent(in) :: fh
+    integer(KIND=MPI_OFFSET_KIND), intent(in):: offset
     real(double), intent(in) :: array(..)
     !=====
     integer :: ierror=0
     !=====
 
-    call MPI_File_write_all(fh, array, size(array), NDM_MPI_REAL_DOUBLE, MPI_STATUS_IGNORE, ierror)
+    call MPI_file_write_at_all(fh, offset, array, size(array), NDM_MPI_REAL_DOUBLE, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
-  end subroutine file_write_all_dp
+  end subroutine file_write_at_all_dp
 #endif
 
 
   !=========================================================================
 #if defined(PARA)
-  subroutine file_write_all_char(fh, array)
+  subroutine file_write_at_all_char(fh, offset, array)
     integer, intent(in) :: fh
+    integer(KIND=MPI_OFFSET_KIND), intent(in):: offset
     character(*),intent(in) :: array(:)
     !=====
     integer :: ierror=0
@@ -209,48 +215,51 @@ contains
     nsize = SIZE(array)
     longueur=len(array)
     nsizetot=nsize*longueur
-    call MPI_File_write_all(fh, array, nsizetot, MPI_CHARACTER, MPI_STATUS_IGNORE, ierror)
+    call MPI_file_write_at_all(fh, offset, array, nsizetot, MPI_CHARACTER, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
-  end subroutine file_write_all_char
+  end subroutine file_write_at_all_char
 #endif
 
   !=========================================================================
 #if defined(PARA)
-  subroutine file_read_i(fh, array)
+  subroutine file_read_at_i(fh, offset, array)
     integer, intent(in) :: fh
+    integer(KIND=MPI_OFFSET_KIND), intent(in):: offset
     integer,intent(in) :: array(..)
     !=====
     integer :: ierror=0
     !=====
 
-    call MPI_File_read(fh, array, size(array), MPI_INTEGER, MPI_STATUS_IGNORE, ierror)
+    call MPI_file_read_at(fh, offset, array, size(array), MPI_INTEGER, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
-  end subroutine file_read_i
+  end subroutine file_read_at_i
 #endif
 
 
   !=========================================================================
 #if defined(PARA)
-  subroutine file_read_dp(fh, array)
+  subroutine file_read_at_dp(fh, offset, array)
     integer, intent(in) :: fh
+    integer(KIND=MPI_OFFSET_KIND), intent(in):: offset
     real(double), intent(in) :: array(..)
     !=====
     integer :: ierror=0
     !=====
 
-    call MPI_File_read(fh, array, size(array), NDM_MPI_REAL_DOUBLE, MPI_STATUS_IGNORE, ierror)
+    call MPI_file_read_at(fh, offset, array, size(array), NDM_MPI_REAL_DOUBLE, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
-  end subroutine file_read_dp
+  end subroutine file_read_at_dp
 #endif
 
 
   !=========================================================================
 #if defined(PARA)
-  subroutine file_read_char(fh, array)
+  subroutine file_read_at_char(fh, offset, array)
     integer, intent(in) :: fh
+    integer(KIND=MPI_OFFSET_KIND), intent(in):: offset
     character(*),intent(in) :: array(:)
     !=====
     integer :: ierror=0
@@ -260,49 +269,52 @@ contains
     nsize = SIZE(array)
     longueur=len(array)
     nsizetot=nsize*longueur
-    call MPI_File_read(fh, array, nsizetot, MPI_CHARACTER, MPI_STATUS_IGNORE, ierror)
+    call MPI_file_read_at(fh, offset, array, nsizetot, MPI_CHARACTER, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
-  end subroutine file_read_char
+  end subroutine file_read_at_char
 #endif
 
 
   !=========================================================================
 #if defined(PARA)
-  subroutine file_read_all_i(fh, array)
+  subroutine file_read_at_all_i(fh, offset, array)
     integer, intent(in) :: fh
+    integer(KIND=MPI_OFFSET_KIND), intent(in):: offset
     integer,intent(in) :: array(..)
     !=====
     integer :: ierror=0
     !=====
 
-    call MPI_File_read_all(fh, array, size(array), MPI_INTEGER, MPI_STATUS_IGNORE, ierror)
+    call MPI_file_read_at_all(fh, offset, array, size(array), MPI_INTEGER, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
-  end subroutine file_read_all_i
+  end subroutine file_read_at_all_i
 #endif
 
 
   !=========================================================================
 #if defined(PARA)
-  subroutine file_read_all_dp(fh, array)
+  subroutine file_read_at_all_dp(fh, offset, array)
     integer, intent(in) :: fh
+    integer(KIND=MPI_OFFSET_KIND), intent(in):: offset
     real(double), intent(in) :: array(..)
     !=====
     integer :: ierror=0
     !=====
 
-    call MPI_File_read_all(fh, array, size(array), NDM_MPI_REAL_DOUBLE, MPI_STATUS_IGNORE, ierror)
+    call MPI_file_read_at_all(fh, offset, array, size(array), NDM_MPI_REAL_DOUBLE, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
-  end subroutine file_read_all_dp
+  end subroutine file_read_at_all_dp
 #endif
 
 
   !=========================================================================
 #if defined(PARA)
-  subroutine file_read_all_char(fh, array)
+  subroutine file_read_at_all_char(fh, offset, array)
     integer, intent(in) :: fh
+    integer(KIND=MPI_OFFSET_KIND), intent(in):: offset
     character(*),intent(in) :: array(:)
     !=====
     integer :: ierror=0
@@ -312,10 +324,10 @@ contains
     nsize = SIZE(array)
     longueur=len(array)
     nsizetot=nsize*longueur
-    call MPI_File_read_all(fh, array, nsizetot, MPI_CHARACTER, MPI_STATUS_IGNORE, ierror)
+    call MPI_file_read_at_all(fh, offset, array, nsizetot, MPI_CHARACTER, MPI_STATUS_IGNORE, ierror)
     call error_check(ierror)
 
-  end subroutine file_read_all_char
+  end subroutine file_read_at_all_char
 #endif
 
 
