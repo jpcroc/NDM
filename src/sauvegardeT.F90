@@ -273,7 +273,11 @@ contains
     !   Version parallèle (MPI-IO) de sauvegardeT
     !-----------------------------------------------
 
+#ifdef PARA
     use Tpara_io
+    use Tpara, only: NDM_MPI_REAL_DOUBLE
+#endif
+    
 
     implicit none
     class(box_config)::boxndm
@@ -283,7 +287,13 @@ contains
     logical, intent(in):: latcomp ! true= pas besoinde rapatrier atdml, false= il faut rapatrier atdml sur les masters
 
     integer :: lucout, formatsauvmod,formatsauv,im
+    integer :: mpi_size_double, mpi_size_int, i
     logical :: lwax
+    integer, dimension(:), allocatable :: all_im
+
+#ifdef PARA
+    integer(KIND=MPI_OFFSET_KIND) :: offset, para_offset
+#endif
 
     formatsauvmod = mod(formatsauv,2)
     im =atdml%im
@@ -294,17 +304,100 @@ contains
 
 #ifdef PARA
 
+    mpi_size_double = type_size(NDM_MPI_REAL_DOUBLE) ! mpi_size_double = double sinon erreurs
+    mpi_size_int = type_size(MPI_INTEGER)
+
+    
+    ! Calcul de para_offset
+
+    allocate(all_im(nprocspace))
+    if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+      ! Envoie et réception du nombre d'atomes de chaques procs
+      call mpic_allgather_i(comm_space, atdml%im, all_im)
+    else
+      all_im=atdml%im ! un seul proc ou lspaceNDM .false. ?
+    end if
+
+    para_offset=0
+    do i=1, myidsp
+      para_offset = para_offset + all_im(i)
+    end do
+    deallocate(all_im)
 
 
+    call mpic_file_open(comm_space, fnamcout ,lucout)
+    offset = 0
+
+
+    ! Entête
+    if (myidsp==0) then
+      call file_write_at(lucout, offset, formatsauv)      ! Ecriture formatsauv
+      offset = offset + mpi_size_int
+
+      call file_write_at(lucout, offset, boxndm%at)       ! Ecriture boxndm%at
+      offset = offset + mpi_size_double*size(boxndm%at)
+
+      call file_write_at(lucout, offset, atdml%im_glob)   ! Ecriture im_glob
+      offset = offset + mpi_size_int
+    end if
+
+
+    ! Corps
+    call file_write_at_all(lucout, offset + para_offset*mpi_size_int, atdml%ityp)   ! Ecriture ityp
+    offset = offset + mpi_size_int*atdml%im_glob
+
+    call file_write_at_all(lucout, offset + para_offset*3*mpi_size_double, atdml%xp)   ! Ecriture xp
+    offset = offset + mpi_size_double*3*atdml%im_glob
+
+    call file_write_at_all(lucout, offset + para_offset*mpi_size_int, atdml%num_at_glob)   ! Ecriture num_at_glob
+    offset = offset + mpi_size_int*atdml%im_glob
+
+
+    if (formatsauvmod==1) then
+      lwax=.false.
+      select type (atdml)
+      class is (atom_config_d) ! atom_config_e extends atom_config_d, donc on entre ici aussi avec atom_config_e
+
+        call file_write_at_all(lucout, offset + para_offset*3*mpi_size_double, atdml%vp)   ! Ecriture vp
+        offset = offset + mpi_size_double*3*atdml%im_glob
+
+      end select
+
+      !if (.not.lwax)write (lucout) atdml%xp ! écris sur 1 proc PARA, mais pas si plusieurs procs et pas sans PARA ?
+      if (myidsp==0) then
+        call file_write_at(lucout, offset, tstep)      ! Ecriture tstep
+        offset = offset + mpi_size_double
+
+        call file_write_at(lucout, offset, tmean)      ! Ecriture tmean
+        offset = offset + mpi_size_double
+
+        call file_write_at(lucout, offset, pmean)      ! Ecriture pmean
+        offset = offset + mpi_size_double
+
+        call file_write_at(lucout, offset, iteration)      ! Ecriture iteration
+        offset = offset + mpi_size_int
+
+        call file_write_at(lucout, offset, timel)      ! Ecriture timel
+        offset = offset + mpi_size_double
+
+      end if
+    endif
+
+    call file_close(lucout)
+    if (myidsp==0) then
+      if (l2T) call sauveelec ! A faire absolument sur le proc rang=0
+    end if
 
 #else
 
     ! sauvegarde SEQ
     lucout = 87
     open(unit=lucout, file=fnamcout, form='unformatted', status='unknown')
+    ! Entête
     write (lucout) formatsauv
     write (lucout) boxndm%at
     write (lucout) atdml%im
+    ! Corps
     write (lucout) atdml%ityp
     write (lucout) atdml%xp
     write (lucout) atdml%num_at_glob
@@ -314,9 +407,9 @@ contains
       class is (atom_config_d) ! atom_config_e extends atom_config_d, donc on entre ici aussi avec atom_config_e
         write (lucout) atdml%vp
       end select
-      !if (.not.lwax)write (lucout) atdml%xp ! écris sur 1 proc PARA, pas pas sur plusieurs et pas sans PARA ?
-      write (lucout) tstep
-      write (lucout) tmean, pmean, iteration, timel
+      !if (.not.lwax)write (lucout) atdml%xp ! écris sur 1 proc PARA, mais pas si plusieurs procs et pas sans PARA ?
+      write (lucout) tstep                            ! Potentiellement à l'extérieur du if (formatsauvmod==1)
+      write (lucout) tmean, pmean, iteration, timel   ! Potentiellement à l'extérieur du if (formatsauvmod==1)
     endif
     close(unit=lucout)
     if (l2T)call sauveelec ! A faire absolument sur le proc rang=0
