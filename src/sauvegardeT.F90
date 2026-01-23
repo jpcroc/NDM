@@ -309,7 +309,6 @@ contains
 
     
     ! Calcul de para_offset
-
     allocate(all_im(nprocspace))
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
       ! Envoie et réception du nombre d'atomes de chaques procs
@@ -343,13 +342,13 @@ contains
 
 
     ! Corps
-    call file_write_at_all(lucout, offset + para_offset*mpi_size_int, atdml%ityp)   ! Ecriture ityp
+    call file_write_at_all(lucout, offset + para_offset*mpi_size_int, atdml%ityp(1:atdml%im))   ! Ecriture ityp
     offset = offset + mpi_size_int*atdml%im_glob
 
-    call file_write_at_all(lucout, offset + para_offset*3*mpi_size_double, atdml%xp)   ! Ecriture xp
+    call file_write_at_all(lucout, offset + para_offset*3*mpi_size_double, atdml%xp(1:3,1:atdml%im))   ! Ecriture xp
     offset = offset + mpi_size_double*3*atdml%im_glob
 
-    call file_write_at_all(lucout, offset + para_offset*mpi_size_int, atdml%num_at_glob)   ! Ecriture num_at_glob
+    call file_write_at_all(lucout, offset + para_offset*mpi_size_int, atdml%num_at_glob(1:atdml%im))   ! Ecriture num_at_glob
     offset = offset + mpi_size_int*atdml%im_glob
 
 
@@ -358,7 +357,7 @@ contains
       select type (atdml)
       class is (atom_config_d) ! atom_config_e extends atom_config_d, donc on entre ici aussi avec atom_config_e
 
-        call file_write_at_all(lucout, offset + para_offset*3*mpi_size_double, atdml%vp)   ! Ecriture vp
+        call file_write_at_all(lucout, offset + para_offset*3*mpi_size_double, atdml%vp(1:3,1:atdml%im))   ! Ecriture vp
         offset = offset + mpi_size_double*3*atdml%im_glob
 
       end select
@@ -398,14 +397,14 @@ contains
     write (lucout) boxndm%at
     write (lucout) atdml%im
     ! Corps
-    write (lucout) atdml%ityp
-    write (lucout) atdml%xp
-    write (lucout) atdml%num_at_glob
+    write (lucout) atdml%ityp(1:atdml%im)
+    write (lucout) atdml%xp(1:3,1:atdml%im)
+    write (lucout) atdml%num_at_glob(1:atdml%im)
     if (formatsauvmod==1) then
       lwax=.false.
       select type (atdml)
       class is (atom_config_d) ! atom_config_e extends atom_config_d, donc on entre ici aussi avec atom_config_e
-        write (lucout) atdml%vp
+        write (lucout) atdml%vp(1:3,1:atdml%im)
       end select
       !if (.not.lwax)write (lucout) atdml%xp ! écris sur 1 proc PARA, mais pas si plusieurs procs et pas sans PARA ?
       write (lucout) tstep                            ! Potentiellement à l'extérieur du if (formatsauvmod==1)
