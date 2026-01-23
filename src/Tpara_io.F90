@@ -114,6 +114,23 @@ contains
 
   !=========================================================================
 #if defined(PARA)
+  subroutine mpic_allgather_i(mpic,sendarray,recvarray)
+    class(mpi_communicator),intent(in) :: mpic
+    integer,intent(in) :: sendarray(..)
+    integer,intent(out) :: recvarray(..)
+    !=====
+    integer :: ierror=0
+    !=====
+
+    call MPI_Allgather(sendarray, size(sendarray), MPI_INTEGER, recvarray, size(sendarray), MPI_INTEGER, mpic%comm, ierror)
+    call error_check(ierror)
+
+  end subroutine mpic_allgather_i
+#endif
+
+
+  !=========================================================================
+#if defined(PARA)
   subroutine file_write_at_i(fh, offset, array)
     integer, intent(in) :: fh
     integer(KIND=MPI_OFFSET_KIND), intent(in):: offset
