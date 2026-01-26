@@ -332,10 +332,8 @@ contains
     if (myidsp==0) then
       call file_write_at(lucout, offset, formatsauv)      ! Ecriture formatsauv
       offset = offset + mpi_size_int
-
       call file_write_at(lucout, offset, boxndm%at)       ! Ecriture boxndm%at
       offset = offset + mpi_size_double*size(boxndm%at)
-
       call file_write_at(lucout, offset, atdml%im_glob)   ! Ecriture im_glob
       offset = offset + mpi_size_int
     end if
@@ -344,10 +342,8 @@ contains
     ! Corps
     call file_write_at_all(lucout, offset + para_offset*mpi_size_int, atdml%ityp(1:atdml%im))   ! Ecriture ityp
     offset = offset + mpi_size_int*atdml%im_glob
-
     call file_write_at_all(lucout, offset + para_offset*3*mpi_size_double, atdml%xp(1:3,1:atdml%im))   ! Ecriture xp
     offset = offset + mpi_size_double*3*atdml%im_glob
-
     call file_write_at_all(lucout, offset + para_offset*mpi_size_int, atdml%num_at_glob(1:atdml%im))   ! Ecriture num_at_glob
     offset = offset + mpi_size_int*atdml%im_glob
 
@@ -356,26 +352,22 @@ contains
       lwax=.false.
       select type (atdml)
       class is (atom_config_d) ! atom_config_e extends atom_config_d, donc on entre ici aussi avec atom_config_e
-
         call file_write_at_all(lucout, offset + para_offset*3*mpi_size_double, atdml%vp(1:3,1:atdml%im))   ! Ecriture vp
         offset = offset + mpi_size_double*3*atdml%im_glob
-
+      class default
+        write(6,*) "sauvegarde demandée avec vp, mais atom_config n'a pas vp, stop"
+        call arret_ndm
       end select
 
-      !if (.not.lwax)write (lucout) atdml%xp ! écris sur 1 proc PARA, mais pas si plusieurs procs et pas sans PARA ?
       if (myidsp==0) then
         call file_write_at(lucout, offset, tstep)      ! Ecriture tstep
         offset = offset + mpi_size_double
-
         call file_write_at(lucout, offset, tmean)      ! Ecriture tmean
         offset = offset + mpi_size_double
-
         call file_write_at(lucout, offset, pmean)      ! Ecriture pmean
         offset = offset + mpi_size_double
-
         call file_write_at(lucout, offset, iteration)      ! Ecriture iteration
         offset = offset + mpi_size_int
-
         call file_write_at(lucout, offset, timel)      ! Ecriture timel
         offset = offset + mpi_size_double
 
@@ -405,6 +397,9 @@ contains
       select type (atdml)
       class is (atom_config_d) ! atom_config_e extends atom_config_d, donc on entre ici aussi avec atom_config_e
         write (lucout) atdml%vp(1:3,1:atdml%im)
+      class default
+        write(6,*) "sauvegarde demandée avec vp, mais atom_config n'a pas vp, stop"
+        call arret_ndm
       end select
       !if (.not.lwax)write (lucout) atdml%xp ! écris sur 1 proc PARA, mais pas si plusieurs procs et pas sans PARA ?
       write (lucout) tstep                            ! Potentiellement à l'extérieur du if (formatsauvmod==1)
