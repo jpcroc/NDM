@@ -27,7 +27,7 @@ contains
     USE T_kind_param_m, ONLY:  double
     USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,iteration,&
          &itetemp,fsumstop,fpstop,itetimestep,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang,itesigma,&
-         &itetemp2,ihbox0,tfcou,thsig
+         &itetemp2,ihbox0,tfcou,thsig,iteprtsigma
 
     USE var_pot, ONLY:
     implicit none
@@ -52,9 +52,18 @@ contains
     if (timel>=timemax) then
        if (rang==0) write (6, *) '*******max time reached **** ',timel,timemax
        if (present(lreturn)) then
+                             it1=itetemp;it2=itesigma;it3=itetemp2
+                   itetemp=1;itesigma=1;itetemp2=1
+                   call analyseT(atdml,celndm,boxndm,psc)
+                   itetemp=it1;itesigma=it2;itetemp2=it3
+
           lreturn=.true.
           return
-          else
+       else
+          it1=itetemp;it2=itesigma;it3=itetemp2
+          itetemp=1;itesigma=1;itetemp2=1
+          call analyseT(atdml,celndm,boxndm,psc)
+          itetemp=it1;itesigma=it2;itetemp2=it3
              call endrunT(atdml,celndm,boxndm,latcomp)
              !       call DeallocateAll
              call arret_ndm
@@ -86,9 +95,19 @@ contains
           if (temp<=tempstop) then
              if (rang==0)  write (6, *) 'temperature < tempstop '
              if (present(lreturn)) then
+                                   it1=itetemp;it2=itesigma;it3=itetemp2
+                   itetemp=1;itesigma=1;itetemp2=1
+                   call analyseT(atdml,celndm,boxndm,psc)
+                   itetemp=it1;itesigma=it2;itetemp2=it3
+
                 lreturn=.true.
                 return
              else
+                          it1=itetemp;it2=itesigma;it3=itetemp2
+          itetemp=1;itesigma=1;itetemp2=1
+          call analyseT(atdml,celndm,boxndm,psc)
+          itetemp=it1;itesigma=it2;itetemp2=it3
+
                 call endrunT(atdml,celndm,boxndm,latcomp)
                 !       call DeallocateAll
                 call arret_ndm
@@ -98,9 +117,19 @@ contains
              if (maxtcel<=tempstopcel) then
                 write (6, *) 'temperature dans toutes les cels < tempstopcel '
                 if (present(lreturn)) then
+                                      it1=itetemp;it2=itesigma;it3=itetemp2
+                   itetemp=1;itesigma=1;itetemp2=1
+                   call analyseT(atdml,celndm,boxndm,psc)
+                   itetemp=it1;itesigma=it2;itetemp2=it3
+
                    lreturn=.true.
                    return
                 else
+                             it1=itetemp;it2=itesigma;it3=itetemp2
+          itetemp=1;itesigma=1;itetemp2=1
+          call analyseT(atdml,celndm,boxndm,psc)
+          itetemp=it1;itesigma=it2;itetemp2=it3
+
                    call endrunT(atdml,celndm,boxndm,latcomp)
                    !       call DeallocateAll
                    call arret_ndm
@@ -154,22 +183,41 @@ contains
                    
                    itetemp=it1;itesigma=it2;itetemp2=it3
                    if (present(lreturn)) then
+                                         it1=itetemp;it2=itesigma;it3=itetemp2
+                   itetemp=1;itesigma=1;itetemp2=1
+                   call analyseT(atdml,celndm,boxndm,psc)
+                   itetemp=it1;itesigma=it2;itetemp2=it3
+
                       lreturn=.true.
 
                       return
                    else
+                                it1=itetemp;it2=itesigma;it3=itetemp2
+          itetemp=1;itesigma=1;itetemp2=1
+          call analyseT(atdml,celndm,boxndm,psc)
+          itetemp=it1;itesigma=it2;itetemp2=it3
+
                       call endrunT(atdml,celndm,boxndm,latcomp)
                       !       call DeallocateAll
                       call arret_ndm
                    end if
                 endif
              case(21,23)
-                itetemp=1;itesigma=1
-                   if (present(lreturn)) then
-                      lreturn=.true.
+                if (present(lreturn)) then
+                   it1=itetemp;it2=itesigma;it3=itetemp2
+                   itetemp=1;itesigma=1;itetemp2=1
+                   call analyseT(atdml,celndm,boxndm,psc)
+                   itetemp=it1;itesigma=it2;itetemp2=it3
 
-                      return
-                   else
+                   lreturn=.true.
+                   
+                   return
+                else
+                   it1=itetemp;it2=itesigma;it3=itetemp2
+                   itetemp=1;itesigma=1;itetemp2=1
+                   call analyseT(atdml,celndm,boxndm,psc)
+                   itetemp=it1;itesigma=it2;itetemp2=it3
+
                       call endrunT(atdml,celndm,boxndm,latcomp)
                       !       call DeallocateAll
                       call arret_ndm
@@ -202,9 +250,19 @@ contains
                    itetemp=1;itesigma=1;itetemp2=1
                    call analyseT(atdml,celndm,boxndm,psc)
                    if (present(lreturn)) then
+                                         it1=itetemp;it2=itesigma;it3=itetemp2
+                   itetemp=1;itesigma=1;itetemp2=1
+                   call analyseT(atdml,celndm,boxndm,psc)
+                   itetemp=it1;itesigma=it2;itetemp2=it3
+
                       lreturn=.true.
                       return
                    else
+                                it1=itetemp;it2=itesigma;it3=itetemp2
+          itetemp=1;itesigma=1;itetemp2=1
+          call analyseT(atdml,celndm,boxndm,psc)
+          itetemp=it1;itesigma=it2;itetemp2=it3
+
                       call endrunT(atdml,celndm,boxndm,latcomp)
                       !       call DeallocateAll
                       call arret_ndm
@@ -213,9 +271,19 @@ contains
                 end if
              case(21,23)
                 if (present(lreturn)) then
+                                      it1=itetemp;it2=itesigma;it3=itetemp2
+                   itetemp=1;itesigma=1;itetemp2=1
+                   call analyseT(atdml,celndm,boxndm,psc)
+                   itetemp=it1;itesigma=it2;itetemp2=it3
+
                    lreturn=.true.
                    return
                 else
+                             it1=itetemp;it2=itesigma;it3=itetemp2
+          itetemp=1;itesigma=1;itetemp2=1
+          call analyseT(atdml,celndm,boxndm,psc)
+          itetemp=it1;itesigma=it2;itetemp2=it3
+
                    call endrunT(atdml,celndm,boxndm,latcomp)
                    call arret_ndm
                 end if
@@ -263,9 +331,19 @@ contains
                    if (myidsp==0) write(6,*)'force par atome  max  ev/Ang ', formax
                    if (myidsp==0) write (6, *) 'energie ', potist*erg2eV
                    if (present(lreturn)) then
+                                         it1=itetemp;it2=itesigma;it3=itetemp2
+                   itetemp=1;itesigma=1;itetemp2=1
+                   call analyseT(atdml,celndm,boxndm,psc)
+                   itetemp=it1;itesigma=it2;itetemp2=it3
+
                       lreturn=.true.
                       return
                    else
+                                it1=itetemp;it2=itesigma;it3=itetemp2
+          itetemp=1;itesigma=1;itetemp2=1
+          call analyseT(atdml,celndm,boxndm,psc)
+          itetemp=it1;itesigma=it2;itetemp2=it3
+
                       call endrunT(atdml,celndm,boxndm,latcomp)
                       call arret_ndm
                    end if
@@ -276,9 +354,19 @@ contains
                    if (myidsp==0) write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
                    if (myidsp==0) write(6, *) 'energie ', potist*erg2eV
                    if (present(lreturn)) then
+                                         it1=itetemp;it2=itesigma;it3=itetemp2
+                   itetemp=1;itesigma=1;itetemp2=1
+                   call analyseT(atdml,celndm,boxndm,psc)
+                   itetemp=it1;itesigma=it2;itetemp2=it3
+
                       lreturn=.true.
                       return
                    else
+                                it1=itetemp;it2=itesigma;it3=itetemp2
+          itetemp=1;itesigma=1;itetemp2=1
+          call analyseT(atdml,celndm,boxndm,psc)
+          itetemp=it1;itesigma=it2;itetemp2=it3
+
                       call endrunT(atdml,celndm,boxndm,latcomp)
                       !       call DeallocateAll
                       call arret_ndm
@@ -293,9 +381,19 @@ contains
                    if (myidsp==0) write(6,*)'force par atome  max cgs ',formax
                    if (myidsp==0) write (6, *) 'energie ', potist
                    if (present(lreturn)) then
+                                         it1=itetemp;it2=itesigma;it3=itetemp2
+                   itetemp=1;itesigma=1;itetemp2=1
+                   call analyseT(atdml,celndm,boxndm,psc)
+                   itetemp=it1;itesigma=it2;itetemp2=it3
+
                       lreturn=.true.
                       return
                    else
+                                it1=itetemp;it2=itesigma;it3=itetemp2
+          itetemp=1;itesigma=1;itetemp2=1
+          call analyseT(atdml,celndm,boxndm,psc)
+          itetemp=it1;itesigma=it2;itetemp2=it3
+
                       call endrunT(atdml,celndm,boxndm,latcomp)
                       !       call DeallocateAll
                       call arret_ndm
@@ -309,9 +407,19 @@ contains
                    if (myidsp==0) write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
                    if (myidsp==0) write (6, *) 'energie ', potist
                    if (present(lreturn)) then
+                                         it1=itetemp;it2=itesigma;it3=itetemp2
+                   itetemp=1;itesigma=1;itetemp2=1
+                   call analyseT(atdml,celndm,boxndm,psc)
+                   itetemp=it1;itesigma=it2;itetemp2=it3
+
                       lreturn=.true.
                       return
                    else
+                                it1=itetemp;it2=itesigma;it3=itetemp2
+          itetemp=1;itesigma=1;itetemp2=1
+          call analyseT(atdml,celndm,boxndm,psc)
+          itetemp=it1;itesigma=it2;itetemp2=it3
+
                       call endrunT(atdml,celndm,boxndm,latcomp)
                       !       call DeallocateAll
                       call arret_ndm

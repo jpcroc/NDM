@@ -141,7 +141,7 @@ contains
        end do
     end select
     if (lwrite)then
-       call flush
+       call flush(63)
        close (63)
     end if
   end subroutine config2data
