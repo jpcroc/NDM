@@ -272,6 +272,12 @@ contains
     !-----------------------------------------------
     !   Version parallèle (MPI-IO) de sauvegardeT
     !-----------------------------------------------
+    
+    ! formatsauv=2 => positions
+    ! formatsauv=3 => positions + vitesses + xpp      + tstep, tmean, pmean, iteration, timel
+    ! formatsauv=4 => positions 
+    ! formatsauv=5 => positions + vitesses            + tstep, tmean, pmean, iteration, timel
+
 
 #ifdef PARA
     use Tpara_io
@@ -349,6 +355,16 @@ contains
 
 
     if (formatsauvmod==1) then
+      if (formatsauv==3) then
+         select type (atdml)
+         class is (atom_config_e)
+            call file_write_at_all(lucout, offset + para_offset*3*mpi_size_double, atdml%xpp(1:3,1:atdml%im))   ! Ecriture xpp
+            offset = offset + mpi_size_double*3*atdml%im_glob
+         class default
+            write(6,*) "sauvegarde demandée avec xpp, mais atom_config n'a pas xpp, stop"
+         call arret_ndm
+         end select
+      end if
       lwax=.false.
       select type (atdml)
       class is (atom_config_d) ! atom_config_e extends atom_config_d, donc on entre ici aussi avec atom_config_e
@@ -393,6 +409,15 @@ contains
     write (lucout) atdml%xp(1:3,1:atdml%im)
     write (lucout) atdml%num_at_glob(1:atdml%im)
     if (formatsauvmod==1) then
+      if (formatsauvmod==3) then
+         select type (atdml)
+         class is (atom_config_e)
+            write (lucout) atdml%xpp(1:3,1:atdml%im)
+         class default
+            write(6,*) "sauvegarde demandée avec xpp, mais atom_config n'a pas xpp, stop"
+         call arret_ndm
+         end select
+      end if
       lwax=.false.
       select type (atdml)
       class is (atom_config_d) ! atom_config_e extends atom_config_d, donc on entre ici aussi avec atom_config_e
