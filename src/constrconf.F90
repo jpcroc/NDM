@@ -476,6 +476,164 @@ contains
     return
   end subroutine repartition
 
+
+subroutine read_cin_para(boxcin,atcinr,celcf,itread,fnamcin,lres,fmtcin,psc)
+    !------------------------------------------------------
+    !   Version parallèle (MPI-IO) de read_cin
+    !------------------------------------------------------
+    !   fmtcin=3  (ne lit que les .cin écrits par sauvegardeT_para)
+    !------------------------------------------------------
+
+    !itread 0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+    !lres : lrestart,
+    !icible tableau de taille imic qui donne les atomes à lire (utile pour para), optionel
+    USE T_kind_param_m, ONLY:  double
+    use Tpara,only:myidsp,nprocspace
+    USE gen_com_m,only: iteration,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep
+    implicit none
+    type(para_space_config)::psc
+    character,intent(in) :: fnamcin*80
+    integer,intent(in)::itread
+    class(box_config)::boxcin
+    class(atom_config)::atcinr
+    type(cell_config)::celcf
+    integer,intent(in)::fmtcin
+    logical,intent(in),optional::lres
+
+    logical::lrestart=.false.
+    integer :: i, ic, icintype, icintypemod , lucin, immr
+    integer, dimension(:),allocatable     :: ibuffer
+    real(double), dimension(:,:),allocatable    :: buffer
+    real(double)::at(3,3)
+    integer::im_gr,i_loc
+
+    if (present(lres))lrestart=lres
+    if ((rang==0).and.(fmtcin/=3)) then
+       write (6, *) 'wrong fmtcin, stop'
+       call arret_ndm
+    end if 
+    if ((rang==0).and.(lprt)) then
+       write(6,*)
+       write(6,*)' *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-'
+       write(6,*)' *-*-*-*-*- LRESTART =',lrestart!, '*** itread',itread
+    endif
+#ifdef PARA
+    ! lecture PARA
+
+#else
+    ! lecture SEQ
+    lucin = 93
+    open(unit=lucin, file=fnamcin, form='unformatted', status='unknown', err=499)
+
+    read (lucin, err=499) icintype           !icintype
+    if ((rang==0).and.(lprt))  write (6, *) 'config type of  .cin file : ', icintype
+    if (icintype>5.or.icintype<0) then
+       write (6, *) rang, 'wrong icintype'
+       call arret_ndm
+    endif
+
+    icintypemod = mod(icintype,2)
+
+    read (lucin, err=499) at              !at
+    if(dilat(1).ne.0.0)then
+       do i=1,3
+          at(i,:)=at(i,:)*dilat(i)
+       end do
+    end if
+
+    call boxcin%init(at,ipbc)
+
+    select case(itread)
+    case(0)
+       close (lucin)
+       return
+    case(1)
+       if (.not.present(atcinr))then
+          write(6,*)'atcinr pas present et itread=1'
+          call arret_ndm
+       end if
+
+       read (lucin, err=499) im_gr                         ! number of atoms in the box
+
+       if (im_gr>imm_glob) then
+          if(rang==0) write (6, *) 'number of atoms > imm_glob, stop', im_gr, imm_glob
+          call arret_ndm
+       endif
+
+       call atcinr%init(immin=imm_glob,imin=0,ltabvois=atrcf%ltabvois,rvois=atrcf%rvois,imm_glob=imm_glob)
+       atcinr%im=im_gr
+       atcinr%im_glob=im_gr
+
+       read (lucin, err=499) atcinr%ityp(1:im_gr)   !ityp
+       if ((rang==0).and.(lprt))  write (6, *) 'types'
+       read (lucin, err=499) atcinr%xp(1:3,1:im_gr)    !xp
+       if ((rang==0).and.(lprt))  write (6, *) 'xp'
+       read (lucin, err=499) atcinr%num_at_glob(1:im_gr)   !num_at_glob
+       if ((rang==0).and.(lprt))  write (6, *) 'num_at_glob'
+
+
+       select type(atcinr)
+       type is (atom_config)
+          if (icintypemod==1) then
+             allocate (buffer(3,im_gr))
+             if (icintype==3) read (lucin, err=499) buffer                     !xpp
+             read (lucin, err=499) buffer                         !vp
+             deallocate(buffer)
+          end if
+          lvpread=.false.
+       type is (atom_config_d)
+          if (icintypemod==1) then
+             if (icintype==3) read (lucin, err=499) atcinr%vp(1:3,1:im_gr)         !xpp (écrasé après, juste pour avancer dans le fichier)
+             read (lucin, err=499) atcinr%vp(1:3,1:im_gr)                     !vp
+             if ((rang==0).and.(lprt))  write (6, *) 'vp_d'
+          end if
+       end select
+       select type(atcinr)
+       class is (atom_config_e)
+          if (icintypemod==1) then
+             if (icintype==3) then 
+                read (lucin, err=499) atcinr%xpp(1:3,1:im_gr)                 !xpp
+                if ((rang==0).and.(lprt))  write (6, *) 'xpp_e'
+             end if
+             read (lucin, err=499) atcinr%vp(1:3,1:im_gr)                     !vp
+             if ((rang==0).and.(lprt))  write (6, *) 'vp_e'
+          end if
+
+          if (atcinr%lax) then
+             atcinr%ax(1:3,1:im_gr)=atcinr%xp(1:3,1:im_gr)
+          end if
+       end select
+
+
+       if (icintypemod==1) then
+          read (lucin, err=499) oldtstep
+          if (lrestart) then
+             read (lucin, err=499) tmean, pmean, iteration, timel
+             if (nitmax.ge.0) itmax=iteration+nitmax
+             tstep = oldtstep
+
+             if ((rang==0).and.(lprt)) then
+
+                write (6, *) 'restart parameters'
+                write (6, *) 'it =', iteration, ' time =', timel
+                write (6, *) 'pmean', pmean, ' tmean =', tmean
+                write (6, *) 'tstep', tstep
+             endif                                ! fin rang=0
+          end if
+          usdh = 1.0/(two*tstep)
+       end if
+       close (lucin)
+       return
+    end select
+#endif
+
+499 print *,'Erreur dans la lecture du fichier .cin, verifier son format&
+         & et fmt_cin ATTENTION A BIG_ENDIAN !! SI COMMPILE BIG_ENDIAN NE LIT PLUS QUE CA'
+    call arret_ndm
+
+  end subroutine read_cin_para
+
+
   subroutine read_cin2(boxcin,atcinr,celcf,immr,fnamcin,lres,fmtcin,psc)
     USE gen_com_m,only: iteration,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep
     use Tpara,only:myidsp,nprocspace
