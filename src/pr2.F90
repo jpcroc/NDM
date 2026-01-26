@@ -471,7 +471,7 @@ contains
           boxndm%hdot(3,2)=0
           if (boxndm%hdot(1,1)*fbox<0) boxndm%hdot(:,:)=0
        else
-
+	  forcebox(:,:)=MatMul( sigrel(:,:) - sigext(:,:), boxndm%invtrh(:,:) )*boxndm%volu
           do i = 1, 3
              do ic = 1, 3
                 if (boxndm%hdot(ic,i)*forcebox(ic,i)<0) then
