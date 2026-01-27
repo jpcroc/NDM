@@ -309,6 +309,7 @@ contains
     end if
 
 #ifdef PARA
+    ! ******************* sauvegarde PARA *********************
 
     mpi_size_double = type_size(NDM_MPI_REAL_DOUBLE) ! mpi_size_double = double sinon erreurs
     mpi_size_int = type_size(MPI_INTEGER)
@@ -346,10 +347,10 @@ contains
 
 
     ! Corps
-    call file_write_at_all(lucout, offset + para_offset*mpi_size_int, atdml%ityp(1:atdml%im))   ! Ecriture ityp
-    offset = offset + mpi_size_int*atdml%im_glob
     call file_write_at_all(lucout, offset + para_offset*3*mpi_size_double, atdml%xp(1:3,1:atdml%im))   ! Ecriture xp
     offset = offset + mpi_size_double*3*atdml%im_glob
+    call file_write_at_all(lucout, offset + para_offset*mpi_size_int, atdml%ityp(1:atdml%im))   ! Ecriture ityp
+    offset = offset + mpi_size_int*atdml%im_glob
     call file_write_at_all(lucout, offset + para_offset*mpi_size_int, atdml%num_at_glob(1:atdml%im))   ! Ecriture num_at_glob
     offset = offset + mpi_size_int*atdml%im_glob
 
@@ -397,7 +398,7 @@ contains
 
 #else
 
-    ! sauvegarde SEQ
+    ! ******************* sauvegarde SEQ *********************
     lucout = 87
     open(unit=lucout, file=fnamcout, form='unformatted', status='unknown')
     ! Entête
@@ -405,8 +406,8 @@ contains
     write (lucout) boxndm%at
     write (lucout) atdml%im
     ! Corps
-    write (lucout) atdml%ityp(1:atdml%im)
     write (lucout) atdml%xp(1:3,1:atdml%im)
+    write (lucout) atdml%ityp(1:atdml%im)
     write (lucout) atdml%num_at_glob(1:atdml%im)
     if (formatsauvmod==1) then
       if (formatsauvmod==3) then
