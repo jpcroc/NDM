@@ -490,6 +490,12 @@ subroutine read_cin_para(boxcin,atcinr,celcf,itread,fnamcin,lres,fmtcin,psc)
     USE T_kind_param_m, ONLY:  double
     use Tpara,only:myidsp,nprocspace
     USE gen_com_m,only: iteration,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep
+
+#ifdef PARA
+    use Tpara_io
+    use Tpara, only: NDM_MPI_REAL_DOUBLE
+#endif
+
     implicit none
     type(para_space_config)::psc
     character,intent(in) :: fnamcin*80
@@ -505,7 +511,13 @@ subroutine read_cin_para(boxcin,atcinr,celcf,itread,fnamcin,lres,fmtcin,psc)
     integer, dimension(:),allocatable     :: ibuffer
     real(double), dimension(:,:),allocatable    :: buffer
     real(double)::at(3,3)
-    integer::im_gr,i_loc
+    integer::im_gr,i_loc, mpi_size_double, mpi_size_int, numcell
+    integer::atomes_in_bloc,atomes_per_bloc,ii,cellules_max,cellules_int,imm_loc,natlocm
+    integer,allocatable::natloc(:)
+
+#ifdef PARA
+    integer(KIND=MPI_OFFSET_KIND) :: offset, para_offset
+#endif
 
     if (present(lres))lrestart=lres
     if ((rang==0).and.(fmtcin/=3)) then
@@ -518,10 +530,103 @@ subroutine read_cin_para(boxcin,atcinr,celcf,itread,fnamcin,lres,fmtcin,psc)
        write(6,*)' *-*-*-*-*- LRESTART =',lrestart!, '*** itread',itread
     endif
 #ifdef PARA
-    ! lecture PARA
+    ! ******************* lecture PARA *********************
+
+    mpi_size_double = type_size(NDM_MPI_REAL_DOUBLE) ! mpi_size_double = double sinon erreurs
+    mpi_size_int = type_size(MPI_INTEGER)
+
+
+    call mpic_file_open(comm_space, fnamcin ,lucin)
+    offset = 0
+
+
+    call file_read_at_all(lucin, offset, icintype)           !icintype
+    offset = offset + mpi_size_int
+    if ((rang==0).and.(lprt))  write (6, *) 'config type of  .cin file : ', icintype
+    if (icintype>5.or.icintype<0) then
+       write (6, *) rang, 'wrong icintype'
+       call arret_ndm
+    endif
+
+    icintypemod = mod(icintype,2)
+
+    call file_read_at_all(lucin, offset, at)           !at
+    offset = offset + mpi_size_double*size(at)
+    if(dilat(1).ne.0.0)then
+       do i=1,3
+          at(i,:)=at(i,:)*dilat(i)
+       end do
+    end if
+
+    call boxcin%init(at,ipbc)
+
+    select case(itread)
+    case(0)
+       call file_close(lucin)
+       return
+    case(1)
+                  
+       call file_read_at_all(lucin, offset, im_gr)           ! number of atoms in the box
+       offset = offset + mpi_size_int
+
+       if (im_gr>imm_glob) then
+          if(rang==0) write (6, *) 'number of atoms > imm_glob, stop', im_gr, imm_glob
+          call arret_ndm
+       endif
+
+       ! Le découpage doit déja être fait !!!!
+       
+       ! calcul de imm:
+       ! - chaque proc lit un bloc de positions d'atomes,
+       ! - calcul les natloc des positions lues,
+       ! - tous les natloc sont sommées, puis on extrait natlocm=maxval(natloc) et on fini le calcul.
+
+       cellules_max=0
+       cellules_int=0
+       do ii = 0,nprocspace-1
+          cellules_max = max(cellules_max,(psc%res_cpu(ii,1)+2) * (psc%res_cpu(ii,2)+2)* (psc%res_cpu(ii,3)+2))
+          cellules_int = max(cellules_int,(psc%res_cpu(ii,1)+0) * (psc%res_cpu(ii,2)+0)* (psc%res_cpu(ii,3)+0))
+       enddo
+       cellules_max = min (cellules_max, celcf%noxyz)
+
+       atomes_per_bloc = im_gr/nprocspace ! sauf le dernier qui est plus gros
+       allocate(buffer(3,atomes_per_bloc + mod(im_gr, nprocspace)))
+       if (myidsp == nprocspace - 1) then
+          atomes_in_bloc = atomes_per_bloc + mod(im_gr, nprocspace)
+       else
+          atomes_in_bloc = atomes_per_bloc
+       end if
+
+       allocate (natloc(0:nprocspace-1))
+       natloc=0
+       
+       ! lecture du bloc positions
+       call file_read_at_all(lucin, offset + atomes_per_bloc*myidsp*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
+
+       do i=1,atomes_in_bloc
+          call coord_to_cell(buffer(:,i),numcell,boxcin,celcf%nox(1),celcf%nox(2),celcf%nox(3))
+          natloc(celcf%proc_cell(numcell))=natloc(celcf%proc_cell(numcell))+1
+       end do
+
+       call comm_space%sum(natloc)
+
+       if (rang==0) write(6,*)'natloc, stop',natloc
+       call arret_ndm
+
+       natlocm=maxval(natloc)
+       natlocm=int(natlocm*float(cellules_max)/cellules_int)
+       imm_loc=min( imm_glob, int(1.2 * natlocm))
+       imm = imm_loc
+
+       call atcinr%init(immin=imm,imin=0,ltabvois=atcinr%ltabvois,rvois=atcinr%rvois,im_glob=im_gr,imm_glob=imm_glob)
+       atcinr%im=natloc(myidsp)
+       deallocate(natloc)
+
+    end select
+
 
 #else
-    ! lecture SEQ
+    ! ******************* lecture SEQ *********************
     lucin = 93
     open(unit=lucin, file=fnamcin, form='unformatted', status='unknown', err=499)
 
@@ -560,14 +665,14 @@ subroutine read_cin_para(boxcin,atcinr,celcf,itread,fnamcin,lres,fmtcin,psc)
           call arret_ndm
        endif
 
-       call atcinr%init(immin=imm_glob,imin=0,ltabvois=atrcf%ltabvois,rvois=atrcf%rvois,imm_glob=imm_glob)
+       call atcinr%init(immin=imm_glob,imin=0,ltabvois=atcinr%ltabvois,rvois=atcinr%rvois,imm_glob=imm_glob)
        atcinr%im=im_gr
        atcinr%im_glob=im_gr
 
-       read (lucin, err=499) atcinr%ityp(1:im_gr)   !ityp
-       if ((rang==0).and.(lprt))  write (6, *) 'types'
        read (lucin, err=499) atcinr%xp(1:3,1:im_gr)    !xp
        if ((rang==0).and.(lprt))  write (6, *) 'xp'
+       read (lucin, err=499) atcinr%ityp(1:im_gr)   !ityp
+       if ((rang==0).and.(lprt))  write (6, *) 'types'
        read (lucin, err=499) atcinr%num_at_glob(1:im_gr)   !num_at_glob
        if ((rang==0).and.(lprt))  write (6, *) 'num_at_glob'
 
