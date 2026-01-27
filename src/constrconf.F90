@@ -627,10 +627,12 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
        natlocm=int(natlocm*float(cellules_max)/cellules_int)
        imm_loc=min( imm_glob, int(1.2 * natlocm))
        imm = imm_loc
+       print *, natloc
+       deallocate(natloc)
 
        call atcinr%init(immin=imm,imin=0,ltabvois=atcinr%ltabvois,rvois=atcinr%rvois,im_glob=im_gr,imm_glob=imm_glob)
-       atcinr%im=natloc(myidsp)
-       deallocate(natloc)
+       
+
 
        ! Répartitions des atomes sur les procs. chaque proc:
        ! - lit un bloc de positions d'atomes,
@@ -643,7 +645,6 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
        
        allocate(keep(atomes_per_bloc + mod(im_gr, nprocspace)))
        allocate(ibuffer(atomes_per_bloc + mod(im_gr, nprocspace)))
-       keep = .false.
 
        offset_ityp = offset + im_gr*3*mpi_size_double
        offset_num_at_glob = offset_ityp + im_gr*mpi_size_int
@@ -656,8 +657,9 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
 
        start_in_current_bloc=1
        do b=1, nprocspace
+          keep = .false.
           i_bloc = mod(myidsp + b ,nprocspace)
-          if (i_bloc == nprocspace) then
+          if (i_bloc == nprocspace - 1) then
              atomes_in_bloc = atomes_per_bloc + mod(im_gr, nprocspace)
           else
              atomes_in_bloc = atomes_per_bloc
@@ -753,6 +755,8 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
           start_in_current_bloc = ii
        end do
 
+       atcinr%im=start_in_current_bloc-1
+
         !if ((rang==0).and.(lprt))  write (6, *) 'vp_d'
         !if ((rang==0).and.(lprt))  write (6, *) 'xpp_e'
         !if ((rang==0).and.(lprt))  write (6, *) 'vp_e'
@@ -766,6 +770,8 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
        else
           offset = offset_num_at_glob + im_gr*mpi_size_int
        end if
+
+       print *, "ok", atcinr%im, im_gr, rang
 
        if (icintypemod==1) then
           call file_read_at_all(lucin, offset, oldtstep)           ! oldtstep
