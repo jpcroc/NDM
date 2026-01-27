@@ -508,7 +508,8 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
     
 
     logical::lrestart=.false.
-    integer :: i, ic, icintype, icintypemod , lucin
+    logical,dimension(:),allocatable :: keep
+    integer :: i, b, icintype, icintypemod , lucin, i_bloc, start_in_current_bloc=1
     integer, dimension(:),allocatable     :: ibuffer
     real(double), dimension(:,:),allocatable    :: buffer
     real(double)::at(3,3)
@@ -517,7 +518,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
     integer,allocatable::natloc(:)
 
 #ifdef PARA
-    integer(KIND=MPI_OFFSET_KIND) :: offset, para_offset
+    integer(KIND=MPI_OFFSET_KIND) :: offset, para_offset, offset_ityp, offset_num_at_glob, offset_vp, offset_xpp
 #endif
 
     if (present(lres))lrestart=lres
@@ -613,7 +614,6 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
        allocate (natloc(0:nprocspace-1))
        natloc=0
        
-       ! lecture du bloc positions
        call file_read_at_all(lucin, offset + atomes_per_bloc*myidsp*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
 
        do i=1,atomes_in_bloc
@@ -622,9 +622,6 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
        end do
 
        call comm_space%sum(natloc)
-
-       if (rang==0) write(6,*)'natloc, stop',natloc
-       call arret_ndm
 
        natlocm=maxval(natloc)
        natlocm=int(natlocm*float(cellules_max)/cellules_int)
@@ -635,6 +632,169 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
        atcinr%im=natloc(myidsp)
        deallocate(natloc)
 
+       ! Répartitions des atomes sur les procs. chaque proc:
+       ! - lit un bloc de positions d'atomes,
+       ! - clacul un tableau (keep) d'atomes a garder, et copie les positions à garder
+       ! - lit le bloc correspondant ityp, et garde uniquement les bons,
+       ! - lit le bloc correspondant num_at_glob, et garde uniquement les bons,
+       ! - lit le bloc correspondant xpp, et garde uniquement les bons,
+       ! - lit le bloc correspondant vp, et garde uniquement les bons,
+       ! - puis passe au bloc suivant.
+       
+       allocate(keep(atomes_per_bloc + mod(im_gr, nprocspace)))
+       allocate(ibuffer(atomes_per_bloc + mod(im_gr, nprocspace)))
+       keep = .false.
+
+       offset_ityp = offset + im_gr*3*mpi_size_double
+       offset_num_at_glob = offset_ityp + im_gr*mpi_size_int
+       if (icintype==3) then 
+          offset_xpp = offset_num_at_glob + im_gr*mpi_size_int
+          offset_vp = offset_xpp + im_gr*3*mpi_size_double
+       else
+          offset_vp = offset_num_at_glob + im_gr*mpi_size_int
+       end if
+
+       start_in_current_bloc=1
+       do b=1, nprocspace
+          i_bloc = mod(myidsp + b ,nprocspace)
+          if (i_bloc == nprocspace) then
+             atomes_in_bloc = atomes_per_bloc + mod(im_gr, nprocspace)
+          else
+             atomes_in_bloc = atomes_per_bloc
+          end if
+
+          ! lecture du bloc de positions d'atomes
+          call file_read_at_all(lucin, offset + atomes_per_bloc*i_bloc*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
+          
+          ! clacul du tableau (keep) d'atomes a garder, et copie les positions à garder
+          ii=start_in_current_bloc
+          do i=1, atomes_in_bloc
+             call coord_to_cell(buffer(1:3,i),numcell,boxcin,celcf%nox(1),celcf%nox(2),celcf%nox(3))
+             if (celcf%proc_cell(numcell)==myidsp) then
+                keep(i)=.true.
+                atcinr%xp(1:3,ii) = buffer(1:3,i)
+                ii=ii+1
+             end if
+          end do
+
+          ! lecture du bloc ityp
+          call file_read_at_all(lucin, offset_ityp + atomes_per_bloc*i_bloc*mpi_size_int, ibuffer(1:atomes_in_bloc))
+
+          ! selection des ityp
+          ii=start_in_current_bloc
+          do i=1, atomes_in_bloc
+             if (keep(i)) then
+                atcinr%ityp(ii) = ibuffer(i)
+                ii=ii+1
+             end if
+          end do
+
+          ! lecture du bloc num_at_glob
+          call file_read_at_all(lucin, offset_num_at_glob + atomes_per_bloc*i_bloc*mpi_size_int, ibuffer(1:atomes_in_bloc))
+
+          ! selection des num_at_glob
+          ii=start_in_current_bloc
+          do i=1, atomes_in_bloc
+             if (keep(i)) then
+                atcinr%num_at_glob(ii) = ibuffer(i)
+                ii=ii+1
+             end if
+          end do
+
+          select type(atcinr)
+          type is (atom_config_d)
+             if (icintypemod==1) then
+                ! lecture du bloc vp
+                call file_read_at_all(lucin, offset_vp + atomes_per_bloc*i_bloc*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
+
+                ! selection des vp
+                ii=start_in_current_bloc
+                do i=1, atomes_in_bloc
+                    if (keep(i)) then
+                       atcinr%vp(1:3,ii) = buffer(1:3,i)
+                       ii=ii+1
+                    end if
+                end do
+             end if
+          end select
+          select type(atcinr)
+          class is (atom_config_e)
+             if (icintypemod==1) then
+                if (icintype==3) then
+                   ! lecture du bloc xpp
+                   call file_read_at_all(lucin, offset_xpp + atomes_per_bloc*i_bloc*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
+
+                   ! selection des xpp
+                   ii=start_in_current_bloc
+                   do i=1, atomes_in_bloc
+                      if (keep(i)) then
+                         atcinr%xpp(1:3,ii) = buffer(1:3,i)
+                         ii=ii+1
+                      end if
+                   end do
+                end if
+
+                ! lecture du bloc vp
+                call file_read_at_all(lucin, offset_vp + atomes_per_bloc*i_bloc*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
+
+                ! selection des vp
+                ii=start_in_current_bloc
+                do i=1, atomes_in_bloc
+                    if (keep(i)) then
+                       atcinr%vp(1:3,ii) = buffer(1:3,i)
+                       ii=ii+1
+                    end if
+                end do
+             end if
+             if (atcinr%lax) then
+                atcinr%ax(1:3,start_in_current_bloc:ii)=atcinr%xp(1:3,start_in_current_bloc:ii)
+             end if
+          end select
+          start_in_current_bloc = ii
+       end do
+
+        !if ((rang==0).and.(lprt))  write (6, *) 'vp_d'
+        !if ((rang==0).and.(lprt))  write (6, *) 'xpp_e'
+        !if ((rang==0).and.(lprt))  write (6, *) 'vp_e'
+
+       deallocate(buffer)
+       deallocate(ibuffer)
+       deallocate(keep)
+
+       if (icintypemod==1) then
+          offset = offset_vp + im_gr*3*mpi_size_double
+       else
+          offset = offset_num_at_glob + im_gr*mpi_size_int
+       end if
+
+       if (icintypemod==1) then
+          call file_read_at_all(lucin, offset, oldtstep)           ! oldtstep
+          offset = offset + mpi_size_double
+          if (lrestart) then
+             call file_read_at_all(lucin, offset, tmean)           ! tmean
+             offset = offset + mpi_size_double
+             call file_read_at_all(lucin, offset, pmean)           ! pmean
+             offset = offset + mpi_size_double
+             call file_read_at_all(lucin, offset, iteration)           ! iteration
+             offset = offset + mpi_size_int
+             call file_read_at_all(lucin, offset, timel)           ! timel
+             offset = offset + mpi_size_double
+             if (nitmax.ge.0) itmax=iteration+nitmax
+             tstep = oldtstep
+
+             if ((rang==0).and.(lprt)) then
+
+                write (6, *) 'restart parameters'
+                write (6, *) 'it =', iteration, ' time =', timel
+                write (6, *) 'pmean', pmean, ' tmean =', tmean
+                write (6, *) 'tstep', tstep
+             endif                                ! fin rang=0
+          end if
+          usdh = 1.0/(two*tstep)
+       end if
+
+       call file_close(lucin)
+       return
     case default
        print *,'movais itread, stop', itread
        call arret_ndm
