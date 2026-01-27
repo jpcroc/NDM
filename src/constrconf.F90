@@ -504,18 +504,18 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
     type(cell_config),optional::celcf
     logical,intent(in),optional::lres
     type(para_space_config),optional::psc
-    !integer,intent(in)::fmtcin
-    
+
 
     logical::lrestart=.false.
     logical,dimension(:),allocatable :: keep
-    integer :: i, b, icintype, icintypemod , lucin, i_bloc, start_in_current_bloc=1
+    integer :: i, b, icintype, icintypemod , lucin, i_bloc, start_in_current_bloc
     integer, dimension(:),allocatable     :: ibuffer
     real(double), dimension(:,:),allocatable    :: buffer
     real(double)::at(3,3)
-    integer::im_gr,i_loc, mpi_size_double, mpi_size_int, numcell
+    integer::im_gr, mpi_size_double, mpi_size_int, numcell
     integer::atomes_in_bloc,atomes_per_bloc,ii,cellules_max,cellules_int,imm_loc,natlocm
     integer,allocatable::natloc(:)
+
 
 #ifdef PARA
     integer(KIND=MPI_OFFSET_KIND) :: offset, para_offset, offset_ityp, offset_num_at_glob, offset_vp, offset_xpp
@@ -585,7 +585,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
 
        ! Le découpage doit déja être fait !
        
-       ! calcul de imm:
+       !> calcul de imm:
        ! - chaque proc lit un bloc de positions d'atomes,
        ! - calcul les natloc des positions lues,
        ! - tous les natloc sont sommées, puis on extrait natlocm=maxval(natloc) et on fini le calcul.
@@ -626,7 +626,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
 
        call atcinr%init(immin=imm,imin=0,ltabvois=atcinr%ltabvois,rvois=atcinr%rvois,im_glob=im_gr,imm_glob=imm_glob)
        
-       ! Répartitions des atomes sur les procs. Chaque proc:
+       !> Répartitions des atomes sur les procs. Chaque proc:
        ! - lit un bloc de positions d'atomes,
        ! - clacul un tableau (keep) d'atomes a garder, et copie les positions à garder
        ! - lit le bloc correspondant ityp, et garde uniquement les bons,
@@ -750,7 +750,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
           start_in_current_bloc = ii
        end do
 
-       ! on met à jour le nombre d'atomes lues
+       ! mise à jour le nombre d'atomes lues
        atcinr%im=start_in_current_bloc-1
 
        deallocate(buffer)
@@ -779,12 +779,11 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
              tstep = oldtstep
 
              if ((rang==0).and.(lprt)) then
-
                 write (6, *) 'restart parameters'
                 write (6, *) 'it =', iteration, ' time =', timel
                 write (6, *) 'pmean', pmean, ' tmean =', tmean
                 write (6, *) 'tstep', tstep
-             endif                                ! fin rang=0
+             endif
           end if
           usdh = 1.0/(two*tstep)
        end if
@@ -819,17 +818,13 @@ subroutine read_cin_seq(fnamcin,boxcin,itread,atcinr,lres)
     integer,intent(in)::itread
     class(atom_config),optional::atcinr
     logical,intent(in),optional::lres
-    !integer,intent(in)::fmtcin
     
 
     logical::lrestart=.false.
-    integer :: i, ic, icintype, icintypemod , lucin
-    integer, dimension(:),allocatable     :: ibuffer
+    integer :: i, icintype, icintypemod , lucin
     real(double), dimension(:,:),allocatable    :: buffer
     real(double)::at(3,3)
-    integer::im_gr,i_loc, mpi_size_double, mpi_size_int, numcell
-    integer::atomes_in_bloc,atomes_per_bloc,ii,cellules_max,cellules_int,imm_loc,natlocm
-    integer,allocatable::natloc(:)
+    integer::im_gr
 
 
     if (present(lres))lrestart=lres
@@ -937,12 +932,11 @@ subroutine read_cin_seq(fnamcin,boxcin,itread,atcinr,lres)
              tstep = oldtstep
 
              if ((rang==0).and.(lprt)) then
-
                 write (6, *) 'restart parameters'
                 write (6, *) 'it =', iteration, ' time =', timel
                 write (6, *) 'pmean', pmean, ' tmean =', tmean
                 write (6, *) 'tstep', tstep
-             endif                                ! fin rang=0
+             endif
           end if
           usdh = 1.0/(two*tstep)
        end if

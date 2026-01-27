@@ -366,7 +366,6 @@ contains
          call arret_ndm
          end select
       end if
-      lwax=.false.
       select type (atdml)
       class is (atom_config_d) ! atom_config_e extends atom_config_d, donc on entre ici aussi avec atom_config_e
         call file_write_at_all(lucout, offset + para_offset*3*mpi_size_double, atdml%vp(1:3,1:atdml%im))   ! Ecriture vp
@@ -419,7 +418,6 @@ contains
          call arret_ndm
          end select
       end if
-      lwax=.false.
       select type (atdml)
       class is (atom_config_d) ! atom_config_e extends atom_config_d, donc on entre ici aussi avec atom_config_e
         write (lucout) atdml%vp(1:3,1:atdml%im)
@@ -427,7 +425,6 @@ contains
         write(6,*) "sauvegarde demandée avec vp, mais atom_config n'a pas vp, stop"
         call arret_ndm
       end select
-      !if (.not.lwax)write (lucout) atdml%xp ! écris sur 1 proc PARA, mais pas si plusieurs procs et pas sans PARA ?
       write (lucout) tstep                            ! Potentiellement à l'extérieur du if (formatsauvmod==1)
       write (lucout) tmean, pmean, iteration, timel   ! Potentiellement à l'extérieur du if (formatsauvmod==1)
     endif
