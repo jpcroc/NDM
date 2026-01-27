@@ -88,7 +88,7 @@ contains
 #ifdef PARA
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           itread=0
-          call read_cin3(fnamcin, boxrcf,itread) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+          call read_cin_para(fnamcin, boxrcf, itread) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
@@ -102,15 +102,15 @@ contains
           ncore=0
           if (lrepart.eqv..true.) then
              itread=1
-             call read_cin3(fnamcin,boxrcf,itread,atrcf,cellrcf,lrestart,psc) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+             call read_cin_para(fnamcin,boxrcf,itread,atrcf,cellrcf,lrestart,psc) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
           else
              itread=1
-             call read_cin3(fnamcin,boxrcf,itread,atrcf,cellrcf,lrestart,psc) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+             call read_cin_seq(fnamcin,boxrcf,itread,atrcf,lrestart) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
           end if
        else
           itread=1
           call atrcf%init(immin=imm_glob,imin=0,ltabvois=atrcf%ltabvois,rvois=atrcf%rvois)
-          call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
+          call read_cin_seq(fnamcin,boxrcf,itread,atrcf,lrestart) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
           atrcf%im_glob=atrcf%im
           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
@@ -478,7 +478,7 @@ contains
   end subroutine repartition
 
 
-subroutine read_cin3(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
+subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
     !------------------------------------------------------
     !   Version parallèle (MPI-IO) de read_cin
     !------------------------------------------------------
@@ -749,7 +749,163 @@ subroutine read_cin3(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
          & et fmt_cin ATTENTION A BIG_ENDIAN !! SI COMMPILE BIG_ENDIAN NE LIT PLUS QUE CA'
     call arret_ndm
 
-  end subroutine read_cin3
+  end subroutine read_cin_para
+
+
+subroutine read_cin_seq(fnamcin,boxcin,itread,atcinr,lres)
+    !------------------------------------------------------
+    !   Version de read_cin séquentielle qui permet de lire les nouveaux .cin
+    !------------------------------------------------------
+    !   (ne lit que les .cin écrits par sauvegardeT_para)
+    !------------------------------------------------------
+
+    !itread 0=at seulement; 1=complet;
+    !lres : lrestart,
+    USE T_kind_param_m, ONLY:  double
+    use Tpara,only:myidsp,nprocspace
+    USE gen_com_m,only: iteration,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep
+
+    implicit none
+    character,intent(in) :: fnamcin*80
+    class(box_config)::boxcin
+    integer,intent(in)::itread
+    class(atom_config),optional::atcinr
+    logical,intent(in),optional::lres
+    !integer,intent(in)::fmtcin
+    
+
+    logical::lrestart=.false.
+    integer :: i, ic, icintype, icintypemod , lucin
+    integer, dimension(:),allocatable     :: ibuffer
+    real(double), dimension(:,:),allocatable    :: buffer
+    real(double)::at(3,3)
+    integer::im_gr,i_loc, mpi_size_double, mpi_size_int, numcell
+    integer::atomes_in_bloc,atomes_per_bloc,ii,cellules_max,cellules_int,imm_loc,natlocm
+    integer,allocatable::natloc(:)
+
+
+    if (present(lres))lrestart=lres
+    !if ((rang==0).and.(fmtcin/=3)) then
+    !   write (6, *) 'wrong fmtcin, stop'
+    !   call arret_ndm
+    !end if 
+    if ((rang==0).and.(lprt)) then
+       write(6,*)
+       write(6,*)' *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-'
+       write(6,*)' *-*-*-*-*- LRESTART =',lrestart!, '*** itread',itread
+    endif
+
+
+    ! ******************* lecture SEQ *********************
+    lucin = 93
+    open(unit=lucin, file=fnamcin, form='unformatted', status='unknown', err=499)
+
+    read (lucin, err=499) icintype           !icintype
+    if ((rang==0).and.(lprt))  write (6, *) 'config type of  .cin file : ', icintype
+    if (icintype>5.or.icintype<0) then
+       write (6, *) rang, 'wrong icintype'
+       call arret_ndm
+    endif
+
+    icintypemod = mod(icintype,2)
+
+    read (lucin, err=499) at              !at
+    if(dilat(1).ne.0.0)then
+       do i=1,3
+          at(i,:)=at(i,:)*dilat(i)
+       end do
+    end if
+
+    call boxcin%init(at,ipbc)
+
+    select case(itread)
+    case(0)
+       close (lucin)
+       return
+    case(1)
+       if (.not.present(atcinr))then
+          write(6,*)'atcinr pas present et itread=1'
+          call arret_ndm
+       end if
+
+       read (lucin, err=499) im_gr                         ! number of atoms in the box
+
+       if (im_gr>imm_glob) then
+          if(rang==0) write (6, *) 'number of atoms > imm_glob, stop', im_gr, imm_glob
+          call arret_ndm
+       endif
+
+       call atcinr%init(immin=imm_glob,imin=0,ltabvois=atcinr%ltabvois,rvois=atcinr%rvois,imm_glob=imm_glob)
+       atcinr%im=im_gr
+       atcinr%im_glob=im_gr
+
+       read (lucin, err=499) atcinr%xp(1:3,1:im_gr)    !xp
+       if ((rang==0).and.(lprt))  write (6, *) 'xp'
+       read (lucin, err=499) atcinr%ityp(1:im_gr)   !ityp
+       if ((rang==0).and.(lprt))  write (6, *) 'types'
+       read (lucin, err=499) atcinr%num_at_glob(1:im_gr)   !num_at_glob
+       if ((rang==0).and.(lprt))  write (6, *) 'num_at_glob'
+
+
+       select type(atcinr)
+       type is (atom_config)
+          if (icintypemod==1) then
+             allocate (buffer(3,im_gr))
+             if (icintype==3) read (lucin, err=499) buffer                     !xpp
+             read (lucin, err=499) buffer                         !vp
+             deallocate(buffer)
+          end if
+          lvpread=.false.
+       type is (atom_config_d)
+          if (icintypemod==1) then
+             if (icintype==3) read (lucin, err=499) atcinr%vp(1:3,1:im_gr)         !xpp (écrasé après, juste pour avancer dans le fichier)
+             read (lucin, err=499) atcinr%vp(1:3,1:im_gr)                     !vp
+             if ((rang==0).and.(lprt))  write (6, *) 'vp_d'
+          end if
+       end select
+       select type(atcinr)
+       class is (atom_config_e)
+          if (icintypemod==1) then
+             if (icintype==3) then 
+                read (lucin, err=499) atcinr%xpp(1:3,1:im_gr)                 !xpp
+                if ((rang==0).and.(lprt))  write (6, *) 'xpp_e'
+             end if
+             read (lucin, err=499) atcinr%vp(1:3,1:im_gr)                     !vp
+             if ((rang==0).and.(lprt))  write (6, *) 'vp_e'
+          end if
+
+          if (atcinr%lax) then
+             atcinr%ax(1:3,1:im_gr)=atcinr%xp(1:3,1:im_gr)
+          end if
+       end select
+
+
+       if (icintypemod==1) then
+          read (lucin, err=499) oldtstep
+          if (lrestart) then
+             read (lucin, err=499) tmean, pmean, iteration, timel
+             if (nitmax.ge.0) itmax=iteration+nitmax
+             tstep = oldtstep
+
+             if ((rang==0).and.(lprt)) then
+
+                write (6, *) 'restart parameters'
+                write (6, *) 'it =', iteration, ' time =', timel
+                write (6, *) 'pmean', pmean, ' tmean =', tmean
+                write (6, *) 'tstep', tstep
+             endif                                ! fin rang=0
+          end if
+          usdh = 1.0/(two*tstep)
+       end if
+       close (lucin)
+       return
+    end select
+
+499 print *,'Erreur dans la lecture du fichier .cin, verifier son format&
+         & et fmt_cin ATTENTION A BIG_ENDIAN !! SI COMMPILE BIG_ENDIAN NE LIT PLUS QUE CA'
+    call arret_ndm
+
+  end subroutine read_cin_seq
 
 
   subroutine read_cin2(boxcin,atcinr,celcf,immr,fnamcin,lres,fmtcin,psc)
