@@ -482,7 +482,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
     !------------------------------------------------------
     !   Version parallèle (MPI-IO) de read_cin
     !------------------------------------------------------
-    !   (ne lit que les .cin écrits par sauvegardeT_para)
+    !   ne lit que les .cin écrits par sauvegardeT_para !
     !------------------------------------------------------
 
     !itread 0=at seulement; 1=complet;
@@ -522,29 +522,18 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
 #endif
 
     if (present(lres))lrestart=lres
-    !if ((rang==0).and.(fmtcin/=3)) then
-    !   write (6, *) 'wrong fmtcin, stop'
-    !   call arret_ndm
-    !end if 
-    if ((rang==0).and.(lprt)) then
-       write(6,*)
-       write(6,*)' *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-'
-       write(6,*)' *-*-*-*-*- LRESTART =',lrestart!, '*** itread',itread
-    endif
 #ifdef PARA
     ! ******************* lecture PARA *********************
 
     mpi_size_double = type_size(NDM_MPI_REAL_DOUBLE) ! mpi_size_double = double sinon erreurs
     mpi_size_int = type_size(MPI_INTEGER)
 
-
     call mpic_file_open(comm_space, fnamcin ,lucin)
     offset = 0
 
-
     call file_read_at_all(lucin, offset, icintype)           !icintype
     offset = offset + mpi_size_int
-    if ((rang==0).and.(lprt))  write (6, *) 'config type of  .cin file : ', icintype
+    
     if (icintype>5.or.icintype<0) then
        write (6, *) rang, 'wrong icintype'
        call arret_ndm
@@ -564,6 +553,12 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
 
     select case(itread)
     case(0)
+       if ((rang==0).and.(lprt)) then
+          write(6,*)
+          write(6,*)' *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-'
+          write(6,*)' *-*-*-*-*- LRESTART =',lrestart!, '*** itread',itread
+       endif
+       if ((rang==0).and.(lprt))  write (6, *) 'config type of  .cin file : ', icintype
        call file_close(lucin)
        return
     case(1)
@@ -588,7 +583,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
           call arret_ndm
        endif
 
-       ! Le découpage doit déja être fait !!!!
+       ! Le découpage doit déja être fait !
        
        ! calcul de imm:
        ! - chaque proc lit un bloc de positions d'atomes,
@@ -627,14 +622,11 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
        natlocm=int(natlocm*float(cellules_max)/cellules_int)
        imm_loc=min( imm_glob, int(1.2 * natlocm))
        imm = imm_loc
-       print *, natloc
        deallocate(natloc)
 
        call atcinr%init(immin=imm,imin=0,ltabvois=atcinr%ltabvois,rvois=atcinr%rvois,im_glob=im_gr,imm_glob=imm_glob)
        
-
-
-       ! Répartitions des atomes sur les procs. chaque proc:
+       ! Répartitions des atomes sur les procs. Chaque proc:
        ! - lit un bloc de positions d'atomes,
        ! - clacul un tableau (keep) d'atomes a garder, et copie les positions à garder
        ! - lit le bloc correspondant ityp, et garde uniquement les bons,
@@ -708,6 +700,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
              if (icintypemod==1) then
                 ! lecture du bloc vp
                 call file_read_at_all(lucin, offset_vp + atomes_per_bloc*i_bloc*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
+                if ((rang==0).and.(lprt).and.(i_bloc==0))  write (6, *) 'vp_d'
 
                 ! selection des vp
                 ii=start_in_current_bloc
@@ -725,6 +718,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
                 if (icintype==3) then
                    ! lecture du bloc xpp
                    call file_read_at_all(lucin, offset_xpp + atomes_per_bloc*i_bloc*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
+                   if ((rang==0).and.(lprt).and.(i_bloc==0))  write (6, *) 'xpp_e'
 
                    ! selection des xpp
                    ii=start_in_current_bloc
@@ -738,6 +732,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
 
                 ! lecture du bloc vp
                 call file_read_at_all(lucin, offset_vp + atomes_per_bloc*i_bloc*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
+                if ((rang==0).and.(lprt).and.(i_bloc==0))  write (6, *) 'vp_e'
 
                 ! selection des vp
                 ii=start_in_current_bloc
@@ -755,11 +750,8 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
           start_in_current_bloc = ii
        end do
 
+       ! on met à jour le nombre d'atomes lues
        atcinr%im=start_in_current_bloc-1
-
-        !if ((rang==0).and.(lprt))  write (6, *) 'vp_d'
-        !if ((rang==0).and.(lprt))  write (6, *) 'xpp_e'
-        !if ((rang==0).and.(lprt))  write (6, *) 'vp_e'
 
        deallocate(buffer)
        deallocate(ibuffer)
@@ -770,8 +762,6 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
        else
           offset = offset_num_at_glob + im_gr*mpi_size_int
        end if
-
-       print *, "ok", atcinr%im, im_gr, rang
 
        if (icintypemod==1) then
           call file_read_at_all(lucin, offset, oldtstep)           ! oldtstep
@@ -814,7 +804,7 @@ subroutine read_cin_seq(fnamcin,boxcin,itread,atcinr,lres)
     !------------------------------------------------------
     !   Version de read_cin séquentielle qui permet de lire les nouveaux .cin
     !------------------------------------------------------
-    !   (ne lit que les .cin écrits par sauvegardeT_para)
+    !   ne lit que les .cin écrits par sauvegardeT_para !
     !------------------------------------------------------
 
     !itread 0=at seulement; 1=complet;
