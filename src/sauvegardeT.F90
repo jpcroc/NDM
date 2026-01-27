@@ -400,7 +400,7 @@ contains
 
     ! ******************* sauvegarde SEQ *********************
     lucout = 87
-    open(unit=lucout, file=fnamcout, form='unformatted', status='unknown')
+    open(unit=lucout, file=fnamcout, form='unformatted', access='stream', status='unknown')
     ! Entête
     write (lucout) formatsauv
     write (lucout) boxndm%at
