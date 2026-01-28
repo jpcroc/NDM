@@ -1,0 +1,21 @@
+ &input
+	lcdp=.true.
+        ipotentiel=10
+	imm=2400
+	igen=0
+	dmtype=24,lfire=.true.,sigstop=5   ! 7 ph ; 3 CG
+	tinit=0.1
+	iseed=1
+	itmax=20000,fpstop=2.0
+	itetemp=1000
+	lEev=.true. 
+	lEparat=.true.,
+        lPkbar=.true. 	
+	itesigma=1000
+	iterasmol=0,ivisu=4
+	lperiod=.true.
+ &end
+	itetabvois=10000
+	ltabvois=.true. ,	rvois=6.1
+	ltabvois=.true.,rvois=7.
+	rvois=7.9

@@ -1,0 +1,13 @@
+ &input
+	lcdp=.true.
+        igen=0 !(*) =0 lecture .gin; =1 lecture .cin/cout
+        imm=6000 !(*) nombre max d'atomes (taille des tableaux
+	dmtype=4,
+        Tinit=600.0
+	ipotentiel=1
+        leEv=.true., lPKbar=.true. ! energies en eV ; pression kbar
+        ltabvois = .false.  ! pas de table des voisins et rayon de coupure!     ltabvois=.false.
+        itmax=5,iseed=12
+	itetemp=1,itesigma=1
+        iterasmol=5000 ! fichiers cfg tous les 1000 pas
+&end

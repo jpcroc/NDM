@@ -1,0 +1,25 @@
+ &input
+
+        ipotentiel=10
+	imm=2000
+	igen=0
+	dmtype=21,fpstop=0.1!,sigstop=5
+	tinit=600
+	iseed=1
+	itmax=3000
+	itetemp=10,	itesigma=10
+	lEev=.true. 
+	lEparat=.true.,
+        lPkbar=.true.
+
+	iterasmol=5000,ivisu=4
+	lconstrtot=.false.
+	lperiod=.true.
+
+
+        
+ &end
+	itetabvois=10000
+	ltabvois=.true. ,	rvois=6.1
+	ltabvois=.true.,rvois=7.
+	rvois=7.9

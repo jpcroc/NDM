@@ -1,8 +1,9 @@
  Process            0  of            2  is alive
+ Process            1  of            2  is alive
  nom fichier din=
  Febulk.din                                                                     
   
- Process            1  of            2  is alive
+ rang readdm iseed            1           1
  LTABVOIS MIS A FALSE en PARA
  
  -------- caracteristiques du run DM-------- 3
@@ -27,7 +28,6 @@ debyetemp=      -1.0
  fmt_cin           1
  rang readdm iseed            0           1
  IMM PARA =         1200        2000
- rang readdm iseed            1           1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
  
@@ -91,7 +91,7 @@ LE_MEILLEUR_DECOUPAGE :    2    1    1    2    0.9286
  Decoupage           1 :           4           4           2
  Decoupage           2 :           4           2           0
  Decoupage           3 :           4           2           0
- Decoupage          -2 :    38405264           4           4
+ Decoupage          -2 :    40793232           4           4
  Decoupage          -1 :           0           4           4
  Decoupage           0 :           4           4           2
  Decoupage           1 :           4           4           2
@@ -168,8 +168,6 @@ vecteur  3       0.000000       0.000000      28.553180
  RELAXED AFTER           11  DIRECTIONS and           33  force calculations
  MINIMUM REACHED after           33  force calculations
  *****************ENERGY erg eV  -1.320000262598013E-008  -8238.79449580854     
- lperiod T
- lperiod T
           64  active cells among           64
  
  

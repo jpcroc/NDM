@@ -2,7 +2,7 @@
  nom fichier din=
  Febulk.din                                                                     
   
- Process            3  of           27  is alive
+ Process            1  of           27  is alive
  Process           24  of           27  is alive
  Process           25  of           27  is alive
  Process           26  of           27  is alive
@@ -15,15 +15,14 @@
  itetemp=           1  iteprtsigma=           1
  
       CONTROLES 
-tstep=  0.100D-14
- itmax=           3 timemax=    10000000000.0000       itab=           1 
- Process            1  of           27  is alive
+ rang readdm iseed            1           1
  Process            2  of           27  is alive
  rang readdm iseed            2           1
- rang readdm iseed            3           1
+ Process            3  of           27  is alive
  rang readdm iseed           24           1
  rang readdm iseed           25           1
- rang readdm iseed           26           1
+tstep=  0.100D-14
+ itmax=           3 timemax=    10000000000.0000       itab=           1 
   itetimestep=          -1
 tinit=       0.0
 tempdeplainit=      -1.0
@@ -41,11 +40,11 @@ debyetemp=      -1.0
  rang readdm iseed            6           1
  rang readdm iseed            7           1
  rang readdm iseed            8           1
+ rang readdm iseed            9           1
  rang readdm iseed           10           1
  rang readdm iseed           11           1
  rang readdm iseed           12           1
  rang readdm iseed           13           1
- rang readdm iseed           14           1
  rang readdm iseed           15           1
  rang readdm iseed           16           1
  rang readdm iseed           17           1
@@ -55,14 +54,15 @@ debyetemp=      -1.0
  rang readdm iseed           21           1
  rang readdm iseed           22           1
  rang readdm iseed           23           1
+ rang readdm iseed           26           1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
  
  
  POTENTIEL EAM
  
- rang readdm iseed            1           1
- rang readdm iseed            9           1
+ rang readdm iseed            3           1
+ rang readdm iseed           14           1
  NTYP NPAIR            1           1
  Types d_atomes pour ce potentiel:
  CM, masse,type, NUMERO DU TYPE D ATOME
@@ -146,10 +146,10 @@ vecteur  3       0.000000       0.000000      91.370176
  calpoeam ktorho and the inverse:   8.522228107257609E-003
    117.340205802329     
  rang rangspace            0           0  nbr procs voisins           26
- rang rangspace           25          25  nbr procs voisins           26
  rang rangspace            1           1  nbr procs voisins           26
- rang rangspace            2           2  nbr procs voisins           26
  rang rangspace           26          26  nbr procs voisins           26
+ rang rangspace           25          25  nbr procs voisins           26
+ rang rangspace            2           2  nbr procs voisins           26
  tempsauv    560.473874886265     
  scaling read velocities at TINIT =   0.000000000000000E+000 K
  temperature fin initspeed   0.000000000000000E+000

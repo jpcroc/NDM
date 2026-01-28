@@ -1,0 +1,4 @@
+mpirun -np 4  ~/NDM/ndm2025/build/bin/rundm90_ndm_mpi >TXXX.out
+ rm -f *cfg
+ rm -f *cout
+ rm -f fort*

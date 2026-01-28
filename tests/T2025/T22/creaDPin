@@ -1,0 +1,6 @@
+ &inputcdp
+  nas=10, typas1=2,typas2=3
+  itprep=0
+  itecdp=2
+  iseed=12
+ &end

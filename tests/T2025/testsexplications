@@ -18,3 +18,4 @@ T17 et T18 tests rasmol
 T19 somme Ewald sur UO2 Morelon sequentiel boite 4 4 4 self interact
 T20 somme Ewald sur UO2 Morelon sequentiel boite 4 4 4 self interact
 T21 DMbase eamtab en Verlet standard avec boite ghost; nox=2 et nox=3
+T22 création d'antisites gdti

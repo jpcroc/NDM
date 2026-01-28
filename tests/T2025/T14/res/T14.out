@@ -2,16 +2,18 @@
  Process            1  of            4  is alive
  Process            2  of            4  is alive
  Process            3  of            4  is alive
- nom fichier din=
- Febulk.din                                                                     
-  
  rang readdm iseed            2           1
  INITMPIFM
  rang readdm iseed            3           1
  INITMPIFM
+ nom fichier din=
+ Febulk.din                                                                     
+  
  
  -------- caracteristiques du run DM--------19
       FORCE Matrix calculation 
+ rang readdm iseed            1           1
+ INITMPIFM
   decal, ndecal lparaFM, naparaFM:  1.000000014901161E-009           1 T
            4
  
@@ -34,8 +36,6 @@ debyetemp=      -1.0
  ipotentiel          10
  fmt_cin           1
  rang readdm iseed            0           1
- INITMPIFM
- rang readdm iseed            1           1
  INITMPIFM
  nparafM,nprocspace, nprocs           4           1           4
  
@@ -98,10 +98,6 @@ vecteur  3       0.000000       0.000000      17.131908
  decal rang ideb ifin          -1           1         109         216
  decal rang ideb ifin           1           2         217         324
  decal rang ideb ifin           1           3         325         432
- decal rang ideb ifin           1           0           1         108
  decal rang ideb ifin           1           1         109         216
+ decal rang ideb ifin           1           0           1         108
  PRE MKL
- zero frequency=  0.000000000000000E+000
- 3 non positive frequencies OK for periodic bulk 
-  thermo sauved to name.thermo.dat
-  temperature, Fmin(nT), Fcla(nT), Smin(nT), Scla(nT)

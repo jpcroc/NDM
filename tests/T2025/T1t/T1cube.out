@@ -1,0 +1,216 @@
+ Process            0  of            1  is alive
+ nom fichier din=Febulk.din                                                                      
+ LTABVOIS MIS A FALSE en PARA
+
+ -------- caracteristiques du run DM--------22
+     FAST Quenching Pcst
+ incomplete cell relaxation
+ ihbox0( 1 1)= 1
+ ihbox0( 2 2)= 1
+ ihbox0( 3 3)= 1
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  iteprtsigma=           1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=        3000 timemax=    10000000000.000002       itab=           1  itetimestep=          -1
+tinit=     600.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+ rang readdm iseed            0           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM
+
+ NTYP NPAIR            1           1
+ Types d_atomes pour ce potentiel:
+ CM, masse,type, NUMERO DU TYPE D ATOME
+   1   55.847   26.000  Fe 
+ nb of readed pairs           1
+ nptmax in the max number of points on grid        249999
+ EAM           1           1
+ EAM number of points in potin and the step      249999   6.8178370289999997E-004
+ dens           1           1
+ RHO potin points and the step:       249999   2.4000000000000001E-005
+ paire eam ; paire complete           1           1
+ rep
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+ imm,imm_glob,nprocspace        2000        2000           1
+
+ **********construction du reseau************
+ repetition de mailles          10          10          10
+  .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +2e-7
+ nox,noy,noz dans .din =          -1          -1          -1
+nox noy noz and ghost cells from ru
+  nox in direction  1=  4 if not specified =Int(   0.2955E-06/  0.6000E-07) 
+  nox in direction  2=  4 if not specified =Int(   0.2955E-06/  0.6000E-07) 
+  nox in direction  3=  4 if not specified =Int(   0.2955E-06/  0.6000E-07) 
+          64  active cells among           64
+celsizes   0.7388295E-07  0.7138295E-07  0.7138295E-07
+Febulk.gin                                                                      
+volume= 0.24094237D-19 cm3  0.24094237D+05 Ang3
+ natperc im/noxyz          70          31
+ ltabvois F
+
+ -------- boite de simulation ------
+ nombre d atomes =        2000
+vecteur  1      29.553180       0.000000       0.000000
+vecteur  2       0.000000      28.553180       0.000000
+vecteur  3       0.000000       0.000000      28.553180
+        2000  atomes de type           1
+
+  -------------------------------------------------------------------
+              2nd step of potential initialization , dependancy on box size
+ calpoeam ktorho and the inverse:    8.5222281072576088E-003   117.34020580232894     
+ ***** PREMIERE ITERATION LPR  ****        3000   10000000000.000002     
+
+ Algorithme de Parrinello-Rahman (V2)
+  -> la vitesse de la boîte ne prend pas en compte la dérivée du tenseur h à t=0
+
+Repère actuel  (A):
+ h (1:3,1) = 29.55318 .00000 .00000
+ h (1:3,2) = .00000 28.55318 .00000
+ h (1:3,3) = .00000 .00000 28.55318
+Masse de la boîte pour Parrinello-Rahman: wbox=  0.185418297627E-19
+Initialisation de la vitesse de la boîte pour la température 600.000 K
+      0 0.000D+00*Kcell =    0.000000000000D+00  eV   (.000 K)
+ hdotnew  -25.235590497541487        0.0000000000000000        0.0000000000000000        0.0000000000000000       -24.381685851640750        0.0000000000000000        0.0000000000000000        0.0000000000000000       -24.381685851640750     
+
+
+<<<<<<<<  ITERATION =      1  time =   0.1000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         1 0.100E-14*Epot =    -8194.900359678140      eV 
+    *energie PAIRE EAM =     138.577666280      eV 
+    *energie GLUE  =    -8333.47802596      eV 
+         1 0.100E-14*Ec =    0.493977435492E-28  eV   (.000 K)
+         1 0.100E-14*Etot =    -8194.900359678140      eV 
+
+         1 0.100E-14*Epot/at =    -4.09745017984      eV 
+
+         1 0.100E-14*Temp instantanee = .000
+ NPT With Parrinello-Rahman
+         1 0.100E-14*Kcell =    0.105647176288E-04  eV   (.027 K)
+ Box tensor
+ a_vect   2.9553177476428246E-007   0.0000000000000000        0.0000000000000000     
+ b_vect   0.0000000000000000        2.8553177561819114E-007   0.0000000000000000     
+ c_vect   0.0000000000000000        0.0000000000000000        2.8553177561819114E-007
+Strain (Lagrange def.):
+  eps(1:3,1) =  -0.853909E-07   0.00000       0.00000    
+  eps(1:3,2) =    0.00000     -0.853909E-07   0.00000    
+  eps(1:3,3) =    0.00000       0.00000     -0.853909E-07
+Rotation:
+  rot(1:3,1) =    0.00000       0.00000       0.00000    
+  rot(1:3,2) =    0.00000       0.00000       0.00000    
+  rot(1:3,3) =    0.00000       0.00000       0.00000    
+         1 0.100E-14*l_a,m      29.5531775        29.5531775    
+         1 0.100E-14*l_b,m      28.5531776        28.5531776    
+         1 0.100E-14*l_c,m      28.5531776        28.5531776    
+         1 0.100E-14*ang_bc,m      90.0000    90.0000
+         1 0.100E-14*ang_ca,m      90.0000    90.0000
+         1 0.100E-14*ang_ab,m      90.0000    90.0000
+         1 0.100E-14*volume      24094.2312348        24094.2312348    
+ abbc    1.0350223687869442        1.0000000000000000     
+
+*temp instantanee des atomes de type 1 =         0.00
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -130.8440581     -0.2235919237E-13 -0.1158565283E-14
+2 sigma potentiel (1,2) (2,2) (3,2) = -0.2184137702E-13  -82.66541836      0.3170222044E-14
+3 sigma potentiel (1,3) (2,3) (3,3) = -0.1791864634E-14  0.3453344107E-14  -82.66541836    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =  0.2189843802E-29   0.000000000       0.000000000    
+2 sigma cinetique (1,2) (2,2) (3,2) =   0.000000000      0.2189843802E-29   0.000000000    
+3 sigma cinetique (1,3) (2,3) (3,3) =   0.000000000       0.000000000      0.2189843802E-29
+
+1 sigma total (1,1) (2,1) (3,1) =  -130.8440581     -0.2210028470E-13 -0.1475214958E-14
+2 sigma total (1,2) (2,2) (3,2) = -0.2210028470E-13  -82.66541836      0.3311783075E-14
+3 sigma total (1,3) (2,3) (3,3) = -0.1475214958E-14  0.3311783075E-14  -82.66541836    
+
+         1 0.100E-14*Pression =    -98.725    
+ pression totale  potentiel = cinetique =
+   -98.725       -98.725       0.21898E-29
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.00
+*pression moyenne =    -98.725    
+ --------------------------------------
+TR: force max, energy     1    0.249682368989524E-13   -0.819490035967814E+04
+ sigma max kbar   0.0000000000000000     
+
+
+<<<<<<<<  ITERATION =      1  time =   0.1000000E-14
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         1 0.100E-14*Epot =    -8194.900359678140      eV 
+    *energie PAIRE EAM =     138.577666280      eV 
+    *energie GLUE  =    -8333.47802596      eV 
+         1 0.100E-14*Ec =    0.493977435492E-28  eV   (.000 K)
+         1 0.100E-14*Etot =    -8194.900359678140      eV 
+
+         1 0.100E-14*Epot/at =    -4.09745017984      eV 
+
+         1 0.100E-14*Temp instantanee = .000
+ NPT With Parrinello-Rahman
+         1 0.100E-14*Kcell =    0.105647176288E-04  eV   (.027 K)
+ Box tensor
+ a_vect   2.9553177476428246E-007   0.0000000000000000        0.0000000000000000     
+ b_vect   0.0000000000000000        2.8553177561819114E-007   0.0000000000000000     
+ c_vect   0.0000000000000000        0.0000000000000000        2.8553177561819114E-007
+Strain (Lagrange def.):
+  eps(1:3,1) =  -0.853909E-07   0.00000       0.00000    
+  eps(1:3,2) =    0.00000     -0.853909E-07   0.00000    
+  eps(1:3,3) =    0.00000       0.00000     -0.853909E-07
+Rotation:
+  rot(1:3,1) =    0.00000       0.00000       0.00000    
+  rot(1:3,2) =    0.00000       0.00000       0.00000    
+  rot(1:3,3) =    0.00000       0.00000       0.00000    
+         1 0.100E-14*l_a,m      29.5531775        29.5531775    
+         1 0.100E-14*l_b,m      28.5531776        28.5531776    
+         1 0.100E-14*l_c,m      28.5531776        28.5531776    
+         1 0.100E-14*ang_bc,m      90.0000    90.0000
+         1 0.100E-14*ang_ca,m      90.0000    90.0000
+         1 0.100E-14*ang_ab,m      90.0000    90.0000
+         1 0.100E-14*volume      24094.2312348        24094.2312348    
+ abbc    1.0350223687869442        1.0000000000000000     
+
+*temp instantanee des atomes de type 1 =         0.00
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -130.8440581     -0.2235919237E-13 -0.1158565283E-14
+2 sigma potentiel (1,2) (2,2) (3,2) = -0.2184137702E-13  -82.66541836      0.3170222044E-14
+3 sigma potentiel (1,3) (2,3) (3,3) = -0.1791864634E-14  0.3453344107E-14  -82.66541836    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =  0.2189843802E-29   0.000000000       0.000000000    
+2 sigma cinetique (1,2) (2,2) (3,2) =   0.000000000      0.2189843802E-29   0.000000000    
+3 sigma cinetique (1,3) (2,3) (3,3) =   0.000000000       0.000000000      0.2189843802E-29
+
+1 sigma total (1,1) (2,1) (3,1) =  -130.8440581     -0.2210028470E-13 -0.1475214958E-14
+2 sigma total (1,2) (2,2) (3,2) = -0.2210028470E-13  -82.66541836      0.3311783075E-14
+3 sigma total (1,3) (2,3) (3,3) = -0.1475214958E-14  0.3311783075E-14  -82.66541836    
+
+         1 0.100E-14*Pression =    -98.725    
+ pression totale  potentiel = cinetique =
+   -98.725       -98.725       0.21898E-29
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.00
+*pression moyenne =    -98.725    
+ --------------------------------------
+ *******Derniere iteration **** 
+
+
+ ####### END OF RUN  ######## =            1   time =    1.0000000000000001E-015

@@ -5,8 +5,8 @@
  nom fichier din=
  Febulk.din                                                                     
   
- rang readdm iseed            2           1
  rang readdm iseed            3           1
+ rang readdm iseed            2           1
  
  -------- caracteristiques du run DM-------- 1
      DYNAMIQUE MOLECULAIRE VERLET STANDARD
@@ -27,10 +27,10 @@ debyetemp=      -1.0
  
  nb de potentiels           1
  ipotentiel          10
+ rang readdm iseed            1           1
  fmt_cin           1
  rang readdm iseed            0           1
  IMM PARA =        19800       66000
- rang readdm iseed            1           1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
  
@@ -119,9 +119,9 @@ vecteur  3       0.000000       0.000000      91.370176
               2nd step of potential initialization , dependancy on box size
  calpoeam ktorho and the inverse:   8.522228107257609E-003
    117.340205802329     
+ rang rangspace            1           1  nbr procs voisins            3
  rang rangspace            2           2  nbr procs voisins            3
  rang rangspace            3           3  nbr procs voisins            3
- rang rangspace            1           1  nbr procs voisins            3
  rang rangspace            0           0  nbr procs voisins            3
  tempsauv    560.473874886264     
  scaling read velocities at TINIT =   0.000000000000000E+000 K

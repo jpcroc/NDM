@@ -1,0 +1,85 @@
+ Process            0  of            1  is alive
+ nom fichier din=Febulk.din                                                                      
+ LTABVOIS MIS A FALSE en PARA
+
+ -------- caracteristiques du run DM--------88
+      PCst en LANGEVIN
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  iteprtsigma=           1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=        3000 timemax=    10000000000.000002       itab=           1  itetimestep=          -1
+tinit=     600.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+ rang readdm iseed            0           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM
+
+ NTYP NPAIR            1           1
+ Types d_atomes pour ce potentiel:
+ CM, masse,type, NUMERO DU TYPE D ATOME
+   1   55.847   26.000  Fe 
+ nb of readed pairs           1
+ nptmax in the max number of points on grid        249999
+ EAM           1           1
+ EAM number of points in potin and the step      249999   6.8178370289999997E-004
+ dens           1           1
+ RHO potin points and the step:       249999   2.4000000000000001E-005
+ paire eam ; paire complete           1           1
+ rep
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+ imm,imm_glob,nprocspace        2000        2000           1
+
+ **********construction du reseau************
+ repetition de mailles          10          10          10
+  .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +2e-7
+ nox,noy,noz dans .din =          -1          -1          -1
+nox noy noz and ghost cells from ru
+  nox in direction  1=  4 if not specified =Int(   0.2955E-06/  0.6000E-07) 
+  nox in direction  2=  4 if not specified =Int(   0.2955E-06/  0.6000E-07) 
+  nox in direction  3=  4 if not specified =Int(   0.2955E-06/  0.6000E-07) 
+          64  active cells among           64
+celsizes   0.7388295E-07  0.7138295E-07  0.7138295E-07
+Febulk.gin                                                                      
+volume= 0.24094237D-19 cm3  0.24094237D+05 Ang3
+ natperc im/noxyz          70          31
+ ltabvois F
+
+ -------- boite de simulation ------
+ nombre d atomes =        2000
+vecteur  1      29.553180       0.000000       0.000000
+vecteur  2       0.000000      28.553180       0.000000
+vecteur  3       0.000000       0.000000      28.553180
+        2000  atomes de type           1
+
+  -------------------------------------------------------------------
+              2nd step of potential initialization , dependancy on box size
+ calpoeam ktorho and the inverse:    8.5222281072576088E-003   117.34020580232894     
+ random velocities at TINIT =    600.00000000000000      K
+ temperature fin initspeed    600.00000000000011     
+ ***** PREMIERE ITERATION LPR  ****        3000   10000000000.000002     
+
+ Algorithme de Parrinello-Rahman (V2)
+  -> la vitesse de la boîte ne prend pas en compte la dérivée du tenseur h à t=0
+
+Repère actuel  (A):
+ h (1:3,1) = 29.55318 .00000 .00000
+ h (1:3,2) = .00000 28.55318 .00000
+ h (1:3,3) = .00000 .00000 28.55318
+Masse de la boîte pour Parrinello-Rahman: wbox=  0.927091474320E-19
+Initialisation de la vitesse de la boîte pour la température 600.000 K
+      0 0.000D+00*Kcell =    0.652466228330D-01  eV   (168.260 K)

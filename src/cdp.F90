@@ -13,7 +13,7 @@ module cdp_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE caltabi_mod,only: caltabi
   USE sauvegardeT_mod,only:sauvegardeT
-  USE Tpara,only:COMM_space,myidsp,para_space_config
+  USE Tpara,only:COMM_space,myidsp,para_space_config,nprocspace
 #ifdef PARA  
   USE mod_para,only:maj_atomes_frt_ftm
 #endif
@@ -35,6 +35,8 @@ module cdp_mod
        ideftyp, &      ! racine des nombres aléatoires
        itprep, &      ! number of iterations for initial equilibration
        ncreadp, &      ! number of DP INTRODUCTION (e.g. for quenches)
+       nas, &      ! number of antisites (i;e. of type switching nas=1=+> 2 antisites)
+       typas1,typas2,& ! types of the antisites
        typint ! type d'introduction des Intestitiels : 0 dans les sites prédéfinis, 1 aléatoirement
   integer,allocatable::nvac(:),nbint(:)
   real(double), dimension(:,:), allocatable :: xposint ! positions des interstitiels POSSIBLES
@@ -43,6 +45,9 @@ module cdp_mod
   real (double) :: dminins,rsphdef,centresphdef(3),timecdp
   integer:: ioxdef,icreadp
   logical::ltimec,lcrearead
+  integer, allocatable :: natproc1(:),natproc2(:),indas1(:),indas2(:),procas1(:),procas2(:),indlocas1(:),&
+       &flooras1(:),flooras2(:),indlocas2(:)
+  integer,allocatable::nasloc1(:),nasloc2(:)
 
 contains
   ! **************************************************************
@@ -60,7 +65,8 @@ contains
     !-----------------------------------------------
     integer :: i,nfp
     !-----------------------------------------------
-    namelist /inputcdp/itecdp,nfp,nposI,iseed,dminins,itecdp,itprep,maxposint,minposint,nvac,nbint,typint,timecdp,lcrearead,ncreadp
+    namelist /inputcdp/itecdp,nfp,nposI,iseed,dminins,itecdp,itprep,maxposint,minposint,nvac,nbint,typint,timecdp,lcrearead,ncreadp,&
+         &nas,typas1,typas2
 
     allocate(nvac(ntyp));allocate(nbint(ntyp))
 
@@ -77,6 +83,9 @@ contains
     timecdp=-1.
     lcrearead=.false.
     ncreadp=100000
+    nas=-1
+    typas1=-1
+    typas2=-1
     open(unit=73, file='creaDPin', status='unknown')
     read (73, nml=inputcdp)
     timecdp=timecdp*1d-15
@@ -141,6 +150,18 @@ contains
        end where
     end if
     ! call    random_seed (put=iseedt)
+    if (nas.gt.0) then
+       if(((typas1.le.0).or.(typas2.le.0)).or.((typas1.gt.ntyp).or.(typas2.gt.ntyp))) then
+          if (rang==0) write(6,*)'wrong type of antisites',nas, typas1,typas2
+          call arret_ndm
+       end if
+       allocate(natproc1(0:nprocspace-1));          allocate(natproc2(0:nprocspace-1));
+       allocate(flooras1(0:nprocspace-1));          allocate(flooras2(0:nprocspace-1));
+       allocate(indas1(nas));allocate(indas2(nas));allocate(procas1(nas));allocate(procas2(nas))
+       allocate (indlocas1(nas));          allocate (indlocas2(nas))
+       allocate(nasloc1(0:nprocspace-1)); allocate(nasloc2(0:nprocspace-1))
+       
+    end if
 
     return
   end subroutine initcdp
@@ -183,7 +204,9 @@ contains
     logical::lsuiv,lcrea0
     character::fnamcout*80
     character :: extension*7
-    
+    integer::ip,ias,ntot1,ntot2,indt1,indt2,ias1loc,ias2loc,itry
+    logical::lfound
+
     
     if (myidsp==0) then
        if (iseed.le.0) then
@@ -299,19 +322,168 @@ contains
           if (ltimec) then
              timeloopmax=timel+timecdp
           else
-             itloopmax=min(iteration+itecdp,itmax)
+             itloopmax=min(iteration+itecdp-1,itmax)
           end if
           if (myidsp==0) then
              write(6,*)'****************************************'
              write(6,*)'POINT DEFECT CREATION '!,iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
-             write(6,*)'iteration,timel, itloopmax,timeloopmax,nvactot, ninttot'
-             write(6,'(I11,G20.8,I11,G20.8,2I7)')iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
+             write(6,*)'iteration,timel, itloopmax,timeloopmax,nvactot, ninttot nas'
+             write(6,'(I11,G20.8,I11,G20.8,3I7)')iteration,timel, itloopmax,timeloopmax,nvactot, ninttot,nas
              write(6,*)'****************************************'
           end if
           natgm=maxval(atdml%num_at_glob(1:atdml%im))
           !#ifdef PARA
           call comm_space%max(natgm)
           !#endif
+!AAAAAAAAAAAAAASSSSSSSSSSSSSSSS          
+          if (nas.gt.0) then
+             natproc1(:)=0; natproc2(:)=0
+             indas1(:)=0 ; indas2(:)=0; procas1(:)=0;procas2(:)=0
+             flooras1(:)=0;flooras2(:)=0
+             nasloc1(:)=0;nasloc2(:)=0
+             natproc1(myidsp)=count(atdml%ityp(1:atdml%im)==typas1)
+             natproc2(myidsp)=count(atdml%ityp(1:atdml%im)==typas2)
+!             write(6,*)'NBAT',myidsp, typas1,natproc1(myidsp)
+!             write(6,*)'NBAT',myidsp, typas2,natproc2(myidsp)
+             call comm_space%sum(natproc1)
+             call comm_space%sum(natproc2)
+             do ip=1,nprocspace-1
+                flooras1(ip)=flooras1(ip-1)+natproc1(ip-1)
+                flooras2(ip)=flooras2(ip-1)+natproc2(ip-1)
+             end do
+!             write(myidsp+450,*)'myidsp floor1',myidsp,flooras1
+!             write(myidsp+450,*)'myidsp floor3',myidsp,flooras2
+             if (myidsp==0) then
+                ntot1=sum(natproc1)
+                ntot2=sum(natproc2)
+                do ias=1,nas
+                   ntry=0
+11                 continue
+                   ntry=ntry+1
+                   if (ntry==1000) then
+                      write(6,*)'AS NTRY exceeded'
+                      call arret_ndm
+                   end if
+                   call random_number(z1)
+                   itry=1+int(z1*ntot1)
+                   if (any(indas1(1:ias-1)==itry)) goto 11
+                   indas1(ias)=itry
+                   lfound=.false.
+                   loopip:do ip=1,nprocspace
+                      if( flooras1(ip).ge.itry) then
+                         lfound=.true.
+                         procas1(ias)=ip-1
+                         exit loopip
+                      end if
+                   end do loopip
+                   if (lfound.eqv..false.) procas1(ias)=nprocspace-1
+                   nasloc1(procas1(ias))=nasloc1(procas1(ias))+1
+!                   write(myidsp+450,*)'ias indas1(ias) proc ',ias,indas1(ias),procas1(ias)
+                   
+                   ntry=0
+22                 continue
+                   ntry=ntry+1
+                   if (ntry==1000) then
+                      write(6,*)'AS NTRY exceeded'
+                      call arret_ndm
+                   end if
+                   call random_number(z1)
+                   itry=1+int(z1*ntot2)
+                   if( any(indas2(1:ias-1)==itry)) goto 22
+                   indas2(ias)=itry
+                   lfound=.false.
+                   loopip2:do ip=1,nprocspace
+                      if( flooras2(ip).ge.itry) then
+                         lfound=.true.
+                         procas2(ias)=ip-1
+                         exit loopip2
+                      end if
+                   end do loopip2
+                   if (lfound.eqv..false.) procas2(ias)=nprocspace-1
+                   nasloc2(procas2(ias))=nasloc2(procas2(ias))+1
+
+                end do
+!                write(6,*)'NASLOC',nasloc1,nasloc2
+             end if
+
+             call comm_space%bcast(0,procas1)
+             call comm_space%bcast(0,procas2)
+             call comm_space%bcast(0,indas1)
+             call comm_space%bcast(0,indas2)
+             call comm_space%bcast(0,nasloc1)
+             call comm_space%bcast(0,nasloc2)
+!!$             do ias=1,nas
+!!$                write(myidsp+450,*)'ias indas1(ias) proc ',ias,indas1(ias),procas1(ias)
+!!$             end do
+!!$             do ias=1,nas
+!!$                write(myidsp+450,*)'ias indas2(ias) proc ',ias,indas2(ias),procas2(ias)
+!!$             end do
+             ias1loc=0; ias2loc=0
+             do ias=1,nas
+!                write(myidsp+450,*) 'AS1 ',ias,procas1(ias),indas1(ias),flooras1(myidsp)
+                if (procas1(ias)==myidsp) then
+!                   write(myidsp+450,*) 'ASproc',flooras1(myidsp)
+                   indt1=flooras1(myidsp)
+                   loop3:do i=1,atdml%im
+                      if (atdml%ityp(i)==typas1) then
+                         indt1=indt1+1
+!                         write(myidsp+450,*) 'ASttest',i,atdml%im,indt1,indas1(ias)
+                         if (indt1==indas1(ias)) then
+                            ias1loc=ias1loc+1
+!                            write(myidsp+450,*) 'AS11',i,indt1,ias1loc
+                            indlocas1(ias1loc)=i
+                            exit loop3
+                         end if
+                      end if
+                   end do loop3
+                end if
+             end do
+             if (ias1loc.ne.nasloc1(myidsp)) then
+                write(6,*)'rg ias1loc nasloc1(myidsp)',myidsp, ias1loc,nasloc1(myidsp)
+                call arret_ndm
+             end if
+             do ias=1,nas
+!                write(myidsp+450,*) 'AS2 ',ias,procas2(ias),indas2(ias),flooras2(myidsp)
+                if (procas2(ias)==myidsp) then
+!                   write(myidsp+450,*) 'ASproc',flooras2(myidsp)
+                   indt2=flooras2(myidsp)
+                   loop32:do i=1,atdml%im
+                      if (atdml%ityp(i)==typas2) then
+                         indt2=indt2+1
+!                         write(myidsp+450,*) 'ASttest',i,atdml%im,indt2,indas2(ias)
+                         if (indt2==indas2(ias)) then
+                            ias2loc=ias2loc+1
+!                            write(myidsp+450,*) 'AS11',i,indt2,ias2loc
+                            indlocas2(ias2loc)=i
+                            exit loop32
+                         end if
+                      end if
+                   end do loop32
+                end if
+             end do
+             if (ias2loc.ne.nasloc2(myidsp)) then
+                write(6,*)'pg as2 rg',myidsp, ias2loc,nasloc2(myidsp)
+                call arret_ndm
+             end if
+!             write(myidsp+450,*) iteration
+             do i=1,nasloc1(myidsp)
+                write(myidsp+450,*) typas1, i, indlocas1(i),atdml%num_at_glob(indlocas1(i)), atdml%ityp(indlocas1(i))
+                atdml%ityp(indlocas1(i))=typas2
+             end do
+             do i=1,nasloc2(myidsp)
+                write(myidsp+450,*) typas2, i, indlocas2(i), atdml%num_at_glob(indlocas2(i)), atdml%ityp(indlocas2(i))
+                atdml%ityp(indlocas2(i))=typas1
+             end do
+             write(myidsp+450,*)
+             if (myidsp==0) then
+                do ip=0,nprocspace-1
+                   write(6,'(I5,A,I3,A,I4,A,I3)')nasloc1(ip),' atoms of type', typas1,'in proc ',ip ,' changed to type' ,typas2
+                end do
+                do ip=0,nprocspace-1
+                   write(6,'(I5,A,I3,A,I4,A,I3)')nasloc2(ip),' atoms of type', typas2,'in proc ',ip ,' changed to type', typas1
+                end do
+             end if
+          end if
 
           ivactot=0
           atomvac%natg=0 ! on remet à 0 les indices

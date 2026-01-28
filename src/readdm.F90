@@ -1485,10 +1485,6 @@ contains
     end if
 
 
-    !  if(itetemp2.gt.0)then
-    !     fnamdin = fnam(1:lenfnam)//'.2.T'
-    !     open(unit=112, file=fnamdin, status='unknown')
-    !  end if
 
 
     if ( ( (dmtype==3).OR.(dmtype==30).or.(dmtype==32).or.(dmtype==34).or.(dmtype==35)&
