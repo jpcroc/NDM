@@ -1,5 +1,4 @@
 module constrconf_mod
-  USE arret_ndm_mod,only:arret_ndm
 #ifdef PARA
   USE decoupage_mod,only: decoupage,decoup2im,constrandrepart
 #endif  
@@ -517,7 +516,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
 
 
 #ifdef PARA
-    integer(KIND=MPI_OFFSET_KIND) :: offset, para_offset, offset_ityp, offset_num_at_glob, offset_vp, offset_xpp
+    integer(KIND=MPI_OFFSET_KIND) :: offset, para_offset, offset_xp, offset_ityp, offset_num_at_glob, offset_vp, offset_xpp
 #endif
 
     if (present(lres))lrestart=lres
@@ -552,15 +551,18 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
 
     select case(itread)
     case(0)
+       call file_close(lucin)
+       return
+    case(1)
+       ! setnox & decoupage doivent déjà être fait !
+
        if ((rang==0).and.(lprt)) then
           write(6,*)
           write(6,*)' *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-'
           write(6,*)' *-*-*-*-*- LRESTART =',lrestart!, '*** itread',itread
        endif
        if ((rang==0).and.(lprt))  write (6, *) 'config type of  .cin file : ', icintype
-       call file_close(lucin)
-       return
-    case(1)
+
        if (.not.present(atcinr))then
           write(6,*)'read_cin_para: atcinr pas present et itread=1, stop'
           call arret_ndm
@@ -576,18 +578,28 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
                   
        call file_read_at_all(lucin, offset, im_gr)           ! number of atoms in the box
        offset = offset + mpi_size_int
+       offset_xp = offset
 
        if (im_gr>imm_glob) then
           if(rang==0) write (6, *) 'number of atoms > imm_glob, stop', im_gr, imm_glob
           call arret_ndm
        endif
-
-       ! Le découpage doit déja être fait !
        
        !> calcul de imm:
        ! - chaque proc lit un bloc de positions d'atomes,
        ! - calcul les natloc des positions lues,
        ! - tous les natloc sont sommées, puis on extrait natlocm=maxval(natloc) et on fini le calcul.
+
+       atomes_per_bloc = im_gr/nprocspace ! sauf le dernier qui est plus gros
+       if (myidsp == nprocspace - 1) then
+          atomes_in_bloc = atomes_per_bloc + mod(im_gr, nprocspace)
+       else
+          atomes_in_bloc = atomes_per_bloc
+       end if
+
+       allocate(buffer(3,atomes_per_bloc + mod(im_gr, nprocspace)))
+       allocate (natloc(0:nprocspace-1))
+       natloc=0
 
        cellules_max=0
        cellules_int=0
@@ -596,19 +608,8 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
           cellules_int = max(cellules_int,(psc%res_cpu(ii,1)+0) * (psc%res_cpu(ii,2)+0)* (psc%res_cpu(ii,3)+0))
        enddo
        cellules_max = min (cellules_max, celcf%noxyz)
-
-       atomes_per_bloc = im_gr/nprocspace ! sauf le dernier qui est plus gros
-       allocate(buffer(3,atomes_per_bloc + mod(im_gr, nprocspace)))
-       if (myidsp == nprocspace - 1) then
-          atomes_in_bloc = atomes_per_bloc + mod(im_gr, nprocspace)
-       else
-          atomes_in_bloc = atomes_per_bloc
-       end if
-
-       allocate (natloc(0:nprocspace-1))
-       natloc=0
        
-       call file_read_at_all(lucin, offset + atomes_per_bloc*myidsp*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
+       call file_read_at_all(lucin, offset_xp + atomes_per_bloc*myidsp*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
 
        do i=1,atomes_in_bloc
           call coord_to_cell(buffer(:,i),numcell,boxcin,celcf%nox(1),celcf%nox(2),celcf%nox(3))
@@ -625,19 +626,21 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
 
        call atcinr%init(immin=imm,imin=0,ltabvois=atcinr%ltabvois,rvois=atcinr%rvois,im_glob=im_gr,imm_glob=imm_glob)
        
-       !> Répartitions des atomes sur les procs. Chaque proc:
-       ! - lit un bloc de positions d'atomes,
+       !> Répartitions des atomes sur les procs. 
+       !> Chaque tableau (xp,ityp,num_at_glob,xpp,vp) est découpé en nprocspace blocs. 
+       !> Chaque proc:
+       ! - lit un bloc du tableau de positions d'atomes,
        ! - clacul un tableau (keep) d'atomes a garder, et copie les positions à garder
-       ! - lit le bloc correspondant ityp, et garde uniquement les bons,
-       ! - lit le bloc correspondant num_at_glob, et garde uniquement les bons,
-       ! - lit le bloc correspondant xpp, et garde uniquement les bons,
-       ! - lit le bloc correspondant vp, et garde uniquement les bons,
+       ! - lit le bloc correspondant du tableau de ityp, et garde uniquement les bons,
+       ! - lit le bloc correspondant du tableau de num_at_glob, et garde uniquement les bons,
+       ! - lit le bloc correspondant du tableau de xpp, et garde uniquement les bons,
+       ! - lit le bloc correspondant du tableau de vp, et garde uniquement les bons,
        ! - puis passe au bloc suivant.
        
        allocate(keep(atomes_per_bloc + mod(im_gr, nprocspace)))
        allocate(ibuffer(atomes_per_bloc + mod(im_gr, nprocspace)))
 
-       offset_ityp = offset + im_gr*3*mpi_size_double
+       offset_ityp = offset_xp + im_gr*3*mpi_size_double
        offset_num_at_glob = offset_ityp + im_gr*mpi_size_int
        if (icintype==3) then 
           offset_xpp = offset_num_at_glob + im_gr*mpi_size_int
@@ -657,7 +660,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
           end if
 
           ! lecture du bloc de positions d'atomes
-          call file_read_at_all(lucin, offset + atomes_per_bloc*i_bloc*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
+          call file_read_at_all(lucin, offset_xp + atomes_per_bloc*i_bloc*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
           
           ! clacul du tableau (keep) d'atomes a garder, et copie les positions à garder
           ii=start_in_current_bloc
@@ -749,7 +752,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
           start_in_current_bloc = ii
        end do
 
-       ! mise à jour le nombre d'atomes lues
+       ! mise à jour du nombre d'atomes lus
        atcinr%im=start_in_current_bloc-1
 
        deallocate(buffer)
