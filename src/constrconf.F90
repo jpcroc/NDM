@@ -88,7 +88,7 @@ contains
 #ifdef PARA
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           itread=0
-          call read_cin_para(fnamcin, boxrcf, itread) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+          call read_cin_para(fnamcin, boxrcf, itread) !itread 0=at seulement; 1=complet
           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
@@ -102,15 +102,14 @@ contains
           ncore=0
           if (lrepart.eqv..true.) then
              itread=1
-             call read_cin_para(fnamcin,boxrcf,itread,atrcf,cellrcf,lrestart,psc) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+             call read_cin_para(fnamcin,boxrcf,itread,atrcf,cellrcf,lrestart,psc) !itread 0=at seulement; 1=complet
           else
              itread=1
-             call read_cin_seq(fnamcin,boxrcf,itread,atrcf,lrestart) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement
+             call read_cin_seq(fnamcin,boxrcf,itread,atrcf,lrestart) !itread 0=at seulement; 1=complet
           end if
        else
           itread=1
-          call atrcf%init(immin=imm_glob,imin=0,ltabvois=atrcf%ltabvois,rvois=atrcf%rvois)
-          call read_cin_seq(fnamcin,boxrcf,itread,atrcf,lrestart) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
+          call read_cin_seq(fnamcin,boxrcf,itread,atrcf,lrestart) !itread 0=at seulement; 1=complet
           atrcf%im_glob=atrcf%im
           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
@@ -124,7 +123,7 @@ contains
 
        if (ldecoup) then 
           itread=0
-          call read_cin(boxrcf,itread,fnamcin=fnamcin)
+          call read_cin_seq(fnamcin,boxrcf,itread)
           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
@@ -136,9 +135,7 @@ contains
           call arret_ndm
        else
           itread=1
-          call atrcf%init(immin=imm_glob,imin=0,ltabvois=atrcf%ltabvois,rvois=atrcf%rvois)
-          call read_cin(boxrcf,itread,atrcf,imm,fnamcin,lrestart,fmt_cin) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
-
+          call read_cin_seq(fnamcin,boxrcf,itread,atrcf,lrestart) !itread 0=at seulement; 1=complet
           atrcf%im_glob=atrcf%im
           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
@@ -482,7 +479,9 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
     !------------------------------------------------------
     !   Version parallèle (MPI-IO) de read_cin
     !------------------------------------------------------
-    !   ne lit que les .cin écrits par sauvegardeT_para !
+    !   Ne lit que les .cin écrits par la nouvelle version de sauvegardeT !
+    !------------------------------------------------------
+    !   Avec itread=1, setnox & decoupage doivent déjà être fait !
     !------------------------------------------------------
 
     !itread 0=at seulement; 1=complet;
@@ -563,15 +562,15 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
        return
     case(1)
        if (.not.present(atcinr))then
-          write(6,*)'read_cin3: atcinr pas present et itread=1, stop'
+          write(6,*)'read_cin_para: atcinr pas present et itread=1, stop'
           call arret_ndm
        end if
        if (.not.present(celcf))then
-          write(6,*)'read_cin3: celcf pas present et itread=1, stop'
+          write(6,*)'read_cin_para: celcf pas present et itread=1, stop'
           call arret_ndm
        end if
        if (.not.present(psc))then
-          write(6,*)'read_cin3: psc pas present et itread=1, stop'
+          write(6,*)'read_cin_para: psc pas present et itread=1, stop'
           call arret_ndm
        end if
                   
@@ -801,9 +800,9 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
 
 subroutine read_cin_seq(fnamcin,boxcin,itread,atcinr,lres)
     !------------------------------------------------------
-    !   Version de read_cin séquentielle qui permet de lire les nouveaux .cin
+    !   Version de read_cin séquentielle
     !------------------------------------------------------
-    !   ne lit que les .cin écrits par sauvegardeT_para !
+    !   Ne lit que les .cin écrits par la nouvelle version de sauvegardeT !
     !------------------------------------------------------
 
     !itread 0=at seulement; 1=complet;
@@ -828,10 +827,6 @@ subroutine read_cin_seq(fnamcin,boxcin,itread,atcinr,lres)
 
 
     if (present(lres))lrestart=lres
-    !if ((rang==0).and.(fmtcin/=3)) then
-    !   write (6, *) 'wrong fmtcin, stop'
-    !   call arret_ndm
-    !end if 
     if ((rang==0).and.(lprt)) then
        write(6,*)
        write(6,*)' *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-'

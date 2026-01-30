@@ -12,7 +12,7 @@ module posana
   use cellconfig,only: cell_config,caltabtC
   use boxconfig,only:box_config,periodbox
   use rasmolT_mod,only:rasmolT
-  USE constrconf_mod,only:gin2ndm,read_cin
+  USE constrconf_mod,only:gin2ndm,read_cin_seq
   use vect_dist_mod,only:vect_dist
   use neb_module, only : npath
   use newunit_mod,only:newunit
@@ -193,7 +193,7 @@ contains
        select case (igencr)
        case(1)
           fnamcr=namecr(1:len(namecr))//'crcin'
-          call read_cin(boxcr,1,atcr,immcr,fnamcr)
+          call read_cin_seq(fnamcr,boxcr,1,atcr) !itread 0=at seulement; 1=complet
           !             atcf%im_glob=atcr%im
           call setnoxsimple (atcr,boxcr,celcr,rumax)
        case(0)

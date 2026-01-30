@@ -43,7 +43,7 @@ module montecarlo_mod
   use lammps_util_mod,only:init_lammps
 #endif  
   use config2data_mod,only:config2data
-  USE constrconf_mod,only:read_cin,lprt
+  USE constrconf_mod,only:read_cin_seq,lprt
   use probMC,only:probMC1
   use Parrinello_Rahman,only:sp,sdot, sdot_new,trh0,invh0,invtrh0,epsi,tension,volu0,invvolu0
   implicit none
@@ -361,10 +361,10 @@ contains
                &im_glob=config_atom_nplus1(1)%im_glob,imm_glob=imm_glob)
           fnamread= fnam(1:lenfnam)//'.N.cout'
           !  write(6,*)'R1',config_atom_n(1)%imm
-          call read_cin(box_old0,1,config_atom_old_0%atom_config_d,config_atom_n(1)%imm,fnamread) ! 1=complet
+          call read_cin_seq(fnamread,box_old0,1,config_atom_old_0%atom_config_d) ! 1=complet
           fnamread= fnam(1:lenfnam)//'.NP1.cout'
           ! write(6,*)'R2',config_atom_n(1)%imm
-          call read_cin(box_old1,1,config_atom_old_1%atom_config_d,config_atom_n(1)%imm,fnamread) ! 1=complet
+          call read_cin_seq(fnamread,box_old1,1,config_atom_old_1%atom_config_d) ! 1=complet
           !seul MEGAMASTER A LES POSITIONS OLD
           call config_atom_old_0%copy_config(config_atom_n(1), lrescl=.true.)          
           call config_atom_old_1%copy_config(config_atom_nplus1(1), lrescl=.true.) 

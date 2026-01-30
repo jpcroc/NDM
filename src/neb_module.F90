@@ -6,7 +6,7 @@ module neb_module
        &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat,firsttime_lammps,&
        &latcomp,imm_glob,lperiod,lspacendm
   use read_val,only:rvois,ltabvois
-  USE constrconf_mod,only:constr_2gin,gin2ndm,read_cin,lsecondpath
+  USE constrconf_mod,only:constr_2gin,gin2ndm,read_cin_seq,lsecondpath
     use cryst_to_cart_mod,only:cryst_to_cart
   USE recips_mod,only: recips
   USE rasmolT_mod,only: rasmolT
@@ -220,7 +220,7 @@ end if
           write(extension,'(i9.9)') iph
           fnamneb=fnam(1:lenfnam)//'.coutposition.'//extension
           itread=1
-          call read_cin(boxneb,itread,atneb(iph),imm,fnamneb) !0=at seulement; 1=complet; 2 = at, xp et num_at_glob seulement , 3 trié par num_at_buff
+          call read_cin_seq(fnamneb,boxneb,itread,atneb(iph)) !itread 0=at seulement; 1=complet
        ELSE IF (lPathFromGin) THEN
                ! read initial path in gin files *.1.gin, *.2.gin, ...
 
@@ -578,13 +578,13 @@ end if
     imm_glob=imm
     atneb(:)%imm_glob=imm
     if (igen==1) then 
-       itread=1;fmt_cin=2
+       itread=1      ! fmt_cin=2
        if (lrestart) then
           do ip=1, npath, npath-1 !CRC ne lit que deux images ??
              write(extension,'(i9.9)') ip
              fnamneb=fnam(1:lenfnam)//'.coutposition.'//extension
              if (rang==0) write(6,'(2a)')'image = ',fnamneb
-             call read_cin(boxneb,itread,atneb(ip),imm,fnamneb,lrestart,fmt_cin)
+             call read_cin_seq(fnamneb,boxneb,itread,atneb(ip),lrestart) !itread 0=at seulement; 1=complet
              atneb(ip)%ielat(:)=0 !ielat(:)
              atneb(ip)%iwmax(:)=0 !iwmax(:)
              atneb(ip)%fp(:,:)= 0 !fp(:,:)
@@ -597,7 +597,7 @@ end if
        else ! pas restart
           fnamneb='deb_'//fnam(1:lenfnam)//'.cin'
           if(rang==0)write(6,*)'FNAMneb 1 ',fnamneb
-          call read_cin(boxneb,itread,atneb(1),imm,fnamneb,lrestart,fmt_cin)
+          call read_cin_seq(fnamneb,boxneb,itread,atneb(1),lrestart) !itread 0=at seulement; 1=complet
           atneb(:)%im=atneb(1)%im
           atneb(1)%ielat=0
           atneb(1)%fp(:,:)= 0 !fp(:,:)
@@ -616,7 +616,7 @@ end if
           endif
 
           fnamneb='fin_'//fnam(1:lenfnam)//'.cin'
-          call read_cin(boxneb,itread,atneb(npath),imm,fnamneb,lrestart,fmt_cin)
+          call read_cin_seq(fnamneb,boxneb,itread,atneb(npath),lrestart) !itread 0=at seulement; 1=complet
           atneb(npath)%ielat=0
           atneb(npath)%fp(:,:)= 0 !fp(:,:)
           atneb(npath)%vp(:,:)=0 !vp(:,:)
