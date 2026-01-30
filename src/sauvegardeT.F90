@@ -322,15 +322,12 @@ contains
 
 
     ! Entête
-    if (myidsp==0) then
-      call file_write_at(lucout, offset, formatsauv)      ! Ecriture formatsauv
-      offset = offset + mpi_size_int
-      call file_write_at(lucout, offset, boxndm%at)       ! Ecriture boxndm%at
-      offset = offset + mpi_size_double*size(boxndm%at)
-      call file_write_at(lucout, offset, atdml%im_glob)   ! Ecriture im_glob
-      offset = offset + mpi_size_int
-    end if
-
+    if (myidsp==0) call file_write_at(lucout, offset, formatsauv)      ! Ecriture formatsauv
+    offset = offset + mpi_size_int
+    if (myidsp==0) call file_write_at(lucout, offset, boxndm%at)       ! Ecriture boxndm%at
+    offset = offset + mpi_size_double*size(boxndm%at)
+    if (myidsp==0) call file_write_at(lucout, offset, atdml%im_glob)   ! Ecriture im_glob
+    offset = offset + mpi_size_int
 
     ! Corps
     call file_write_at_all(lucout, offset + para_offset*3*mpi_size_double, atdml%xp(1:3,1:atdml%im))   ! Ecriture xp
@@ -361,19 +358,16 @@ contains
         call arret_ndm
       end select
 
-      if (myidsp==0) then
-        call file_write_at(lucout, offset, tstep)      ! Ecriture tstep
-        offset = offset + mpi_size_double
-        call file_write_at(lucout, offset, tmean)      ! Ecriture tmean
-        offset = offset + mpi_size_double
-        call file_write_at(lucout, offset, pmean)      ! Ecriture pmean
-        offset = offset + mpi_size_double
-        call file_write_at(lucout, offset, iteration)      ! Ecriture iteration
-        offset = offset + mpi_size_int
-        call file_write_at(lucout, offset, timel)      ! Ecriture timel
-        offset = offset + mpi_size_double
-
-      end if
+      if (myidsp==0) call file_write_at(lucout, offset, tstep)      ! Ecriture tstep
+      offset = offset + mpi_size_double
+      if (myidsp==0) call file_write_at(lucout, offset, tmean)      ! Ecriture tmean
+      offset = offset + mpi_size_double
+      if (myidsp==0) call file_write_at(lucout, offset, pmean)      ! Ecriture pmean
+      offset = offset + mpi_size_double
+      if (myidsp==0) call file_write_at(lucout, offset, iteration)      ! Ecriture iteration
+      offset = offset + mpi_size_int
+      if (myidsp==0) call file_write_at(lucout, offset, timel)      ! Ecriture timel
+      offset = offset + mpi_size_double
     endif
 
     call file_close(lucout)
@@ -395,7 +389,7 @@ contains
     write (lucout) atdml%ityp(1:atdml%im)
     write (lucout) atdml%num_at_glob(1:atdml%im)
     if (formatsauvmod==1) then
-      if (formatsauvmod==3) then
+      if (formatsauv==3) then
          select type (atdml)
          class is (atom_config_e)
             write (lucout) atdml%xpp(1:3,1:atdml%im)
