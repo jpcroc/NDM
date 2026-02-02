@@ -75,8 +75,6 @@ contains
     endif
 
     if (igen.ge.1 .and. igen.le.3) then
-       allocate (ibuffer(imm_glob))
-       allocate (buffer(3,imm_glob))
        if ((rang==0).and.(lprt))  write(6,*)'********** reading configuration from file********'
        if (lrestart) then
           fnamcin = fnam(1:lenfnam)//'.cout'
@@ -145,8 +143,6 @@ contains
 
 #endif
        call setcellconf(cellrcf,atrcf,boxrcf,rumax)
-       deallocate (ibuffer)
-       deallocate (buffer)
 
 #ifdef DKIO
 
@@ -698,6 +694,8 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
           end do
 
           select type(atcinr)
+          type is (atom_config)
+             lvpread=.false.
           type is (atom_config_d)
              if (icintypemod==1) then
                 ! lecture du bloc vp
