@@ -12,7 +12,7 @@ implicit none
 #ifdef PARA
   ! Deux possibilités principales : "native" et "external32"
   character(len=*), parameter :: NDM_MPI_DATA_REPRESENTATIONS = "external32"
-#endif
+
 
   interface file_write_at
      module procedure file_write_at_i
@@ -37,6 +37,7 @@ implicit none
      module procedure file_read_at_all_dp
      module procedure file_read_at_all_char
   end interface
+#endif
 
 contains
 
@@ -74,7 +75,7 @@ contains
     call MPI_File_open(mpic%comm, file, MPI_MODE_CREATE + MPI_MODE_RDWR, MPI_INFO_NULL, fh, ierror)
     call error_check(ierror)
 #else
-    open(unit=fh, file=file, form='unformatted', status='unknown')
+    open(unit=fh, file=file, form='unformatted', access='stream', status='unknown')
 #endif
   end subroutine mpic_file_open
 
