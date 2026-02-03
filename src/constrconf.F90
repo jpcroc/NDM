@@ -85,7 +85,7 @@ contains
 #ifdef PARA
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           itread=0
-          call read_cin_para(fnamcin, boxrcf, itread) !itread 0=at seulement; 1=complet
+          call read_cin_para(fnamcin, boxrcf, itread, fmt_cin) !itread 0=at seulement; 1=complet
           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
@@ -99,14 +99,14 @@ contains
           ncore=0
           if (lrepart.eqv..true.) then
              itread=1
-             call read_cin_para(fnamcin,boxrcf,itread,atrcf,cellrcf,lrestart,psc) !itread 0=at seulement; 1=complet
+             call read_cin_para(fnamcin,boxrcf,itread,fmt_cin,atrcf,cellrcf,lrestart,psc) !itread 0=at seulement; 1=complet
           else
              itread=1
-             call read_cin_seq(fnamcin,boxrcf,itread,atrcf,lrestart) !itread 0=at seulement; 1=complet
+             call read_cin_seq(fnamcin,boxrcf,itread,fmt_cin,atrcf,lrestart) !itread 0=at seulement; 1=complet
           end if
        else
           itread=1
-          call read_cin_seq(fnamcin,boxrcf,itread,atrcf,lrestart) !itread 0=at seulement; 1=complet
+          call read_cin_seq(fnamcin,boxrcf,itread,fmt_cin,atrcf,lrestart) !itread 0=at seulement; 1=complet
           atrcf%im_glob=atrcf%im
           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
@@ -470,11 +470,14 @@ contains
   end subroutine repartition
 
 
-subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
+subroutine read_cin_para(fnamcin,boxcin,itread,fmtcin,atcinr,celcf,lres,psc)
     !------------------------------------------------------
     !   Version parallèle (MPI-IO) de read_cin
     !------------------------------------------------------
-    !   Ne lit que les .cin écrits par la nouvelle version de sauvegardeT !
+    !   Accepte :
+    !   - fmtcin=0 (ancien fomat séquentiel)
+    !   - fmtcin=1 (ancien fomat parallèle)
+    !   - fmtcin=2 (par defaut) format parallèle (MPI-IO)
     !------------------------------------------------------
     !   Avec itread=1, setnox & decoupage doivent déjà être fait !
     !------------------------------------------------------
@@ -484,7 +487,6 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
     USE T_kind_param_m, ONLY:  double
     use Tpara,only:myidsp,nprocspace
     USE gen_com_m,only: iteration,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep
-
 #ifdef PARA
     use Tpara_io
     use Tpara, only: NDM_MPI_REAL_DOUBLE
@@ -494,6 +496,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
     character,intent(in) :: fnamcin*80
     class(box_config)::boxcin
     integer,intent(in)::itread
+    integer,intent(in)::fmtcin
     class(atom_config),optional::atcinr
     type(cell_config),optional::celcf
     logical,intent(in),optional::lres
@@ -509,14 +512,44 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
     integer::im_gr, mpi_size_double, mpi_size_int, numcell
     integer::atomes_in_bloc,atomes_per_bloc,ii,cellules_max,cellules_int,imm_loc,natlocm
     integer,allocatable::natloc(:)
-
-
 #ifdef PARA
     integer(KIND=MPI_OFFSET_KIND) :: offset, para_offset, offset_xp, offset_ityp, offset_num_at_glob, offset_vp, offset_xpp
 #endif
 
-    if (present(lres))lrestart=lres
+
 #ifdef PARA
+
+   ! ************** vérification des arguments ***************
+    if (present(lres))lrestart=lres
+    if (itread==1) then
+       if (.not.present(atcinr))then
+          write(6,*)'read_cin_para: atcinr pas present et itread=1, stop'
+          call arret_ndm
+       end if
+       if (.not.present(celcf))then
+          write(6,*)'read_cin_para: celcf pas present et itread=1, stop'
+          call arret_ndm
+       end if
+       if (.not.present(psc))then
+          write(6,*)'read_cin_para: psc pas present et itread=1, stop'
+          call arret_ndm
+       end if
+    end if
+
+    ! *** compatibilité avec anciens formats de fichiers ***
+    
+    if (fmtcin==0 .or. fmtcin==1) then
+       if (itread==0) then
+          call read_cin(boxcin,itread,atcinr,imm_glob,fnamcin,lrestart,fmtcin)
+       else 
+          call read_cin2(boxcin,atcinr,celcf,imm_glob,fnamcin,lrestart,fmtcin,psc)
+       end if
+       return
+    else if (fmtcin/=2) then
+       if (rang==0) write(6,*) 'movais format fmt_cin, stop'
+       call arret_ndm
+    end if
+
     ! ******************* lecture PARA *********************
 
     mpi_size_double = type_size(NDM_MPI_REAL_DOUBLE) ! mpi_size_double = double sinon erreurs
@@ -558,19 +591,6 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
           write(6,*)' *-*-*-*-*- LRESTART =',lrestart!, '*** itread',itread
        endif
        if ((rang==0).and.(lprt))  write (6, *) 'config type of  .cin file : ', icintype
-
-       if (.not.present(atcinr))then
-          write(6,*)'read_cin_para: atcinr pas present et itread=1, stop'
-          call arret_ndm
-       end if
-       if (.not.present(celcf))then
-          write(6,*)'read_cin_para: celcf pas present et itread=1, stop'
-          call arret_ndm
-       end if
-       if (.not.present(psc))then
-          write(6,*)'read_cin_para: psc pas present et itread=1, stop'
-          call arret_ndm
-       end if
                   
        call file_read_at_all(lucin, offset, im_gr)           ! number of atoms in the box
        offset = offset + mpi_size_int
@@ -799,11 +819,14 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
   end subroutine read_cin_para
 
 
-subroutine read_cin_seq(fnamcin,boxcin,itread,atcinr,lres)
+subroutine read_cin_seq(fnamcin,boxcin,itread,fmtcin,atcinr,lres)
     !------------------------------------------------------
     !   Version de read_cin séquentielle
     !------------------------------------------------------
-    !   Ne lit que les .cin écrits par la nouvelle version de sauvegardeT !
+    !   Accepte :
+    !   - fmtcin=0 (ancien fomat séquentiel)
+    !   - fmtcin=1 (ancien fomat parallèle)
+    !   - fmtcin=2 (par defaut) format parallèle (MPI-IO)
     !------------------------------------------------------
 
     !itread 0=at seulement; 1=complet;
@@ -816,26 +839,48 @@ subroutine read_cin_seq(fnamcin,boxcin,itread,atcinr,lres)
     character,intent(in) :: fnamcin*80
     class(box_config)::boxcin
     integer,intent(in)::itread
+    integer,intent(in)::fmtcin
     class(atom_config),optional::atcinr
     logical,intent(in),optional::lres
     
-
     logical::lrestart=.false.
     integer :: i, icintype, icintypemod , lucin
     real(double), dimension(:,:),allocatable    :: buffer
     real(double)::at(3,3)
     integer::im_gr
 
-
+   ! ************** vérification des arguments ***************
     if (present(lres))lrestart=lres
-    if ((rang==0).and.(lprt)) then
-       write(6,*)
-       write(6,*)' *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-'
-       write(6,*)' *-*-*-*-*- LRESTART =',lrestart!, '*** itread',itread
-    endif
+    if (itread==1) then
+       if (.not.present(atcinr))then
+          write(6,*)'atcinr pas present et itread=1, stop'
+          call arret_ndm
+       end if
+    end if
+
+    ! *** compatibilité avec anciens formats de fichiers ***
+    
+    if (fmtcin==0 .or. fmtcin==1) then
+       if (itread==1) call atcinr%init(immin=imm_glob,imin=0,ltabvois=atcinr%ltabvois,rvois=atcinr%rvois)
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+          call read_cin(boxcin,itread,atcinr,imm_glob,fnamcin,lrestart,fmtcin)
+       else 
+          call read_cin(boxcin,itread,atcinr,imm,fnamcin,lrestart,fmtcin)
+       end if
+       return
+    else if (fmtcin/=2) then
+       if (rang==0) write(6,*) 'movais format fmt_cin, stop'
+       call arret_ndm
+    end if
 
 
     ! ******************* lecture SEQ *********************
+    if ((rang==0).and.(lprt)) then
+      write(6,*)
+      write(6,*)' *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-'
+      write(6,*)' *-*-*-*-*- LRESTART =',lrestart!, '*** itread',itread
+    endif
+
     lucin = 93
     print *, fnamcin
     open(unit=lucin, file=fnamcin, form='unformatted', access='stream', status='unknown', err=499)
@@ -863,11 +908,6 @@ subroutine read_cin_seq(fnamcin,boxcin,itread,atcinr,lres)
        close (lucin)
        return
     case(1)
-       if (.not.present(atcinr))then
-          write(6,*)'atcinr pas present et itread=1'
-          call arret_ndm
-       end if
-
        read (lucin, err=499) im_gr                         ! number of atoms in the box
 
        if (im_gr>imm_glob) then

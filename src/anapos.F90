@@ -7,7 +7,7 @@ module posana
   !  USE period_mod,only: period
   USE recips_mod,only: recips
   use cryst_to_cart_mod,only:cryst_to_cart
-  USE gen_com_m, ONLY: fnam,rang,lperiod,pi,dmtype,lenfnam,iteration,timel,ivisu,unit6P
+  USE gen_com_m, ONLY: fnam,rang,lperiod,pi,dmtype,lenfnam,iteration,timel,ivisu,unit6P,fmt_cin
   USE atomconfig,only:atom_config
   use cellconfig,only: cell_config,caltabtC
   use boxconfig,only:box_config,periodbox
@@ -193,7 +193,7 @@ contains
        select case (igencr)
        case(1)
           fnamcr=namecr(1:len(namecr))//'crcin'
-          call read_cin_seq(fnamcr,boxcr,1,atcr) !itread 0=at seulement; 1=complet
+          call read_cin_seq(fnamcr,boxcr,1,fmt_cin,atcr) !itread 0=at seulement; 1=complet
           !             atcf%im_glob=atcr%im
           call setnoxsimple (atcr,boxcr,celcr,rumax)
        case(0)

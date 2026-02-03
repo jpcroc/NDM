@@ -3,7 +3,7 @@ module montecarlo_mod
   USE gen_com_m,only:  lperiod, tstep, timel, tstep,  itetabvois,lenfnam,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,gamprfact,one,pi,text,tinit,&
        &lspaceNDM,rang,iteration,firsttime_lammps,erg2ev,fnam,fnamcout,unitP,dmtype,&
-       &lrestartmcgc,imm_glob,iseed,sig,lprahman,sigext,h0,kcell,ucell,ihbox0,sigtot,sigkine
+       &lrestartmcgc,imm_glob,iseed,sig,lprahman,sigext,h0,kcell,ucell,ihbox0,sigtot,sigkine,fmt_cin
   USE atomconfig,only:atom_config,atom_config_d, switch_atom
   USE cellconfig, only:cell_config, caltabtC
   USE var_pot,only:ntyp,cm,gamlt
@@ -361,10 +361,10 @@ contains
                &im_glob=config_atom_nplus1(1)%im_glob,imm_glob=imm_glob)
           fnamread= fnam(1:lenfnam)//'.N.cout'
           !  write(6,*)'R1',config_atom_n(1)%imm
-          call read_cin_seq(fnamread,box_old0,1,config_atom_old_0%atom_config_d) ! 1=complet
+          call read_cin_seq(fnamread,box_old0,1,fmt_cin,config_atom_old_0%atom_config_d) ! 1=complet
           fnamread= fnam(1:lenfnam)//'.NP1.cout'
           ! write(6,*)'R2',config_atom_n(1)%imm
-          call read_cin_seq(fnamread,box_old1,1,config_atom_old_1%atom_config_d) ! 1=complet
+          call read_cin_seq(fnamread,box_old1,1,fmt_cin,config_atom_old_1%atom_config_d) ! 1=complet
           !seul MEGAMASTER A LES POSITIONS OLD
           call config_atom_old_0%copy_config(config_atom_n(1), lrescl=.true.)          
           call config_atom_old_1%copy_config(config_atom_nplus1(1), lrescl=.true.) 
