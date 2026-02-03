@@ -184,7 +184,7 @@ contains
     itesauvposition = 0         !periode pour sauvegarde des positions en binaire
     itesauvforce = 0            !periode pour sauvegarde des forces en binaire
     itesauvinter=0
-    fmt_cin=1                  !format des fichiers .cin 0 : initiale, 1 = para
+    fmt_cin=2                  !format des fichiers .cin 0 : initiale, 1 = para (ancien), 2 = para (MPI-IO)
     dfpred = 0.1            ! eguess for GC calculations and quenching
     nox = -1
     noy = -1

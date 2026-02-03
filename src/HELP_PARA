@@ -34,11 +34,12 @@ apres edition du Makefile (commenter/decommenter) : "make "
 --
 
 Seul changement dans les fichiers d'entrée 
-variable  fmt_cin =0 ou 1 dans .din (par défaut 1!)
+variable  fmt_cin =0 ou 1 ou 2 dans .din (par défaut 2!)
 
 fmt_cin = 0 ancien fichiers .cin (ne sert que pour pouvoir continuer des calculs issus des versions séquentielles)
-fmt_cin= 1 nouveaux fichiers .cin (inutilisable avec les anciennes versions sequentielles mais utilisable en seq sur n'importe quelle machine)
-A noter : les sauvegardes (.cout) sont desormais toujours en format fmt_cin=1
+fmt_cin= 1 ancien fichiers .cin para (inutilisable avec les anciennes versions sequentielles mais utilisable en seq sur n'importe quelle machine)
+fmt_cin= 2 nouveaux fichiers .cin para (MPI-IO) (inutilisable avec les anciennes versions)
+A noter : les sauvegardes (.cout) sont desormais toujours en format fmt_cin=2
 
 
 -------------
@@ -91,7 +92,7 @@ La méthode presqu'aussi simple pour developper vite fait BIEN FAIT en sequentiel
 ------------
 IMM, IM et Cie
 
-Dans din imm est la taille des fichiers xp lus/écrits.
+Dans din imm est la taille des fichiers xp lus/écrits (sauf pour fmt_cin=2).
 
 Dans le code 
 	imm est la taille des tableaux xp de chaque proc, imm est connu, commun à tout les procs et constant (pas optimum pour la memoire mais simple)

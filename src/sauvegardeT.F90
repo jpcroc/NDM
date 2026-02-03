@@ -26,7 +26,8 @@ contains
   ! ********************************************************************
   subroutine sauvegardeT_originale(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp)
     !-----------------------------------------------
-    !   M o d u l e s
+    !   Correspond à fmt_cin=1
+    !-----------------------------------------------
 
     !latcomp= en PARA latcomp=.true.=> atmol est une cofiguration complète/latcomp=false=>atmol est distributé sur comm_space
 
@@ -257,6 +258,8 @@ contains
   subroutine sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp)
     !-----------------------------------------------
     !   Version parallèle (MPI-IO) de sauvegardeT
+    !-----------------------------------------------
+    !   lue avec fmt_cin=2
     !-----------------------------------------------
     
     ! formatsauv=2 => positions
