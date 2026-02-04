@@ -488,7 +488,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,fmtcin,atcinr,celcf,lres,psc)
     use Tpara,only:myidsp,nprocspace
     USE gen_com_m,only: iteration,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep
 #ifdef PARA
-    use Tpara_io
+    use Tpara_io, only: type_size,MPI_INTEGER,MPI_OFFSET_KIND,mpic_file_open,file_read_at_all,file_close
     use Tpara, only: NDM_MPI_REAL_DOUBLE
 #endif
 
@@ -677,6 +677,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,fmtcin,atcinr,celcf,lres,psc)
 
           ! lecture du bloc de positions d'atomes
           call file_read_at_all(lucin, offset_xp + atomes_per_bloc*i_bloc*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
+          if ((rang==0).and.(lprt).and.(i_bloc==0))  write (6, *) 'xp'
           
           ! clacul du tableau (keep) d'atomes a garder, et copie les positions à garder
           ii=start_in_current_bloc
@@ -691,6 +692,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,fmtcin,atcinr,celcf,lres,psc)
 
           ! lecture du bloc ityp
           call file_read_at_all(lucin, offset_ityp + atomes_per_bloc*i_bloc*mpi_size_int, ibuffer(1:atomes_in_bloc))
+          if ((rang==0).and.(lprt).and.(i_bloc==0))  write (6, *) 'types'
 
           ! selection des ityp
           ii=start_in_current_bloc
@@ -703,6 +705,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,fmtcin,atcinr,celcf,lres,psc)
 
           ! lecture du bloc num_at_glob
           call file_read_at_all(lucin, offset_num_at_glob + atomes_per_bloc*i_bloc*mpi_size_int, ibuffer(1:atomes_in_bloc))
+          if ((rang==0).and.(lprt).and.(i_bloc==0))  write (6, *) 'num_at_glob'
 
           ! selection des num_at_glob
           ii=start_in_current_bloc

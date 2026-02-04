@@ -269,7 +269,8 @@ contains
 
 
 #ifdef PARA
-    use Tpara_io
+    use Tpara_io, only: MPI_OFFSET_KIND,MPI_INTEGER,type_size,mpic_allgather_i,&
+      &mpic_file_open,file_write_at,file_write_at_all,file_close
     use Tpara, only: NDM_MPI_REAL_DOUBLE
 #endif
     

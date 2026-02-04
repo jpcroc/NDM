@@ -11,7 +11,7 @@ implicit none
 
 #ifdef PARA
   ! Deux possibilités principales : "native" et "external32"
-  character(len=*), parameter :: NDM_MPI_DATA_REPRESENTATIONS = "external32"
+  character(len=*), parameter :: NDM_MPI_DATA_REPRESENTATIONS = "native"
 
 
   interface file_write_at
