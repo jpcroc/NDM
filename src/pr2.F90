@@ -994,7 +994,7 @@ contains
        DO iter=1, Max_Iter
           ! Valeurs de la dernière itération du cycle d'autocohérence
           hdot_last(:,:) = hdot_new(:,:)*ihbox0(:,:)
-          write(6,*)'hdotnew',hdot_new
+
           ! Dérivée des coordonnées réduites des atomes à l'instant t+dt
           mf(:,:) = 0.5d0*tstep*MatMul(boxndm%invGmat,boxndm%Gdot)
           DO i=1, 3
