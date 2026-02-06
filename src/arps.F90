@@ -776,7 +776,7 @@ contains
        if(k.gt.ngrid) then
           write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
           write(6,*)'densityi',k,ngrid,densityi
-          call arret_ndm
+          call arret_ndm(.true.)
        end if
        drk=atcf%rho(i)-(rhomin(iti)+k*ktorho(iti))
        Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
@@ -1077,7 +1077,7 @@ contains
              atcf%xp(:,i) = atcf%xp(:,i) + tstep*atcf%vp(:,i)
 !             fact=1
              write(6,*)'POOOOO'
-             call arret_ndm
+             call arret_ndm(.true.)
           end if
        end if
 !       write(6,*)'xpar2',xpar,xs(iti),fact

@@ -6,7 +6,6 @@ module calpo_mod
     USE T_kind_param_m, ONLY:  double
   USE dervbeest_mod,only: deriVBEEST,maxVBEEST,potvbeest
 
-  USE arret_ndm_mod,only: arret_ndm
   USE potrep_mod,only: potrep
   USE calerf_mod,only: calerf
   USE gen_com_m, ONLY:ecgs,half,one,precexp,rang,pi,erg2eV

@@ -101,10 +101,14 @@ module Tpara
 
 contains
 
-  subroutine endmpi
+  subroutine endmpi(forcestop)
+    logical, optional::forcestop
+    logical::fstp
     integer::ierr,errcode
+    fstp=.false.
+    if (present(forcestop))fstp=forcestop
 #ifdef PARA
-    call MPI_Abort(MPI_COMM_WORLD, errcode, ierr)
+    if (fstp) call MPI_Abort(MPI_COMM_WORLD, errcode, ierr)
     call MPI_finalize(ierr)
     stop
 #endif

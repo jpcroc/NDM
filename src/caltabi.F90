@@ -120,7 +120,7 @@ contains
                 !                   WRITE(0,'(a)') 'Augmentez le nombre moyen de voisins par&
                 !                        & atome dans le fichier *.din'
                 WRITE(0,'(a,i0)') 'truc étrange dans setcellconf'
-                call arret_ndm
+                call arret_ndm(.true.)
              END IF
 
              atvois%indi(iw) = j

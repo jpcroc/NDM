@@ -27,7 +27,7 @@ contains
 
     if (((present(rum)).and.(.not.(present(linter)))).or.((present(linter)).and.(.not.(present(rum))))) then
        write(6,*)'incohérence dans appel a vect_dist'
-       call arret_ndm
+       call arret_ndm(.true.)
     end if
     xp(:,1)=atcf%xp(:,i)
     xp(:,2)=atcf%xp(:,j)
@@ -106,7 +106,7 @@ contains
 
     if (((present(rumin)).and.(.not.(present(lclose)))).or.((present(lclose)).and.(.not.(present(rumin))))) then
        write(6,*)'incohérence dans appel a closest_at'
-       call arret_ndm
+       call arret_ndm(.true.)
     end if
 
     if (present(lclose))lclose=.false.
@@ -170,16 +170,16 @@ contains
 
     if (((present(rum)).and.(.not.(present(linter)))).or.((present(linter)).and.(.not.(present(rum))))) then
        write(6,*)'incohérence dans appel a vect_dist'
-       call arret_ndm
+       call arret_ndm(.true.)
     end if
 
     if (present(x0).and.present(x0red)) then
        write(6,*)'x0 and x0red in distat STOP'
-       call arret_ndm
+       call arret_ndm(.true.)
     end if
     if ((.not.(present(x0))).and.(.not.(present(x0red)))) then
        write(6,*)'no x0 nor  x0red in distat STOP'
-       call arret_ndm
+       call arret_ndm(.true.)
     end if
     xat(:,1)=xi(:)
     if (present(x0)) then

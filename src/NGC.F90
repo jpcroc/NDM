@@ -66,7 +66,6 @@ contains
     boxcg=boxndm
     unitP=1d-9
     fpstop0=fpstop
-    !    call arret_ndm
 
     lchg=.true.
 

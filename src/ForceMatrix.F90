@@ -272,7 +272,7 @@ contains
        if (mod(nprocs,nparaFM).ne.0) then
           write(6,*)'nprocs/nparaFM <>0 STOP'
           call MPI_FINALIZE(ierr)
-          call arret_ndm
+          call arret_ndm(.true.)
        end if
        paraFM%mpi_orig%nproc=nprocs
        paraFM%mpi_orig%rank=rang

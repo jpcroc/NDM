@@ -70,7 +70,7 @@ contains
        end do
     case default 
        write(6,*)'check ilangevin'
-       call arret_ndm
+       call arret_ndm(.true.)
     end select
 
 

@@ -460,7 +460,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
 
        if (send_nb_val.ne.nb_at_send) then
           write(6,*)'rang send_nb_val.ne.nb_at_send',myidsp,nproc_voisin, procv,send_nb_val,nb_at_send
-          call arret_ndm
+          call arret_ndm(.true.)
        end if
 
 
@@ -798,7 +798,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
 
        if (send_nb_val.ne.nb_at_send) then
           write(6,*)'rang send_nb_val.ne.nb_at_send',myidsp,nproc_voisin, procv,send_nb_val,nb_at_send
-          call arret_ndm
+          call arret_ndm(.true.)
        end if
 
 !       write(6,*)'NBATSEND',rang,nproc_voisin,procv, nb_at_send
@@ -2006,9 +2006,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
           enddo
           if (ind_loc==-1) then
              print *,myidsp,'!!!Pb!!! Reception du proc',proc_source,'d''un atome fantome inexistant'
-             call MPI_FINALIZE(ierr)
-             call arret_ndm 
-             !call arret_ndm
+             call arret_ndm (.true.)
           endif
 
           ! On affecte a cet atome fantome la valeur de tabdensity recue
@@ -2169,10 +2167,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
           enddo
           if (ind_loc==-1) then
              print *,myidsp,'!!!Pb!!! Reception du proc',proc_source,'d''un atome non local'
-             call MPI_FINALIZE(ierr)
-             call arret_ndm 
-             call arret_ndm
-             !call arret_ndm
+             call arret_ndm(.true.)
           endif
 
           ! On ajoute a cet atome local la valeur de fp recue
@@ -2437,15 +2432,15 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
 
              if (nvi.ne.nb_var_int) then
                 write(6,*)'pb val int part',rang,nvi,nb_var_int
-                call arret_ndm
+                call arret_ndm(.true.)
              end if
              if (nvl.ne.nb_var_lgc) then
                 write(6,*)'pb val log part',rang,nvl,nb_var_lgc
-                call arret_ndm
+                call arret_ndm(.true.)
              end if
              if (nvr.ne.nb_var_dbl) then
                 write(6,*)'pb val real part',rang,nvr,nb_var_dbl
-                call arret_ndm
+                call arret_ndm(.true.)
              end if
 
           enddo

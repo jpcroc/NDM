@@ -579,9 +579,9 @@ END FUNCTION matdet
        call right_hand_basis(A,B,C,right)
 
        if (.not.right) then
-          write(*,*)"WARNING: your reper is not right handed."
+          write(*,*)"WARNING: your coordfinate system is not right handed."
           write(*,*)"WARNING: This is a critical issue. The LAMMPS results are wrong !!!!!"
-          call arret_ndm
+          call arret_ndm(.true.)
        end if
 
        new_mat(1,1) = norme(A)

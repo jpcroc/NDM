@@ -1,5 +1,4 @@
 module dmloop_pilot_mod
-  USE arret_ndm_mod,only:arret_ndm
   use arps_mod,only:dmloop_arps
   USE atomconfig,only : atom_config_d, atom_config_e,atom_config_arps
   USE cellconfig, only:cell_config,cell_config_arps

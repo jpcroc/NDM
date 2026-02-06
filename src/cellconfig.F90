@@ -495,7 +495,7 @@ contains
 !             if (any(xpnp(:,i).gt.1).or.any(xpnp(:,i).lt.0))  write(6,*) i,xpnp(:,i)
 !          end do
           write(6,*)'caltabtc xpnp <0 ou >1 stop'
-          call arret_ndm
+          call arret_ndm(.true.)
        end if
        !debug       write (*,*) 'sub caltabt 2',it,xp(1,1)
 
@@ -1121,7 +1121,7 @@ contains
     call comm_space%sum(natem)
     if (natrecv.ne.natem) then
        write(6,*)'natrecv<>natem',rang,myidsp,natrecv,natem
-       call arret_ndm
+       call arret_ndm(.true.)
     end if
   end subroutine transfer_atoms
 

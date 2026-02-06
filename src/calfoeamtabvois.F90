@@ -125,7 +125,7 @@ contains
        if(k.gt.ngrid) then
           write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
           write(6,*)'densityi',k,ngrid,tabdensity(i), rhomin(iti), inv_ktorho(iti), densityi
-          call arret_ndm
+          call arret_ndm(.true.)
        end if
        drk=tabdensity(i)-(rhomin(iti)+k*ktorho(iti))
        Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )

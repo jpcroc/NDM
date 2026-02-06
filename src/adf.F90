@@ -129,7 +129,7 @@ contains
           if (iteration<=999999999.and.iteration>99999999) write(32, 900) iteration
           if  (iteration>999999999) then
              write (6, *) 'probleme de format dans calcangle.f90'
-             call arret_ndm
+             call arret_ndm(.true.)
           endif
           rewind 32
 

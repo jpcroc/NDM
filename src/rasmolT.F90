@@ -622,7 +622,7 @@ contains
           select type (atcomp)
           type is(atom_config)
              write(6,*)'no velocity in atom-config and export asked with velocities stop'
-             call arret_ndm
+             call arret_ndm(.true.)
           class is (atom_config_d)
              call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), &
                   &tags, format=format, &

@@ -92,7 +92,7 @@ contains
           write(63,"(I8,A)") IM,' atoms'         
        else
           write(6,*)'add format'
-          call arret_ndm 
+          call arret_ndm (.true.)
        endif
        write(6,*)
        write(6,*) " a = (xhi-xlo,0,0); b = (xy,yhi-ylo,0); c = (xz,yz,zhi-zlo). "

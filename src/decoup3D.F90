@@ -1,5 +1,4 @@
 module decoupage_mod
-  USE arret_ndm_mod,only:arret_ndm
   USE arret_ndm_mod,only: arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE cellconfig,only:cell_config

@@ -1,5 +1,4 @@
 module controleT_mod
-  USE arret_ndm_mod,only:arret_ndm
   USE endrunT_mod,only: endrunT
   USE deftimestep_mod,only: deftimestep
   USE atomconfig,only:atom_config,atom_config_d
@@ -11,7 +10,6 @@ module controleT_mod
 #else
   USE Tpara,only:nprocspace,myidsp
 #endif
- USE arret_ndm_mod,only: arret_ndm
  use Tpara,only:para_space_config
  use tccontr,only:contrTcou
   implicit none
@@ -66,7 +64,6 @@ contains
           itetemp=it1;itesigma=it2;itetemp2=it3
              call endrunT(atdml,celndm,boxndm,latcomp)
              !       call DeallocateAll
-             call arret_ndm
           end if
 
     endif
@@ -110,7 +107,6 @@ contains
 
                 call endrunT(atdml,celndm,boxndm,latcomp)
                 !       call DeallocateAll
-                call arret_ndm
              end if
           endif
           if (tempstopcel.gt.0) then
@@ -132,7 +128,6 @@ contains
 
                    call endrunT(atdml,celndm,boxndm,latcomp)
                    !       call DeallocateAll
-                   call arret_ndm
                 end if
              end if
           endif
@@ -199,7 +194,6 @@ contains
 
                       call endrunT(atdml,celndm,boxndm,latcomp)
                       !       call DeallocateAll
-                      call arret_ndm
                    end if
                 endif
              case(21,23)
@@ -220,7 +214,6 @@ contains
 
                       call endrunT(atdml,celndm,boxndm,latcomp)
                       !       call DeallocateAll
-                      call arret_ndm
                    end if
 
                 end select
@@ -265,7 +258,6 @@ contains
 
                       call endrunT(atdml,celndm,boxndm,latcomp)
                       !       call DeallocateAll
-                      call arret_ndm
                    end if
 
                 end if
@@ -285,7 +277,6 @@ contains
           itetemp=it1;itesigma=it2;itetemp2=it3
 
                    call endrunT(atdml,celndm,boxndm,latcomp)
-                   call arret_ndm
                 end if
              end select
           end if
@@ -345,7 +336,6 @@ contains
           itetemp=it1;itesigma=it2;itetemp2=it3
 
                       call endrunT(atdml,celndm,boxndm,latcomp)
-                      call arret_ndm
                    end if
                 end if
              end if
@@ -369,7 +359,6 @@ contains
 
                       call endrunT(atdml,celndm,boxndm,latcomp)
                       !       call DeallocateAll
-                      call arret_ndm
                    end if
                 end if
              end if
@@ -396,7 +385,6 @@ contains
 
                       call endrunT(atdml,celndm,boxndm,latcomp)
                       !       call DeallocateAll
-                      call arret_ndm
                    end if
 
                 end if
@@ -422,7 +410,6 @@ contains
 
                       call endrunT(atdml,celndm,boxndm,latcomp)
                       !       call DeallocateAll
-                      call arret_ndm
                    end if
                 end if
              end if

@@ -47,7 +47,7 @@ contains
        if(cellcf%icaltabt.ne.atcf%icaltabt) then
           write (6,*)'incoherence dans icaltabt calctemp'
           write(6,*)'cell atcf', cellcf%icaltabt,atcf%icaltabt
-          call arret_ndm
+          call arret_ndm(.true.)
        end if
 
        if ((cellcf%ltpcel).or.(tcelec.gt.0)) then
@@ -130,7 +130,7 @@ contains
 
        if (nat.ne.atcf%im) then
           write(6,*)'NAT NE atcf%im STOP',nat,atcf%im
-          call arret_ndm
+          call arret_ndm(.true.)
        end if
        temp = sumtat2/float(atcf%im)
 
@@ -140,7 +140,7 @@ contains
        if(cellcf%icaltabt.ne.atcf%icaltabt) then
           write (6,*)'incoherence dans icaltabt calctemp'
           write(6,*)'cell atcf', cellcf%icaltabt,atcf%icaltabt
-          call arret_ndm
+          call arret_ndm(.true.)
        end if
 
        if ((cellcf%ltpcel).or.(tcelec.gt.0)) then
@@ -248,7 +248,7 @@ contains
        else
           if (nat.ne.atcf%im) then
              write(6,*)'NAT NE atcf%im STOP'
-             call arret_ndm
+             call arret_ndm(.true.)
           end if
           temp = sumtat2/float(atcf%im)
        end if
@@ -257,7 +257,7 @@ contains
 #else
        if (nat.ne.atcf%im) then
           write(6,*)'NAT NE atcf%im STOP'
-          call arret_ndm
+          call arret_ndm(.true.)
        end if
        temp = sumtat2/float(atcf%im)
 #endif

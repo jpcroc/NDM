@@ -1,5 +1,4 @@
 module init_mod
-   USE arret_ndm_mod,only:arret_ndm
   use init_pot_mod,only:init_pot,init_pot2
   USE transf_mod,only: transf
   USE initspeed_mod,only: initspeed
@@ -47,7 +46,6 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
 
-    USE arret_ndm_mod,only: arret_ndm
     use posana,only:anapos,  initanapos
     USE posana,only:
     USE elec_cell,ONLY: i2t,t_cpl, readelec

@@ -1865,7 +1865,7 @@ contains
     end do
     if (iatyp.ne.natyp) then
        write(6,*)'WTF iatyp natyp',iatyp,natyp
-       call arret_ndm
+       call arret_ndm(.true.)
     end if
 
     do i=1,nbp
@@ -1908,7 +1908,7 @@ contains
     end do
     if (iatyp.ne.natyp) then
        write(6,*)'WTF iatyp natyp',iatyp,natyp
-       call arret_ndm
+       call arret_ndm(.true.)
     end if
 
 
@@ -2358,7 +2358,7 @@ contains
        end if
     case default
        if (rang==0) write(6,*)"ERROR in protoccol_mcc variable : choose 'MCP' (case sensitive) or 'cos'"
-       call arret_ndm
+       call arret_ndm(.true.)
     end select
 !    if (rang==0) write(6,*)'LAMBDA',nstep, lambda_mc
   end subroutine lambda
@@ -2609,13 +2609,12 @@ contains
 
 #else
           write(6,*)'Ipotentiel<0 (lammps) et NON LAMMPS_VERSION : stop'
-          call MPI_FINALIZE(ierr)
-          call arret_ndm
+          call arret_ndm(.true.)
 #endif
 
 #else
           write(6,*)'Ipotentiel<0 (lammps) et NON para en MCGC : stop'
-          call arret_ndm
+          call arret_ndm(.true.)
 #endif       
 
        end if
@@ -2786,12 +2785,12 @@ contains
 #else
           write(6,*)'Ipotentiel<0 (lammps) et NON LAMMPS_VERSION : stop'
           call MPI_FINALIZE(ierr)
-          call arret_ndm
+          call arret_ndm(.true.)
 #endif
 
 #else
           write(6,*)'Ipotentiel<0 (lammps) et NON para en MCGC : stop'
-          call arret_ndm
+          call arret_ndm(.true.)
 #endif       
 
        end if
@@ -3028,7 +3027,7 @@ contains
     itry=itry+1
     if (itry.gt.10000) then
        write(6,*)'ITRY 10000'
-       call arret_ndm
+       call arret_ndm(.true.)
     end if
     call random_number(zf)
     fhi=2*pi*zf
@@ -3095,7 +3094,7 @@ contains
     itry=itry+1
     if (itry.gt.1000) then
 
-       call arret_ndm
+       call arret_ndm(.true.)
     end if
 
     call random_number(zx(1))
@@ -3165,7 +3164,7 @@ contains
     itry=itry+1
     if (itry.gt.10000) then
        write(6,*)'ITRY 10000'
-       call arret_ndm
+       call arret_ndm(.true.)
     end if
 
     call random_number(zx(1))
@@ -3574,7 +3573,7 @@ contains
        do i=1,nbatplus
           if (atconf_N%ityp(indice(i)).ne.typswitch1) then
              write(6,*)'WTF type_switch'
-             call arret_ndm
+             call arret_ndm(.true.)
           end if
           atconf_Nplus1%ityp(indice(i))=typswitch2
        end do
@@ -3583,7 +3582,7 @@ contains
        do i=1,nbatplus
           if (atconf_Nplus1%ityp(indice(i)).ne.typswitch2) then
              write(6,*)'WTF type_switch2'
-             call arret_ndm
+             call arret_ndm(.true.)
           end if
           atconf_N%ityp(indice(i))=typswitch1
        end do

@@ -66,7 +66,7 @@ contains
 
     if(celcf%icaltabt.ne.atcf%icaltabt) then
        write (6,*)'incoherence dans icaltabt calfo',celcf%icaltabt,atcf%icaltabt
-       call arret_ndm
+       call arret_ndm(.true.)
     end if
     
     potistcalfo=0.

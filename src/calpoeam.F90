@@ -2,7 +2,6 @@ module calpoeam_mod
   USE arret_ndm_mod,only:arret_ndm
   USE zieg2_mod,only: zieg2
   USE spline_mod,only: cspline
-  USE arret_ndm_mod,only: arret_ndm
   use calpo_mod,only:coulombbuild
   implicit none
 contains

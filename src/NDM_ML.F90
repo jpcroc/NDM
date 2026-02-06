@@ -188,7 +188,7 @@ contains
     else
        if (atcf%im.ne.cn2m%im) then
           write(6,*)'actf%im.ne.cn2m%im'
-          call arret_ndm
+          call arret_ndm(.true.)
        else
           im=atcf%im
        boxcf%lperiod=lperiod

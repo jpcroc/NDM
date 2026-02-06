@@ -47,8 +47,7 @@ module cdp_mod
   logical::ltimec,lcrearead
   integer, allocatable :: natproc1(:),natproc2(:),indas1(:),indas2(:),procas1(:),procas2(:),indlocas1(:),&
        &flooras1(:),flooras2(:),indlocas2(:)
-  integer,allocatable::nasloc1(:),nasloc2(:)
-
+  integer,allocatable::nasloc1(:),nasloc2(:),nvacproc(:),nvacproc2(:)
 contains
   ! **************************************************************
   subroutine initcdp
@@ -63,13 +62,14 @@ contains
     !-----------------------------------------------
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
-    integer :: i,nfp
+    integer :: i,nfp,npp
     !-----------------------------------------------
-    namelist /inputcdp/itecdp,nfp,nposI,iseed,dminins,itecdp,itprep,maxposint,minposint,nvac,nbint,typint,timecdp,lcrearead,ncreadp,&
+    namelist /inputcdp/itecdp,nfp,nposI,iseed,dminins,itecdp,itprep,maxposint,minposint,&
+         &nvac,nbint,typint,timecdp,lcrearead,ncreadp,&
          &nas,typas1,typas2
-
+ 
     allocate(nvac(ntyp));allocate(nbint(ntyp))
-
+    npp=comm_space%nproc
     itprep=1
     itecdp=-1      ! introduction de DP tout les itecdp pas
     nvac(:)=0 ! number of vacancies 
@@ -160,19 +160,18 @@ contains
        allocate(indas1(nas));allocate(indas2(nas));allocate(procas1(nas));allocate(procas2(nas))
        allocate (indlocas1(nas));          allocate (indlocas2(nas))
        allocate(nasloc1(0:nprocspace-1)); allocate(nasloc2(0:nprocspace-1))
-       
     end if
-
+           allocate(nvacproc(0:nprocspace));       allocate(nvacproc2(0:nprocspace))
     return
   end subroutine initcdp
   !**********************************************************
   subroutine creadp(atdml,celndm,boxndm,psc)
     USE var_pot, ONLY:ntyp
     implicit none
-    type atomvac_typ
-       integer,allocatable,dimension(:)::iproc,natg,iloc,ityp
-       real(double),allocatable::pos(:,:)
-    end type atomvac_typ
+!    type atomvac_typ
+!       integer,allocatable,dimension(:)::iproc,natg,iloc,ityp
+!       real(double),allocatable::pos(:,:)
+!    end type atomvac_typ
     type atomint_typ
        integer,allocatable,dimension(:)::natg,iatpos,ityp
        real(double),allocatable::pos(:,:)
@@ -184,7 +183,7 @@ contains
     class(atom_config)::atdml
     type(cell_config):: celndm
 
-    type(atomvac_typ)::atomvac
+!    type(atomvac_typ)::atomvac
     type(atomint_typ)::atomint
     integer :: ntry,iti,i,natyp,nvactot,iat,ivac,ivacloc,ivactot,jvac,ninttot,iproc
     integer :: npp
@@ -200,7 +199,7 @@ contains
     logical::l2close,lcloseP
     integer::numproc,iatint,icelj,jjj,icelj2
     integer::formatsauv=5
-    integer::jint,iinttot,numcell,imt,iold,irang,pvactot,dvactot,ilocvac
+    integer::jint,iinttot,numcell,imt,iold,irang
     logical::lsuiv,lcrea0
     character::fnamcout*80
     character :: extension*7
@@ -259,20 +258,10 @@ contains
     end if
     if (rang==0) write(6,*)'timeloopmax itloopmax restart',timeloopmax,itloopmax,lrestart
     nvactot=sum(nvac(1:ntyp)); ninttot=sum(nbint(1:ntyp))
-    allocate(atomvac%iproc(nvactot))
-    allocate(atomvac%ityp(nvactot))
-    allocate(atomvac%natg(nvactot))
-    allocate(atomvac%iloc(nvactot))
-    allocate(atomvac%pos(3,nvactot))
-    atomvac%natg=0
-    atomvac%ityp=0
-    atomvac%iproc=0
-    atomvac%iloc=0
-    atomvac%pos=0
     allocate(atomint%iatpos(ninttot))
     allocate(atomint%ityp(ninttot))
     allocate(atomint%pos(3,ninttot))
-
+    
     !#ifdef PARA
     npp=comm_space%nproc
     !#else
@@ -335,6 +324,7 @@ contains
           !#ifdef PARA
           call comm_space%max(natgm)
           !#endif
+
 !AAAAAAAAAAAAAASSSSSSSSSSSSSSSS          
           if (nas.gt.0) then
              natproc1(:)=0; natproc2(:)=0
@@ -362,14 +352,14 @@ contains
                    ntry=ntry+1
                    if (ntry==1000) then
                       write(6,*)'AS NTRY exceeded'
-                      call arret_ndm
+                      call arret_ndm(.true.)
                    end if
                    call random_number(z1)
                    itry=1+int(z1*ntot1)
                    if (any(indas1(1:ias-1)==itry)) goto 11
                    indas1(ias)=itry
                    lfound=.false.
-                   loopip:do ip=1,nprocspace
+                   loopip:do ip=1,nprocspace-1
                       if( flooras1(ip).ge.itry) then
                          lfound=.true.
                          procas1(ias)=ip-1
@@ -385,14 +375,14 @@ contains
                    ntry=ntry+1
                    if (ntry==1000) then
                       write(6,*)'AS NTRY exceeded'
-                      call arret_ndm
+                      call arret_ndm(.true.)
                    end if
                    call random_number(z1)
                    itry=1+int(z1*ntot2)
                    if( any(indas2(1:ias-1)==itry)) goto 22
                    indas2(ias)=itry
                    lfound=.false.
-                   loopip2:do ip=1,nprocspace
+                   loopip2:do ip=1,nprocspace-1
                       if( flooras2(ip).ge.itry) then
                          lfound=.true.
                          procas2(ias)=ip-1
@@ -440,7 +430,7 @@ contains
              end do
              if (ias1loc.ne.nasloc1(myidsp)) then
                 write(6,*)'rg ias1loc nasloc1(myidsp)',myidsp, ias1loc,nasloc1(myidsp)
-                call arret_ndm
+                call arret_ndm(.true.)
              end if
              do ias=1,nas
 !                write(myidsp+450,*) 'AS2 ',ias,procas2(ias),indas2(ias),flooras2(myidsp)
@@ -463,68 +453,75 @@ contains
              end do
              if (ias2loc.ne.nasloc2(myidsp)) then
                 write(6,*)'pg as2 rg',myidsp, ias2loc,nasloc2(myidsp)
-                call arret_ndm
+                call arret_ndm(.true.)
              end if
 !             write(myidsp+450,*) iteration
              do i=1,nasloc1(myidsp)
-                write(myidsp+450,*) typas1, i, indlocas1(i),atdml%num_at_glob(indlocas1(i)), atdml%ityp(indlocas1(i))
+!                write(myidsp+450,*) typas1, i, indlocas1(i),atdml%num_at_glob(indlocas1(i)), atdml%ityp(indlocas1(i))
                 atdml%ityp(indlocas1(i))=typas2
              end do
              do i=1,nasloc2(myidsp)
-                write(myidsp+450,*) typas2, i, indlocas2(i), atdml%num_at_glob(indlocas2(i)), atdml%ityp(indlocas2(i))
+!                write(myidsp+450,*) typas2, i, indlocas2(i), atdml%num_at_glob(indlocas2(i)), atdml%ityp(indlocas2(i))
                 atdml%ityp(indlocas2(i))=typas1
              end do
-             write(myidsp+450,*)
-             if (myidsp==0) then
-                do ip=0,nprocspace-1
-                   write(6,'(I5,A,I3,A,I4,A,I3)')nasloc1(ip),' atoms of type', typas1,'in proc ',ip ,' changed to type' ,typas2
-                end do
-                do ip=0,nprocspace-1
-                   write(6,'(I5,A,I3,A,I4,A,I3)')nasloc2(ip),' atoms of type', typas2,'in proc ',ip ,' changed to type', typas1
-                end do
-             end if
+!             write(myidsp+450,*)
+!             if (myidsp==0) then
+!                do ip=0,nprocspace-1
+!                   write(6,'(I5,A,I3,A,I4,A,I3)')nasloc1(ip),' atoms of type', typas1,'in proc ',ip ,' changed to type' ,typas2
+!                end do
+!                do ip=0,nprocspace-1
+!                   write(6,'(I5,A,I3,A,I4,A,I3)')nasloc2(ip),' atoms of type', typas2,'in proc ',ip ,' changed to type', typas1
+!                end do
+!             end if
           end if
 
-          ivactot=0
-          atomvac%natg=0 ! on remet à 0 les indices
-          atomvac%iproc=0
-          atomvac%iloc=0
-          atomvac%ityp=0
+          
+
+!!!!!!!!!!!!!§VVVVVVVVVVVVVVVVVVVAAAAAAAAAAAAAAAAAACCCCCCCCC
+          nvacproc(:)=0
+          nvacproc2(:)=0
           atomint%iatpos=0
           atomint%ityp=0
           atomint%pos=0
-          PVACTOT=0
-          dvactot=0
           if (nvactot.ne.0) then
+             if (myidsp==0)then
+                write(121,*)itinser, iteration,timel,'VAC'
+                flush(121)
+             end if
              ! insérer les lacunes
              lty:do iti=1,ntyp
-                if (nvac(iti)==0)cycle lty
-                pvactot=dvactot+1
-                dvactot=dvactot+nvac(iti)
-!                write(6,*)'TTTYYYYYPPPP',rang,iti
-                natyp=0
-                nb_at_typ=0
-                allocate(iatvac(nvac(iti)))
-                iatvac=0
-                last_at_typ(:)=0
                 natyp=count(atdml%ityp(1:atdml%im)==iti)
-                !#ifdef PARA
-                nb_at_typ(comm_space%rank)=natyp
- !               write(6,*)'typ',rang,natyp,nb_at_typ
                 if (lspacendm) then
-                   !                call comm_space%build(natyp,nb_at_typ,torank=0)
-                   call comm_space%sum(nb_at_typ)
                    call comm_space%sum(natyp)
                 end if
-                if (natyp==0) cycle lty
-                do iproc=0,comm_space%nproc-1
-                   last_at_typ(iproc)=last_at_typ(iproc-1)+nb_at_typ(iproc)
-                end do
-                if (natyp.lt.nvac(iti)) then
+                if (natyp.lt.(nvac(iti))) then
                    write(6,*)'impossible to delete that many atoms of type ',iti,nvac(iti),natyp
                    call arret_ndm
                 end if
+                if (allocated (iatvac)) deallocate(iatvac)
+                allocate (iatvac(nvac(iti)))
+                iatvac(:)=0
                 do ivac=1,nvac(iti)
+                   
+!                write(6,*)'TTTYYYYYPPPP',rang,iti
+                   natyp=0
+                   nb_at_typ(:)=0
+
+                   last_at_typ(:)=0
+                   natyp=count(atdml%ityp(1:atdml%im)==iti)
+                   nb_at_typ(myidsp)=natyp
+                   if (lspacendm) then
+                      !                call comm_space%build(natyp,nb_at_typ,torank=0)
+                      call comm_space%sum(nb_at_typ)
+                      call comm_space%sum(natyp)
+                   end if
+                   if (natyp==0) cycle lty
+                   do iproc=0,comm_space%nproc-1
+                      last_at_typ(iproc)=last_at_typ(iproc-1)+nb_at_typ(iproc)
+                   end do
+                   
+
+                   
                    ivactot=ivactot+1 ! indice l'ensemble des lacunes (inter-types)
 
                    if (myidsp==0) then
@@ -533,7 +530,7 @@ contains
                       ntry=ntry+1
                       if (ntry==1000) then
                          write(6,*)'VAC NTRY exceeded'
-                         call arret_ndm
+                         call arret_ndm(.true.)
                       end if
                       call random_number(z1)
                       iatvac(ivac)=1+int(z1*natyp)
@@ -547,6 +544,7 @@ contains
                             if (last_at_typ(iproc).ge.iatvac(ivac)) then
                                !                         write(6,*)'CHOIX',iproc, last_at_typ(iproc),iatvac(ivac)
                                ivacloc=iatvac(ivac)-last_at_typ(iproc-1)
+                               nvacproc(iproc)=nvacproc(iproc)+1
                                exit looppr !iproc est l'indice du proc qui contient iatvac et ivacloc est le rang  de l'atome de cette lacune dans les atomes de ce type
                             end if
                          end do looppr
@@ -559,8 +557,6 @@ contains
                    call comm_space%bcast(0,iproc)
                    call comm_space%bcast(0,ivacloc)
                       
-                   do irang=0,npp-1
-                   end do
                    if (lspacendm) then
                       if (myidsp==iproc)then
                          lsuiv=.true.
@@ -577,12 +573,27 @@ contains
                          if (atdml%ityp(i)==iti) then
                             iat=iat+1
                             if (iat==ivacloc) then
-!                               write(700+rang,*)'VACF',ivactot,ivacloc,myidsp
-                               atomvac%iproc(ivactot)=myidsp
-                               atomvac%pos(:,ivactot)=atdml%xp(:,i)
-                               atomvac%ityp(ivactot)= atdml%ityp(i)
-                               atomvac%natg(ivactot)=atdml%num_at_glob(i)
-                               atomvac%iloc(ivactot)=i  ! %iloc est le numéro de l'atome de la alcune (tous types confondus) <> ivacloc
+                               write(121,'(3E15.6,2I10)')atdml%xp(:,i),atdml%ityp(i),atdml%num_at_glob(i)
+                               icelj=atdml%ielat(i)
+                               icelj2=atdml%ielat(atdml%im)
+                               call atdml%switch_atom(i,atdml%im)
+                               atdml%im=atdml%im-1
+                               nvacproc2(iproc)=nvacproc2(iproc)+1
+                               loopj1: do jjj=1,celndm%nato(icelj)
+                                  if (celndm%atincel(jjj,icelj)==i) then  !celndm%atincel(jjj,icelj)=atomvac%iloc(ivactot)
+                                     do k=jjj,celndm%nato(icelj)-1
+                                        celndm%atincel(k,icelj)=celndm%atincel(k+1,icelj)
+                                     end do
+                                     celndm%nato(icelj)=celndm%nato(icelj)-1
+                                     exit loopj1
+                                  end if
+                               end do loopj1
+                               loopj2: do jjj=1,celndm%nato(icelj2)
+                                  if (celndm%atincel(jjj,icelj2)==atdml%im+1) then
+                                     celndm%atincel(jjj,icelj2)=i
+                                     exit loopj2
+                                  end if
+                               end do loopj2
                                exit loopi
                             end if
                          end if
@@ -593,50 +604,18 @@ contains
 
 !                   write(220+rang,*)ivac,ivactot,atomvac%iproc(ivactot),atomvac%iloc(ivactot)
                 end do
-
-             
-                !#ifdef PARA
-                call comm_space%sum(atomvac%iproc(pvactot:dvactot)) ! avant ça seul le proc iproc connaissait ces chiffres
-                call comm_space%sum(atomvac%natg(pvactot:dvactot))
-                call comm_space%sum(atomvac%iloc(pvactot:dvactot))
-                call comm_space%sum(atomvac%pos(:,pvactot:dvactot))
-                call comm_space%sum(atomvac%ityp(pvactot:dvactot))
-                !#endif
-                deallocate (iatvac)
-             end do lty
-
-             do ivactot=1,nvactot
-                ilocvac=atomvac%iloc(ivactot)
-                if (comm_space%rank==atomvac%iproc(ivactot)) then
-                   icelj=atdml%ielat(ilocvac)
-                   icelj2=atdml%ielat(atdml%im)
-                   call atdml%switch_atom(atomvac%iloc(ivactot),atdml%im)
-                   atdml%im=atdml%im-1
-                   loopj1: do jjj=1,celndm%nato(icelj)
-                      if (celndm%atincel(jjj,icelj)==ilocvac) then  !celndm%atincel(jjj,icelj)=atomvac%iloc(ivactot)
-                         do k=jjj,celndm%nato(icelj)-1
-                            celndm%atincel(k,icelj)=celndm%atincel(k+1,icelj)
-                         end do
-                         celndm%nato(icelj)=celndm%nato(icelj)-1
-                         exit loopj1
-                      end if
-                   end do loopj1
-                   loopj2: do jjj=1,celndm%nato(icelj2)
-                      if (celndm%atincel(jjj,icelj2)==atdml%im+1) then
-                         celndm%atincel(jjj,icelj2)=ilocvac
-                         exit loopj2
-                      end if
-                   end do loopj2
-                end if
-             end do
-             if (myidsp==0) then
-                write(121,*)itinser, iteration,timel,'VAC'
-                do i=1,nvactot
-                   write(121,'(3E15.6,2I10)')atomvac%pos(:,i),atomvac%ityp(i),atomvac%natg(i)
-                end do
                 flush(121)
+                call comm_space%barrier
+             end do lty
+             call comm_space%sum(nvacproc2)
+             if (myidsp==0) then
+                if (any(nvacproc(:).ne.nvacproc2(:))) then
+                   do ip=0,nprocspace -1
+                      write(6,*)'Pb nvacproc ', nvacproc(ip),nvacproc2(ip)
+                   end do
+                   call arret_ndm(.true.)
+                end if
              end if
-             
           end if
           !IIIIIIINNNNNNNNNNNNNNNNTTTTTTTTTTTEEEEEEEEEEERRRRRRRRRRRRSSSSSSSSSSSTTTTTTTT
 
@@ -657,7 +636,7 @@ contains
 2                           continue
 
                             if (ntry==1000) then
-                               call arret_ndm
+                               call arret_ndm(.true.)
                             end if
                             call random_number(z1)
                             iatint=1+int(z1*nposI)
@@ -806,7 +785,7 @@ contains
 
              if (iinttot.ne.ninttot) then
                 write(6,*)'pb nombre de int',iinttot,ninttot
-                call arret_ndm
+                call arret_ndm(.true.)
              end if
              if (myidsp==0) then
                 write(121,*)itinser, iteration,timel, 'INT'

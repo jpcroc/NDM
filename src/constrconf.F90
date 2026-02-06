@@ -8,7 +8,6 @@ module constrconf_mod
        &lvpread,zero,low_limit,lspacendm,rang,dmtype
   USE var_pot, ONLY:ntyp,rumax,ipotentiel
   use cryst_to_cart_mod,only:cryst_to_cart
-  USE arret_ndm_mod,only: arret_ndm
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   USE cellconfig,only:cell_config
   USE boxconfig,only:box_config,periodbox
@@ -338,7 +337,7 @@ contains
           read (123, *) npr,ncore
           close(123)         
           call  decoupage(npr,ncore,cel2b,psc=psc,lverbose=lprt)
-          call arret_ndm
+          call arret_ndm(.true.)
        end if
     end if
     !    COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
@@ -1113,7 +1112,7 @@ contains
           read (123, *) npr,ncore
           close(123)         
           call  decoupage(npr,ncore,cel2b,psc=psc,lverbose=lprt)
-          call arret_ndm
+          call arret_ndm(.true.)
        end if
     end if
 
