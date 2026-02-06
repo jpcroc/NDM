@@ -3,17 +3,16 @@
  neb.din                                                                        
   
  Process            1  of           12  is alive
- rang readdm iseed            1   856479212
  Process            2  of           12  is alive
- rang readdm iseed            2   856479222
+ rang readdm iseed            2    33956341
  Process            3  of           12  is alive
- rang readdm iseed            3   856479232
+ rang readdm iseed            3    33956352
  Process            9  of           12  is alive
- rang readdm iseed            9   856479292
+ rang readdm iseed            9    33956411
  Process           10  of           12  is alive
- rang readdm iseed           10   856479302
+ rang readdm iseed           10    33956421
  Process           11  of           12  is alive
- rang readdm iseed           11   856479312
+ rang readdm iseed           11    33956431
  
  coordinates can get out of  0-1
  along  a
@@ -40,12 +39,13 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          11
  fmt_cin           1
- rang readdm iseed            0   856479202
- rang readdm iseed            4   856479241
- rang readdm iseed            5   856479251
- rang readdm iseed            6   856479261
- rang readdm iseed            7   856479271
- rang readdm iseed            8   856479281
+ rang readdm iseed            0    33956322
+ rang readdm iseed            1    33956332
+ rang readdm iseed            4    33956361
+ rang readdm iseed            5    33956371
+ rang readdm iseed            6    33956381
+ rang readdm iseed            7    33956391
+ rang readdm iseed            8    33956401
  PARANEB           4
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
@@ -150,24 +150,24 @@ LE_MEILLEUR_DECOUPAGE :    4    2    2    1    0.9200
  rhomm  -20.5955397268345        1.29742094557351     
  calpoeam ktorho and the inverse:   1.094648033620400E-003
    913.535647337378     
+ rang rangspace            3           3  nbr procs voisins            3
  NEB: deplacement max entre configurations =    1.11836008295241      
   pour l atome         2049
- rang rangspace            2           2  nbr procs voisins            3
- rang rangspace            1           1  nbr procs voisins            3
- rang rangspace            5           1  nbr procs voisins            3
- rang rangspace            3           3  nbr procs voisins            3
+ rang rangspace            4           0  nbr procs voisins            3
  NEB: The kspring is in the eV/A^2                          :     1.00000
  NEB: The kspring is in the NDM internal units (cgs)  : 16021.76463
  rang rangspace            0           0  nbr procs voisins            3
  NEB: nebrelaxation /= 1
  NEB: relaxation NEB pour TOUS les atomes
- rang rangspace            7           3  nbr procs voisins            3
- rang rangspace            8           0  nbr procs voisins            3
- rang rangspace            4           0  nbr procs voisins            3
- rang rangspace            9           1  nbr procs voisins            3
+ rang rangspace            2           2  nbr procs voisins            3
+ rang rangspace            1           1  nbr procs voisins            3
  rang rangspace           10           2  nbr procs voisins            3
+ rang rangspace            8           0  nbr procs voisins            3
  rang rangspace           11           3  nbr procs voisins            3
  rang rangspace            6           2  nbr procs voisins            3
+ rang rangspace            7           3  nbr procs voisins            3
+ rang rangspace            9           1  nbr procs voisins            3
+ rang rangspace            5           1  nbr procs voisins            3
           64  active cells among           64
           64  active cells among           64
  NEB: -------this is NEB--V2-------

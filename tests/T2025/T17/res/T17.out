@@ -15,8 +15,6 @@
  itetemp=           1  iteprtsigma=           1
  
       CONTROLES 
- rang readdm iseed            1           1
- rang readdm iseed            2           1
 tstep=  0.100D-14
  itmax=           1 timemax=    10000000000.0000       itab=           1 
   itetimestep=          -1
@@ -29,6 +27,8 @@ debyetemp=      -1.0
  nb de potentiels           1
  ipotentiel          10
  fmt_cin           1
+ rang readdm iseed            1           1
+ rang readdm iseed            2           1
  rang readdm iseed            0           1
  IMM PARA =        19800       66000
  
@@ -119,10 +119,10 @@ vecteur  3       0.000000       0.000000      91.370176
               2nd step of potential initialization , dependancy on box size
  calpoeam ktorho and the inverse:   8.522228107257609E-003
    117.340205802329     
- rang rangspace            1           1  nbr procs voisins            3
  rang rangspace            2           2  nbr procs voisins            3
  rang rangspace            3           3  nbr procs voisins            3
  rang rangspace            0           0  nbr procs voisins            3
+ rang rangspace            1           1  nbr procs voisins            3
  tempsauv    560.473874886264     
  scaling read velocities at TINIT =   0.000000000000000E+000 K
  temperature fin initspeed   0.000000000000000E+000

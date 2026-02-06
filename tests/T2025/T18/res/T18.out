@@ -1,16 +1,15 @@
  Process            0  of            4  is alive
- Process            1  of            4  is alive
- Process            2  of            4  is alive
- Process            3  of            4  is alive
  nom fichier din=
  Febulk.din                                                                     
   
- rang readdm iseed            3           1
- rang readdm iseed            2           1
+ Process            1  of            4  is alive
+ Process            2  of            4  is alive
+ Process            3  of            4  is alive
  
  -------- caracteristiques du run DM-------- 1
      DYNAMIQUE MOLECULAIRE VERLET STANDARD
  run a partir du fichier .cin
+ rang readdm iseed            1           1
  
       ANALYSES 
  itetemp=           1  iteprtsigma=           1
@@ -27,10 +26,11 @@ debyetemp=      -1.0
  
  nb de potentiels           1
  ipotentiel          10
- rang readdm iseed            1           1
  fmt_cin           1
  rang readdm iseed            0           1
  IMM PARA =        19800       66000
+ rang readdm iseed            2           1
+ rang readdm iseed            3           1
  
  -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
  

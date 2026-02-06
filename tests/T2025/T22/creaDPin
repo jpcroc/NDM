@@ -3,4 +3,7 @@
   itprep=0
   itecdp=2
   iseed=12
+  nbint(2)=10,nvac(2)=10
+  nbint(3)=10,nvac(3)=10
+  
  &end
