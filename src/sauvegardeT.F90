@@ -259,14 +259,9 @@ contains
     !-----------------------------------------------
     !   Version parallèle (MPI-IO) de sauvegardeT
     !-----------------------------------------------
-    !   lue avec fmt_cin=2
+    !   formatsauv=10 => sans vitesses
+    !   formatsauv=11 => avec vitesses
     !-----------------------------------------------
-    
-    ! formatsauv=2 => positions
-    ! formatsauv=3 => positions + vitesses + xpp      + tstep, tmean, pmean, iteration, timel
-    ! formatsauv=4 => positions 
-    ! formatsauv=5 => positions + vitesses            + tstep, tmean, pmean, iteration, timel
-
 
 #ifdef PARA
     use Tpara_io, only: MPI_OFFSET_KIND,MPI_INTEGER,type_size,mpic_allgather_i,&
@@ -343,16 +338,6 @@ contains
 
 
     if (formatsauvmod==1) then
-      if (formatsauv==3) then
-         select type (atdml)
-         class is (atom_config_e)
-            call file_write_at_all(lucout, offset + para_offset*3*mpi_size_double, atdml%xpp(1:3,1:atdml%im))   ! Ecriture xpp
-            offset = offset + mpi_size_double*3*atdml%im_glob
-         class default
-            write(6,*) "sauvegarde demandée avec xpp, mais atom_config n'a pas xpp, stop"
-         call arret_ndm
-         end select
-      end if
       select type (atdml)
       class is (atom_config_d) ! atom_config_e extends atom_config_d, donc on entre ici aussi avec atom_config_e
         call file_write_at_all(lucout, offset + para_offset*3*mpi_size_double, atdml%vp(1:3,1:atdml%im))   ! Ecriture vp
@@ -361,18 +346,18 @@ contains
         write(6,*) "sauvegarde demandée avec vp, mais atom_config n'a pas vp, stop"
         call arret_ndm
       end select
-
-      if (myidsp==0) call file_write_at(lucout, offset, tstep)      ! Ecriture tstep
-      offset = offset + mpi_size_double
-      if (myidsp==0) call file_write_at(lucout, offset, tmean)      ! Ecriture tmean
-      offset = offset + mpi_size_double
-      if (myidsp==0) call file_write_at(lucout, offset, pmean)      ! Ecriture pmean
-      offset = offset + mpi_size_double
-      if (myidsp==0) call file_write_at(lucout, offset, iteration)      ! Ecriture iteration
-      offset = offset + mpi_size_int
-      if (myidsp==0) call file_write_at(lucout, offset, timel)      ! Ecriture timel
-      offset = offset + mpi_size_double
     endif
+    
+    if (myidsp==0) call file_write_at(lucout, offset, tstep)      ! Ecriture tstep
+    offset = offset + mpi_size_double
+    if (myidsp==0) call file_write_at(lucout, offset, tmean)      ! Ecriture tmean
+    offset = offset + mpi_size_double
+    if (myidsp==0) call file_write_at(lucout, offset, pmean)      ! Ecriture pmean
+    offset = offset + mpi_size_double
+    if (myidsp==0) call file_write_at(lucout, offset, iteration)      ! Ecriture iteration
+    offset = offset + mpi_size_int
+    if (myidsp==0) call file_write_at(lucout, offset, timel)      ! Ecriture timel
+    offset = offset + mpi_size_double
 
     call file_close(lucout)
     if (myidsp==0) then
@@ -393,15 +378,6 @@ contains
     write (lucout) atdml%ityp(1:atdml%im)
     write (lucout) atdml%num_at_glob(1:atdml%im)
     if (formatsauvmod==1) then
-      if (formatsauv==3) then
-         select type (atdml)
-         class is (atom_config_e)
-            write (lucout) atdml%xpp(1:3,1:atdml%im)
-         class default
-            write(6,*) "sauvegarde demandée avec xpp, mais atom_config n'a pas xpp, stop"
-         call arret_ndm
-         end select
-      end if
       select type (atdml)
       class is (atom_config_d) ! atom_config_e extends atom_config_d, donc on entre ici aussi avec atom_config_e
         write (lucout) atdml%vp(1:3,1:atdml%im)
@@ -409,11 +385,11 @@ contains
         write(6,*) "sauvegarde demandée avec vp, mais atom_config n'a pas vp, stop"
         call arret_ndm
       end select
-      write (lucout) tstep                            ! Potentiellement à l'extérieur du if (formatsauvmod==1)
-      write (lucout) tmean, pmean, iteration, timel   ! Potentiellement à l'extérieur du if (formatsauvmod==1)
     endif
+    write (lucout) tstep
+    write (lucout) tmean, pmean, iteration, timel
     close(unit=lucout)
-    if (l2T)call sauveelec ! A faire absolument sur le proc rang=0
+    if (l2T) call sauveelec ! A faire absolument sur le proc rang=0
 #endif
 
   end subroutine sauvegardeT
