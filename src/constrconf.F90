@@ -102,11 +102,11 @@ contains
              call read_cin_para(fnamcin,boxrcf,itread,atrcf,cellrcf,lrestart,psc) !itread 0=at seulement; 1=complet
           else
              itread=1
-             call read_cin_seq(fnamcin,boxrcf,itread,fmt_cin,atrcf,lrestart) !itread 0=at seulement; 1=complet
+             call read_cin_seq(fnamcin,boxrcf,itread,atrcf,lrestart) !itread 0=at seulement; 1=complet
           end if
        else
           itread=1
-          call read_cin_seq(fnamcin,boxrcf,itread,fmt_cin,atrcf,lrestart) !itread 0=at seulement; 1=complet
+          call read_cin_seq(fnamcin,boxrcf,itread,atrcf,lrestart) !itread 0=at seulement; 1=complet
           atrcf%im_glob=atrcf%im
           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
@@ -550,10 +550,10 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
     if (icintype<=5.and.icintype>=0) then
        if (itread==0) then
           call read_cin(boxcin,itread,atcinr,imm_glob,fnamcin,lrestart,fmt_cin)
-       else 
+       else
           call read_cin2(boxcin,atcinr,celcf,imm_glob,fnamcin,lrestart,fmt_cin,psc)
        end if
-    return
+       return
     end if
 
     if (icintype<10.or.icintype>11) then
@@ -817,27 +817,25 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
   end subroutine read_cin_para
 
 
-subroutine read_cin_seq(fnamcin,boxcin,itread,fmtcin,atcinr,lres)
+subroutine read_cin_seq(fnamcin,boxcin,itread,atcinr,lres)
     !------------------------------------------------------
     !   Version de read_cin séquentielle
     !------------------------------------------------------
-    !   Accepte :
-    !   - fmtcin=0 (ancien fomat séquentiel)
-    !   - fmtcin=1 (ancien fomat parallèle)
-    !   - fmtcin=2 (par defaut) format parallèle (MPI-IO)
+    !   Lis les formats de fichiers:
+    !   - icintype = 10 : sans vitesses
+    !   - icintype = 11 : avec vitesses
     !------------------------------------------------------
 
     !itread 0=at seulement; 1=complet;
     !lres : lrestart,
     USE T_kind_param_m, ONLY:  double
     use Tpara,only:myidsp,nprocspace
-    USE gen_com_m,only: iteration,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep
+    USE gen_com_m,only: iteration,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep,fmt_cin
 
     implicit none
     character,intent(in) :: fnamcin*80
     class(box_config)::boxcin
     integer,intent(in)::itread
-    integer,intent(in)::fmtcin
     class(atom_config),optional::atcinr
     logical,intent(in),optional::lres
     
@@ -856,22 +854,6 @@ subroutine read_cin_seq(fnamcin,boxcin,itread,fmtcin,atcinr,lres)
        end if
     end if
 
-    ! *** compatibilité avec anciens formats de fichiers ***
-    
-    if (fmtcin==0 .or. fmtcin==1) then
-       if (itread==1) call atcinr%init(immin=imm_glob,imin=0,ltabvois=atcinr%ltabvois,rvois=atcinr%rvois)
-       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
-          call read_cin(boxcin,itread,atcinr,imm_glob,fnamcin,lrestart,fmtcin)
-       else 
-          call read_cin(boxcin,itread,atcinr,imm,fnamcin,lrestart,fmtcin)
-       end if
-       return
-    else if (fmtcin/=2) then
-       if (rang==0) write(6,*) 'movais format fmt_cin, stop'
-       call arret_ndm
-    end if
-
-
     ! ******************* lecture SEQ *********************
     if ((rang==0).and.(lprt)) then
       write(6,*)
@@ -885,7 +867,20 @@ subroutine read_cin_seq(fnamcin,boxcin,itread,fmtcin,atcinr,lres)
 
     read (lucin, err=499) icintype           !icintype
     if ((rang==0).and.(lprt))  write (6, *) 'config type of  .cin file : ', icintype
-    if (icintype>5.or.icintype<0) then
+
+    ! compatibilité avec anciens formats de fichiers
+
+    if (icintype<=5.and.icintype>=0) then
+       if (itread==1) call atcinr%init(immin=imm_glob,imin=0,ltabvois=atcinr%ltabvois,rvois=atcinr%rvois)
+       if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
+          call read_cin(boxcin,itread,atcinr,imm_glob,fnamcin,lrestart,fmt_cin)
+       else
+          call read_cin(boxcin,itread,atcinr,imm,fnamcin,lrestart,fmt_cin)
+       end if
+       return
+    end if
+
+    if (icintype>11.or.icintype<10) then
        write (6, *) rang, 'wrong icintype'
        call arret_ndm
     endif
