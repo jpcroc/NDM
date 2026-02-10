@@ -511,7 +511,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
     integer::atomes_in_bloc,atomes_per_bloc,ii,cellules_max,cellules_int,imm_loc,natlocm
     integer,allocatable::natloc(:)
 #ifdef PARA
-    integer(KIND=MPI_OFFSET_KIND) :: offset, para_offset, offset_xp, offset_ityp, offset_num_at_glob, offset_vp, offset_xpp
+    integer(KIND=MPI_OFFSET_KIND) :: offset, para_offset, offset_xp, offset_ityp, offset_num_at_glob, offset_vp
 #endif
 
 
@@ -653,12 +653,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
 
        offset_ityp = offset_xp + im_gr*3*mpi_size_double
        offset_num_at_glob = offset_ityp + im_gr*mpi_size_int
-       if (icintype==3) then 
-          offset_xpp = offset_num_at_glob + im_gr*mpi_size_int
-          offset_vp = offset_xpp + im_gr*3*mpi_size_double
-       else
-          offset_vp = offset_num_at_glob + im_gr*mpi_size_int
-       end if
+       offset_vp = offset_num_at_glob + im_gr*mpi_size_int
 
        start_in_current_bloc=1
        do b=1, nprocspace
@@ -714,11 +709,11 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
           select type(atcinr)
           type is (atom_config)
              lvpread=.false.
-          type is (atom_config_d)
+          class is (atom_config_d)
              if (icintypemod==1) then
                 ! lecture du bloc vp
                 call file_read_at_all(lucin, offset_vp + atomes_per_bloc*i_bloc*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
-                if ((rang==0).and.(lprt).and.(i_bloc==0))  write (6, *) 'vp_d'
+                if ((rang==0).and.(lprt).and.(i_bloc==0))  write (6, *) 'vp'
 
                 ! selection des vp
                 ii=start_in_current_bloc
@@ -728,41 +723,6 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
                        ii=ii+1
                     end if
                 end do
-             end if
-          end select
-          select type(atcinr)
-          class is (atom_config_e)
-             if (icintypemod==1) then
-                if (icintype==3) then
-                   ! lecture du bloc xpp
-                   call file_read_at_all(lucin, offset_xpp + atomes_per_bloc*i_bloc*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
-                   if ((rang==0).and.(lprt).and.(i_bloc==0))  write (6, *) 'xpp_e'
-
-                   ! selection des xpp
-                   ii=start_in_current_bloc
-                   do i=1, atomes_in_bloc
-                      if (keep(i)) then
-                         atcinr%xpp(1:3,ii) = buffer(1:3,i)
-                         ii=ii+1
-                      end if
-                   end do
-                end if
-
-                ! lecture du bloc vp
-                call file_read_at_all(lucin, offset_vp + atomes_per_bloc*i_bloc*3*mpi_size_double, buffer(1:3,1:atomes_in_bloc))
-                if ((rang==0).and.(lprt).and.(i_bloc==0))  write (6, *) 'vp_e'
-
-                ! selection des vp
-                ii=start_in_current_bloc
-                do i=1, atomes_in_bloc
-                    if (keep(i)) then
-                       atcinr%vp(1:3,ii) = buffer(1:3,i)
-                       ii=ii+1
-                    end if
-                end do
-             end if
-             if (atcinr%lax) then
-                atcinr%ax(1:3,start_in_current_bloc:ii)=atcinr%xp(1:3,start_in_current_bloc:ii)
              end if
           end select
           start_in_current_bloc = ii
@@ -781,31 +741,28 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
           offset = offset_num_at_glob + im_gr*mpi_size_int
        end if
 
-       if (icintypemod==1) then
-          call file_read_at_all(lucin, offset, oldtstep)           ! oldtstep
+       call file_read_at_all(lucin, offset, oldtstep)           ! oldtstep
+       offset = offset + mpi_size_double
+       if (lrestart) then
+          call file_read_at_all(lucin, offset, tmean)           ! tmean
           offset = offset + mpi_size_double
-          if (lrestart) then
-             call file_read_at_all(lucin, offset, tmean)           ! tmean
-             offset = offset + mpi_size_double
-             call file_read_at_all(lucin, offset, pmean)           ! pmean
-             offset = offset + mpi_size_double
-             call file_read_at_all(lucin, offset, iteration)           ! iteration
-             offset = offset + mpi_size_int
-             call file_read_at_all(lucin, offset, timel)           ! timel
-             offset = offset + mpi_size_double
-             if (nitmax.ge.0) itmax=iteration+nitmax
-             tstep = oldtstep
+          call file_read_at_all(lucin, offset, pmean)           ! pmean
+          offset = offset + mpi_size_double
+          call file_read_at_all(lucin, offset, iteration)           ! iteration
+          offset = offset + mpi_size_int
+          call file_read_at_all(lucin, offset, timel)           ! timel
+          offset = offset + mpi_size_double
+          if (nitmax.ge.0) itmax=iteration+nitmax
+          tstep = oldtstep
 
-             if ((rang==0).and.(lprt)) then
-                write (6, *) 'restart parameters'
-                write (6, *) 'it =', iteration, ' time =', timel
-                write (6, *) 'pmean', pmean, ' tmean =', tmean
-                write (6, *) 'tstep', tstep
-             endif
-          end if
-          usdh = 1.0/(two*tstep)
+          if ((rang==0).and.(lprt)) then
+             write (6, *) 'restart parameters'
+             write (6, *) 'it =', iteration, ' time =', timel
+             write (6, *) 'pmean', pmean, ' tmean =', tmean
+             write (6, *) 'tstep', tstep
+          endif
        end if
-
+       usdh = 1.0/(two*tstep)
        call file_close(lucin)
        return
     case default
@@ -869,7 +826,6 @@ subroutine read_cin_seq(fnamcin,boxcin,itread,atcinr,lres)
     if ((rang==0).and.(lprt))  write (6, *) 'config type of  .cin file : ', icintype
 
     ! compatibilité avec anciens formats de fichiers
-
     if (icintype<=5.and.icintype>=0) then
        if (itread==1) call atcinr%init(immin=imm_glob,imin=0,ltabvois=atcinr%ltabvois,rvois=atcinr%rvois)
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
@@ -924,51 +880,31 @@ subroutine read_cin_seq(fnamcin,boxcin,itread,atcinr,lres)
        type is (atom_config)
           if (icintypemod==1) then
              allocate (buffer(3,im_gr))
-             if (icintype==3) read (lucin, err=499) buffer                     !xpp
              read (lucin, err=499) buffer                         !vp
              deallocate(buffer)
           end if
           lvpread=.false.
-       type is (atom_config_d)
+       class is (atom_config_d)
           if (icintypemod==1) then
-             if (icintype==3) read (lucin, err=499) atcinr%vp(1:3,1:im_gr)         !xpp (écrasé après, juste pour avancer dans le fichier)
              read (lucin, err=499) atcinr%vp(1:3,1:im_gr)                     !vp
-             if ((rang==0).and.(lprt))  write (6, *) 'vp_d'
-          end if
-       end select
-       select type(atcinr)
-       class is (atom_config_e)
-          if (icintypemod==1) then
-             if (icintype==3) then 
-                read (lucin, err=499) atcinr%xpp(1:3,1:im_gr)                 !xpp
-                if ((rang==0).and.(lprt))  write (6, *) 'xpp_e'
-             end if
-             read (lucin, err=499) atcinr%vp(1:3,1:im_gr)                     !vp
-             if ((rang==0).and.(lprt))  write (6, *) 'vp_e'
-          end if
-
-          if (atcinr%lax) then
-             atcinr%ax(1:3,1:im_gr)=atcinr%xp(1:3,1:im_gr)
+             if ((rang==0).and.(lprt))  write (6, *) 'vp'
           end if
        end select
 
+       read (lucin, err=499) oldtstep
+       if (lrestart) then
+          read (lucin, err=499) tmean, pmean, iteration, timel
+          if (nitmax.ge.0) itmax=iteration+nitmax
+          tstep = oldtstep
 
-       if (icintypemod==1) then
-          read (lucin, err=499) oldtstep
-          if (lrestart) then
-             read (lucin, err=499) tmean, pmean, iteration, timel
-             if (nitmax.ge.0) itmax=iteration+nitmax
-             tstep = oldtstep
-
-             if ((rang==0).and.(lprt)) then
-                write (6, *) 'restart parameters'
-                write (6, *) 'it =', iteration, ' time =', timel
-                write (6, *) 'pmean', pmean, ' tmean =', tmean
-                write (6, *) 'tstep', tstep
-             endif
-          end if
-          usdh = 1.0/(two*tstep)
+          if ((rang==0).and.(lprt)) then
+             write (6, *) 'restart parameters'
+             write (6, *) 'it =', iteration, ' time =', timel
+             write (6, *) 'pmean', pmean, ' tmean =', tmean
+             write (6, *) 'tstep', tstep
+          endif
        end if
+       usdh = 1.0/(two*tstep)
        close (lucin)
        return
     case default
