@@ -85,7 +85,7 @@ contains
 #ifdef PARA
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           itread=0
-          call read_cin_para(fnamcin, boxrcf, itread, fmt_cin) !itread 0=at seulement; 1=complet
+          call read_cin_para(fnamcin, boxrcf, itread) !itread 0=at seulement; 1=complet
           if ((rang==0).and.(lprt)) then
              write (6, '(A,D15.8,A,D15.8,A)') 'volume=', boxrcf%volu,' cm3 ',boxrcf%volu*1d24,' Ang3'
           end if
@@ -99,7 +99,7 @@ contains
           ncore=0
           if (lrepart.eqv..true.) then
              itread=1
-             call read_cin_para(fnamcin,boxrcf,itread,fmt_cin,atrcf,cellrcf,lrestart,psc) !itread 0=at seulement; 1=complet
+             call read_cin_para(fnamcin,boxrcf,itread,atrcf,cellrcf,lrestart,psc) !itread 0=at seulement; 1=complet
           else
              itread=1
              call read_cin_seq(fnamcin,boxrcf,itread,fmt_cin,atrcf,lrestart) !itread 0=at seulement; 1=complet
@@ -470,14 +470,13 @@ contains
   end subroutine repartition
 
 
-subroutine read_cin_para(fnamcin,boxcin,itread,fmtcin,atcinr,celcf,lres,psc)
+subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
     !------------------------------------------------------
     !   Version parallèle (MPI-IO) de read_cin
     !------------------------------------------------------
-    !   Accepte :
-    !   - fmtcin=0 (ancien fomat séquentiel)
-    !   - fmtcin=1 (ancien fomat parallèle)
-    !   - fmtcin=2 (par defaut) format parallèle (MPI-IO)
+    !   Lis les formats de fichiers:
+    !   - icintype = 10 : sans vitesses
+    !   - icintype = 11 : avec vitesses
     !------------------------------------------------------
     !   Avec itread=1, setnox & decoupage doivent déjà être fait !
     !------------------------------------------------------
@@ -486,7 +485,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,fmtcin,atcinr,celcf,lres,psc)
     !lres : lrestart,
     USE T_kind_param_m, ONLY:  double
     use Tpara,only:myidsp,nprocspace
-    USE gen_com_m,only: iteration,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep
+    USE gen_com_m,only: iteration,itmax,nitmax,pmean,oldtstep,timel,two,usdh,dilat,tmean,tstep,fmt_cin
 #ifdef PARA
     use Tpara_io, only: type_size,MPI_INTEGER,MPI_OFFSET_KIND,mpic_file_open,file_read_at_all,file_close
     use Tpara, only: NDM_MPI_REAL_DOUBLE
@@ -496,7 +495,6 @@ subroutine read_cin_para(fnamcin,boxcin,itread,fmtcin,atcinr,celcf,lres,psc)
     character,intent(in) :: fnamcin*80
     class(box_config)::boxcin
     integer,intent(in)::itread
-    integer,intent(in)::fmtcin
     class(atom_config),optional::atcinr
     type(cell_config),optional::celcf
     logical,intent(in),optional::lres
@@ -536,20 +534,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,fmtcin,atcinr,celcf,lres,psc)
        end if
     end if
 
-    ! *** compatibilité avec anciens formats de fichiers ***
     
-    if (fmtcin==0 .or. fmtcin==1) then
-       if (itread==0) then
-          call read_cin(boxcin,itread,atcinr,imm_glob,fnamcin,lrestart,fmtcin)
-       else 
-          call read_cin2(boxcin,atcinr,celcf,imm_glob,fnamcin,lrestart,fmtcin,psc)
-       end if
-       return
-    else if (fmtcin/=2) then
-       if (rang==0) write(6,*) 'movais format fmt_cin, stop'
-       call arret_ndm
-    end if
-
     ! ******************* lecture PARA *********************
 
     mpi_size_double = type_size(NDM_MPI_REAL_DOUBLE) ! mpi_size_double = double sinon erreurs
@@ -560,8 +545,18 @@ subroutine read_cin_para(fnamcin,boxcin,itread,fmtcin,atcinr,celcf,lres,psc)
 
     call file_read_at_all(lucin, offset, icintype)           !icintype
     offset = offset + mpi_size_int
-    
-    if (icintype>5.or.icintype<0) then
+
+    ! compatibilité avec anciens formats de fichiers
+    if (icintype<=5.and.icintype>=0) then
+       if (itread==0) then
+          call read_cin(boxcin,itread,atcinr,imm_glob,fnamcin,lrestart,fmt_cin)
+       else 
+          call read_cin2(boxcin,atcinr,celcf,imm_glob,fnamcin,lrestart,fmt_cin,psc)
+       end if
+    return
+    end if
+
+    if (icintype<10.or.icintype>11) then
        write (6, *) rang, 'wrong icintype'
        call arret_ndm
     endif
