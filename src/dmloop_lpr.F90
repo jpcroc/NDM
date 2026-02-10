@@ -2,7 +2,7 @@ module dmloop_lpr_mod
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
   USE gen_com_m, ONLY: itesauvforce, itesauvposition,itesauv,ltnose,lperiod,lspacendm,itloopmax,pi,l2t,&
-       &ltberendsen,potist,iteration,tstep,sig,rang,timel,timeloopmax
+       &ltberendsen,potist,iteration,tstep,sig,rang,timel,timeloopmax,rang
   USE calfo_mod,only: calfo
 
   USE atomconfig,only : atom_config_d
@@ -80,7 +80,6 @@ contains
     END IF
     call analyseT(atpr,celndm,boxndm%box_config,psc)
      call controleT(atpr,celndm,boxndm%box_config,psc,lreturn)
-
      if (lreturn) return
 
   end do

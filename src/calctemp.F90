@@ -149,6 +149,7 @@ contains
           cellcf%tempc(:)=0.
        endif
        temp = 0.0
+       nat=0
        kine = 0.0
        sumtat2 = 0.0
        !  vx2(:ntyp,:) = 0.0

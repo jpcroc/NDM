@@ -144,7 +144,7 @@ contains
                where(atdml%ityp(1:atdml%im)==iti)
                   atdml%lgul(1:atdml%im)=.true.
                end where
-               if (ALL(atdml%lgul(1:atdml%im).eqv..false.)) cycle
+               !if (ALL(atdml%lgul(1:atdml%im).eqv..false.)) cycle on doit faire "semblant" car il y a des allreduce dans calctemp
                call atdml%fab(attyp,lback=.false.)
                call caltabtC(celtyp,attyp,lperiod,boxndm,lchktrav=.false.)
                call calctemp(temptyp(iti),kinetyp,attyp,celtyp)

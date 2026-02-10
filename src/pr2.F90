@@ -552,7 +552,6 @@ contains
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           call comm_space%sum(sigkine)
        end if
-
 #endif
 !!$          if (lpcube) then
 !!$             pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
@@ -1150,9 +1149,7 @@ contains
        END IF
     end select
     !    write(6,*)'OUT',atpr%xp(1,1),tstep
-
     call calctemp(T1,kin1,atpr,celndm)
-
   end subroutine pr1
 
 
