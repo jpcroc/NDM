@@ -18,3 +18,6 @@ T17 et T18 tests rasmol
 T19 somme Ewald sur UO2 Morelon sequentiel boite 4 4 4 self interact
 T20 somme Ewald sur UO2 Morelon sequentiel boite 4 4 4 self interact
 T21 DMbase eamtab en Verlet standard avec boite ghost; nox=2 et nox=3
+
+
+TparaIO: teste la lecture/ecriture parallele des fichiers .cin/.cout. run0 à lancer en premier puis run1, run2, run3 avec en argument le chemin vers l'executable NDM.

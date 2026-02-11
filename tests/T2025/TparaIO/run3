@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Vérifie l'argument NDM_PATH
+if [ "$#" -ne 1 ]; then
+  echo "Usage : $0 <NDM_PATH>"
+  exit 1
+fi
+
+NDM_PATH="$1"
+
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo "Reprise du calcul sur 2 proc (avec lrestart et nitmax=6)"
+echo "- mpirun -np 2 $NDM_PATH"
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
+sed -i "s|igen=-*[0-9]\+|igen=1|g" Febulk.din             #igen=1
+sed -i "s|lrestart=.*|lrestart=.true.|g" Febulk.din       #lrestart=.true.
+sed -i "s|^\s*itmax=[0-9]\+|nitmax=6|g" Febulk.din        #nitmax=6
+
+mpirun -np 2 $NDM_PATH

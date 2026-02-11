@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Vérifie l'argument NDM_PATH
+if [ "$#" -ne 1 ]; then
+  echo "Usage : $0 <NDM_PATH>"
+  exit 1
+fi
+
+NDM_PATH="$1"
+
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo "Calcul sur 4 proc, à partir du .cout précédent:"
+echo "- mv Febulk.cout Febulk.cin"
+echo "- mpirun -np 4 $NDM_PATH"
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+
+sed -i "s|igen=-*[0-9]\+|igen=1|g" Febulk.din             #igen=1
+sed -i "s|lrestart=.*|lrestart=.false.|g" Febulk.din      #lrestart=.false.
+sed -i "s|^\s*nitmax=[0-9]\+|itmax=6|g" Febulk.din        #itmax=6
+
+mv Febulk.cout Febulk.cin
+mpirun -np 4 $NDM_PATH
