@@ -81,7 +81,7 @@ contains
     if (itloopmax==0) itetemp=0
     if (itesauv.GT.0) then
        if (mod(iteration,itesauv)==0) then 
-          formatsauv = 5
+          formatsauv = 11
           if(itesauvinter.gt.0) then
              if (mod(iteration,itesauvinter).eq.0) then
                 write(extension,'(i9.9)') iteration
@@ -111,7 +111,7 @@ contains
     
     if (itesauvposition.GT.0) then
        if (mod(iteration,itesauvposition)==0) then
-          formatsauv = 2
+          formatsauv = 10
           write(extension,'(i9.9)') iteration
           fnamcout = fnam(1:lenfnam)//'.'//extension//'.pos.cout.'
           call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)

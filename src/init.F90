@@ -136,7 +136,7 @@ contains
 
     select case (igen)
     case (-1)
-       formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
+       formatsauv = 10 ; fnamcout= fnam(1:lenfnam)//'.cout.'
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
        call rasmolT (atdml,boxndm,-1,latcomp=latcomp,ivisumol=5)
        if (lwgin) call rasmolT (atdml,boxndm,latcomp=latcomp)
@@ -148,7 +148,7 @@ contains
 
     case (3)
        call transf(atdml)
-       formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
+       formatsauv = 10 ; fnamcout= fnam(1:lenfnam)//'.cout.'
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
        if (lwgin) call rasmolT (atdml,boxndm,-1,latcomp=latcomp,ivisumol=5)
        if (rang==0) write (6, *) 'modification terminee'
@@ -242,15 +242,15 @@ contains
     end if
     if (lcasca) then
        fnamcout = fnam(1:lenfnam)//'.0.cout'
-       formatsauv=5
+       formatsauv=11
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
     else
        fnamcout = fnam(1:lenfnam)//'.cout'
        select type(atdml)
        type is (atom_config)
-          formatsauv=2
+          formatsauv=10
        class is (atom_config_d)
-          formatsauv=5
+          formatsauv=11
        end select
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
     end if

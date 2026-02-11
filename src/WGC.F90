@@ -285,7 +285,7 @@ contains
              call cryst_to_cart (atcgcomp%im, atcgcomp%xp, boxcg%at, 1) 
           end select
           if (NCALLS.ge.nextsauv) then
-             formatsauv = 4 ; fnamcout= fnam(1:lenfnam)//'.cout'
+             formatsauv = 10 ; fnamcout= fnam(1:lenfnam)//'.cout'
              call sauvegardeT(atcgcomp,cellcgcomp,boxcg,formatsauv,fnamcout,latcomp=.true.)
              nextsauv=NCALLS+itesauv
           end if

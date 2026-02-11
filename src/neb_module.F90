@@ -610,7 +610,7 @@ end if
           call setnox(boxneb,cellneb(1),rumax)
           call setcellconf(cellneb(1),atneb(1),boxneb,rumax)
           if (rang==0)then
-             formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout.'
+             formatsauv = 10 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout.'
              call sauvegardeT(atneb(1),cellneb(1),boxneb,formatsauv,fnamcout,latcomp=latcomp)
              call rasmolT(atneb(1),boxneb,1,latcomp=latcomp)
           endif
@@ -627,7 +627,7 @@ end if
           call setnox(boxneb,cellneb(npath),rumax)
           call setcellconf(cellneb(npath),atneb(npath),boxneb,rumax)
           if (rang==0)then
-             formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout.'
+             formatsauv = 10 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout.'
              call sauvegardeT(atneb(npath),cellneb(npath),boxneb,formatsauv,fnamcout,latcomp=latcomp)
              call rasmolT(atneb(npath),boxneb,npath,latcomp=latcomp)
           endif
@@ -650,7 +650,7 @@ end if
        end if
 
        if (rang==0)then
-          formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout'
+          formatsauv = 10 ; fnamcout= fnam(1:lenfnam)//'neb.1.cout'
           call sauvegardeT(atneb(1),cellneb(1),boxneb,formatsauv,fnamcout,latcomp=.true.)
           call rasmolT(atneb(1),boxneb,1,latcomp=.true.)
        endif
@@ -673,7 +673,7 @@ end if
        end if
 
        if (rang==0)then
-          formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'neb.npath.cout.'
+          formatsauv = 10 ; fnamcout= fnam(1:lenfnam)//'neb.npath.cout.'
           call sauvegardeT(atneb(npath),cellneb(npath),boxneb,formatsauv,fnamcout,latcomp=.true.)
           call rasmolT(atneb(npath),boxneb,npath,latcomp=.true.)
        endif

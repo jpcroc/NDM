@@ -56,15 +56,9 @@ contains
     fnamcout= fnam(1:lenfnam)//'.cout'
     select type(atdml)
     type is (atom_config)
-       formatsauv=2
+       formatsauv=10
     class is (atom_config_d)
-       formatsauv=5
-    class is (atom_config_e)
-       if (atdml%lxpp)then
-          formatsauv=3
-       else
-          formatsauv=5
-       end if
+       formatsauv=11
     end select
           
     call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp)     ! Modif E. Clouet: sauvegarde seulement si voulu

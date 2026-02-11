@@ -178,7 +178,7 @@ contains
     integer :: iclose,k
     logical::l2close,lcloseP
     integer::numproc,iatint,icelj,jjj,icelj2
-    integer::formatsauv=5
+    integer::formatsauv=11
     integer::jint,iinttot,numcell,imt,iold,irang,pvactot,dvactot,ilocvac
     logical::lsuiv,lcrea0
     character::fnamcout*80

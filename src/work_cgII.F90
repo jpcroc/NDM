@@ -176,7 +176,7 @@ end if
           !       if (rang==0) then
           !           write(6,*)'work_cg_II analyse -> sauvegarde',it
           if (itesauv.GT.0) then
-             formatsauv=2
+             formatsauv=10
              if (mod(iteration,itesauv)==0) call sauvegardeT(atcgcomp,cellcgcomp,boxcg,formatsauv,fnamcout,latcomp)
           endif
        end if

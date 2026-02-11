@@ -347,8 +347,8 @@ en question DOIT apparaitre dans la liste
 
   itesauv = 100               !period for saving
   itesauvposition = 0         !periode pour sauvegarde des positions en binaire
-  formatsauv = 3              !format of saving  2 MC triclin; 1 DM triclin
-  fmt_cin=1                  !format des fichiers .cin 0 : initiale, 1 = para (ancien). (Plus utilisé, mais gardé pour la rétrocompatibilité)
+  formatsauv = 11             !format of saving: 10 = without velocities, 11 = with velocities
+  fmt_cin=1                   !format des fichiers .cin 0 : initiale, 1 = para (ancien). (Plus utilisé, mais gardé pour la rétrocompatibilité)
   dfpred = 0.1            ! eguess for GC calculations and quenching
   nox = -1
   noy = -1

@@ -329,7 +329,7 @@ en question DOIT apparaitre dans la liste
 
       itesauv = 100               !period for saving
       itesauvposition = 0         !periode pour sauvegarde des positions en binaire
-      formatsauv = 3              !format of saving 0 MCortho; 1 DMortho ; 2 MC triclin; 1 DM triclin
+      formatsauv = 11             !format of saving: 10 = without velocities, 11 = with velocities
       dfpred = 1.0D-11            ! eguess for GC calculations and quenching
       nox = -1
       noy = -1

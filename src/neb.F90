@@ -392,7 +392,7 @@ contains
 
                    if (itesauv.GT.0) then
                       if (mod(ineb,itesauv)==0) then
-                         formatsauv = 2
+                         formatsauv = 10
                          write(extension,'(i9.9)') ii
                          fnamcout = fnam(1:lenfnam)//'.cout.'//extension
                          call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout,latcomp=latcomp)
@@ -463,7 +463,7 @@ contains
 
 #endif
 
-          formatsauv = 2
+          formatsauv = 10
           write(extension,'(i9.9)') ii
           fnamcout = fnam(1:lenfnam)//'.cout.'//extension
           call sauvegardet(atneb(ii), cellneb(ii),boxneb,formatsauv,fnamcout,latcomp)
