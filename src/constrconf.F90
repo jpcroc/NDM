@@ -638,13 +638,12 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
        call atcinr%init(immin=imm,imin=0,ltabvois=atcinr%ltabvois,rvois=atcinr%rvois,im_glob=im_gr,imm_glob=imm_glob)
        
        !> Répartitions des atomes sur les procs. 
-       !> Chaque tableau (xp,ityp,num_at_glob,xpp,vp) est découpé en nprocspace blocs. 
+       !> Chaque tableau (xp,ityp,num_at_glob,vp) est découpé en nprocspace blocs. 
        !> Chaque proc:
        ! - lit un bloc du tableau de positions d'atomes,
        ! - clacul un tableau (keep) d'atomes a garder, et copie les positions à garder
        ! - lit le bloc correspondant du tableau de ityp, et garde uniquement les bons,
        ! - lit le bloc correspondant du tableau de num_at_glob, et garde uniquement les bons,
-       ! - lit le bloc correspondant du tableau de xpp, et garde uniquement les bons,
        ! - lit le bloc correspondant du tableau de vp, et garde uniquement les bons,
        ! - puis passe au bloc suivant.
        
@@ -728,12 +727,19 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
           start_in_current_bloc = ii
        end do
 
-       ! mise à jour du nombre d'atomes lus
-       atcinr%im=start_in_current_bloc-1
-
        deallocate(buffer)
        deallocate(ibuffer)
        deallocate(keep)
+
+       ! mise à jour du nombre d'atomes lus
+       atcinr%im=start_in_current_bloc-1
+
+       select type(atcinr)
+       class is (atom_config_e)
+          if (atcinr%lax) then
+            atcinr%ax(1:3,1:atcinr%im)=atcinr%xp(1:3,1:atcinr%im)
+          end if
+       end select
 
        if (icintypemod==1) then
           offset = offset_vp + im_gr*3*mpi_size_double
@@ -744,6 +750,10 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
        call file_read_at_all(lucin, offset, oldtstep)           ! oldtstep
        offset = offset + mpi_size_double
        if (lrestart) then
+          select type(atcinr)
+          class is (atom_config_e)
+             atcinr%xpp(1:3,1:atcinr%im)=atcinr%xp(1:3,1:atcinr%im)-atcinr%vp(1:3,1:atcinr%im)*oldtstep ! qui est fait dans initspeed sans lrestart
+          end select
           call file_read_at_all(lucin, offset, tmean)           ! tmean
           offset = offset + mpi_size_double
           call file_read_at_all(lucin, offset, pmean)           ! pmean
@@ -890,13 +900,22 @@ subroutine read_cin_seq(fnamcin,boxcin,itread,atcinr,lres)
              if ((rang==0).and.(lprt))  write (6, *) 'vp'
           end if
        end select
+       select type(atcinr)
+       class is (atom_config_e)
+          if (atcinr%lax) then
+            atcinr%ax(1:3,1:im_gr)=atcinr%xp(1:3,1:im_gr)
+          end if
+       end select
 
        read (lucin, err=499) oldtstep
        if (lrestart) then
+          select type(atcinr)
+          class is (atom_config_e)
+             atcinr%xpp(1:3,1:im_gr)=atcinr%xp(1:3,1:im_gr)-atcinr%vp(1:3,1:im_gr)*oldtstep ! qui est fait dans initspeed sans lrestart
+          end select
           read (lucin, err=499) tmean, pmean, iteration, timel
           if (nitmax.ge.0) itmax=iteration+nitmax
           tstep = oldtstep
-
           if ((rang==0).and.(lprt)) then
              write (6, *) 'restart parameters'
              write (6, *) 'it =', iteration, ' time =', timel
