@@ -503,7 +503,7 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
 
     logical::lrestart=.false.
     logical,dimension(:),allocatable :: keep
-    integer :: i, b, icintype, icintypemod , lucin, i_bloc, start_in_current_bloc
+    integer :: i, icintype, icintypemod , lucin, i_bloc, start_in_current_bloc
     integer, dimension(:),allocatable     :: ibuffer
     real(double), dimension(:,:),allocatable    :: buffer
     real(double)::at(3,3)
@@ -656,9 +656,8 @@ subroutine read_cin_para(fnamcin,boxcin,itread,atcinr,celcf,lres,psc)
        offset_vp = offset_num_at_glob + im_gr*mpi_size_int
 
        start_in_current_bloc=1
-       do b=1, nprocspace
+       do i_bloc=0, nprocspace-1
           keep = .false.
-          i_bloc = mod(myidsp + b ,nprocspace)
           if (i_bloc == nprocspace - 1) then
              atomes_in_bloc = atomes_per_bloc + mod(im_gr, nprocspace)
           else
