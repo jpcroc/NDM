@@ -199,7 +199,6 @@ contains
 
     sigcf=sigcalfo;potistcf=potistcalfo
 
-
     return
   end subroutine calfo
 

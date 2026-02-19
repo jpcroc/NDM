@@ -670,9 +670,10 @@ contains
           class is (atom_config_e)
              if (atpr%lxpp)          atpr%xpp(:,1:atpr%im) = atpr%xp(:,1:atpr%im)
           end select
+          call updatebox(boxndm,boxndm%h)
           atpr%xp(:,1:atpr%im) = MatMul( boxndm%h, sp(:,1:atpr%im) )
 
-          call updatebox(boxndm,boxndm%h)
+
           atpr%vp(:,1:atpr%im) = MatMul( boxndm%h(:,:), sdot(:,1:atpr%im) ) ! retour à vp car transfert d'atomes  dans scalebox en PARA
           Kcell = 0.5d0*boxndm%wbox*Sum( boxndm%hDot(1:3,1:3)**2 )
           Tempcell=Kcell*2./(sum(ihbox0)*bk)
@@ -680,8 +681,6 @@ contains
           tempx= tempinstT(atpr)
 
           CALL ScaleBox(atpr,celndm,boxndm,psc)
-          call caltabtC(celndm,atpr,lperiod,boxndm,lchktrav=.true.)
-
           ! Calcul des forces et des contraintes à l'instant t+dt
           CALL CalFo(sig,potist,atpr,celndm,boxndm%box_config,t_sigma=.true.,psc=psc)
           call sigkinetot(atpr,boxndm,sig,sigkine,sigtot)
