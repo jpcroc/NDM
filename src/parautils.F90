@@ -89,10 +89,6 @@ contains
        celloc=>cellcomp
     end if
     atloc%im_glob=atcomp%im_glob
-    call atcomp%print(unit=100)
-    call atloc%print(unit=200)
-    call cellcomp%print(unit=101)
-    call celloc%print(unit=201)
     if (lspacendm.and.div%mpi_image%nproc.gt.1) then
        call caltabtC(celloc,atloc,lperiod,box,psc=psc,lchktrav=.true.)
     else
