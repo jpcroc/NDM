@@ -1,7 +1,7 @@
 module param_det_mod
   USE arret_ndm_mod,only:arret_ndm
   USE arret_ndm_mod,only: arret_ndm
-  USE gen_com_m, ONLY:lopt,zero,rang,pi,itab
+  USE gen_com_m, only:uwrt,lwrt,lopt,zero,rang,pi,itab
   USE var_pot, ONLY:kpme,kpmex,kpmey,kpmez,n2max,ncouc3,ncoucx,ncoucy,ncoucz,npair,&
        &npotentiel,nvecttot,precisew,rue_pair,typ_pot_pair,ipotentiel,alpha,iewald,csive,&
        &ngrid,r3cm2,rumax,r3cm,tabv3,tabf3,ntyp,l3c
@@ -44,14 +44,14 @@ contains
 
     if (npotentiel.ne.1)then
        if ((iewald.gt.0).and.(iewald.ne.3).and.(ncouc3==0)) then
-          if (rang==0)  write(6,*)'npot>1 + ewald+ncouc3=0 : stop'
+          if (rang==0)  write(uwrt,*)'npot>1 + ewald+ncouc3=0 : stop'
           call arret_ndm
        end if
        rue=0
        do l=1,npair
           if ((typ_pot_pair(l).lt.10).and.(typ_pot_pair(l).ne.2)) then
              if (rue_pair(l)==0) then
-                if (rang==0)  write(6,*)'npot>1 + pot paire +ruepaire l =0 : stop',l
+                if (rang==0)  write(uwrt,*)'npot>1 + pot paire +ruepaire l =0 : stop',l
                 call arret_ndm
              end if
           end if
@@ -59,7 +59,7 @@ contains
        end do
        if ((iewald.gt.0).and.(iewald.ne.3))then
           if((alpha==0).or.(ncouc3==0)) then
-             write(6,*)'npotentiel>1 and Ewald : specify ncouc3 and alpha'
+             write(uwrt,*)'npotentiel>1 and Ewald : specify ncouc3 and alpha'
              call arret_ndm
           end if
           ncoucx=ncouc3
@@ -86,7 +86,7 @@ contains
 
              !  rue=rue*1.d-8
              !        alpha=alpha*1.d8
-             !        write(6,*)'ZL',zl
+             !        write(uwrt,*)'ZL',zl
              zl=boxndm%normat
              zlm=max(zl(1),zl(2),zl(3))
              k001=2.d0*pi/zlm
@@ -96,22 +96,22 @@ contains
              k00z=2.d0*pi/zl(3)
 
              if (ncouc3 == 0 .and. ncoucx/=0 .and. (ncoucy==0 .or. ncoucz==0)) then
-                write (6,*) rang, 'Parametres ncouc de la sommation d Exald mal definis'
+                write (uwrt,*) rang, 'Parametres ncouc de la sommation d Exald mal definis'
                 call arret_ndm
              endif
 
              if (ncouc3 == 0 .and. ncoucy/=0 .and. (ncoucx==0 .or. ncoucz==0)) then
-                write (6,*) rang,'Parametres ncouc de la sommation d Exald mal definis'
+                write (uwrt,*) rang,'Parametres ncouc de la sommation d Exald mal definis'
                 call arret_ndm
              endif
 
              if (ncouc3 == 0 .and. ncoucz/=0 .and. (ncoucx==0 .or. ncoucy==0)) then
-                write (6,*) rang,'Parametres ncouc de la sommation d Exald mal definis'
+                write (uwrt,*) rang,'Parametres ncouc de la sommation d Exald mal definis'
                 call arret_ndm
              endif
 
              if (ncoucx .lt. 0 .or. ncoucy .lt. 0 .or. ncoucz .lt. 0) then
-                write (6,*) rang,'Parametres ncouc de la sommation d Exald mal definis'
+                write (uwrt,*) rang,'Parametres ncouc de la sommation d Exald mal definis'
                 call arret_ndm
              endif
 
@@ -152,7 +152,7 @@ contains
                       ncoucy=ncouc3
                       ncoucz=ncouc3
                    else
-                      write(6,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -168,7 +168,7 @@ contains
                       rue=max(ruex,ruey,ruez)
                       alpha=dsqrt(pparam)/rue
                    else
-                      write(6,*) rang,'iewald=0 et ncouc/=0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc/=0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -220,7 +220,7 @@ contains
                       ncoucy=ncouc3
                       ncoucz=ncouc3
                    else
-                      write(6,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -234,7 +234,7 @@ contains
                       pparam=max(pparax,pparay,pparaz)
                       alpha=dsqrt(pparam)/rue
                    else
-                      write(6,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -250,7 +250,7 @@ contains
                       ncoucy=ncouc3
                       ncoucz=ncouc3
                    else
-                      write(6,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -263,7 +263,7 @@ contains
                       ruez=ncoucz*k00z/alpha**2/2.d0
                       rue=max(ruex,ruey,ruez)
                    else
-                      write(6,*) rang,'iewald=0 et ncouc/=0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc/=0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -274,7 +274,7 @@ contains
                    ncoucy=ncouc3
                    ncoucz=ncouc3
                    if (iewald==0) then
-                      write(6,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -282,7 +282,7 @@ contains
 
                 if (rue /= zero .and. alpha/=zero .and. ncouc3==0 .and. nc1/=0) then
                    if (iewald==0) then
-                      write(6,*) rang,'iewald=0 et ncouc/=0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc/=0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -317,7 +317,7 @@ contains
                       ncoucy=ncouc3
                       ncoucz=ncouc3
                    else
-                      write(6,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -332,7 +332,7 @@ contains
                       rue=max(ruex,ruey,ruez)
                       alpha=dsqrt(pparam)/rue
                    else
-                      write(6,*) rang,'iewald=0 et ncouc/=0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc/=0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -364,7 +364,7 @@ contains
 
                 if (rue /= zero .and. alpha/=zero .and. ncouc3==0 .and. nc1==0) then
                    if (rang==0) &
-                        write(6,*) 'Seuls la precision et rue sont pris en compte'
+                        write(uwrt,*) 'Seuls la precision et rue sont pris en compte'
                    pparam=-log(precisew)
                    alpha=dsqrt(pparam)/rue
                    if (iewald/=0) then
@@ -379,14 +379,14 @@ contains
                 if (rue /= zero .and. alpha==zero .and. ncouc3/=0) then
                    if (iewald/=0) then
                       if (rang==0) &
-                           write(6,*) 'Seuls la precision et rue sont pris en compte'
+                           write(uwrt,*) 'Seuls la precision et rue sont pris en compte'
                       pparam=-log(precisew)
                       alpha=dsqrt(pparam)/rue
                       ncoucx=int(2.d0*pparam/rue/k00x)+1
                       ncoucy=int(2.d0*pparam/rue/k00y)+1
                       ncoucz=int(2.d0*pparam/rue/k00z)+1
                    else
-                      write(6,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -395,14 +395,14 @@ contains
                 if (rue /= zero .and. alpha==zero .and. ncouc3==0 .and. nc1/=0) then
                    if (iewald/=0) then
                       if (rang==0) &
-                           write(6,*) 'Seuls la precision et rue sont pris en compte'
+                           write(uwrt,*) 'Seuls la precision et rue sont pris en compte'
                       pparam=-log(precisew)
                       alpha=dsqrt(pparam)/rue
                       ncoucx=int(2.d0*pparam/rue/k00x)+1
                       ncoucy=int(2.d0*pparam/rue/k00y)+1
                       ncoucz=int(2.d0*pparam/rue/k00z)+1
                    else
-                      write(6,*) rang,'iewald=0 et ncouc/=0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc/=0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -411,14 +411,14 @@ contains
                 if (rue == zero .and. alpha/=zero .and. ncouc3/=0) then
                    if (iewald/=0) then
                       if (rang==0) &
-                           write(6,*) 'Seuls la precision et alpha sont pris en compte'
+                           write(uwrt,*) 'Seuls la precision et alpha sont pris en compte'
                       pparam=-log(precisew)
                       rue=dsqrt(pparam)/alpha
                       ncoucx=int(2.d0*pparam/rue/k00x)+1
                       ncoucy=int(2.d0*pparam/rue/k00y)+1
                       ncoucz=int(2.d0*pparam/rue/k00z)+1
                    else
-                      write(6,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -427,14 +427,14 @@ contains
                 if (rue == zero .and. alpha/=zero .and. ncouc3==0 .and. nc1/=0) then
                    if (iewald/=0) then
                       if (rang==0) &
-                           write(6,*) 'Seuls la precision et alpha sont pris en compte'
+                           write(uwrt,*) 'Seuls la precision et alpha sont pris en compte'
                       pparam=-log(precisew)
                       rue=dsqrt(pparam)/alpha
                       ncoucx=int(2.d0*pparam/rue/k00x)+1
                       ncoucy=int(2.d0*pparam/rue/k00y)+1
                       ncoucz=int(2.d0*pparam/rue/k00z)+1
                    else
-                      write(6,*) rang,'iewald=0 et ncouc/=0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc/=0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -443,14 +443,14 @@ contains
                 if (rue /= zero .and. alpha/=zero .and. ncouc3/=0) then
                    if (iewald/=0) then
                       if (rang==0) &
-                           write(6,*) 'Seuls la precision et rue sont pris en compte'
+                           write(uwrt,*) 'Seuls la precision et rue sont pris en compte'
                       pparam=-log(precisew)
                       alpha=dsqrt(pparam)/rue
                       ncoucx=int(2.d0*pparam/rue/k00x)+1
                       ncoucy=int(2.d0*pparam/rue/k00y)+1
                       ncoucz=int(2.d0*pparam/rue/k00z)+1
                    else
-                      write(6,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc3>0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -459,14 +459,14 @@ contains
                 if (rue /= zero .and. alpha/=zero .and. ncouc3==0 .and. nc1/=0) then
                    if (iewald/=0) then
                       if (rang==0)  &
-                           write(6,*) 'Seuls la precision et rue sont pris en compte'
+                           write(uwrt,*) 'Seuls la precision et rue sont pris en compte'
                       pparam=-log(precisew)
                       alpha=dsqrt(pparam)/rue
                       ncoucx=int(2.d0*pparam/rue/k00x)+1
                       ncoucy=int(2.d0*pparam/rue/k00y)+1
                       ncoucz=int(2.d0*pparam/rue/k00z)+1
                    else
-                      write(6,*) rang,'iewald=0 et ncouc/=0 : incoherent !!!'
+                      write(uwrt,*) rang,'iewald=0 et ncouc/=0 : incoherent !!!'
                       call arret_ndm
                    endif
                    goto 1
@@ -481,7 +481,7 @@ contains
              n2max=ncouc3*ncouc3
 
 !!$           if (rang==0) &
-!!$                write(6,*) 'Parametres utilises pour le traitement de EWALD :'
+!!$                write(uwrt,*) 'Parametres utilises pour le traitement de EWALD :'
 
              !determination de kpme
              if (iewald == 2) then
@@ -490,25 +490,25 @@ contains
                 if (kpmez == 0) kpmez=int(2.5*(2*ncoucz+1))
                 !          kpmex=100 ; kpmey=100 ; kpmez=100
                 kpme=max(kpmex,kpmey,kpmez)
-                if (rang==0) write(6,*) 'kpme x,y,x max ', kpmex,kpmey,kpmez,kpme
+                if (rang==0) write(uwrt,*) 'kpme x,y,x max ', kpmex,kpmey,kpmez,kpme
              endif
 
              !          if (kpmex <= 2*ncouc3) then
-             !           if (rang==0) write(6,*) 'PME : Taille de grille trop faible STOP!'
+             !           if (rang==0) write(uwrt,*) 'PME : Taille de grille trop faible STOP!'
              !          call arret_ndm
 
 
              if (rang==0) then
                 if (iewald/=0) then
-                   write(6,*) 'RUE=',rue,' ALPHA=',alpha,' NCOUC=',ncoucx,ncoucy,ncoucz,&
+                   write(uwrt,*) 'RUE=',rue,' ALPHA=',alpha,' NCOUC=',ncoucx,ncoucy,ncoucz,&
                         ' PRECISEW =',precisew
-                   write(6,*) 'RUE_ANG=',rue*1d8,' ALPHA_ANGm1=',alpha*1d-8,' NCOUC=',ncoucx,ncoucy,ncoucz,&
+                   write(uwrt,*) 'RUE_ANG=',rue*1d8,' ALPHA_ANGm1=',alpha*1d-8,' NCOUC=',ncoucx,ncoucy,ncoucz,&
                         ' PRECISEW =',precisew
-                   write(6,*)'ncoucx_y_z',ncoucx,ncoucy,ncoucz
+                   write(uwrt,*)'ncoucx_y_z',ncoucx,ncoucy,ncoucz
 
 
                 else
-                   write(6,*) 'RUE=',rue
+                   write(uwrt,*) 'RUE=',rue
                 endif
              endif   ! rang = 0
 
@@ -519,7 +519,7 @@ contains
              end if
 
              nvecttot=(2*ncoucx+1)*(2*ncoucy+1)*(2*ncoucz+1)-1
-             !        write(6,*)'nvecttot',nvecttot
+             !        write(uwrt,*)'nvecttot',nvecttot
 
           end if
 
@@ -531,7 +531,7 @@ contains
 
     !C_debug
 #if defined PHONDY || defined PARAPH || defined MAB || defined ML || defined PARAML
-    !  write(6,*)rumax,rue_pair,maxval(rue_pair)
+    !  write(uwrt,*)rumax,rue_pair,maxval(rue_pair)
     rumax=0.0
 
     rumax = max(rumax,maxval(rue_pair))
@@ -540,7 +540,7 @@ contains
 #else
     rumax = max(rumax,maxval(rue_pair))
     csive=rumax/float(ngrid)
-    !    write(6,*)'RUMAX',rumax,csive,rue_pair
+    !    write(uwrt,*)'RUMAX',rumax,csive,rue_pair
     !    call arret_ndm
 #endif
 
@@ -549,14 +549,14 @@ contains
        itab=1
        r3cm2=r3cm**2
     endif
-    !if((rang==0).and.(appel==0))         write (6, *) ' rvois  ', rvois
+    !if((rang==0).and.(appel==0))         write (uwrt, *) ' rvois  ', rvois
 
     if (ltabvois) then
        if (rumax>rvois) then
-          if((rang==0)) write (6, '(A,2F12.2)') ' rvois trop petit rvois rumax ', rvois*1d8, rumax*1d8
+          if((rang==0)) write (uwrt, '(A,2F12.2)') ' rvois trop petit rvois rumax ', rvois*1d8, rumax*1d8
           call arret_ndm
        else
-          if(rang==0) write (6,'(A,2F12.2)') ' rumax devient rvois&
+          if(rang==0) write (uwrt,'(A,2F12.2)') ' rumax devient rvois&
                & pour le dimmensionnement en cel', rvois*1d8, rumax*1d8
           rumax=rvois
        end if

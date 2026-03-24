@@ -190,6 +190,14 @@ contains
        call thermocalc(eigval,im3)
 
        
+!!$#else
+!!$       write(uwrt,*)"diagonalization works with lapack or MKL"
+!!$       write(uwrt,*)"these libraries are NOT linked by default"
+!!$       write(uwrt,*)"link them in Makefile.ndm_your_makefile"
+!!$       write(uwrt,*)"and recompile with make MKL=1 ndm_your_makefile"
+!!$       call arret_ndm
+!!$       
+!!$#endif
     end if
   end subroutine calcFM
 

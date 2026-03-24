@@ -9,7 +9,7 @@ program ndm
   !-----------------------------------------------
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY: fnam,lenfnam,rang,low_limit
+  USE gen_com_m, only:uwrt,lwrt, fnam,lenfnam,rang,low_limit
 
   USE prog_mod,only: prog
   USE readdm_mod,only: readdm
@@ -38,19 +38,24 @@ program ndm
   implicit none
   character :: a1*20
   integer::ierr
+  uwrt=6
   !
   !Initialisation MPI
   call init_MPI()
 #ifdef PARA
   call MPI_BARRIER(MPI_COMM_WORLD,ierr)
   myidsp=rang
-
+  if (rang==0) then
+     lwrt=.true.
+  else
+     lwrt=.false.
+  end if
   if ((rang.lt.4).or.(rang.gt.nprocs-4)) then
-     write(6,*) 'Process ', rang, ' of ', nprocs, ' is alive'
+     write(uwrt,*) 'Process ', rang, ' of ', nprocs, ' is alive'
   end if
 
 #else
-  write(6,*)'MPI compilation is mandatory, the rest is legacy'
+  write(uwrt,*)'MPI compilation is mandatory, the rest is legacy'
   stop
   rang = 0
   myidsp=rang
@@ -74,7 +79,7 @@ program ndm
 #ifdef ML
   call mld_copy_fnam(fnam)
 #endif
-  !     write(6,*) 'main -> readdm'
+  !     write(uwrt,*) 'main -> readdm'
   call readdm
   call prog
 

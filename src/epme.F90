@@ -1,6 +1,6 @@
 module epme_mod
   USE moduli_mod,only: moduli
-    USE gen_com_m, ONLY:iteration,itesigma,pi,potis3,zero,lspacendm,rang
+    USE gen_com_m, only:uwrt,lwrt,iteration,itesigma,pi,potis3,zero,lspacendm,rang
         implicit none 
         contains
 !                   Version du 10/12/2001
@@ -71,7 +71,7 @@ qgridsize=kpmex*kpmey*kpmez
   theta3(:maxorder,Deb:Fin)=zero
   dtheta3(:maxorder,Deb:Fin)=zero
 
-!  write(6,*)'deb fin ',rang, deb,fin !TestJM
+!  write(uwrt,*)'deb fin ',rang, deb,fin !TestJM
   do i=Deb,Fin
 
      xi=xp(1,i)
@@ -122,7 +122,7 @@ qgridsize=kpmex*kpmey*kpmez
               i=iiim(it1,m)
               produc=t3*t2*t1*q(ityp(m))
 
-              !      write(6,*)kpmex,kpmey,kpmez
+              !      write(uwrt,*)kpmex,kpmey,kpmez
               qgrid(i,j,k)=qgrid(i,j,k)+produc
 
            enddo

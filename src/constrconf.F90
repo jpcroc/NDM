@@ -22,6 +22,7 @@ module constrconf_mod
   use coord_to_cell_mod
   use config2data_mod,only:config2data
 #ifdef ML
+  !use gen_com_m_ml, only:uwrt,lwrt, at, im
   use derived_types, only: config_real
 #endif
 
@@ -79,7 +80,6 @@ contains
        write(uwrt,*)'imm,imm_glob,nprocspace',imm,imm_glob,nprocspace
        write(uwrt,*)
     endif
-
     if (igen.ge.1 .and. igen.le.3) then
        allocate (ibuffer(imm_glob))
        allocate (buffer(3,imm_glob))
@@ -412,13 +412,10 @@ contains
        atrcf%rvois=0 ; rvn=0
     end if
     if (present(immread))then
-
        call atrcf%init(imloc,immin=immread,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois,rvois=rvn,im_glob=imloc)
-
     else
        call atrcf%init(imloc,ltabvois=atrcf%ltabvois,nvois=atrcf%nvois,rvois=rvn,im_glob=imloc)
     end if
-
     !    imtot=imloc
     i=0
     do ia = 1,lat(1)

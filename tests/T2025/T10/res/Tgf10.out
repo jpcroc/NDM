@@ -1,0 +1,343 @@
+ Process            0  of            4  is alive
+ nom fichier din=Febulk.din                                                                      
+ nom fichier din=Febulk.din                                                                      
+ Process            1  of            4  is alive
+ Process            2  of            4  is alive
+ Process            3  of            4  is alive
+
+ rang readdm iseed            2           1
+ -------- caracteristiques du run DM--------23
+     FIRE Quenching Vcst
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=        1000  iteprtsigma=           1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=       20000 timemax=    10000000000.000002       itab=           1  itetimestep=          -1
+tinit=       0.1
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+ rang readdm iseed            0           1
+ IMM PARA =          720        2400
+ rang readdm iseed            3           1
+ rang readdm iseed            1           1
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM
+
+ NTYP NPAIR            1           1
+ Types d_atomes pour ce potentiel:
+ CM, masse,type, NUMERO DU TYPE D ATOME
+   1   55.847   26.000  Fe 
+ nb of readed pairs           1
+ nptmax in the max number of points on grid        249999
+ EAM           1           1
+ EAM number of points in potin and the step      249999   6.8178370289999997E-004
+ dens           1           1
+ RHO potin points and the step:       249999   2.4000000000000001E-005
+ paire eam ; paire complete           1           1
+ rep
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+ imm,imm_glob,nprocspace         720        2400           4
+
+ **********construction du reseau************
+ repetition de mailles          10          10          10
+  .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +2e-7
+ nox,noy,noz dans .din =          -1          -1          -1
+nox noy noz and ghost cells from ru
+  nox in direction  1=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+  nox in direction  2=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+  nox in direction  3=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+          64  active cells among           64
+celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
+Febulk.gin                                                                      
+volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
+ sur            4  cpus           0
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            4  cpus           0
+ Nbre de solutions possibles :            6
+LE_MEILLEUR_DECOUPAGE :    4    1    2    2    0.9200
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           2           2
+ Nombre de cellules max echg  par proc :           4          80
+ Taux d'equilibrage :           4   1.0000000000000000     
+ valeur            4  0.92000000000000004     
+ Nbre Min/Max de cel. locales. :          16          16
+ Nbre Min/Max de cel. fantomes. :          80          80
+ locmin/fantomax :           4  0.20000000000000001     
+ Taille des decoupages
+ Decoupage           0 :           4           2           2
+ Decoupage           1 :           4           2           2
+ Decoupage           2 :           4           2           2
+ Decoupage           3 :           4           2           2
+ Decoupage           0 :           4           2           2
+ Decoupage           1 :           4           2           2
+ Decoupage           2 :           4           2           2
+ Decoupage           3 :           4           2           2
+ ----------------------------------------------
+ PRESENT imglob        2000
+ PRESENT imglob        2000
+ PRESENT imglob        2000
+ PRESENT imglob        2000
+ natperc im/noxyz          70          31
+ ltabvois F
+
+ -------- boite de simulation ------
+ nombre d atomes =        2000
+vecteur  1      28.553180       0.000000       0.000000
+vecteur  2       0.000000      28.553180       0.000000
+vecteur  3       0.000000       0.000000      28.553180
+        2000  atomes de type           1
+
+  -------------------------------------------------------------------
+              2nd step of potential initialization , dependancy on box size
+ calpoeam ktorho and the inverse:    8.5222281072576088E-003   117.34020580232894     
+ rang rangspace            0           0  nbr procs voisins            3
+ rang rangspace            2           2  nbr procs voisins            3
+ rang rangspace            1           1  nbr procs voisins            3
+ rang rangspace            3           3  nbr procs voisins            3
+ random velocities at TINIT =   0.10000000000000001      K
+ temperature fin initspeed    9.9999999999999922E-002
+
+ POINT DEFECT CREATION
+ ITECDP    40000000
+
+ NFP VAC INT for all types
+ rang iseed CREADP           0         124
+ ***** FIRST ITERATION  ***    40000000   100000000.00000000     
+TR: force max, energy     1    0.283918608473323E-13   -0.823889874462381E+04
+
+
+<<<<<<<<  ITERATION =      1  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+         1  0.00    *Epot =    -8238.898744623810      eV 
+    *energie PAIRE EAM =     311.750974569      eV 
+    *energie GLUE  =    -8550.64971919      eV 
+         1  0.00    *Ec =     0.00000000000      eV   (.000 K)
+         1  0.00    *Etot =    -8238.898744623810      eV 
+
+         1  0.00    *Epot/at =    -4.11944937231      eV 
+
+         1  0.00    *Temp instantanee = .000
+
+*temp instantanee des atomes de type 1 =         0.00
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -38.32004658      0.1335144043E-13 -0.8583068848E-14
+2 sigma potentiel (1,2) (2,2) (3,2) =  0.1096725464E-13  -38.32004658     -0.1049041748E-13
+3 sigma potentiel (1,3) (2,3) (3,3) = -0.5722045898E-14 -0.8583068848E-14  -38.32004658    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =  0.1202254538E-02 -0.1647142734E-04 -0.1520489934E-04
+2 sigma cinetique (1,2) (2,2) (3,2) = -0.1647142734E-04  0.1167412796E-02 -0.5216725062E-04
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.1520489934E-04 -0.5216725062E-04  0.1188796781E-02
+
+1 sigma total (1,1) (2,1) (3,1) =  -38.31884432     -0.1647142732E-04 -0.1520489935E-04
+2 sigma total (1,2) (2,2) (3,2) = -0.1647142733E-04  -38.31887916     -0.5216725063E-04
+3 sigma total (1,3) (2,3) (3,3) = -0.1520489935E-04 -0.5216725063E-04  -38.31885778    
+
+         1  0.00    *Pression =    -38.319    
+ pression totale  potentiel = cinetique =
+   -38.319       -38.320       0.11862E-02
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.00
+*pression moyenne =    -38.319    
+ --------------------------------------
+ *******return CDP**** 
+ ITER           0    40000000    40000000
+ timeloopmax itloopmax restart   1000000000.0000000         40000000 F
+ ****************************************
+ POINT DEFECT CREATION 
+ iteration,timel, itloopmax,timeloopmax,nvactot, ninttot nas
+          0       0.0000000          20000      0.10000000E+10      2      2     -1
+ ****************************************
+ ***** FIRST ITERATION  ***       20000   1000000000.0000000     
+TR: force max, energy     1    0.795668012325252E+02   -0.809891080148395E+04
+TR: force max, energy     2    0.792452896261589E+02   -0.809961666357369E+04
+TR: force max, energy     3    0.787565571257346E+02   -0.810067968910560E+04
+TR: force max, energy     4    0.780467504287531E+02   -0.810224932491656E+04
+TR: force max, energy     5    0.771580642719831E+02   -0.810423172215707E+04
+TR: force max, energy     6    0.760896868633736E+02   -0.810664772093887E+04
+TR: force max, energy     7    0.748644848390809E+02   -0.810945670308718E+04
+TR: force max, energy     8    0.733336041334735E+02   -0.811302864485481E+04
+TR: force max, energy     9    0.715279702074097E+02   -0.811732972234117E+04
+TR: force max, energy    10    0.693926499115067E+02   -0.812253797657134E+04
+TR: force max, energy    11    0.669237582282281E+02   -0.812872328191585E+04
+TR: force max, energy    12    0.640950790168777E+02   -0.813599788952440E+04
+TR: force max, energy    13    0.608906767223818E+02   -0.814442356296843E+04
+TR: force max, energy    14    0.572559397686237E+02   -0.815402890024761E+04
+TR: force max, energy    15    0.530981509957589E+02   -0.816475701080548E+04
+TR: force max, energy    16    0.482906225541562E+02   -0.817643063118952E+04
+TR: force max, energy    17    0.426693784957192E+02   -0.818859465961037E+04
+TR: force max, energy    18    0.360768063418138E+02   -0.820052002227597E+04
+TR: force max, energy    19    0.284663458483474E+02   -0.821124300289467E+04
+TR: force max, energy    20    0.199104414739063E+02   -0.822006443930318E+04
+TR: force max, energy    21    0.278943315549229E+01   -0.822292594639370E+04
+TR: force max, energy    22    0.356227753207744E+01   -0.822243200019536E+04
+TR: force max, energy    23    0.144381630012607E+02   -0.822126533998202E+04
+TR: force max, energy    24    0.141208357503297E+02   -0.822136469597403E+04
+TR: force max, energy    25    0.140437722992456E+02   -0.822141736117437E+04
+TR: force max, energy    26    0.631431954793031E+01   -0.822150638100158E+04
+TR: force max, energy    27    0.624629617273341E+01   -0.822157878754445E+04
+TR: force max, energy    28    0.615394439282944E+01   -0.822167132502818E+04
+TR: force max, energy    29    0.604315348149880E+01   -0.822177537215645E+04
+TR: force max, energy    30    0.590637744946600E+01   -0.822189656952128E+04
+TR: force max, energy    31    0.573369677030907E+01   -0.822203997842818E+04
+TR: force max, energy    32    0.552198197776062E+01   -0.822220592201110E+04
+TR: force max, energy    33    0.527841327777164E+01   -0.822239592531801E+04
+TR: force max, energy    34    0.500510499731235E+01   -0.822261024961834E+04
+TR: force max, energy    35    0.470391547341668E+01   -0.822284880834179E+04
+TR: force max, energy    36    0.437799875663157E+01   -0.822311019384278E+04
+TR: force max, energy    37    0.403081481889057E+01   -0.822339242396027E+04
+TR: force max, energy    38    0.365859719098854E+01   -0.822369221634010E+04
+TR: force max, energy    39    0.325788677804429E+01   -0.822400395821627E+04
+TR: force max, energy    40    0.283345149305814E+01   -0.822433376489501E+04
+TR: force max, energy    41    0.249473350446380E+01   -0.822466541286556E+04
+TR: force max, energy    42    0.216753918718739E+01   -0.822499939397974E+04
+TR: force max, energy    43    0.204395306172502E+01   -0.822533253522140E+04
+TR: force max, energy    44    0.179290900052210E+01   -0.822566894584538E+04
+
+
+<<<<<<<<  ITERATION =     44  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        44  0.00    *Epot =    -8225.668945845377      eV 
+    *energie PAIRE EAM =     336.250817654      eV 
+    *energie GLUE  =    -8561.91976350      eV 
+        44  0.00    *Ec =    0.812158174531      eV   (3.142 K)
+        44  0.00    *Etot =    -8224.856787670846      eV 
+
+        44  0.00    *Epot/at =    -4.11283447292      eV 
+
+        44  0.00    *Temp instantanee = 3.142
+
+*temp instantanee des atomes de type 1 =         3.14
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -35.08041398     -0.1187635173     -0.3579580996E-01
+2 sigma potentiel (1,2) (2,2) (3,2) = -0.1187635173      -34.86874098      0.2378938965E-01
+3 sigma potentiel (1,3) (2,3) (3,3) = -0.3579580996E-01  0.2378938965E-01  -34.69199741    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =  0.3626403038E-01 -0.1126102935E-01 -0.3053808079E-02
+2 sigma cinetique (1,2) (2,2) (3,2) = -0.1126102935E-01  0.3000138197E-01  0.3766993074E-02
+3 sigma cinetique (1,3) (2,3) (3,3) = -0.3053808079E-02  0.3766993074E-02  0.3784139132E-01
+
+1 sigma total (1,1) (2,1) (3,1) =  -35.04414995     -0.1300245466     -0.3884961803E-01
+2 sigma total (1,2) (2,2) (3,2) = -0.1300245466      -34.83873960      0.2755638273E-01
+3 sigma total (1,3) (2,3) (3,3) = -0.3884961803E-01  0.2755638273E-01  -34.65415602    
+
+        44  0.00    *Pression =    -34.846    
+ pression totale  potentiel = cinetique =
+   -34.846       -34.880       0.34702E-01
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.07
+*pression moyenne =    -38.240    
+ --------------------------------------
+ *******return CDP**** 
+ POST itmax,timemax,itecdp,timecdp,iteration,timel
+       20000   10000000000.000002         40000000  -1.0000000000000001E-015          44   0.0000000000000000     
+ ****************************************
+ POINT DEFECT CREATION 
+ iteration,timel, itloopmax,timeloopmax,nvactot, ninttot nas
+         44       0.0000000          20000      0.10000000E+10      2      2     -1
+ ****************************************
+ ***** FIRST ITERATION  ***       20000   1000000000.0000000     
+TR: force max, energy    45    0.684104347860113E+02   -0.808254450966913E+04
+TR: force max, energy    46    0.668781459902942E+02   -0.809026651470818E+04
+TR: force max, energy    47    0.646981541261810E+02   -0.810059224117583E+04
+TR: force max, energy    48    0.616719087136448E+02   -0.811402125570274E+04
+TR: force max, energy    49    0.580857402803719E+02   -0.812813633325684E+04
+TR: force max, energy    50    0.539658578229116E+02   -0.814173148204503E+04
+TR: force max, energy    51    0.494232560667900E+02   -0.815367599047213E+04
+TR: force max, energy    52    0.446141879710127E+02   -0.816518098749602E+04
+TR: force max, energy    53    0.391948861191120E+02   -0.817853896284310E+04
+TR: force max, energy    54    0.326835977597701E+02   -0.819142880533479E+04
+TR: force max, energy    55    0.253296915338724E+02   -0.820289511566794E+04
+TR: force max, energy    56    0.168859801535930E+02   -0.820974155002240E+04
+TR: force max, energy    57    0.108241809228816E+02   -0.821052189859539E+04
+TR: force max, energy    58    0.202813621010158E+02   -0.820862083837903E+04
+TR: force max, energy    59    0.146837077302092E+02   -0.820926846202462E+04
+TR: force max, energy    60    0.145942219108091E+02   -0.820952276311766E+04
+TR: force max, energy    61    0.139657988825722E+02   -0.820993800119643E+04
+TR: force max, energy    62    0.136768830216731E+02   -0.821021582537803E+04
+TR: force max, energy    63    0.411713862882885E+01   -0.821047448967683E+04
+TR: force max, energy    64    0.406361390985136E+01   -0.821064699236455E+04
+TR: force max, energy    65    0.400249398988722E+01   -0.821087134153657E+04
+TR: force max, energy    66    0.393194469932334E+01   -0.821111025422050E+04
+TR: force max, energy    67    0.149294952697567E+02   -0.821135075328398E+04
+TR: force max, energy    68    0.149379371160886E+02   -0.821162738650217E+04
+TR: force max, energy    69    0.364753801112038E+01   -0.821195927473683E+04
+TR: force max, energy    70    0.352246061803288E+01   -0.821227868557043E+04
+TR: force max, energy    71    0.337153340527918E+01   -0.821262347211651E+04
+TR: force max, energy    72    0.319031174442880E+01   -0.821298680584411E+04
+TR: force max, energy    73    0.296785659802954E+01   -0.821336562801366E+04
+TR: force max, energy    74    0.269920622682172E+01   -0.821375238698612E+04
+TR: force max, energy    75    0.247685470336722E+01   -0.821413877688369E+04
+TR: force max, energy    76    0.219658188385008E+01   -0.821451474598473E+04
+TR: force max, energy    77    0.186836117120451E+01   -0.821486749461196E+04
+
+
+<<<<<<<<  ITERATION =     77  time =    0.000000    
+
+
+ --------- Temperatures et Pression--------
+ ----------valeurs instantanees------------
+        77  0.00    *Epot =    -8214.867494611955      eV 
+    *energie PAIRE EAM =     353.376557300      eV 
+    *energie GLUE  =    -8568.24405191      eV 
+        77  0.00    *Ec =     1.11108936078      eV   (4.298 K)
+        77  0.00    *Etot =    -8213.756405251181      eV 
+
+        77  0.00    *Epot/at =    -4.10743374731      eV 
+
+        77  0.00    *Temp instantanee = 4.298
+
+*temp instantanee des atomes de type 1 =         4.30
+
+ * stress en kbar 
+1 sigma potentiel (1,1) (2,1) (3,1) =  -32.62812470     -0.2292512842     -0.9464823617E-01
+2 sigma potentiel (1,2) (2,2) (3,2) = -0.2292512842      -32.32649084     -0.3637772040    
+3 sigma potentiel (1,3) (2,3) (3,3) = -0.9464823617E-01 -0.3637772040      -31.78154328    
+
+1 sigma cinetique (1,1) (2,1) (3,1) =  0.5197650610E-01 -0.1568757409E-01  0.8599313369E-03
+2 sigma cinetique (1,2) (2,2) (3,2) = -0.1568757409E-01  0.4782923151E-01 -0.9889781577E-02
+3 sigma cinetique (1,3) (2,3) (3,3) =  0.8599313369E-03 -0.9889781577E-02  0.5140553334E-01
+
+1 sigma total (1,1) (2,1) (3,1) =  -32.57614819     -0.2449388583     -0.9378830484E-01
+2 sigma total (1,2) (2,2) (3,2) = -0.2449388583      -32.27866161     -0.3736669856    
+3 sigma total (1,3) (2,3) (3,3) = -0.9378830484E-01 -0.3736669856      -31.73013775    
+
+        77  0.00    *Pression =    -32.195    
+ pression totale  potentiel = cinetique =
+   -32.195       -32.245       0.50404E-01
+ ----------valeurs moyennes------------
+*temperature moyenne =         0.13
+*pression moyenne =    -38.161    
+ --------------------------------------
+ *******return CDP**** 
+ POST itmax,timemax,itecdp,timecdp,iteration,timel
+       20000   10000000000.000002         40000000  -1.0000000000000001E-015          77   0.0000000000000000     

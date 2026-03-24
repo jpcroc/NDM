@@ -1,7 +1,7 @@
 module neb_module
   !-----------------------------------------------
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:iseed,lrestart,&
+  USE gen_com_m, only:uwrt,lwrt,iseed,lrestart,&
        &lrestart, fnam,pi,rang,lenfnam,rang,zero,lcontr,&
        &angst,lenfnam,angst,erg2ev,fnamcout,igen,lprteat,firsttime_lammps,&
        &latcomp,imm_glob,lperiod,lspacendm
@@ -81,7 +81,7 @@ contains
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
        firsttime_lammps=.true.
 !       inplmp="in.lammps."//paraneb%image
-!       write(6,*)"inplmp",inplmp
+!       write(uwrt,*)"inplmp",inplmp
 !       call read_lammps(inplammps=inplmp)
        call init_lammps()
 
@@ -212,7 +212,7 @@ end if
           idepmax=i
        end if
     end do
-    if (rang==0) write(6,*)'NEB: deplacement max entre configurations = ',deplamax,' pour l atome ',idepmax
+    if (rang==0) write(uwrt,*)'NEB: deplacement max entre configurations = ',deplamax,' pour l atome ',idepmax
 
     do iph=1,npath
 
@@ -269,7 +269,7 @@ end if
           
           IF (ok ) THEN
              ! Load NEB image ip in file *.<ip>.gin
-          if(rang==0)write(6,*)'FNAMneb  ',iph,ginfile
+          if(rang==0)write(uwrt,*)'FNAMneb  ',iph,ginfile
           call gin2ndm(atneb(iph),cellneb(iph),boxneb,ginfile,rumax,lrepartition=.false.,psc=pscneb)
             do i=1,im
                atneb(iph)%num_at_glob(i)=i
@@ -320,13 +320,13 @@ end if
          Rtemp_p,Rtemp_m, temp_m,temp_p
     real(double), dimension(3) :: tg_p(3),tg_m(3),Rtemp(3)
     integer::indmaxE
-!    write(6,*)lclimb,intneb,nwclimb
+!    write(uwrt,*)lclimb,intneb,nwclimb
     if (lclimb) then 
        if (intneb==nwclimb) then
 !          indmaxE=maxloc(enepath(2:npath-1))
           indmaxE = maxloc(enepath(2:npath-1), dim=1) 
           limgclimb(indmaxE)=.true.
-          if (rang==0) write(6,*)'CLIMBING IS TURNED ON, climbing image is number: ', indmaxE
+          if (rang==0) write(uwrt,*)'CLIMBING IS TURNED ON, climbing image is number: ', indmaxE
        end if
     end if
     do ip=2,npath-1
@@ -573,7 +573,7 @@ end if
     logical :: lwrite
 #endif
     !    type(atom_config)::atrgin
-!    write(6,*)'IMM NEB',imm
+!    write(uwrt,*)'IMM NEB',imm
     call allocate_neb(0,imm)
     imm_glob=imm
     atneb(:)%imm_glob=imm
@@ -583,7 +583,7 @@ end if
           do ip=1, npath, npath-1 !CRC ne lit que deux images ??
              write(extension,'(i9.9)') ip
              fnamneb=fnam(1:lenfnam)//'.coutposition.'//extension
-             if (rang==0) write(6,'(2a)')'image = ',fnamneb
+             if (rang==0) write(uwrt,'(2a)')'image = ',fnamneb
              call read_cin(boxneb,itread,atneb(ip),imm,fnamneb,lrestart,fmt_cin)
              atneb(ip)%ielat(:)=0 !ielat(:)
              atneb(ip)%iwmax(:)=0 !iwmax(:)
@@ -596,7 +596,7 @@ end if
           end do
        else ! pas restart
           fnamneb='deb_'//fnam(1:lenfnam)//'.cin'
-          if(rang==0)write(6,*)'FNAMneb 1 ',fnamneb
+          if(rang==0)write(uwrt,*)'FNAMneb 1 ',fnamneb
           call read_cin(boxneb,itread,atneb(1),imm,fnamneb,lrestart,fmt_cin)
           atneb(:)%im=atneb(1)%im
           atneb(1)%ielat=0
@@ -635,7 +635,7 @@ end if
        end if
     else
        fnamneb='deb_'//fnam(1:lenfnam)//'.gin'
-       if (rang==0) write(6,*)'FNAMneb 1 ',fnamneb,nprocspace,atneb(1)%imm_glob
+       if (rang==0) write(uwrt,*)'FNAMneb 1 ',fnamneb,nprocspace,atneb(1)%imm_glob
        lsecondpath=.false.
        call gin2ndm(atneb(1),cellneb(1),boxneb,fnamneb,rumax,lrepartition=.false.,psc=pscneb)
 
@@ -686,7 +686,7 @@ end if
 
     if((ipotentiel==-10).or.(ipotentiel==-11)) then
        if(paraneb%mpi_orig%rank==0)then
-          write(6,*)'write configuration to conf.lmp'
+          write(uwrt,*)'write configuration to conf.lmp'
           lwrite=.true.
        else
           lwrite=.false.
@@ -746,7 +746,7 @@ end if
     ! Routine d'initialisation de MPI pour la NEB
 #ifdef PARA
 
-!    write(6,*)'INPNEB', rang,nprocs
+!    write(uwrt,*)'INPNEB', rang,nprocs
     paraneb%mpi_orig%nproc=nprocs
     paraneb%mpi_orig%rank=rang
     call MPI_COMM_DUP(MPI_COMM_WORLD,paraneb%mpi_orig%comm,ierr)
@@ -774,8 +774,8 @@ end if
 
 #endif
 
-  write(6,*)'PARANEB',paraneb%mpi_image%nproc
-!  write(6,*)'PARANEB',paraneb%mpi_orig%comm,paraneb%mpi_master%comm,paraneb%mpi_image%comm
+  write(uwrt,*)'PARANEB',paraneb%mpi_image%nproc
+!  write(uwrt,*)'PARANEB',paraneb%mpi_orig%comm,paraneb%mpi_master%comm,paraneb%mpi_image%comm
   end subroutine init_mpi_neb
 
 end module neb_module

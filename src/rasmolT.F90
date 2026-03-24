@@ -2,7 +2,7 @@
 module rasmolT_mod
   USE arret_ndm_mod,only:arret_ndm
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:rang,ivisu,lpkbar,lspaceNDM,&
+  USE gen_com_m, only:uwrt,lwrt,rang,ivisu,lpkbar,lspaceNDM,&
        &cunitP,iteration,lcasca,timel,unitP,fnam,erg2ev,lenfnam,umass,rang
   USE var_pot, ONLY:ntyp,ntyp_buffer,ty,ty_buffer,cm_buffer,cm
 
@@ -93,7 +93,7 @@ contains
     end if
 
     if((.not.latc).and.(atmol%im_glob==0)) then
-       write(6,*)'rasmolT im_glob stop',latc,atmol%im_glob
+       write(uwrt,*)'rasmolT im_glob stop',latc,atmol%im_glob
        call arret_ndm
     end if
 
@@ -178,7 +178,7 @@ contains
 #endif
        select type (atmol)
        type is(atom_config)
-          write(6,*)' no velocity in atom-config and cfg with velocities stop'
+          write(uwrt,*)' no velocity in atom-config and cfg with velocities stop'
           call arret_ndm
        class is (atom_config_d)
           laux = .true.
@@ -237,8 +237,8 @@ contains
           im_glob =atmol%im_glob
           rgloc=myidsp
        else
-          write(6,*)'latc=false et (nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) ??? stop'
-          write(6,*)latc,nprocspace,lspaceNDM
+          write(uwrt,*)'latc=false et (nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) ??? stop'
+          write(uwrt,*)latc,nprocspace,lspaceNDM
           call arret_ndm
 
        end if
@@ -365,7 +365,7 @@ contains
           format='xyz'
 #endif
        case default
-          write(6,*)'wrong ivisu',ivisum,ivisu
+          write(uwrt,*)'wrong ivisu',ivisum,ivisu
           call arret_ndm
        end select
        
@@ -379,7 +379,7 @@ contains
          !       if (ivisum.ne.5) then
          !          tyw='000'
          !    do i=1,im
-         !       write(6,*)i,atmol%ityp(i),ty(atmol%ityp(i))
+         !       write(uwrt,*)i,atmol%ityp(i),ty(atmol%ityp(i))
          !    end do
          !       if (naux.gt.0)then
          call write_header(ivisum,at,im_glob,luvisu, itapp,atmol,nauxv,nauxw,laux,charauxw)
@@ -510,7 +510,7 @@ contains
 
 #endif
     end if
-    !    write(6,*)'OUT Rasmol',rang
+    !    write(uwrt,*)'OUT Rasmol',rang
 
     !if(itapp==0) open (file='filmtot.mol',unit=47)
 
@@ -560,14 +560,14 @@ contains
     character(len=9),optional::ext
     logical::lopen
     character*80::namef
-    !    write(6,*)'name o end_name ',nameo, ' ; ',end_name
+    !    write(uwrt,*)'name o end_name ',nameo, ' ; ',end_name
     if (present(ext)) then
        namef=trim(nameo)//'.'//trim(ext)//trim(end_name)
        !              namef=nameo(1:len(nameo))//'.'//ext//'.'//end_name
     else
        namef=trim(nameo)//trim(end_name)
     end if
-    !    write(6,*)'atomic output file name ',namef
+    !    write(uwrt,*)'atomic output file name ',namef
     inquire(FILE=namef,opened=lopen)
     if (.not.lopen)open(luvisu, file=namef, form='formatted', &
          &         status='unknown')
@@ -621,7 +621,7 @@ contains
        if(lvelocities) then
           select type (atcomp)
           type is(atom_config)
-             write(6,*)'no velocity in atom-config and export asked with velocities stop'
+             write(uwrt,*)'no velocity in atom-config and export asked with velocities stop'
              call arret_ndm(.true.)
           class is (atom_config_d)
              call write_structure(trim(namef), box*1d8, atcomp%xp(:,1:atcomp%im), &
@@ -666,12 +666,12 @@ contains
     integer :: i
 
     if (.not. allocated(xposg)) then
-       write(6,*) "Attention : utilisation de dk-io en parallèle => reconstruction du tableau de position complet sur le proc 0"
+       write(uwrt,*) "Attention : utilisation de dk-io en parallèle => reconstruction du tableau de position complet sur le proc 0"
        allocate(xposg(3,img))
        allocate(tywg(img))
        allocate(masses_g(img))
        if (lvelocities) then
-         write(6,*) "reconstruction du tableau des vitesses complet sur le proc 0"
+         write(uwrt,*) "reconstruction du tableau des vitesses complet sur le proc 0"
          allocate(vpg(3,img))
        end if
     end if

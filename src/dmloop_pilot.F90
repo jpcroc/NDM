@@ -3,7 +3,7 @@ module dmloop_pilot_mod
   USE atomconfig,only : atom_config_d, atom_config_e,atom_config_arps
   USE cellconfig, only:cell_config,cell_config_arps
   USE boxconfig,only:box_config,box_config_lpr
-  USE gen_com_m, ONLY: dmtype,lcdp,rang,latcomp
+  USE gen_com_m, only:uwrt,lwrt, dmtype,lcdp,rang,latcomp
 
   use Tpara,only:para_space_config
   use endrunT_mod,only:endrunT
@@ -47,24 +47,24 @@ contains
        type is (box_config_lpr)
           call dmloop_lpr (atdml,celndm,boxndm,psc,linit=lini)
        type is (box_config)
-          write(6,*)'WTF dmloop_pilot call lpr'
+          write(uwrt,*)'WTF dmloop_pilot call lpr'
           call arret_ndm
        end select
                 
     case (1,21,23)
        call dmloop (atdml,celndm,boxndm,psc)
     case default
-       write(6,*)'DMTYPE ?? dmloop_pilot'
+       write(uwrt,*)'DMTYPE ?? dmloop_pilot'
        call arret_ndm
     end select
 
     if (lcdp) then
-       if (rang==0) write (6, *) '*******return CDP**** '
+       if (rang==0) write (uwrt, *) '*******return CDP**** '
        return
     else
-       if (rang==0) write (6, *) '*******Derniere iteration **** '
+       if (rang==0) write (uwrt, *) '*******Derniere iteration **** '
        call endrunT(atdml,celndm,boxndm,latcomp)
-       write (6, *) 'predeal '
+       write (uwrt, *) 'predeal '
        !       call DeallocateAll
        call arret_ndm
     end if

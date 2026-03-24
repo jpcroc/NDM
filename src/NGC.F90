@@ -70,7 +70,7 @@ contains
     lchg=.true.
 
     if (rang==0 )write(unitgc,*)'IN NGC',betaguess
-
+!    if (rang==0 )write(uwrt,*)'IN NGC',betaguess
     betaV=betaguess
     betaP=betaguess/3
     betaV0=betaguess

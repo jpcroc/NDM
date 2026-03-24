@@ -1,4 +1,5 @@
 module force_tersoff_facteurs
+  USE gen_com_m, only:uwrt,lwrt
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
   USE var_pot, ONLY:  ipotentiel
@@ -20,12 +21,12 @@ contains
     integer, intent(in) :: ptyp
     real(double)::x,rms,rps,fact
     ! Nouveau fc(r) de Lisa Porter & Ju Li de 89
-!    write(6,*)'entree',ipotentiel
+!    write(uwrt,*)'entree',ipotentiel
     select case (ipotentiel)
     case(13)
        if (ster(ptyp).lt.rter(ptyp))then
-          write(6,*)'contradiction entre tersoff.potin et ipotentiel'
-          write(6,*)'ipotentiel=',ipotentiel,'ster<rter'
+          write(uwrt,*)'contradiction entre tersoff.potin et ipotentiel'
+          write(uwrt,*)'ipotentiel=',ipotentiel,'ster<rter'
           call arret_ndm
        end if
 
@@ -47,8 +48,8 @@ contains
     case (14)
 
        if (ster(ptyp).gt.rter(ptyp))then
-          write(6,*)'contradiction entre tersoff.potin et ipotentiel'
-          write(6,*)'ipotentiel=',ipotentiel,'ster>rter'
+          write(uwrt,*)'contradiction entre tersoff.potin et ipotentiel'
+          write(uwrt,*)'ipotentiel=',ipotentiel,'ster>rter'
           call arret_ndm
        end if
 !       fact=50.
@@ -63,9 +64,9 @@ contains
 !             fc = 0.
 !          else
              fc=1./(1.+exp(x))
-!write(6,*)r,x,fc
+!write(uwrt,*)r,x,fc
 !          END IF	
-!	  write(6,*)r,fc
+!	  write(uwrt,*)r,fc
        end IF
        IF (present(dfc)) then
           if (Rms<r .and. r<rps) then
@@ -85,7 +86,7 @@ contains
           if (Rter(ptyp)-Ster(ptyp)<r .and. r<Rter(ptyp)+Ster(ptyp)) &
                fc = 0.5-0.5*sin(0.5*pi*(r-Rter(ptyp))/Ster(ptyp))
           if (r>=Rter(ptyp)+Ster(ptyp)) fc = 0.
-!          write(6,*)r,fc
+!          write(uwrt,*)r,fc
        end IF
        IF (present(dfc)) then
           if (Rter(ptyp)-Ster(ptyp)<r .and. r<Rter(ptyp)+Ster(ptyp)) then
@@ -95,7 +96,7 @@ contains
           end if
        END IF
     case default
-       write(6,*)'quel tersoff ?',ipotentiel
+       write(uwrt,*)'quel tersoff ?',ipotentiel
        call arret_ndm
     end select
     

@@ -16,8 +16,8 @@ module init_simple_mod
   use vars_lammps
 #endif
 
-  USE gen_com_m, ONLY:fnam,lenfnam,igen,lperiod,lrestart,rang,tstep,two,usdh,&
-       &lspacendm
+  USE gen_com_m, only:uwrt,lwrt,fnam,lenfnam,igen,lperiod,lrestart,rang,tstep,two,usdh,&
+       &lspacendm,tinit
   use read_val,only:ltabvois
   USE var_pot, ONLY:ipotentiel
   use Tpara,only:para_space_config
@@ -25,7 +25,7 @@ module init_simple_mod
 
 contains
   ! **************************************************************
-  subroutine init_simple(atdml,celndm,boxndm,filename,psc,linitpot)
+  subroutine init_simple(atdml,celndm,boxndm,filename,psc,linitpot,tinitr,lwrtiR,lrepart)
 
 
 
@@ -51,57 +51,69 @@ contains
     ! **************************************************************
 
     implicit none
+    
      type(para_space_config)::psc
      class(atom_config)::atdml
      type(cell_config),intent(out)::celndm
      class(box_config),intent(out)::boxndm
     character(*),optional::filename
-    logical, optional::linitpot
+    logical, optional::linitpot,lwrtir,lrepart
     
-    logical::linitpotW=.true.
+    logical::linitpotW=.true.,lwrti
     character*80::filenomIS
-
+    real(double),optional::tinitr
+    real(double)::tinit0
     !-----------------------------------------------
 
-     logical :: lrepart
+    logical :: lrepartl
+    
+     if(present(tinitr)) then
+        tinit0=tinitr
+     else
+        tinit0=tinit
+     end if
+     if(present(lrepart)) then
+        lrepartl=lrepart
+     else
+        lrepartl=.false.
+     end if
+     if(present(lwrtiR)) then
+        lwrti=lwrtiR
+     else
+        lwrti=lwrt
+     end if
 
     filenomIS=fnam(1:lenfnam)
     if (present(filename))filenomIS=filename
     if (present(linitpot))linitpotW=linitpot
     if (linitpotW)call init_pot
     usdh = 1/(two*tstep)
-!    if ((ipotentiel==-10).or.(ipotentiel==-11))then
-       lrepart=.false. !TOUJOURS FALSE, repartition plus tard
-!    else
-!       lrepart=.true.
-       !    end if
-       call constrconf(atdml,boxndm,celndm,lrepart,filenomIS,psc)
+
+    call constrconf(atdml,boxndm,celndm,lrepart,filenomIS,psc,lwrtiR)
+
        call init_pot2(boxndm,atdml%imm)
 
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        CALL comm_space%barrier
        call init_voisinage(celndm,psc,lwrite=.false.)
-
-       !if (rang==0)  write(6,*) 'NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR'
-       !write(6,*) 'Le proc ',myidsp,' a ',psc%nbr_proc_voisin,' processeur voisin'
+       !if (rang==0)  write(uwrt,*) 'NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR'
+       !write(uwrt,*) 'Le proc ',myidsp,' a ',psc%nbr_proc_voisin,' processeur voisin'
     end if
 #endif
     !<---------end setting the cell diviion ----------------------
     if (.not.lrestart) then
-       !    if (rang==0)     write(6,*)'>>>>>>>>>>>avant initspeed'
+       !    if (rang==0)     write(uwrt,*)'>>>>>>>>>>>avant initspeed'
        select type(atdml)
        class is (atom_config_d)
-
-          call initspeed(atdml,boxndm,lprt=lprt)
+          call initspeed(atdml,boxndm,tinitr=tinit0,lwrtsR=lwrtiR)
        end select
     end if
-
 !    if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 !       call caltabtC(celndm,atdml,lperiod,boxndm,psc=psc)
 !    else
        call caltabtC(celndm,atdml,lperiod,boxndm,lchktrav=.false.)
-!    end if
+       !    end if
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)
     end if

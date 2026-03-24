@@ -1,7 +1,7 @@
 module tab_imm_m
   !
   USE T_kind_param_m
-  USE gen_com_m, ONLY: lposmoy,mdcg_noise,llangevin,l2T
+  USE gen_com_m, only:uwrt,lwrt, lposmoy,mdcg_noise,llangevin,l2T
   !$ USE OMP_LIB
   ! 
   ! Module contenant les tableaux dimmensionnes sur le

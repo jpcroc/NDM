@@ -1,7 +1,7 @@
 module calcdigr_mod
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:lperiod,rang,rcrdf,iteration,pi,timel,lspacendm
+  USE gen_com_m, only:uwrt,lwrt,lperiod,rang,rcrdf,iteration,pi,timel,lspacendm
   use atomconfig,only: atom_config
   use boxconfig,only:box_config
   USE cellconfig,only:cell_config

@@ -1,0 +1,19 @@
+#!/bin/bash
+seuil=25
+for ((tn=1 ; tn<=23; tn +=1)) ; do
+cd T$tn
+pwd
+pwd
+pwd
+./jtestgf
+nb_diff=$(diff TXXX.out res/Tgf$tn.out | grep -E '^>' | wc -l)
+    echo $nb_diff
+if [ "$nb_diff" -gt "$seuil" ]; then
+
+meld   TXXX.out res/Tgf$tn.out
+fi
+rm -f rd
+
+cd ../
+done
+

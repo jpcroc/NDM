@@ -1,7 +1,7 @@
 module inputtersoff_mod
   USE arret_ndm_mod,only:arret_ndm
   USE alloc_typ_mod,only: alloc_typ
-  USE gen_com_m, ONLY:ldemitab,rang,umass
+  USE gen_com_m, only:uwrt,lwrt,ldemitab,rang,umass
       USE var_pot!, ONLY:iewald,l3c,npotentiel,r3cm,typ_and_pot,npotmax
   implicit none
 contains
@@ -27,15 +27,15 @@ contains
 
     fnampotin = 'tersoff.potin'
     !RUE_POT IS NOT DEFINED FOR TERSOFF!
-    !  write(6,*)
-    !  write(6,*)'LECTURE TERSOFF'
+    !  write(uwrt,*)
+    !  write(uwrt,*)'LECTURE TERSOFF'
     open(unit=lupotin, file=fnampotin, status='old')
 
     if (npotentiel .gt.1)then
        !          read(lupotin,*) npairlu ! nombre de paire sur lesquelles le potentiels de tersoff s'applique
        !          do lo=1,npairlu
        !             read(lupotin,*)ipairlu !indice des paires form�es par 
-       write(6,*)'npotentiel et tersoff a vérifier'
+       write(uwrt,*)'npotentiel et tersoff a vérifier'
        stop
 
        read(lupotin,*) ntypr,psilu
@@ -71,13 +71,13 @@ contains
        end if
        typtyp(i)=iti
        if(lue_typ(iti).EQV..true.)then
-          if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la coh�rence'
+          if (rang==0)write(uwrt,*) 'type',iti,'deja lu ; verification de la coh�rence'
           if (cmr*umass.ne.cm(iti))then
-             if (rang==0)write(6,*) 'pb avec cm'
+             if (rang==0)write(uwrt,*) 'pb avec cm'
              call arret_ndm
           end if
           if (tyr.ne.ty(iti))then
-             if (rang==0)write(6,*) 'pb avec ty'
+             if (rang==0)write(uwrt,*) 'pb avec ty'
              call arret_ndm
           end if
        end if
@@ -88,7 +88,7 @@ contains
        read(lupotin,*) Rterlu(iti),Sterlu(iti)
        read(lupotin,*) beta(iti),nter(iti),cter(iti),dter(iti),hter(iti),deltater(iti)
        if (deltater(iti)==0) deltater(iti)=1.0/(2*nter(iti))
-       !     if (rang==0) write(6,*) iti,deltater(iti)
+       !     if (rang==0) write(uwrt,*) iti,deltater(iti)
     end do
 
     !  do iti=1,ntyp
@@ -99,7 +99,7 @@ contains
 
     read(lupotin,*,end=456)ntypzl,nprns
     allocate (catomlu(ntypzl))
-    if (rang==0) write(6,*)'lecture supplement tersoff.potin pour Ziegler'
+    if (rang==0) write(uwrt,*)'lecture supplement tersoff.potin pour Ziegler'
     !     call arret_ndm
     !  end if
     !  if (npotentiel.gt.1) then
@@ -114,7 +114,7 @@ contains
     !     programmer un check sur catom
     !stop
 
-    write(6,*)'lecture de roff1 et roff2 pour certaines paires ',nprns
+    write(uwrt,*)'lecture de roff1 et roff2 pour certaines paires ',nprns
     do i = 1, nprns
        read (lupotin, *) l, rof1m, rof2m
        roff1(l)=rof1m*1.d-8
@@ -133,10 +133,10 @@ contains
           itj=typtyp(j)
           ipr=ipo(iti,itj)
           if (typ_pot_pair(ipr).ne.0)then
-             write(6,*)'paire ',ipr,' deja lue de potentiel=',typ_pot_pair(ipr)
+             write(uwrt,*)'paire ',ipr,' deja lue de potentiel=',typ_pot_pair(ipr)
              call arret_ndm
           end if
-          if (rang==0) write(6,*)'paire l active  ipotentiel: ',ipr, ipotentiel
+          if (rang==0) write(uwrt,*)'paire l active  ipotentiel: ',ipr, ipotentiel
 
           lambda1(ipr)=0.5*(lambda1lu(iti)+lambda1lu(itj))
           lambda2(ipr)=0.5*(lambda2lu(iti)+lambda2lu(itj))
@@ -174,7 +174,7 @@ contains
 
 
     rumax=max(rumax,maxval(rue_pair))
-    !  if(rang==0)write(6,*)'rumax',rumax
+    !  if(rang==0)write(uwrt,*)'rumax',rumax
 
     ldemitab =.false.
 
@@ -184,7 +184,7 @@ contains
        typ_and_pot(:,:)=.false.
        typ_and_pot(1:ntyp,ipotentiel)=.true.
     end if
-    write(6,*)
+    write(uwrt,*)
 
   end subroutine inputtersoff
 end module inputtersoff_mod

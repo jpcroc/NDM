@@ -1,0 +1,107 @@
+ Process            0  of            4  is alive
+ Process            1  of            4  is alive
+ Process            2  of            4  is alive
+ Process            3  of            4  is alive
+ nom fichier din=Febulk.din                                                                      
+ nom fichier din=Febulk.din                                                                      
+ rang readdm iseed            3           1
+ INITMPIFM
+ rang readdm iseed            1           1
+ INITMPIFM
+
+ -------- caracteristiques du run DM--------19
+ rang readdm iseed            2           1
+ INITMPIFM
+      FORCE Matrix calculation 
+  decal, ndecal lparaFM, naparaFM:   1.0000000149011612E-009           1 T           4
+
+ generation du crystal ; puis run
+
+      ANALYSES 
+ itetemp=           1  iteprtsigma=           1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=           6 timemax=    10000000000.000002       itab=           1  itetimestep=          -1
+tinit=     600.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+ rang readdm iseed            0           1
+ INITMPIFM
+ nparafM,nprocspace, nprocs           4           1           4
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM
+
+ NTYP NPAIR            1           1
+ Types d_atomes pour ce potentiel:
+ CM, masse,type, NUMERO DU TYPE D ATOME
+   1   55.847   26.000  Fe 
+ nb of readed pairs           1
+ nptmax in the max number of points on grid        249999
+ EAM           1           1
+ EAM number of points in potin and the step      249999   6.8178370289999997E-004
+ dens           1           1
+ RHO potin points and the step:       249999   2.4000000000000001E-005
+ paire eam ; paire complete           1           1
+ rep
+ PRESENT imglob         432
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+ imm,imm_glob,nprocspace        2000        2000           1
+
+ **********construction du reseau************
+ repetition de mailles           6           6           6
+  .gin with 0 coordinates; creates FAILURES,  POSITIONS SHIFTED By +2e-7
+ nox,noy,noz dans .din =          -1          -1          -1
+nox noy noz and ghost cells from ru
+  nox in direction  1=  2 if not specified =Int(   0.1713E-06/  0.6000E-07) 
+  nox in direction  2=  2 if not specified =Int(   0.1713E-06/  0.6000E-07) 
+  nox in direction  3=  2 if not specified =Int(   0.1713E-06/  0.6000E-07) 
+           8  active cells among            8
+celsizes   0.8565954E-07  0.8565954E-07  0.8565954E-07
+Febulk.gin                                                                      
+volume= 0.50282539D-20 cm3  0.50282539D+04 Ang3
+ PRESENT imglob         432
+ natperc im/noxyz         108          54
+ ltabvois F
+
+ -------- boite de simulation ------
+ nombre d atomes =         432
+vecteur  1      17.131908       0.000000       0.000000
+vecteur  2       0.000000      17.131908       0.000000
+vecteur  3       0.000000       0.000000      17.131908
+         432  atomes de type           1
+
+  -------------------------------------------------------------------
+              2nd step of potential initialization , dependancy on box size
+ IN ForceMatrix           3
+ PRESENT imglob         432
+ PRESENT imglob         432
+ IN ForceMatrix           2
+ calpoeam ktorho and the inverse:    8.5222281072576088E-003   117.34020580232894     
+ random velocities at TINIT =    600.00000000000000      K
+ temperature fin initspeed    599.99999999999920     
+ IN ForceMatrix           0
+ IN ForceMatrix           1
+ decal rang ideb ifin          -1           2         217         324
+ decal rang ideb ifin          -1           0           1         108
+ decal rang ideb ifin          -1           3         325         432
+ decal rang ideb ifin          -1           1         109         216
+ decal rang ideb ifin           1           3         325         432
+ decal rang ideb ifin           1           1         109         216
+ decal rang ideb ifin           1           0           1         108
+ decal rang ideb ifin           1           2         217         324
+ PRE MKL
+ zero frequency=   0.0000000000000000     
+ 3 non positive frequencies OK for periodic bulk 
+  thermo sauved to name.thermo.dat
+  temperature, Fmin(nT), Fcla(nT), Smin(nT), Scla(nT)

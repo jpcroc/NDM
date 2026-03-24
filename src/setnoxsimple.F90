@@ -1,6 +1,6 @@
 module setnoxsimple_mod
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:ldemitab,pi,rang
+  USE gen_com_m, only:uwrt,lwrt,ldemitab,pi,rang
   USE var_pot, ONLY:lpotentiel,rue_pot !ngrid,r3cm,r3cm2,rumax,q,na,rue_pot,lpotentiel,rue_pair,ntyp,csive
   USE recips_mod,only:recips,calcvol,distmin
   USE atomconfig,only: atom_config
@@ -47,11 +47,11 @@ contains
        celsn%celsize(1) = boxsn%zl(1)/float(nox)
        celsn%celsize(2) = boxsn%zl(2)/float(noy)
        celsn%celsize(3) = boxsn%zl(3)/float(noz)
-!       write(6,*)'setnoxsimple',rum, boxsn%zl(1),nox,noy,noz
+!       write(uwrt,*)'setnoxsimple',rum, boxsn%zl(1),nox,noy,noz
     call celsn%init(boxsn,nox,noy,noz)
     
     natperc= INT(atsn%im/celsn%noxyz)
-!    write(6,*)'setnoxsimple',nox,noy,noz,natperc
+!    write(uwrt,*)'setnoxsimple',nox,noy,noz,natperc
     natperc=max(int(2*natperc),10)     ! MODIF Clouet
     celsn%natperc=natperc
     if (allocated(celsn%atincel))deallocate(celsn%atincel)
@@ -83,7 +83,7 @@ contains
     integer,intent(in)::nox,noy,noz
     integer::natpc
     if (nox<=0.or.noy<=0.or.noz<=0) then
-       write(6,*)'nox noy noz must be specified in the call of setcellsimple'
+       write(uwrt,*)'nox noy noz must be specified in the call of setcellsimple'
        call arret_ndm
     end if
     celsp%celsize(1) = box%zl(1)/float(nox)

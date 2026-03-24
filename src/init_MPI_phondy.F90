@@ -13,7 +13,7 @@ subroutine init_mpi_phondy()
   USE mpi
   USE mod_para,only:MPI_COMM_space,_phondy
   USE gen_mpi
-  USE gen_com_m, ONLY: , ONLY: rangph
+  USE gen_com_m, only:uwrt,lwrt, , ONLY: rangph
   implicit none
 
   ! Routine d'initialisation de MPI pour le code NDM

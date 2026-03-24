@@ -1,9 +1,9 @@
 module montecarlo_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m,only:  lperiod, tstep, timel, tstep,  itetabvois,lenfnam,&
+  USE gen_com_m,only:uwrt,lwrt,  lperiod, tstep, timel, tstep,  itetabvois,lenfnam,&
        & iterasmol,itetemp, temp, kine, pi, bk, Text, gamlg,gamprfact,one,pi,text,tinit,&
        &lspaceNDM,rang,iteration,firsttime_lammps,erg2ev,fnam,fnamcout,unitP,dmtype,&
-       &lrestartmcgc,imm_glob,iseed,sig,lprahman,sigext,h0,kcell,ucell,ihbox0,sigtot,sigkine
+       &lrestartmcgc,imm_glob,iseed,sig,lprahman,sigext,ihbox0,sigtot,sigkine
   USE atomconfig,only:atom_config,atom_config_d, switch_atom
   USE cellconfig, only:cell_config, caltabtC
   USE var_pot,only:ntyp,cm,gamlt
@@ -45,7 +45,7 @@ module montecarlo_mod
   use config2data_mod,only:config2data
   USE constrconf_mod,only:read_cin,lprt
   use probMC,only:probMC1
-  use Parrinello_Rahman,only:sp,sdot, sdot_new,trh0,invh0,invtrh0,epsi,tension,volu0,invvolu0
+  use Parrinello_Rahman,only:sp,sdot, sdot_new
   implicit none
 
   type, extends (atom_config_d):: atom_config_mc
@@ -89,6 +89,7 @@ module montecarlo_mod
   integer::typswitch1,typswitch2
   integer::  pas_lambda_mc,idirectionmcgc
   real(double) :: lambda_mc !lambda compris entre 0 et 1
+  real(double)::ucell
 
   integer :: n_path ! nb de chemin d'insertion, a definir dans .din, par defaut 10
 
@@ -216,17 +217,17 @@ contains
     cells_nplus1=>config_cells_nplus1(1)
 
     if (rang==0) then
-       write(6,*)'***************PATH MONTE-CARLO*****************'
-       write(6,'(A,I6,A,I6,A,I4)')'pas_lambda=',pas_lambda_mc,' npath=',n_path,' naparapath=',nparapath
-       write(6,'(A,I3,A)')'ins_typ=',ins_typ, &
+       write(uwrt,*)'***************PATH MONTE-CARLO*****************'
+       write(uwrt,'(A,I6,A,I6,A,I4)')'pas_lambda=',pas_lambda_mc,' npath=',n_path,' naparapath=',nparapath
+       write(uwrt,'(A,I3,A)')'ins_typ=',ins_typ, &
             &' (0=random; 1=sph 2=switch type, 3=slice, 11 site+spring, 33 slice +spring, 44 line+spring), 55 sphere +spring'
-       write(6,*)'lbiais_retrait , lbiais_inser ',lbiais_retrait,lbiais_inser
+       write(uwrt,*)'lbiais_retrait , lbiais_inser ',lbiais_retrait,lbiais_inser
        if (lbiais_inser) then
           select case(ins_typ)
           case (1)
-             if (rang==0) write(6,*)'R0mcgc bublcenter ',R0mcgc,bublcenter
+             if (rang==0) write(uwrt,*)'R0mcgc bublcenter ',R0mcgc,bublcenter
           case(3)
-             if (rang==0) write(6,'(A,G15.7,I3,G15.7)')'R0mcgc, izlins(X,Y,Z), zlcenter ',R0mcgc,izlins, zlcenter(izlins)
+             if (rang==0) write(uwrt,'(A,G15.7,I3,G15.7)')'R0mcgc, izlins(X,Y,Z), zlcenter ',R0mcgc,izlins, zlcenter(izlins)
           end select
        end if
     end if
@@ -256,10 +257,10 @@ contains
           FEspring=Fecalcprob ! bk*text*log(boxmcgc_p%volu)*erg2ev
        end select
        if (rang==0) then
-          write(6,*)'***SPRING CALCULATION***'
-          write(6,'(A)')'Free energy of the spring to ADD to &
+          write(uwrt,*)'***SPRING CALCULATION***'
+          write(uwrt,'(A)')'Free energy of the spring to ADD to &
 &the calculated chamical potential at the very end (in eV) (second value is better if non zero)'
-          write(6,*)'FEspring=',FEspring,fe2
+          write(uwrt,*)'FEspring=',FEspring,fe2
        end if
     end if
 
@@ -300,7 +301,7 @@ contains
 
     !initialisation variables 
     !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation
-    !    write(6,*)'RANG UISEED',rang,iseed
+    !    write(uwrt,*)'RANG UISEED',rang,iseed
     lbiais(0)=lbiais_inser
     lbiais(1)=lbiais_retrait
     direction=idirectionmcgc
@@ -350,7 +351,7 @@ contains
     if (lmegamaster) then
        if (dmtype==151)open(UNIT= 754, FILE="analyse_file.151")!, STATUS = 'new')
     end if
-    !  if (rang==0) write(6,*)' IN MCGC nbatplus, idirection',nbatplus,idirectionmcgc
+    !  if (rang==0) write(uwrt,*)' IN MCGC nbatplus, idirection',nbatplus,idirectionmcgc
     if (lrestartmcgc) then
        if (lmegamaster) then
           write(*,*) 'imm_n, imm_nplus1', config_atom_n(1)%imm, config_atom_nplus1(1)%imm
@@ -360,10 +361,10 @@ contains
           call config_atom_old_1%init(config_atom_nplus1(1)%im, config_atom_n(1)%imm,config_atom_nplus1(1)%ltabvois,&
                &im_glob=config_atom_nplus1(1)%im_glob,imm_glob=imm_glob)
           fnamread= fnam(1:lenfnam)//'.N.cout'
-          !  write(6,*)'R1',config_atom_n(1)%imm
+          !  write(uwrt,*)'R1',config_atom_n(1)%imm
           call read_cin(box_old0,1,config_atom_old_0%atom_config_d,config_atom_n(1)%imm,fnamread) ! 1=complet
           fnamread= fnam(1:lenfnam)//'.NP1.cout'
-          ! write(6,*)'R2',config_atom_n(1)%imm
+          ! write(uwrt,*)'R2',config_atom_n(1)%imm
           call read_cin(box_old1,1,config_atom_old_1%atom_config_d,config_atom_n(1)%imm,fnamread) ! 1=complet
           !seul MEGAMASTER A LES POSITIONS OLD
           call config_atom_old_0%copy_config(config_atom_n(1), lrescl=.true.)          
@@ -493,7 +494,7 @@ contains
              lcalc=.true.
           end if
           if (lcalc) then
-             !          write(6,*)'CALC1',rang,ipp
+             !          write(uwrt,*)'CALC1',rang,ipp
              atconf_n=> config_atom_n(ipp)
              cells_n=>config_cells_n(ipp)
              atconf_nplus1=>config_atom_nplus1(ipp)
@@ -506,7 +507,7 @@ contains
              call lambda(direction, nstep = 0, protocol_name = protocol_mcc) !initialisation du lambda a 0 pour le premier melange des forces
              iloc=1;lchange=.false.;ldistrib=.true.
              call calfoMCGC(iloc,lchange,ldistrib)
-!             write(6,*)'MCCDBG1 ', rang
+!             write(uwrt,*)'MCCDBG1 ', rang
              !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation
 
              if (lprahman) then
@@ -514,7 +515,7 @@ contains
              else
                 call langevin(direction, protocol = protocol_mcc,qeff=qeff,work=work)
              end if
-             !if (lbigmaster) write(6,'(A,I2,3G15.7)')'potist', direction,Weff*erg2ev,Qeff*erg2ev,work*erg2ev
+             !if (lbigmaster) write(uwrt,'(A,I2,3G15.7)')'potist', direction,Weff*erg2ev,Qeff*erg2ev,work*erg2ev
              ! if LPR call langevinPc
              if (idirectionmcgc == 0) then 
                 weff_npp(ipp)= +Weff
@@ -535,17 +536,17 @@ contains
                    case(1,3,33,44,11,55)
                       
                       !                   call parapath%mpi_master%sum(rcpath)
-                      write(6,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
+                      write(uwrt,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
                       if (dmtype==151) write(754,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
-                      !                   write(6,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
+                      !                   write(uwrt,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
                       
                    case default
                       
                       if (dmtype==151) write(754,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV
-                      write(6,*)'Weff eV ', ipp,weff_npp(ipp)*erg2eV
+                      write(uwrt,*)'Weff eV ', ipp,weff_npp(ipp)*erg2eV
                    end select
                 end if
-             !if (lbigmaster)write(6,*)'potist', ipp,potist_n,potist_nplus1
+             !if (lbigmaster)write(uwrt,*)'potist', ipp,potist_n,potist_nplus1
           end if
 
        end do
@@ -561,7 +562,7 @@ contains
                    call random_number(zr1)
 
                    ipch=1+int(nparapath*zr1) ! choix aléatoire débile
-                   write(6,*)'chemin choisi aléatoirement',ipch
+                   write(uwrt,*)'chemin choisi aléatoirement',ipch
                 else
                    ipch=1
                 end if
@@ -589,7 +590,7 @@ contains
              if (lmegamaster) then
                 epotnp1min=pot_npp(ipch)
                 fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
-                write(6,*)'new epotnp1min ', epotnp1min*erg2ev
+                write(uwrt,*)'new epotnp1min ', epotnp1min*erg2ev
                 call sauvegardeT(config_atom_nplus1(ipch),config_cells_nplus1(ipch),boxmcgcpath(ipch),3,fnamcout,latcomp=.true.)
              end if
              call calcul_proba_des ! on vient de choisir ipch qui est accepté. On calcule les proba pour : 1:choisir les atomes à désintégrer et mettre dans old_1 pour les calculs du biais
@@ -685,8 +686,8 @@ contains
        Weff_npp(:)=0
        pot_npp(:)=0
        if (lmegamaster)then
-          write(6,*)
-          write(6,*)'path ',i_path,' in direction', direction, ' to ',1-direction
+          write(uwrt,*)
+          write(uwrt,*)'path ',i_path,' in direction', direction, ' to ',1-direction
        end if
 
        if ((lbigmaster).and.(dmtype==15)) then
@@ -724,7 +725,7 @@ contains
 
           if (lcalc) then
 
-             !             if (lbigmaster)write(6,*)'parapath',rang,i_path,ipp
+             !             if (lbigmaster)write(uwrt,*)'parapath',rang,i_path,ipp
              atconf_n=> config_atom_n(ipp)
              cells_n=>config_cells_n(ipp)
              atconf_nplus1=>config_atom_nplus1(ipp)
@@ -738,7 +739,7 @@ contains
              case(2)
                 call type_switch(direction)
              end select
-!             write(6,*)'MCCDBG2 ', rang
+!             write(uwrt,*)'MCCDBG2 ', rang
              ! pas de langevin
              if (lprahman) then
                 call langevinLPR(direction, protocol = protocol_mcc)
@@ -746,7 +747,7 @@ contains
                 call langevin(direction, protocol = protocol_mcc,qeff=qeff,work=work)
              end if
              ! if LPR call langevinPc
-             !if (lbigmaster) write(6,'(A,I2,3G15.7)')'potist', direction,Weff*erg2ev,Qeff*erg2ev,work*erg2ev
+             !if (lbigmaster) write(uwrt,'(A,I2,3G15.7)')'potist', direction,Weff*erg2ev,Qeff*erg2ev,work*erg2ev
              if (direction == 0) then
                 Weff_npp(ipp)= +weff
                 pot_npp(ipp)= potist_nplus1
@@ -761,7 +762,7 @@ contains
                    tempf=tempinstt(atconf_n,kindum,latcomp=.true.)
                 end if
                 pressF= (sigtot(1,1)+sigtot(2,2)+sigtot(3,3))/3.0
-                !                write(6,*)'Weff eV Tempf PressF',ipp, weff_npp(ipp)*erg2eV,tempf,pressf*unitP
+                !                write(uwrt,*)'Weff eV Tempf PressF',ipp, weff_npp(ipp)*erg2eV,tempf,pressf*unitP
              end if
 
           end if
@@ -783,7 +784,7 @@ contains
        case(1,3,33,44,11,55)
           if (lmegamaster) then
              do ipp=1,nparapath
-                write(6,'(A,I2,I4,2F20.10)')'Weff eV dist ', direction,ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
+                write(uwrt,'(A,I2,I4,2F20.10)')'Weff eV dist ', direction,ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
                 if (dmtype==151) write(754,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV,rcpath(ipp)
              end do
           end if
@@ -791,7 +792,7 @@ contains
        case default
           if (lmegamaster) then
              do ipp=1,nparapath
-                write(6,'(A,I2,I4,F20.10)')'Weff eV',direction, ipp,weff_npp(ipp)*erg2eV
+                write(uwrt,'(A,I2,I4,F20.10)')'Weff eV',direction, ipp,weff_npp(ipp)*erg2eV
                 if (dmtype==151) write(754,*)'Weff eV dist', ipp,weff_npp(ipp)*erg2eV
              end do
           end if
@@ -854,7 +855,7 @@ contains
        end if
     END DO !end do sur la boucle des chemins
 
-    ! write(6,*)'BARRIERE FINALE ',rang
+    ! write(uwrt,*)'BARRIERE FINALE ',rang
 #ifdef PARA
     call MPI_BARRIER(parapath%mpi_orig%comm,ierr)
 #endif
@@ -871,9 +872,9 @@ contains
     end if
     !stop
        if ((rang==0).and.(lspring)) then
-          write(6,*)'***SPRING CALCULATION***'
-          write(6,*)'Free energy of the spring to ADD to the calculated chamical potential at the very end (in eV)'
-          write(6,*)'FEspring=',FEspring
+          write(uwrt,*)'***SPRING CALCULATION***'
+          write(uwrt,*)'Free energy of the spring to ADD to the calculated chamical potential at the very end (in eV)'
+          write(uwrt,*)'FEspring=',FEspring
        end if
 
     
@@ -997,7 +998,7 @@ contains
                 if (epotnp1min.gt.nrjpot_npp(ipchemin)) then
                    epotnp1min=nrjpot_npp(ipchemin)
                    fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
-                   write(6,*)'new epotnp1min ', epotnp1min*erg2ev
+                   write(uwrt,*)'new epotnp1min ', epotnp1min*erg2ev
                    call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),&
                         &box_new1,3,fnamcout,latcomp=.true.)
                 end if
@@ -1082,7 +1083,7 @@ contains
           call calcul_chemin(travail_npp, xprob_i, Wprece, dir, theta, ipchemin, lbiais) 
           call choix_chemin(xprob_i, ipchemin)
 
-          write(6,*)'chemin choisi',ipchemin
+          write(uwrt,*)'chemin choisi',ipchemin
        end if !megamaster
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ACCEPTATION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1154,7 +1155,7 @@ contains
                 if (epotnp1min.gt.nrjpot_npp(ipchemin)) then
                    epotnp1min=nrjpot_npp(ipchemin)
                    fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
-                   write(6,*)'new epotnp1min ', epotnp1min*erg2ev
+                   write(uwrt,*)'new epotnp1min ', epotnp1min*erg2ev
                    call sauvegardeT(config_atom_new_1%atom_config_d&
                         &,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
                 end if
@@ -1492,7 +1493,7 @@ contains
              nag=maxval(atconf_Nplus1%num_at_glob(1:iplus-1))
              atconf_Nplus1%num_at_glob(iplus) = nag+1
              atconf_Nplus1%proba_ins = pins
-             !             write(6,*)'pinsN',i,pins
+             !             write(uwrt,*)'pinsN',i,pins
           end do
           call init_vitesse(atconf_nplus1,param = 0)
        end if
@@ -1606,7 +1607,7 @@ contains
     case default
        pinser=1
     end select
-    !    write(6,*)'probainser',pinser
+    !    write(uwrt,*)'probainser',pinser
   end function calcul_proba_ins
 !!!!!!!!!!!!!!!!!!!!!!
 
@@ -1617,12 +1618,12 @@ contains
     real(double) ::   sum_norm
 
     !       DO i=1, atconf_Nplus1%im
-    !          write(6,*)'AV',iteration,atconf_Nplus1%proba(1),atconf_Nplus1%proba(atconf_Nplus1%im)
+    !          write(uwrt,*)'AV',iteration,atconf_Nplus1%proba(1),atconf_Nplus1%proba(atconf_Nplus1%im)
     !       end DO
     if (lbiais(1)) then
        sum_norm = 0.0
        DO i=1, atconf_Nplus1%im
-          !         write(6,*)'AV',iteration,atconf_Nplus1%proba(i)
+          !         write(uwrt,*)'AV',iteration,atconf_Nplus1%proba(i)
           if (atconf_Nplus1%ityp(i) == itypcalc) then ! si l'atome est un oxygene
              call probMC1(atconf_Nplus1%xp(:,i),proba(i),boxmcgc_p%bg,boxmcgc_p%at,fdmc_1,fdmc_2)
              sum_norm=sum_norm+proba(i)
@@ -1864,7 +1865,7 @@ contains
        end if
     end do
     if (iatyp.ne.natyp) then
-       write(6,*)'WTF iatyp natyp',iatyp,natyp
+       write(uwrt,*)'WTF iatyp natyp',iatyp,natyp
        call arret_ndm(.true.)
     end if
 
@@ -1872,7 +1873,7 @@ contains
 3      continue
        call random_number(rand)
        indT = ( (natyp - 1) * rand ) + 1
-       !       write(6,*)'atom_del', rang,rand,indT
+       !       write(uwrt,*)'atom_del', rang,rand,indT
        if (lchosen(indT).eqv..true.) goto 3
        lchosen(indT)=.true.
        ind(i)=indatyp(indT)
@@ -1907,7 +1908,7 @@ contains
        end if
     end do
     if (iatyp.ne.natyp) then
-       write(6,*)'WTF iatyp natyp',iatyp,natyp
+       write(uwrt,*)'WTF iatyp natyp',iatyp,natyp
        call arret_ndm(.true.)
     end if
 
@@ -1922,7 +1923,7 @@ contains
           somme = somme + config%proba_des(indatyp(iatyp))
 
           if (somme.gt.rand) then
-             !             write(6,*)'CH',rand,somme,iatyp
+             !             write(uwrt,*)'CH',rand,somme,iatyp
              if (lchosen(iatyp).eqv..true.) then
                 goto 33
              else
@@ -2033,7 +2034,7 @@ contains
           do iat=1,nbatplus
 1            continue
              itry=itry+1
-             !if (itry.gt.1) write(6,*)'INSER',rang,itry,dist
+             !if (itry.gt.1) write(uwrt,*)'INSER',rang,itry,dist
              !write(*,*) 'rang', rang
              do i=1,rang+1
                 call random_number(x_nplus1)
@@ -2043,7 +2044,7 @@ contains
              vec(1,1) = x_nplus1
              vec(2,1) = y_nplus1
              vec(3,1) = z_nplus1
-             !write(6,*)'PLUS1',rang,x_nplus1,y_nplus1,z_nplus1
+             !write(uwrt,*)'PLUS1',rang,x_nplus1,y_nplus1,z_nplus1
              call cryst_to_cart(1,vec,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
              vecteur(:,iat) = vec(:,1)
              do i=1,atconf_n%im
@@ -2176,7 +2177,7 @@ contains
 
        call lambda(direc, ip, protocol)
        !       lambda_mc = 0
-       !write(6,*)'DIRECI',direc, ip,protocol,lambda_mc
+       !write(uwrt,*)'DIRECI',direc, ip,protocol,lambda_mc
        U_l_n = (1.d0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
 
        H_l_ini = Ek_n + U_l_n 
@@ -2184,11 +2185,11 @@ contains
        !write(15,*)
        !       write(15,'(A15, G25.16E3,A15, G25.16E3,A15, G25.16E3,A15, G25.16E3)') &
        !            &'lambda_mc ' ,lambda_mc,'Ek_n' , Ek_n, 'U_l_n', U_l_n, 'H_l_ini', H_l_ini
-       !             write(6,'(A)') 'lambda_mc,             Ek_n_plus1*erg2ev,        &
+       !             write(uwrt,'(A)') 'lambda_mc,             Ek_n_plus1*erg2ev,        &
        ! &        U_l_n*erg2ev,             H_l_n*erg2ev,            WEff*erg2ev,           dWEff*erg2ev,&
        !&         dWORK*erg2eV,        dQeff*erg2ev'
 
-       !             write(6,'(8G25.16E3)') lambda_mc, Ek_n_plus1*erg2ev,&
+       !             write(uwrt,'(8G25.16E3)') lambda_mc, Ek_n_plus1*erg2ev,&
        !                       & U_l_n*erg2ev, H_l_n*erg2ev, WEff*erg2ev, dWEff*erg2ev,dWORK*erg2eV, dQeff*erg2ev
 
     end if ! Master général
@@ -2204,7 +2205,7 @@ contains
     DO ip = 1, pas_lambda_mc
        !incrémentation de lambda
        call lambda(direc,ip, protocol)
-       !if (rang==0)write(6,*)'DIRECR',rang,direc, ip,protocol,lambda_mc
+       !if (rang==0)write(uwrt,*)'DIRECR',rang,direc, ip,protocol,lambda_mc
        !lambda_mc = dble(ip)/dble(pas_lambda_mc)
 
        if (lbigmaster) then ! Master général
@@ -2212,7 +2213,7 @@ contains
           Ek_n_plus1 = 0.0  
           Ek_n_1s4 = 0.0
           Ek_n_3s4 = 0.0
-!                    write(6,*) 'lambda_mc ' ,lambda_mc,rang
+!                    write(uwrt,*) 'lambda_mc ' ,lambda_mc,rang
           ! faire le pas de langevin (velocity verlet) pour determiner les nouvelles forces et positions
 
           ! step 1 First half-step velocities update, v(t) -> v(t+dt/2)
@@ -2262,19 +2263,19 @@ contains
        end if
 #endif        
        iloc=0;ldistrib=.false.;lchange=.true.
-!       write(6,*)'MCCDBG3 ', rang
+!       write(uwrt,*)'MCCDBG3 ', rang
        call calfoMCGC(iloc,lchange,ldistrib)
-!       write(6,*)'MCCDBG4 ', rang
+!       write(uwrt,*)'MCCDBG4 ', rang
        if (lbigmaster) then
-!          write(6,*)'MCCDBG401 ', rang
+!          write(uwrt,*)'MCCDBG401 ', rang
           call sigkinetotMC(atconf_n,atconf_nplus1,boxmcgc_p,lambda_mc,sig,sigkine,sigtot)
-!          write(6,*)'MCCDBG402 ', rang
+!          write(uwrt,*)'MCCDBG402 ', rang
           !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
           U_l_n = (1.0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
           !write(*,*) potist_n, potist_nplus1
           !affichage temperature
           iteration = iteration +1
-!          write(6,*)'MCCDBG41 ', rang
+!          write(uwrt,*)'MCCDBG41 ', rang
           call noise(Gl,atconf_nplus1%im)
           DO i=1, atconf_Nplus1%im
              do ic=1,3
@@ -2292,39 +2293,39 @@ contains
           DO i=1, atconf_N%im
              atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i) 
           END DO
-!          write(6,*)'MCCDBG42 ', rang
+!          write(uwrt,*)'MCCDBG42 ', rang
           call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc_p,lchktrav=.false.)
           call caltabtC(cells_n,atconf_n,lperiod,boxmcgc_p,lchktrav=.false.)
-!          write(6,*)'MCCDBG43 ', rang
+!          write(uwrt,*)'MCCDBG43 ', rang
           call calctemp (tempN,kineN,atconf_N,cells_n,latcomp=.true.)
           call calctemp (tempNP1,kineNP1,atconf_Nplus1,cells_nplus1,latcomp=.true.)
        end if !master general
 
        if (lbigmaster) then !master general
-!          write(6,*)'MCCDBG44 ', rang
+!          write(uwrt,*)'MCCDBG44 ', rang
           !calcul des energies et travail et chaleur efficaces
           U_l_n_m1 = U_l_n
           H_l_n_m1 = H_l_n
           H_l_n    = Ek_n_plus1  + U_l_n
           dWork = H_l_n - H_l_n_m1
-          !          write(6,*)'compHLN',Ek_n_plus1*erg2ev ,U_l_n*erg2ev
+          !          write(uwrt,*)'compHLN',Ek_n_plus1*erg2ev ,U_l_n*erg2ev
           dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4)
-          !          write(6,*)'compqeff', ((Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4))*erg2ev
+          !          write(uwrt,*)'compqeff', ((Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4))*erg2ev
           QEff   = QEff + dQEff
           dWEff  = H_l_n - H_l_n_m1 - dQEff
           WEff   = WEff + dWEff
           work=work+dwork
-     !     if (rang==0)  write(6,'(A,I6, 5G15.7)')'WEFF dW dH dQ',ip,lambda_mc,Weff*erg2ev, dweff*erg2ev,dqeff*erg2ev,dwork*erg2ev
+     !     if (rang==0)  write(uwrt,'(A,I6, 5G15.7)')'WEFF dW dH dQ',ip,lambda_mc,Weff*erg2ev, dweff*erg2ev,dqeff*erg2ev,dwork*erg2ev
 !          if (protocol == 'MCP') then
              !write(15,'(6A15)') '#lambda_mc ', 'Ek_n_plus1', 'U_l_n',&
              !         &'H_l_n', 'WEff',  'dWEff'
-             !             write(6,'(9G25.16E3)') lambda_mc, Ek_n_plus1*erg2ev,&
+             !             write(uwrt,'(9G25.16E3)') lambda_mc, Ek_n_plus1*erg2ev,&
              !                       & U_l_n*erg2ev, H_l_n*erg2ev, WEff*erg2ev, work*erg2ev, dWEff*erg2ev,dWORK*erg2eV, dQeff*erg2ev
              !write(*,*) 'lambda_mc ' ,lambda_mc, 'Ek_n_plus1', Ek_n_plus1, 'U_l_n',&
              !            & U_l_n, 'H_l_n', H_l_n, 'Work', Work, 'dWork', dWork
 !          end if
        end if
-!       write(6,*)'MCCDBG5 ', rang
+!       write(uwrt,*)'MCCDBG5 ', rang
     END DO
 
 
@@ -2357,10 +2358,10 @@ contains
           lambda_mc=1-cos(pi*nstep/(2*pas_lambda_mc))
        end if
     case default
-       if (rang==0) write(6,*)"ERROR in protoccol_mcc variable : choose 'MCP' (case sensitive) or 'cos'"
+       if (rang==0) write(uwrt,*)"ERROR in protoccol_mcc variable : choose 'MCP' (case sensitive) or 'cos'"
        call arret_ndm(.true.)
     end select
-!    if (rang==0) write(6,*)'LAMBDA',nstep, lambda_mc
+!    if (rang==0) write(uwrt,*)'LAMBDA',nstep, lambda_mc
   end subroutine lambda
 
 
@@ -2368,10 +2369,10 @@ contains
   subroutine init_mpi_MCGC
 
 #ifdef PARA
-    if (rang==0)write(6,*)'INITMPIMCGC'
+    if (rang==0)write(uwrt,*)'INITMPIMCGC'
     if (lparapath) then 
        if (mod(nprocs,2*nparapath).ne.0) then
-          write(6,*)'nprocs/2*nparapath <>0 STOP'
+          write(uwrt,*)'nprocs/2*nparapath <>0 STOP'
           call MPI_FINALIZE(ierr)
           call arret_ndm
        end if
@@ -2479,7 +2480,7 @@ contains
              atconf_nplus1%ityp(iplus) = itypcalc
              atconf_nplus1%num_at_glob(iplus) = iplus
              atconf_Nplus1%proba_ins = pins
-             !          write(6,*)'iex pins',i,pins
+             !          write(uwrt,*)'iex pins',i,pins
              !copie de cell puis caltabtC pour redecouper avec la n+1eme particule
           end do
           call init_vitesse(atconf_nplus1,param = 0)
@@ -2528,7 +2529,7 @@ contains
        if (lc2d) then
           call atconf_nplus1%send2all(0,paramcgc%mpi_orig)
           if (lmaster) then
-             !           write(6,*)'write configuration N+1  to confNP1.XXX.lmp'
+             !           write(uwrt,*)'write configuration N+1  to confNP1.XXX.lmp'
              lwrite=.true.
           else
              lwrite=.false.
@@ -2558,7 +2559,7 @@ contains
              end if
              !          end if
           else
-             !           write(6,*)'COUCOU',rang
+             !           write(uwrt,*)'COUCOU',rang
              if(paramcgc%image==0) then !procs N
                 call config2data (atconf_n%imm,atconf_n%im,&
                atconf_n%xp,atconf_n%ityp,boxmcgc_p%at,ntyp,lwrite,filename='confN.lmp') ! PARAPATH CHANGER LE NOM AVEC INDICE DE LA BOITE
@@ -2583,19 +2584,19 @@ contains
                 firsttime_lammps=.true.
                 write(extension,'(i4.4)') ipp
                 namef='in.lammps.'//extension//'.N'
-                write(6,*)'callinit_lammps ',rang,namef
+                write(uwrt,*)'callinit_lammps ',rang,namef
                 call init_lammps(namef)
                 !              call init_lammps('in.lammps.N')
              else !procs N+1
                 firsttime_lammps=.true.
                 write(extension,'(i4.4)') ipp
                 namef='in.lammps.'//extension//'.NP1'
-                write(6,*)'callinit_lammps ',rang,namef
+                write(uwrt,*)'callinit_lammps ',rang,namef
                 call init_lammps(namef)
              end if
              !          end if
           else
-             !           write(6,*)'COUCOU',rang
+             !           write(uwrt,*)'COUCOU',rang
              if(paramcgc%image==0) then !procs N
                 firsttime_lammps=.true.
 
@@ -2608,12 +2609,12 @@ contains
 
 
 #else
-          write(6,*)'Ipotentiel<0 (lammps) et NON LAMMPS_VERSION : stop'
+          write(uwrt,*)'Ipotentiel<0 (lammps) et NON LAMMPS_VERSION : stop'
           call arret_ndm(.true.)
 #endif
 
 #else
-          write(6,*)'Ipotentiel<0 (lammps) et NON para en MCGC : stop'
+          write(uwrt,*)'Ipotentiel<0 (lammps) et NON para en MCGC : stop'
           call arret_ndm(.true.)
 #endif       
 
@@ -2742,7 +2743,7 @@ contains
        if (lc2d) then
           call atconf_n%send2all(0,paramcgc%mpi_orig)
           if (lbigmaster) then
-             !           write(6,*)'write configuration N+1  to confNP1.XXX.lmp'
+             !           write(uwrt,*)'write configuration N+1  to confNP1.XXX.lmp'
              lwrite=.true.
           else
              lwrite=.false.
@@ -2760,14 +2761,14 @@ contains
                 firsttime_lammps=.true.
                 write(extension,'(i4.4)') ipp
                 namef='in.lammps.'//extension//'.N'
-                write(6,*)'callinit_lammps ',rang,namef
+                write(uwrt,*)'callinit_lammps ',rang,namef
                 call init_lammps(namef)
                 !              call init_lammps('in.lammps.N')
              else !procs N+1
                 firsttime_lammps=.true.
                 write(extension,'(i4.4)') ipp
                 namef='in.lammps.'//extension//'.NP1'
-                write(6,*)'callinit_lammps ',rang,namef
+                write(uwrt,*)'callinit_lammps ',rang,namef
                 call init_lammps(namef)
              end if
           else
@@ -2783,13 +2784,13 @@ contains
 
 
 #else
-          write(6,*)'Ipotentiel<0 (lammps) et NON LAMMPS_VERSION : stop'
+          write(uwrt,*)'Ipotentiel<0 (lammps) et NON LAMMPS_VERSION : stop'
           call MPI_FINALIZE(ierr)
           call arret_ndm(.true.)
 #endif
 
 #else
-          write(6,*)'Ipotentiel<0 (lammps) et NON para en MCGC : stop'
+          write(uwrt,*)'Ipotentiel<0 (lammps) et NON para en MCGC : stop'
           call arret_ndm(.true.)
 #endif       
 
@@ -2889,8 +2890,8 @@ contains
              end if
 !             write(666,*)'pot',potist_n*erg2ev/atconf_n%im,potisbias*erg2ev
 !             write(666,*)'force',norm2(atconf_nplus1%fp(:,iplus))*erg2ev*1d-8,norm2(forcebias)*erg2ev*1d-8
-!             write(6,*)'pot',potist_n*erg2ev/atconf_n%im,potisbias*erg2ev
-!             write(6,*)'force',norm2(atconf_nplus1%fp(:,iplus))*erg2ev*1d-8,norm2(forcebias)*erg2ev*1d-8
+!             write(uwrt,*)'pot',potist_n*erg2ev/atconf_n%im,potisbias*erg2ev
+!             write(uwrt,*)'force',norm2(atconf_nplus1%fp(:,iplus))*erg2ev*1d-8,norm2(forcebias)*erg2ev*1d-8
              atconf_nplus1%fp(:,iplus) =(1-lambda_mc)*forcebias(:)+ lambda_mc*atconf_nplus1%fp(:,iplus)
              potist_n=potist_n+potisbias
           end do
@@ -2906,7 +2907,7 @@ contains
        sig(:,:)=(1-lambda_mc)*sig_n(:,:) + lambda_mc*sig_nplus1(:,:)
        
     end if!end master general
-    !write(6,*)'outcfmc',rang,ncalls
+    !write(uwrt,*)'outcfmc',rang,ncalls
   end subroutine calfoMCGC
 
   subroutine init_atom_config_mc(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob)
@@ -3014,19 +3015,19 @@ contains
       call cryst_to_cart(1,poscenter,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
       call closest_at(poscenter(:,1),atconf_n,cells_nplus1,boxmcgc_p,.true.,dist=distm2,iclose=icl)
       if (rang==0) then
-         write(6,*)
-         write(6,*)'closest atom',distm2,icl,atconf_n%ityp(icl)
-         write(6,*)'bubl cent',bublcenter
-         write(6,*)'atclose',atconf_n%xp(1,icl)/boxmcgc_p%zl(1),&
+         write(uwrt,*)
+         write(uwrt,*)'closest atom',distm2,icl,atconf_n%ityp(icl)
+         write(uwrt,*)'bubl cent',bublcenter
+         write(uwrt,*)'atclose',atconf_n%xp(1,icl)/boxmcgc_p%zl(1),&
               &atconf_n%xp(2,icl)/boxmcgc_p%zl(2),atconf_n%xp(3,icl)/boxmcgc_p%zl(3)
-         write(6,*)
+         write(uwrt,*)
       end if
     end block
 
 22  continue
     itry=itry+1
     if (itry.gt.10000) then
-       write(6,*)'ITRY 10000'
+       write(uwrt,*)'ITRY 10000'
        call arret_ndm(.true.)
     end if
     call random_number(zf)
@@ -3035,13 +3036,13 @@ contains
     theta=acos(2*zt-1)
 
     call random_number(zr)
-    !    write(6,*)'atom_supp_sph', rang,zf,zt,zr
+    !    write(uwrt,*)'atom_supp_sph', rang,zf,zt,zr
     somP=0.
     somPm1=0
     loopi:do i=1,nrins
        somPm1=somP
        somP=somP+probaR(i)
-       !       write(6,*)i,probaR(i),somP
+       !       write(uwrt,*)i,probaR(i),somP
        if (zr.le.somP) then
           iex=i-1
           rex=(float(iex)+(zr-somPm1)/probaR(i))*zlmin/(2*nrins)
@@ -3049,7 +3050,7 @@ contains
           exit loopi
        end if
     end do loopi
-    !   write(6,*)'IEX',iex,rex
+    !   write(uwrt,*)'IEX',iex,rex
     xins(1)=rex*sin(theta)*cos(fhi)
     xins(2)=rex*sin(theta)*sin(fhi)
     xins(3)=rex*cos(theta)
@@ -3060,7 +3061,7 @@ contains
       do i=1,atconf_n%im
          call distat(postest(:),atconf_n%xp(:,i),boxmcgc_p,dist)
          if (dist.le.distminat) then
-!            if (rang==0) write(6,*)'iex TOO close',dist,distminat
+!            if (rang==0) write(uwrt,*)'iex TOO close',dist,distminat
             goto 22
          end if
       end do
@@ -3073,9 +3074,9 @@ contains
 !!$    end select
 
     !    if (rang==0)then
-    !       if (itry.gt.1) write(6,*)'image',parapath%image,'NTRY',itry
+    !       if (itry.gt.1) write(uwrt,*)'image',parapath%image,'NTRY',itry
     !    end if
-    !    write(6,'(A,I3,4G15.7)')'atom_supp_sph vec', rang,vec(:,1),rex*1d8
+    !    write(uwrt,'(A,I3,4G15.7)')'atom_supp_sph vec', rang,vec(:,1),rex*1d8
     rd=rex*1d8
     return
   end subroutine atom_supp_sph
@@ -3090,7 +3091,7 @@ contains
     !choose vecteur
     itry=0
 22  continue
-!       write(6,*)'ITRY',itry
+!       write(uwrt,*)'ITRY',itry
     itry=itry+1
     if (itry.gt.1000) then
 
@@ -3100,7 +3101,7 @@ contains
     call random_number(zx(1))
     call random_number(zx(2))
     call random_number(zx(3))
-    !    write(6,*)'atom_supp_sph', rang,zf,zt,zr
+    !    write(uwrt,*)'atom_supp_sph', rang,zf,zt,zr
     zt=zx(iZLins)
     
     somP=0.
@@ -3112,15 +3113,15 @@ contains
        if (zt.le.somP) then
           iex=i-1
           dex= -boxmcgc_p%zls2(izlins)+(float(i)/nrins)*boxmcgc_p%zl(izlins)
-  !     write(6,*)i,probaR(i),somP,zt
- !         write(6,*)'DEX',dex
+  !     write(uwrt,*)i,probaR(i),somP,zt
+ !         write(uwrt,*)'DEX',dex
           pins=probaR(i)
           exit loopi
        end if
     end do loopi
 
 
-!    write(6,*)'IEX',iex,dex,zt,r0mcgc
+!    write(uwrt,*)'IEX',iex,dex,zt,r0mcgc
     frac=zlcenter(izlins)+dex/norm2(boxmcgc_p%as(:,izlins))
     poscenter=0
     do i=1,3
@@ -3132,21 +3133,21 @@ contains
     end do
 !    call cryst_to_cart(1,poscenter,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
     postest(:)=poscenter(:,1)
-!    write(6,*)'postest',poscenter(:,1)
+!    write(uwrt,*)'postest',poscenter(:,1)
     do i=1,atconf_n%im
        call distat(postest(:),atconf_n%xp(:,i),boxmcgc_p,dist)
-!       write(6,*)'DIST',i,dist
+!       write(uwrt,*)'DIST',i,dist
        if (dist.le.distminat) then
-!          write(6,*)'iex TOO close',dist
+!          write(uwrt,*)'iex TOO close',dist
           goto 22
        end if
     end do
     vec(:,1)=postest(:)
 !
     !    if (rang==0)then
-    !       if (itry.gt.1) write(6,*)'image',parapath%image,'NTRY',itry
+    !       if (itry.gt.1) write(uwrt,*)'image',parapath%image,'NTRY',itry
     !    end if
-        write(6,'(A,I3,A,3G15.7,A,G15.7)')'atom_supp_slice', rang,' pos=',vec(:,1),' distance= ',dex*1d8
+        write(uwrt,'(A,I3,A,3G15.7,A,G15.7)')'atom_supp_slice', rang,' pos=',vec(:,1),' distance= ',dex*1d8
     rd=abs(dex*1d8)
     return
   end subroutine atom_supp_sl
@@ -3163,14 +3164,14 @@ contains
 222  continue
     itry=itry+1
     if (itry.gt.10000) then
-       write(6,*)'ITRY 10000'
+       write(uwrt,*)'ITRY 10000'
        call arret_ndm(.true.)
     end if
 
     call random_number(zx(1))
     call random_number(zx(2))
     call random_number(zx(3))
-    !    write(6,*)'atom_supp_sph', rang,zf,zt,zr
+    !    write(uwrt,*)'atom_supp_sph', rang,zf,zt,zr
 
     !    zx(1)  to get the distance from line zx(2) to get the angle around the line zx(3) to get the position along the line
     angle=2*pi*zx(2)
@@ -3179,7 +3180,7 @@ contains
     loopi:do i=1,nrins
        somPm1=somP
        somP=somP+probaR(i)
-!       write(6,*)i,probaR(i),somP,zt
+!       write(uwrt,*)i,probaR(i),somP,zt
        if (zx(1).le.somP) then
           iex=i-1
           dex= (float(iex)+(zx(1)-somPm1)/probaR(i))*0.5*zlmin/nrins
@@ -3201,12 +3202,12 @@ contains
     end do
     
     postest(:)=poscenter(:,1)
-!    write(6,*)'postest',poscenter(:,1)
+!    write(uwrt,*)'postest',poscenter(:,1)
     do i=1,atconf_n%im
        call distat(postest(:),atconf_n%xp(:,i),boxmcgc_p,dist)
        if (dist.le.distminat) then
 
-          !          write(6,*)'iex TOO close'
+          !          write(uwrt,*)'iex TOO close'
           goto 222
        end if
     end do
@@ -3235,7 +3236,7 @@ contains
           
           probaR(i)=r*r/(1+exp(fdfactmcgc*(r-R0mcgc)))
           if (rang==0)                 write(136,*)i,r,probaR(i)
-          !       write(6,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i),probaR(i)/(r*r)
+          !       write(uwrt,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i),probaR(i)/(r*r)
           somP=somP+probaR(i)
        end do
 
@@ -3246,7 +3247,7 @@ contains
           
           probaR(i)=4*pi*r*r*form55(fdfactmcgc,r,R0mcgc)! form55=1/(1+exp(fdfactmcgc*(r-R0mcgc)))
           if (rang==0)                 write(136,*)i,r,probaR(i)
-          !       write(6,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i),probaR(i)/(r*r)
+          !       write(uwrt,*)i,r,fdfactmcgc,r-R0mcgc,probaR(i),probaR(i)/(r*r)
           somP=somP+probaR(i)
 
        end do
@@ -3276,7 +3277,7 @@ contains
        do i=1,nrins
           dist=abs(-boxmcgc_p%zls2(izlins)+(float(i)/nrins)*boxmcgc_p%zl(izlins))
           probaR(i)=exp(-0.5*beta*k_spring*(dist**2))
-!          if (rang==0)write(6,*)i,dist,-0.5*beta*k_spring*(dist**2),probaR(i)
+!          if (rang==0)write(uwrt,*)i,dist,-0.5*beta*k_spring*(dist**2),probaR(i)
           somP=somP+probaR(i)    
           if (rang==0)                 write(136,*)i,dist,probaR(i)
        end do
@@ -3301,17 +3302,17 @@ contains
 
   subroutine calcukcell
     integer::i
-    Kcell = 0.5d0*boxmcgc_p%wbox*Sum( boxmcgc_p%hDot(1:3,1:3)**2 )
-    Tempcell=Kcell*2./(sum(ihbox0)*bk)
-    epsi=0.5d0*MatMul( MatMul( invtrh0, boxmcgc_p%Gmat ), invh0 )
+    boxmcgc_p%Kcell = 0.5d0*boxmcgc_p%wbox*Sum( boxmcgc_p%hDot(1:3,1:3)**2 )
+    Tempcell=boxmcgc_p%Kcell*2./(sum(ihbox0)*bk)
+    boxmcgc_p%epsi=0.5d0*MatMul( MatMul( boxmcgc_p%invtrh0, boxmcgc_p%Gmat ), boxmcgc_p%invh0 )
     DO i=1, 3
-       epsi(i,i) = epsi(i,i) - 1.d0
+       boxmcgc_p%epsi(i,i) = boxmcgc_p%epsi(i,i) - 1.d0
     END DO
 
     grsig = boxmcgc_p%volu * MatMul(boxmcgc_p%invh, MatMul( sigext, boxmcgc_p%invtrh) )
-    tension = invVolu0*MatMul( MatMul( h0, grsig), trh0 )
+    boxmcgc_p%tension = boxmcgc_p%invVolu0*MatMul( MatMul( boxmcgc_p%h0, grsig), boxmcgc_p%trh0 )
     ! Énergie potentielle de la cellule (Eq. 2.25, Ref.2)
-    Ucell = volu0*Sum( tension(1:3,1:3) * epsi(1:3,1:3) )
+    Ucell = boxmcgc_p%volu0*Sum( boxmcgc_p%tension(1:3,1:3) * boxmcgc_p%epsi(1:3,1:3) )
   end subroutine calcukcell
 
   subroutine langevinLPR( direc, protocol) !LANGEVIN
@@ -3368,7 +3369,7 @@ contains
        call lambda(direc, ip, protocol)
        U_l_n = (1.d0-lambda_mc)*potist_n + lambda_mc*potist_nplus1
 
-       H_l_ini = Ek_n + U_l_n +kcell+ucell
+       H_l_ini = Ek_n + U_l_n +boxmcgc_p%kcell+ucell
        H_l_n   = H_l_ini
 
        !if (lmegamaster) write(*,'(A15, G25.16E3,A15, G25.16E3,A15, G25.16E3,A15, G25.16E3)') &
@@ -3428,12 +3429,12 @@ contains
              end do
           end do
           call calcUKcell
-          EkP_n=kcell
+          EkP_n=boxmcgc_p%kcell
 
           boxmcgc_p%hdot(:,:) = (  boxmcgc_p%hdot(:,:)*rgah  &
                + (glanh(:,:)/boxmcgc_p%wbox)*sqrt(boxmcgc_p%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
           call calcUKcell
-          EkP_n_1s4=kcell
+          EkP_n_1s4=boxmcgc_p%kcell
           boxmcgc_p%hdot(:,:) =(boxmcgc_p%hdot(:,:) +&
                &tstep/(2.d0*boxmcgc_p%wBox)*boxmcgc_p%volu*MatMul(sigtot(:,:)-sigext(:,:),boxmcgc_p%invtrh(:,:)))*ihbox0(:,:)
           sp(:,1:atconf_Nplus1%im) = sp(:,1:atconf_Nplus1%im) + sdot(:,1:atconf_Nplus1%im)*tstep
@@ -3456,7 +3457,7 @@ contains
           call caltabtC(cells_n,atconf_n,lperiod,boxmcgc_p,lchktrav=.false.)
           call calctemp (tempN,kineN,atconf_N,cells_n,latcomp=.true.)
           call calcUKcell
-          Tempcell=Kcell*2./(sum(ihbox0)*bk)
+          Tempcell=boxmcgc_p%Kcell*2./(sum(ihbox0)*bk)
 
        end if !on sort du master général (bigmaster)
        !En ce point on doit transférer le système N+1 du master 0 vers le master 1
@@ -3486,9 +3487,9 @@ contains
        if (lbigmaster) then
        call sigkinetotMC(atconf_n,atconf_nplus1,boxmcgc_p,lambda_mc,sig,sigkine,sigtot)
           tempx= tempinstT(atconf_n)
-          Kcell = 0.5d0*boxmcgc_p%wbox*Sum( boxmcgc_p%hDot(1:3,1:3)**2 )
-          Tempcell=Kcell*2./(sum(ihbox0)*bk)
-          !          write(6,*)'PR35',boxmcgc_p%hdot(1,1),boxmcgc_p%h(1,1)*1d8,sigtot(1,1)*unitP,tempx,tempcell
+          boxmcgc_p%Kcell = 0.5d0*boxmcgc_p%wbox*Sum( boxmcgc_p%hDot(1:3,1:3)**2 )
+          Tempcell=boxmcgc_p%Kcell*2./(sum(ihbox0)*bk)
+          !          write(uwrt,*)'PR35',boxmcgc_p%hdot(1,1),boxmcgc_p%h(1,1)*1d8,sigtot(1,1)*unitP,tempx,tempcell
 
 
           !mise a jour de U_l_n = (1-lambda_mc)*U_0 + lambda_mc*U_1
@@ -3526,24 +3527,24 @@ contains
                &tstep/(2.d0*boxmcgc_p%wBox)*boxmcgc_p%volu*MatMul(sigtot(:,:)-sigext(:,:),boxmcgc_p%invtrh(:,:)))*ihbox0(:,:)
 
           call calcUKcell
-          EkP_n_3s4=kcell
+          EkP_n_3s4=boxmcgc_p%kcell
 
           boxmcgc_p%hdot(:,:) = (  boxmcgc_p%hdot(:,:)*rgah  &
                + (glanh(:,:)/boxmcgc_p%wbox)*sqrt(boxmcgc_p%wbox*bk*text*(1-rgah))  )*ihbox0(:,:)
 
 
           call calcUKcell
-          EkP_n_p1=kcell
+          EkP_n_p1=boxmcgc_p%kcell
           !calcul des energies et travail et chaleur efficaces
           U_l_n_m1 = U_l_n
           H_l_n_m1 = H_l_n
-          H_l_n    = Ek_n_plus1  + U_l_n+kcell+ucell
-          !          write(6,*)'compHLN',Ek_n_plus1*erg2ev ,U_l_n*erg2ev,kcell*erg2ev,ucell*erg2ev
+          H_l_n    = Ek_n_plus1  + U_l_n+boxmcgc_p%kcell+ucell
+          !          write(uwrt,*)'compHLN',Ek_n_plus1*erg2ev ,U_l_n*erg2ev,kcell*erg2ev,ucell*erg2ev
           dWork = H_l_n - H_l_n_m1
 
           Work = Work + dWork
           dQEff  = (Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4) + (EkP_n_1s4-EkP_n) + (EkP_n_p1-EkP_n_3s4)
-          !          write(6,*)'compqeff', ((Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4))*erg2ev, ((EkP_n_1s4-EkP_n) + (EkP_n_p1-EkP_n_3s4))*erg2ev
+          !          write(uwrt,*)'compqeff', ((Ek_n_1s4-Ek_n) + (Ek_n_plus1-Ek_n_3s4))*erg2ev, ((EkP_n_1s4-EkP_n) + (EkP_n_p1-EkP_n_3s4))*erg2ev
           QEff   = QEff + dQEff
           dWEff  = H_l_n - H_l_n_m1 - dQEff
           WEff   = WEff + dWEff
@@ -3572,7 +3573,7 @@ contains
        call indice_alea (atconf_N, indice,typswitch1,nbatplus)
        do i=1,nbatplus
           if (atconf_N%ityp(indice(i)).ne.typswitch1) then
-             write(6,*)'WTF type_switch'
+             write(uwrt,*)'WTF type_switch'
              call arret_ndm(.true.)
           end if
           atconf_Nplus1%ityp(indice(i))=typswitch2
@@ -3581,7 +3582,7 @@ contains
        call indice_alea (atconf_Nplus1, indice,typswitch2,nbatplus)
        do i=1,nbatplus
           if (atconf_Nplus1%ityp(indice(i)).ne.typswitch2) then
-             write(6,*)'WTF type_switch2'
+             write(uwrt,*)'WTF type_switch2'
              call arret_ndm(.true.)
           end if
           atconf_N%ityp(indice(i))=typswitch1
@@ -3617,21 +3618,21 @@ contains
     posred(:,1)=pos(:)
     normout(:)=0
     call cryst_to_cart(1,posred,boxmcgc_p%bg,-1) 
-!    write(6,*)'POS', pos
-!    write(6,*)'POSres', posred
+!    write(uwrt,*)'POS', pos
+!    write(uwrt,*)'POSres', posred
     
     select case (ins_typ)
     case(11,55)
        poscenter(:,1)=bublcenter(:)
        call cryst_to_cart(1,poscenter,boxmcgc_p%at,1) !at vecteur de base de la boite en cm, defini dans gen_com_m
        postest(:)=pos(:)-poscenter(:,1)
-!       write(6,*)'POSTEST',postest
+!       write(uwrt,*)'POSTEST',postest
        dist=sqrt(postest(1)**2+postest(2)**2+postest(3)**2)
        normout(:)=postest(:)/dist
     case(33)
        
        dist=abs(boxmcgc_p%at(izlins,izlins)*(posred(izlins,1)-zlcenter(izlins)))
-!       write(6,*)'decd ',boxmcgc_p%at(izlins,izlins),posred(izlins,1),zlcenter(izlins)
+!       write(uwrt,*)'decd ',boxmcgc_p%at(izlins,izlins),posred(izlins,1),zlcenter(izlins)
        normout(izlins)=sign(1d0,posred(izlins,1)-zlcenter(izlins))
     case(44)
        dist=0
@@ -3655,7 +3656,7 @@ contains
     if (ins_typ.ne.55) then 
        potisb=0.5*k_spring*dist**2
        forceb(:)=-1*k_spring*dist*normout(:)
-!       write(6,'(A,5G17.5)')'DIST',dist,potisb*erg2ev,forceb
+!       write(uwrt,'(A,5G17.5)')'DIST',dist,potisb*erg2ev,forceb
     else
        potisb=(1/beta)*log(1+exp(fdfactmcgc*dist))
        forceb(:)=-1*normout(:)*(fdfactmcgc*exp(fdfactmcgc*dist))/((1+exp(fdfactmcgc*dist))*beta)

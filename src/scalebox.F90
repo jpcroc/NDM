@@ -1,6 +1,6 @@
 module scalebox_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY:dmtype,itetabvois,lprahman,nvat,pi,iteration,rang,lperiod,lspacendm
+  USE gen_com_m, only:uwrt,lwrt,dmtype,itetabvois,lprahman,nvat,pi,iteration,rang,lperiod,lspacendm
   USE calpo_ew_mod,only: calpo_ew
   USE recips_mod,only: recips ,calcvol
   USE caltabi_mod,only: caltabi
@@ -46,11 +46,11 @@ contains
     end if
     
     if ((celndm%nox(1).ne.noxn).or.(celndm%nox(2).ne.noyn).or.(celndm%nox(3).ne.nozn).or.((dmtype.eq.9).and.(iteration==1)))then
-       write(6,*)'CHGT NOX'
+       write(uwrt,*)'CHGT NOX'
        celndm%nox(1)=noxn; celndm%nox(2)=noyn; celndm%nox(3)=nozn
 
        if (dmtype.ne.9) then
-          if (rang==0) write (6, *) 'IT =',ITeration,'chgt nox noy noz  = '&
+          if (rang==0) write (uwrt, *) 'IT =',ITeration,'chgt nox noy noz  = '&
                , celndm%nox(1),celndm%nox(2), celndm%nox(3)
        end if
        celndm%celsize(1) = boxndm%zl(1)/float(celndm%nox(1))
@@ -62,9 +62,9 @@ contains
        nvat=3*celndm%natperc
 
        if (dmtype.ne.9) then
-          if (rang==0)       write(6,*) ' natperc ', celndm%natperc
+          if (rang==0)       write(uwrt,*) ' natperc ', celndm%natperc
        end if
-!       write(6,*)'BOUFFON!'
+!       write(uwrt,*)'BOUFFON!'
 !       call arret_ndm
       call celndm%init(boxndm,celndm%nox(1),celndm%nox(2),celndm%nox(3),celndm%natperc) !contient dealloc
 

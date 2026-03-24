@@ -12,27 +12,27 @@ contains
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
     use Tpara,only:nprocs,mpi_world
-    USE gen_com_m, ONLY:a2cm,debyetemp,deltax,depmaxts,dfpred,gamprfact,&
+    USE gen_com_m, only:uwrt,lwrt,a2cm,debyetemp,deltax,depmaxts,dfpred,gamprfact,&
          &epcou,ev2erg,fmt_cin,fpstop,fsumstop,gamlg,couxyz,&
          &igen,ilangevin,iseed,itab,itederive,&
          &itesauvforce,itesauvposition,itetabvois,itetconst,itetimestep,&
          &landerscou,lcdp,lconstrtot,lcorrelvp,lderive,lfire,&
          &ljqbh,lpcon2,lPcube,lrctest,lrestart,ltandersen,&
-         &ltcon,lvpread,mdcg_noise,&
+         &ltcon,lvpread,mdcg_noise,lbabar,&
          &nhoover,nitmax,nuandersen,pext,&
          &rskin,rulayer,sigext,sigstop,tbox,tempdeplainit,tempstop,tempstopcel,tgc,&
-         &timemax,tinit,tsfact,tsmin,two,units_lammps,usdh,utemps,wboxf,wnose,&
+         &timemax,tinit,tsfact,tsmin,two,units_lammps,usdh,utemps,wboxf,&
          &ihbox0,cunite,cunitp,dmtype,erg2ev,fnemd,sig0dir,astarsig,&
          &iteanapos,iteangle,itebdv,itecoordo,itedepla,&
          &iterasmol,iterdf,itesauv,itesauvinter,itesigma,iteprtsigma,itetemp,itetemp2,itmax,ivisu,l2t,lcalcjq,&
          &lcasca,lcontr,ldemitab,leev,leparat,lfilm,linstantfda,linstantrdf,&
          &llangevin,lnemd,lperiod,lpkbar,lposmoy,lprahman,lprteat,lprteattotm,lprtfat,lprtsigat,lsigat,lsigatcel,&
-         &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,nfda,h0,&
+         &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,nfda,h0R,&
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou,iteprtkin&
          &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart,lpconxyz&
          &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit,lmaxvp,vplim
 #ifdef LAMMPS_VERSION
-     USE gen_com_m, ONLY: energy_conversion_lammps, position_conversion_lammps, pressure_conversion_lammps
+     USE gen_com_m, only:uwrt, energy_conversion_lammps, position_conversion_lammps, pressure_conversion_lammps
 #endif
     use read_val
     use WGC_mod,only:ndir,nstep,betaguess,ncgtry,lvarstop,fstpdecr,beta35,gammas,gammav
@@ -49,6 +49,7 @@ contains
     use Parrinello_Rahman,only:TinitBox
     use constrconf_mod,only: ldecalcor
     use arps_mod,only:kmin,kmax,noxyzkmin,noxyzkmax,lpartarps!,lxyz
+    use babar_mod,only:ntempbabar,nbabarprocs,bbtempmin,bbtempmax,itbtherm,itbprod,lmultin,lbetagrid
 
 
 
@@ -70,6 +71,7 @@ contains
     integer::itecfg,np2
     logical :: ltest,lseecom
     logical::sig0stara,sig0starb,sig0starc
+    real(double)::h0(3,3)
     !-----------------------------------------------
     !
     !
@@ -81,7 +83,7 @@ contains
          tinit,  tfcou, epcou, couxyz,lcasca, lfissure, itmax,nitmax, itean, kspring,  &
          itederive, igen, linstantrdf, iterdf, nrdf,nfda, linstantfda, itesauv,  &
          lrestart, lPathFromGin, tgc, ltabvois, rvois, rskin,ltpcel, nox, noy, noz, imm, dfpred, &
-         rulayer,iterasmol, lpcon, pext, wboxf, wNose, lpcon2, lpconxyz, tbox, &
+         rulayer,iterasmol, lpcon, pext, wboxf, lpcon2, lpconxyz, tbox, &
          iteangle,  itesauvposition, itesauvforce,  tdepla2, lpcube,&
          lTcon,Text,iteTconst, lTberendsen, lTNose, lTHoover, nHoover, tauTcon, &
          maxorder, ipotentiel,lpotentiel,beta35,R0mcgc,izlins,zlcenter,fdfactmcgc,ins_typ,bublcenter,&
@@ -99,7 +101,8 @@ contains
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
          &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
          &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag,protocol_mcc,lmaxvp,vplim,&
-         sig0stara,sig0starb,sig0starc
+         sig0stara,sig0starb,sig0starc,ntempbabar,&
+         &nbabarprocs,bbtempmin,bbtempmax,itbtherm,itbprod,lbetagrid
 
 
     !
@@ -145,7 +148,7 @@ contains
     !                               9 -> NEB
     !                              11 -> UN SEUL CALCUL DE FORCES
     !                              12 -> ART
-    !                              16 -> SUNDAE
+    !                              16 -> BABAR
     !                              17 -> MAB
     !                              18 -> ML
     !                              19 -> matrice de forces
@@ -207,7 +210,6 @@ contains
 
     pext = 0.0                  !pression  par defaut
     wboxf = 1.0                  ! facteur masse de la boite pour Parrinello-Rahman (par defaut egale a 0.5*masse totale
-    wNose = 0.0                 ! masse de la boite pour thermostat de Nose (par defaut egale a wbox)
     tbox = 1000.0               !"temps" de la boite
     lTcon=.false.               !algorithme a temperature constante
     lTberendsen=.false.         ! algorithme a temperature constante
@@ -403,7 +405,17 @@ contains
     vplim=5d6 
     sig0dir(:)=0
     astarsig(:)=.false.
-    if (rang == 0) write (6, *) 'nom fichier din=', fnamdin
+    if (rang == 0) write (uwrt, *) 'nom fichier din=', fnamdin
+    
+
+    ntempbabar=0
+    nbabarprocs=ntempbabar
+    bbtempmin=0; bbtempmax=0
+    itbtherm=0;itbprod=0
+    lbetagrid=.true.
+    lmultin=.false. ! T==> reads multiple condfiguration files
+
+    if (rang == 0) write (uwrt, *) 'nom fichier din=', fnamdin
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)
     
@@ -423,33 +435,33 @@ contains
     timemax=timemax*1d-15
 
     if (itecfg.gt.0) then
-       write(6,*)'ITECFG desactive, reactivez (in readdm )"at your own risks"'
-       write(6,*) 'utilisez ivisu=4 pour sortir des .cfg'
+       write(uwrt,*)'ITECFG desactive, reactivez (in readdm )"at your own risks"'
+       write(uwrt,*) 'utilisez ivisu=4 pour sortir des .cfg'
        ivisu=40
     end if
     if (ivisu==4) ivisu=40
     if (ivisu==6) ivisu=60
     if (rang == 0) then
        if (imm <= 0) then
-          write (6, *) rang,'nombre d''atomes nul-> stop'
+          write (uwrt, *) rang,'nombre d''atomes nul-> stop'
           call arret_ndm
        endif
     endif                                      ! fin rang=0
 
 
     if(lpcon) then
-       if (rang==0) write(6,*)
-       if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
-       if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
-       if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
-       if (rang==0) write(6,*)
-       if (rang==0) write(6,*)'lpcon n_existe plUSEst historique utiliser plutot lpr pour un Parinnello Rahman propre '
-       if (rang==0) write(6,*)
-       if (rang==0) write(6,*)
-       if (rang==0) write(6,*)
-       if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
-       if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
-       if (rang==0) write(6,*)'!!!!!!!!!!!!!!!!!!!'
+       if (rang==0) write(uwrt,*)
+       if (rang==0) write(uwrt,*)'!!!!!!!!!!!!!!!!!!!'
+       if (rang==0) write(uwrt,*)'!!!!!!!!!!!!!!!!!!!'
+       if (rang==0) write(uwrt,*)'!!!!!!!!!!!!!!!!!!!'
+       if (rang==0) write(uwrt,*)
+       if (rang==0) write(uwrt,*)'lpcon n_existe plUSEst historique utiliser plutot lpr pour un Parinnello Rahman propre '
+       if (rang==0) write(uwrt,*)
+       if (rang==0) write(uwrt,*)
+       if (rang==0) write(uwrt,*)
+       if (rang==0) write(uwrt,*)'!!!!!!!!!!!!!!!!!!!'
+       if (rang==0) write(uwrt,*)'!!!!!!!!!!!!!!!!!!!'
+       if (rang==0) write(uwrt,*)'!!!!!!!!!!!!!!!!!!!'
        call arret_ndm
     end if
 
@@ -457,27 +469,27 @@ contains
        do ic=1,3
           select case (ipbc(ic))
           case(1)
-             if (rang==0) write(6,*)'direction', ic,' : regular PBC'
+             if (rang==0) write(uwrt,*)'direction', ic,' : regular PBC'
           case(2)
-             if (rang==0) write(6,*)'direction', ic,' : WALL Boundary Conditions'
+             if (rang==0) write(uwrt,*)'direction', ic,' : WALL Boundary Conditions'
           case default 
-             if (rang==0) write(6,*)'wrong bound ary conditions, stop'
+             if (rang==0) write(uwrt,*)'wrong bound ary conditions, stop'
              call arret_ndm
           end select
        end do
        if (dmtype==1) then
           dmtype=4
-          if (rang==0) write(6,*)'dmtype changed from 1 to 4 for energy conservation'
+          if (rang==0) write(uwrt,*)'dmtype changed from 1 to 4 for energy conservation'
        end if
     end if
 
     if(.not.lperiod) then
        if (rang==0)then
-          write(6,*)
-          write(6,*)'coordinates can get out of  0-1'
-          if (ipbc(1)==1) write(6,*)'along  a'
-          if (ipbc(2)==1) write(6,*)'along  b'
-          if (ipbc(3)==1) write(6,*)'along  c'
+          write(uwrt,*)
+          write(uwrt,*)'coordinates can get out of  0-1'
+          if (ipbc(1)==1) write(uwrt,*)'along  a'
+          if (ipbc(2)==1) write(uwrt,*)'along  b'
+          if (ipbc(3)==1) write(uwrt,*)'along  c'
        end if
     end if
 
@@ -511,11 +523,11 @@ contains
     if (lnemd) then
        lcalcjq=.true.
        if (fnemd==0) then
-          if (rang==0) write(6,*) rang,'fnemd = 0 stop'
+          if (rang==0) write(uwrt,*) rang,'fnemd = 0 stop'
           call arret_ndm
        end if
        if (ljqbh) then
-          if (rang==0) write(6,*) rang,'ljqbh et lnemd  stop'
+          if (rang==0) write(uwrt,*) rang,'ljqbh et lnemd  stop'
           call arret_ndm
        end if
     end if
@@ -535,16 +547,16 @@ contains
           end if
        else if (dmtype==9) then
           if (rang==0) then
-             write(6,*)'lfire NEB'
+             write(uwrt,*)'lfire NEB'
           end if
        else
           if (rang==0) then
-             write(6,*)'lfire and not dmtype=2 ? remove lfire and choose dmtype'
-             write(6,*)'dmtype=23 fire Vcst'
-             write(6,*)'dmtype=24 fire LPRahman'
-             write(6,*)'dmtype=21 fast quenching Vcst'
-             write(6,*)'dmtype=22 fast quenching LPRahman'
-             write(6,*)'dmtype=9 Fire NEB Vcst'
+             write(uwrt,*)'lfire and not dmtype=2 ? remove lfire and choose dmtype'
+             write(uwrt,*)'dmtype=23 fire Vcst'
+             write(uwrt,*)'dmtype=24 fire LPRahman'
+             write(uwrt,*)'dmtype=21 fast quenching Vcst'
+             write(uwrt,*)'dmtype=22 fast quenching LPRahman'
+             write(uwrt,*)'dmtype=9 Fire NEB Vcst'
           end if
           call arret_ndm
        end if
@@ -570,14 +582,14 @@ contains
     case(-10,-11)
        npotentiel=1
        lspaceNDM=.false. ; latcomp=.true.
-       if (rang==0) write(6,*)'POTENTIELS LAMMPS ; PARA_SPACE VERSION=LAMMPS NOT NDM !!'
+       if (rang==0) write(uwrt,*)'POTENTIELS LAMMPS ; PARA_SPACE VERSION=LAMMPS NOT NDM !!'
     case(20)
        npotentiel=1
        lspaceNDM=.false. ; latcomp=.true.
        ltabvois=.true.
        itetabvois=100000000
-       if (rang.eq.0) write (6, *) '    MILADY POTENTIALS',rvois
-       if (rang==0) write(6,*)' PARA_SPACE VERSION=MILADY NOT NDM !!'
+       if (rang.eq.0) write (uwrt, *) '    MILADY POTENTIALS',rvois
+       if (rang==0) write(uwrt,*)' PARA_SPACE VERSION=MILADY NOT NDM !!'
     case default
        latcomp=.false.
     end select
@@ -588,30 +600,30 @@ contains
 
     if (lrestart) then
        igen = 1
-       if (rang == 0) write (6, *) '****** RESTART FROM FILE **'
+       if (rang == 0) write (uwrt, *) '****** RESTART FROM FILE **'
     endif
 
 #ifdef DKIO               
     if ((igen<-1).or.(1<igen.and.igen<11).or.(igen>29)) then     !+1 from file -1 generate then stop 0 generate then run [11;29] generate from kd_io then run
-       if (rang==0) write (6, *) rang,'wrong igen stop'
+       if (rang==0) write (uwrt, *) rang,'wrong igen stop'
        call arret_ndm
     endif
 #else
     if ((igen<-1).or.igen>2) then                    !+1 from file -1 generate then stop 0 generate then run
-       if (rang==0) write (6, *) rang,'wrong igen stop'
+       if (rang==0) write (uwrt, *) rang,'wrong igen stop'
        call arret_ndm
     endif
 #endif
 
     if (itab <= 0) then
-       if (rang==0) write (6, *) rang,'wrong itab < 1 '
+       if (rang==0) write (uwrt, *) rang,'wrong itab < 1 '
        call arret_ndm
     endif
     if ((dmtype==41).or.(dmtype==42)) then
        ltabvois=.false.
        kmin=kmin*ev2erg; kmax=ev2erg*kmax
        if ((kmin==0.).or.(kmax==0.)) then
-          write(6,*)'kmin==0. or kmax==0 '
+          write(uwrt,*)'kmin==0. or kmax==0 '
           call arret_ndm
        end if
     end if
@@ -624,7 +636,7 @@ contains
           case default
              ltabvois=.false.
              rvois=0
-             if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+             if (rang==0) write(uwrt,*)'LTABVOIS MIS A FALSE en PARA'
           end select
        end if
     case (19)
@@ -634,7 +646,7 @@ contains
              case(20)
              case default
                 ltabvois=.false.
-                if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+                if (rang==0) write(uwrt,*)'LTABVOIS MIS A FALSE en PARA'
              end select
           end if
        end if
@@ -647,34 +659,34 @@ contains
              case(20)
              case default
                 ltabvois=.false.
-                if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+                if (rang==0) write(uwrt,*)'LTABVOIS MIS A FALSE en PARA'
              end select
           end if
        end if
     case(12)
        if (lparapath) then 
           if (mod(nprocs,nparapath).ne.0) then
-             write(6,*)'nprocs/nparapath <>0 STOP'
+             write(uwrt,*)'nprocs/nparapath <>0 STOP'
              call arret_ndm
           end if
        end if
     case(15,151)
 !!$       if ((lpr).and.((nox==-1).or.(noy==-1).or.(noz==-1))) then
 !!$          if (rang==0) then
-!!$             write(6,*)'MONTECARLO constant pressure : nox/noy/noz must be set in the din file STOP'
+!!$             write(uwrt,*)'MONTECARLO constant pressure : nox/noy/noz must be set in the din file STOP'
 !!$          end if
 !!$          call arret_ndm
 !!$       end if
 !       if (igen.ne.0) then
-!          write(6,*)'IGEN MUST BE ZERO (dont know why) stop'
+!          write(uwrt,*)'IGEN MUST BE ZERO (dont know why) stop'
 !          call arret_ndm
 !       end if
        if (itypcalc.lt.0) then
-          write(6,*)'itypcalc<0'
+          write(uwrt,*)'itypcalc<0'
           call arret_ndm
        end if
        if (n_path.lt.0) then
-          write(6,*)'n_path<0'
+          write(uwrt,*)'n_path<0'
           call arret_ndm
        end if
        np2=nparapath*2
@@ -684,13 +696,32 @@ contains
              case(20)
              case default
                 ltabvois=.false.
-                if (rang==0) write(6,*)'LTABVOIS MIS A FALSE en PARA'
+                if (rang==0) write(uwrt,*)'LTABVOIS MIS A FALSE en PARA'
              end select
           end if
        end if
+    case(16)
+       lpr=.true.
+       if (ntempbabar==0) then
+          if (rang==0) write(uwrt,*)'DMTYPE=16 and NTEMPBABAR=0 stop'
+          call arret_ndm
+       end if
+       if ((bbtempmin==0).or.(bbtempmax==0)) then
+          if (rang==0) write(uwrt,*)'DMTYPE=16 and bbtempmin/max=0 stop'
+          call arret_ndm
+       end if
+       lbabar=.true.
+       lprahman=.true.
+       llangevin=.true.
+       text=10.
+       if((itbtherm==0.).and.(itbprod==0)) then
+          if (rang==0) write(uwrt,*)'DMTYPE=16 and itbtherm or itbprod=0 stop'
+          call arret_ndm
+       end if
+          
     case default
-       write(6,*)'DMTYPE',dmtype
-       if (rang==0) write(6,*) 'WARNING : VERSION PARALLELE seulement avec ',&
+       write(uwrt,*)'DMTYPE',dmtype
+       if (rang==0) write(uwrt,*) 'WARNING : VERSION PARALLELE seulement avec ',&
 & 'dmtype=21,22,4,3,9,15,151,1,30,31,32,33,34,19,35,23,24,41'
     end select
 #endif
@@ -701,18 +732,18 @@ contains
 
     if ((.not.ltabvois).and. itab/=1) then
        !     if (rang == 0) then
-       !        write (6, *) ' '
-       !        write (6, *) 'Modification obligatoire a itab = 1 '
-       !        write (6, *) ' '
+       !        write (uwrt, *) ' '
+       !        write (uwrt, *) 'Modification obligatoire a itab = 1 '
+       !        write (uwrt, *) ' '
        !     endif
        itab = 1
     endif
 
     if ((itmax.GT.0).and.(nitmax.GT.0)) then
-       write(6,*)' NITMAX PASSE DEVANT ITMAX'
+       write(uwrt,*)' NITMAX PASSE DEVANT ITMAX'
     end if
     if ((.not.lrestart).and.(nitmax.GT.0)) then
-       write(6,*)'Nitmax>0 et pas restart ?'
+       write(uwrt,*)'Nitmax>0 et pas restart ?'
        call arret_ndm
     end if
     if ((timemax.gt.0).and.(itmax==-1)) itmax=1000000000
@@ -720,24 +751,24 @@ contains
     if ((dmtype.EQ.11).or.(dmtype.eq.15).or.(dmtype.eq.151).or.(dmtype.eq.9)) itmax=1
 
 !    if (itmax < 0) then
-!       if (rang==0) write (6, *) rang,'wrong itmax < 0 '
+!       if (rang==0) write (uwrt, *) rang,'wrong itmax < 0 '
 !       call arret_ndm
 !    endif
 
     if (itedepla>=1 .and. tdepla<0.0) then
-       if (rang==0) write (6, *) rang,'wrong tdepla < 0 '
+       if (rang==0) write (uwrt, *) rang,'wrong tdepla < 0 '
        call arret_ndm
     endif
 
     !     if ((itedepla.ge.1).and.(tdepla2.lt.0.0)) then
-    !       write(6,*)'wrong tdepla2 < 0 '
+    !       write(uwrt,*)'wrong tdepla2 < 0 '
     !       call arret_ndm
     !     endif
 
 
     if (lfilm ) then
        if (itedepla < 1) then
-          if (rang==0) write (6, *) rang,'contradiction itedepla <-> lfilm'
+          if (rang==0) write (uwrt, *) rang,'contradiction itedepla <-> lfilm'
           call arret_ndm
        endif
     endif
@@ -745,18 +776,18 @@ contains
 
 
     if (tstep<1D-20 .or. tstep>1D-13) then
-       if (rang==0) write (6, *) rang,'mauvais pas en temps = ', utemps
+       if (rang==0) write (uwrt, *) rang,'mauvais pas en temps = ', utemps
        call arret_ndm
     endif
 
     if (tfcou*epcou <= 0.0) then
-       write (6, *) rang,'probleme TFCOU EPCOU = ', tfcou, epcou
+       write (uwrt, *) rang,'probleme TFCOU EPCOU = ', tfcou, epcou
        call arret_ndm
     endif
 
     if ((ltriclin.EQV..false.).and.(rang==0))then
-       if (rang==0) write(6,*)'LTRICLIN=FALSE N_EXISTE PLUS'
-       if (rang==0) write(6,*)'INPUT HISTORIQUE ??'
+       if (rang==0) write(uwrt,*)'LTRICLIN=FALSE N_EXISTE PLUS'
+       if (rang==0) write(uwrt,*)'INPUT HISTORIQUE ??'
     end if
 
     if(dmtype==9) lprteat=.true.
@@ -767,32 +798,33 @@ contains
     if(dmtype==16) lprteat=.true.
     if (lposmoy.EQV..true.) then 
        lprteattotm=.true.
-       write(6,*)'LPOSMOY, stocke les positions moyennes dans posmoyx et les ecrit a la fin avec les energies moyennes'
+       write(uwrt,*)'LPOSMOY, stocke les positions moyennes dans posmoyx et les ecrit a la fin avec les energies moyennes'
     end if
     if (lprteattotm.EQV..true.) then
        lprteat=.true.
-       write(6,*)'LPRTEATTOTM calcule les energies moyenne de chaque atome et les ecrit en retranchant eatref en eV (=0 par defaut)'
+       write(uwrt,*)'LPRTEATTOTM calcule les energies moyenne de chaque atome &
+&et les ecrit en retranchant eatref en eV (=0 par defaut)'
     end if
 
 
     deltax=deltax*A2cm
     if (dmtype==5.and.deltax.le.0) then
-       write(6,*) rang,'dmtype 5 deltax 0'
+       write(uwrt,*) rang,'dmtype 5 deltax 0'
        call arret_ndm
     endif
     if (dmtype==7.and.deltax.le.0) then
        if (.not.lEev) then
-          write(6,*)  'PHONDY: lEev should be set on .true.'
-          write(6,*)  'PHONDY: Change accordingly and try again!'
+          write(uwrt,*)  'PHONDY: lEev should be set on .true.'
+          write(uwrt,*)  'PHONDY: Change accordingly and try again!'
           call arret_ndm
        end if
-       write(6,*) rang,'For dmtype 7 deltax must be deltax > 0'
-       write(6,*) rang,'Change deltax!'
+       write(uwrt,*) rang,'For dmtype 7 deltax must be deltax > 0'
+       write(uwrt,*) rang,'Change deltax!'
        call arret_ndm
     endif
 
     if (dmtype==7) then
-       write(6,*)'dmtype==7 is deprecated'
+       write(uwrt,*)'dmtype==7 is deprecated'
        call arret_ndm
     end if
 
@@ -813,34 +845,34 @@ contains
     IF ( lTHoover ) iThermo=iThermo+1
     IF ( iThermo .GE. 1) THEN
        if (text.le.0) then
-          IF (RANG==0) WRITE(6,*) 'T Const et Text<=0 : stop '
+          IF (RANG==0) WRITE(uwrt,*) 'T Const et Text<=0 : stop '
           call arret_ndm
        end if
 
        if (rang==0)then
-          if(lTcon)                WRITE(6,*) 'TEMPERATURE CONSTANTE A LA :','lTcon  '
-          if (lTberendsen)         WRITE(6,*) 'TEMPERATURE CONSTANTE A LA :','lTBerendsen  '
-          if(lTNose)               WRITE(6,*) 'TEMPERATURE CONSTANTE A LA :','lTNose '
-          if(lTHoover)             WRITE(6,*) 'TEMPERATURE CONSTANTE A LA :','lTHoover '
-          if(lTandersen)           WRITE(6,*) 'TEMPERATURE CONSTANTE A LA :','lTandersen '
+          if(lTcon)                WRITE(uwrt,*) 'TEMPERATURE CONSTANTE A LA :','lTcon  '
+          if (lTberendsen)         WRITE(uwrt,*) 'TEMPERATURE CONSTANTE A LA :','lTBerendsen  '
+          if(lTNose)               WRITE(uwrt,*) 'TEMPERATURE CONSTANTE A LA :','lTNose '
+          if(lTHoover)             WRITE(uwrt,*) 'TEMPERATURE CONSTANTE A LA :','lTHoover '
+          if(lTandersen)           WRITE(uwrt,*) 'TEMPERATURE CONSTANTE A LA :','lTandersen '
        end IF
        IF ( iThermo .GT. 1) THEN
-          IF (RANG==0) WRITE(6,*) 'Thermostat "normal", de Berendsen, de Nose, de Hoover ou de Andersen: en choisir un seul'
+          IF (RANG==0) WRITE(uwrt,*) 'Thermostat "normal", de Berendsen, de Nose, de Hoover ou de Andersen: en choisir un seul'
           STOP
        end IF
     END IF
 
     if (linstantrdf .and. iterdf==0) then
-       if (rang==0) write (6, *) rang,'linstantrdf et iterdf incompatibles'
+       if (rang==0) write (uwrt, *) rang,'linstantrdf et iterdf incompatibles'
        call arret_ndm
     endif
 
     if (ltabvois .and. rvois==0.0) then
-       if (rang==0) write (6, *) rang,'erreur rvois ', rvois
+       if (rang==0) write (uwrt, *) rang,'erreur rvois ', rvois
        call arret_ndm
     endif
     if ((.not.ltabvois) .and. rvois>0.0) then
-       if (rang==0) write (6, *) 'ltabvois=false et rvois >0 ', rvois
+       if (rang==0) write (uwrt, *) 'ltabvois=false et rvois >0 ', rvois
        call arret_ndm
     endif
     rvois=rvois*1.0d-8
@@ -856,24 +888,24 @@ contains
     end if
 
     if(lTcon.and.dmtype>1) then
-       if (rang==0) write(6,*)rang,'lTcon dmtype>1'
+       if (rang==0) write(uwrt,*)rang,'lTcon dmtype>1'
        call arret_ndm
     end if
 
     if(lTcon.and.lcasca) then
-       if (rang==0) write(6,*)rang,'lTcon lacasca'
+       if (rang==0) write(uwrt,*)rang,'lTcon lacasca'
        call arret_ndm
     end if
 
     if(lTcon.and.(Text<0.))then
-       if (rang==0) write(6,*)rang,'Text <0'
+       if (rang==0) write(uwrt,*)rang,'Text <0'
        call arret_ndm
     endif
 
 
     if((lTberendsen).and.( (dmtype.EQ.21).OR.(dmtype.EQ.22).OR.(dmtype.EQ.3).OR.(dmtype.EQ.30)&
          &.OR.(dmtype.EQ.31).OR.(dmtype.EQ.32).OR.(dmtype.EQ.34).OR.(dmtype.EQ.33).OR.(dmtype.EQ.35) )) then
-       write(6,*) 'Berendsen pas possible';stop
+       write(uwrt,*) 'Berendsen pas possible';stop
     end if
 
     if (ipotentiel==-1) then
@@ -885,14 +917,14 @@ contains
           end if
        end do lpt
        if (.not.tpot) then
-          if (rang==0) write(6,*)'probleme ipotentiel npotentiel',ipotentiel,lpotentiel
+          if (rang==0) write(uwrt,*)'probleme ipotentiel npotentiel',ipotentiel,lpotentiel
           call arret_ndm
        end if
     end if
     !  if ((all(lpotentiel)==.false.).and.(ipotentiel==-1)) then
     !  end if
     if ((ipotentiel.gt.0).and.(any(lpotentiel))) then
-       write(6,*)'choose iptentiel or lpotentiel, not both'
+       write(uwrt,*)'choose iptentiel or lpotentiel, not both'
        call arret_ndm
        stop
     end if
@@ -902,27 +934,27 @@ contains
        if (lpotentiel(ipotcont).EQV..true.) npotentiel =npotentiel+1
     end do
     if ((lpotentiel(0).EQV..true.).and.(npotentiel.gt.1)) then
-       if (rang==0) write(6,*)'npotentiel>1 et lpotentiel(0)=T'
+       if (rang==0) write(uwrt,*)'npotentiel>1 et lpotentiel(0)=T'
        call arret_ndm
     end if
 
     if ((ntyp==-1).and.(npotentiel.gt.1))then
-       if (rang==0) write(6,*)'npotentiel>1 et ntyp=-1'
+       if (rang==0) write(uwrt,*)'npotentiel>1 et ntyp=-1'
        call arret_ndm
     end if
 !    if ((npotentiel.gt.1).and.(lpotentiel(10).eqv..true.)) then
-       !if (rang==0)write(6,*)'**** npotentiel >1 ET EAM ==> EAM TAB only!'
+       !if (rang==0)write(uwrt,*)'**** npotentiel >1 ET EAM ==> EAM TAB only!'
 !    end if
 
 
     if ((lpotentiel(12).EQV..true.).and.(ltabvois.EQV..true.))ldemitab=.false.
     if (ipotentiel.le.-10)then
-       if ((rang==0).and.(ltabvois)) write(6,*)'LAMMPS +ltabvois ; impossible pour l instant, ltabvois à false'
+       if ((rang==0).and.(ltabvois)) write(uwrt,*)'LAMMPS +ltabvois ; impossible pour l instant, ltabvois à false'
        ltabvois=.false.
     end if
 
     if(lrestart.and.lcorrelvp) then
-       if (rang==0) write(6,*)rang,'pas de restart et de correlation'
+       if (rang==0) write(uwrt,*)rang,'pas de restart et de correlation'
        call arret_ndm
     end if
 
@@ -935,29 +967,31 @@ contains
 
     if (itetimestep>0)  then
        if ((dmtype.eq.1).or.(dmtype.eq.21).or.(dmtype.eq.22).or.(dmtype.eq.4).or.(dmtype.eq.41).or.(dmtype.eq.42)) then
-          if (rang==0) write(6,*) 'The time step changed each', itetimestep,' steps'
+          if (rang==0) write(uwrt,*) 'The time step changed each', itetimestep,' steps'
        else 
-          if (rang==0) write(6,*)'itetimestep seulement avec dmtype =1, 2  or 4 '
-          if (rang==0) write(6,*) 'STOP in readdm'
+          if (rang==0) write(uwrt,*)'itetimestep seulement avec dmtype =1, 2  or 4 '
+          if (rang==0) write(uwrt,*) 'STOP in readdm'
           call arret_ndm
        end if
     end if
 
     if(lLangevin.and.(Text.le.0.0)) then
-       if (rang==0) write(6,*)'Langevin avec Text pas defini : stop'
+       if (rang==0) write(uwrt,*)'Langevin avec Text pas defini : stop'
        call arret_ndm
     end if
     if (dmtype==88) then
        llangevin=.true.; lpr=.true.
     end if
+
+
     if(llangevin) then
-       if (lpr) then
+       if ((lpr).and.(dmtype.ne.16)) then
           dmtype=88
        else
           ltest=.false.
-          if ((dmtype==4).or.(dmtype==41).or.(dmtype==42))ltest=.true.
+          if ((dmtype==4).or.(dmtype==41).or.(dmtype==42).or.(dmtype==16))ltest=.true.
           if (.not.ltest)then
-             write(6,*)'llangevin only with dmtype =4,41, 42'
+             write(uwrt,*)'llangevin only with dmtype =4,41, 42'
              call arret_ndm
           end if
        end if
@@ -967,8 +1001,8 @@ contains
     if (lpconxyz) then
        if (.NOT.lprahman) then
           if (rang==0) then
-             write(6,*) 'lpconxyz can be USEd ONLY is with PR dynamics or lpr=.true'
-             write(6,*) 'stop in <readdm>'
+             write(uwrt,*) 'lpconxyz can be USEd ONLY is with PR dynamics or lpr=.true'
+             write(uwrt,*) 'stop in <readdm>'
           end if
           call arret_ndm
        end if
@@ -994,13 +1028,13 @@ contains
        end select
 
        if ((pext.ne.0.).or.(any(sigext.ne.0))) then
-          if (rang==0) write(6,*)'SIGEXT en cgs', sigext
-          if (rang==0) write(6,*)'Pext en cgs',pext
+          if (rang==0) write(uwrt,*)'SIGEXT en cgs', sigext
+          if (rang==0) write(uwrt,*)'Pext en cgs',pext
           do ic=1,3
              sigext(ic,ic)=sigext(ic,ic)+pext
           end do
-          if (rang==0) write(6,*) 'transforme en '
-          if (rang==0) write(6,*)'SIGEXT', sigext
+          if (rang==0) write(uwrt,*) 'transforme en '
+          if (rang==0) write(uwrt,*)'SIGEXT', sigext
        end if
        !=== Modif Emmanuel Clouet ================
        ! Verifie si un etat de reference a ete donne
@@ -1009,7 +1043,7 @@ contains
        Pext = (sigext(1,1)+sigext(2,2)+sigext(3,3))/3.d0
        !=== Fin des modifications ================
        h0(1:3,1:3) = 1e-8*h0(1:3,1:3)
-
+       h0r=h0
        if (sig0stara) then
           astarsig(1)=.true.
           ihbox0(:,2)=0
@@ -1041,14 +1075,14 @@ contains
        do ic=1,3
           do ic2=1,3
              if ((ihbox0(ic,ic2).ne.0).and.(ihbox0(ic,ic2).ne.1))then
-                if (rang==0) write(6,*)'non zero ihbox0(',ic,ic2,ihbox0(ic,ic2)
+                if (rang==0) write(uwrt,*)'non zero ihbox0(',ic,ic2,ihbox0(ic,ic2)
                 call arret_ndm
              end if
           end do
        end do
        do ic=1,3
           if ((ihbox0(ic,ic)==1).and.(ipbc(ic).ne.1))then
-             write(6,*)'direction ',ic,' lprahman and no pbc ipbc =',ipbc(ic)
+             write(uwrt,*)'direction ',ic,' lprahman and no pbc ipbc =',ipbc(ic)
              call arret_ndm
           end if
        end do
@@ -1062,36 +1096,37 @@ contains
     select case (ibrake)
     case(3)
        if(rang==0) then 
-          write(6,*)'electronic stopping with constant coeff read in  elstop.in for Ec> Ecelec  >' , Ecelec
+          write(uwrt,*)'electronic stopping with constant coeff read in  elstop.in for Ec> Ecelec  >' , Ecelec
        end if
     case(0)
        if ((tcelec.gt.0).or.(ecelec.gt.0)) then
-          write(6,*) 'tcelec > 0 et pas de pertes electroniques : stop'
+          write(uwrt,*) 'tcelec > 0 et pas de pertes electroniques : stop'
           call arret_ndm
        end if
     case(1)
        if(rang==0) then 
-          write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES EC >' , Ecelec,'!!!!!!!!!!'
-          write(6,*)'electronic stopping according to elstop.in from SRIM POUR DES Tempcel  >' , tcelec,'!!!!!!!!!!'
+          write(uwrt,*)'electronic stopping according to elstop.in from SRIM POUR DES EC >' , Ecelec,'!!!!!!!!!!'
+          write(uwrt,*)'electronic stopping according to elstop.in from SRIM POUR DES Tempcel  >' , tcelec,'!!!!!!!!!!'
 
        endif
     case(2)
        if (ecelec.le.0) then
-          write(6,*) 'Ecelec <  0 et  perte electronique Langevin : stop'
+          write(uwrt,*) 'Ecelec <  0 et  perte electronique Langevin : stop'
           call arret_ndm
        end if
        if (Text.le.0) then
-          write(6,*) 'Text <  0 et  perte electronique Langevin : stop'
+          write(uwrt,*) 'Text <  0 et  perte electronique Langevin : stop'
           call arret_ndm
        end if
        if(rang==0) then 
-          write(6,*)'electronic stopping according to elstop.in from SRIM ET CONNECTION A LANGEVIN pour EC >' , Ecelec,'!!!!!!!!!!'
+          write(uwrt,*)'electronic stopping according to elstop.in from&
+& SRIM ET CONNECTION A LANGEVIN pour EC >' , Ecelec,'!!!!!!!!!!'
        endif
        llangevin=.true.
        gamlg=-1.
     end select
     if ((ibrake.gt.0).and.(l2t.eqv..true.)) then
-       if (rang==0) write(6,*)'L2T AND ibrake = 0 STOP'
+       if (rang==0) write(uwrt,*)'L2T AND ibrake = 0 STOP'
        call arret_ndm
     end if
     
@@ -1112,90 +1147,93 @@ contains
 
     if(dilat(1).ne.0.0) then
        if(igen.lt.1) then
-          if (rang==0) write (6,*) rang,'dilat<>0 et igen<>1 stop'
+          if (rang==0) write (uwrt,*) rang,'dilat<>0 et igen<>1 stop'
           call arret_ndm
        end if
        if (dilat(2)==0.0) dilat(2)=dilat(1)
        if (dilat(3)==0.0) dilat(3)=dilat(1)
-       if (rang==0) write(6,*)'dilat 1 2 3 ', dilat(1),dilat(2),dilat(3)
+       if (rang==0) write(uwrt,*)'dilat 1 2 3 ', dilat(1),dilat(2),dilat(3)
     end if
 
     ! MPI
     if (itesauvinter.gt.0) then
        if (mod(itesauvinter,itesauv).ne.0) then
-          write(6,*)'itesauvinter n est pas un multiple de intesauv : stop'
+          write(uwrt,*)'itesauvinter n est pas un multiple de intesauv : stop'
           call arret_ndm
        end if
     end if
-    if (rang==0) write (6, *)
-    if (rang==0) write (6, '(a,I2)') ' -------- caracteristiques du run DM--------', dmtype
+    if (rang==0) write (uwrt, *)
+    if (rang==0) write (uwrt, '(a,I2)') ' -------- caracteristiques du run DM--------', dmtype
     select case (dmtype)
     case(111)
-       if (rang==0) write (6,'(a)') '|=========       ONE STEP           ===============|'
+       if (rang==0) write (uwrt,'(a)') '|=========       ONE STEP           ===============|'
 
     case (1)
-       if (rang==0) write (6, '(a)') '     DYNAMIQUE MOLECULAIRE VERLET STANDARD'
+       if (rang==0) write (uwrt, '(a)') '     DYNAMIQUE MOLECULAIRE VERLET STANDARD'
     case (21)
-       if (rang==0) write (6, '(a)') '     FAST Quenching Vcst'
+       if (rang==0) write (uwrt, '(a)') '     FAST Quenching Vcst'
     case (22)
-       if (rang==0) write (6, '(a)') '     FAST Quenching Pcst'
+       if (rang==0) write (uwrt, '(a)') '     FAST Quenching Pcst'
        lprahman=.true.
     case (23)
-       if (rang==0) write (6, '(a)') '     FIRE Quenching Vcst'
+       if (rang==0) write (uwrt, '(a)') '     FIRE Quenching Vcst'
     case (24)
-       if (rang==0) write (6, '(a)') '     FIRE Quenching Pcst'
+       if (rang==0) write (uwrt, '(a)') '     FIRE Quenching Pcst'
        lprahman=.true.
     case (31)
-       if (rang==0) write (6, '(a)') '     VIEUX GRADIENT CONJUGUE par défaut = 31 sur les coordonnees cartésiennes '
+       if (rang==0) write (uwrt, '(a)') '     VIEUX GRADIENT CONJUGUE par défaut = 31 sur les coordonnees cartésiennes '
     case (30)
-       if (rang==0) write (6, '(a)') '     VIEUX GRADIENT CONJUGUE sur les coordonnees REDUITES'
+       if (rang==0) write (uwrt, '(a)') '     VIEUX GRADIENT CONJUGUE sur les coordonnees REDUITES'
     case (3)
-       if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE STANDARD '
+       if (rang==0) write (uwrt, '(a)') '     GRADIENT CONJUGUE STANDARD '
        dmtype=33
     case (32)
-       if (rang==0) write (6, '(a)') '     STEEPEST DESCENT'
+       if (rang==0) write (uwrt, '(a)') '     STEEPEST DESCENT'
     case (33)
-       if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE STANDARD '
+       if (rang==0) write (uwrt, '(a)') '     GRADIENT CONJUGUE STANDARD '
     case (34)
-       if (rang==0) write (6, '(a)') '     GRADIENT CONJUGUE FLETCHER-REEVES'
+       if (rang==0) write (uwrt, '(a)') '     GRADIENT CONJUGUE FLETCHER-REEVES'
     case (35)
-       if (rang==0) write (6, '(a)') '     ADAM relaxation D. Kingma and J. Ba, 2015'
+       if (rang==0) write (uwrt, '(a)') '     ADAM relaxation D. Kingma and J. Ba, 2015'
        if(itmax==-1)itmax=300
     case (4)
-       if (rang==0) write (6,'(a)') '      DYNAMIQUE MOLECULAIRE VELOCITY VERLET'
-       if (llangevin.and.(rang==0)) write (6,'(a)') '      Tcst LANGEVIN'
+       if (rang==0) write (uwrt,'(a)') '      DYNAMIQUE MOLECULAIRE VELOCITY VERLET'
+       if (llangevin.and.(rang==0)) write (uwrt,'(a)') '      Tcst LANGEVIN'
     case (41)
-       if (rang==0) write (6,'(a)') '      MOLECULAR DYNAMICS ADAPTATIVE RESTRAINED PARTICLE SIMULATION with restrained forces'
+       if (rang==0) write (uwrt,'(a)') '      MOLECULAR DYNAMICS ADAPTATIVE RESTRAINED &
+&PARTICLE SIMULATION with restrained forces'
     case (42)
-       if (rang==0) write (6,'(a)') '      DYNAMIQUE MOLECULAIRE ADAPTATIVE RESTRAINED PARTICLE SIMULATION with coplete forces'
+       if (rang==0) write (uwrt,'(a)') '      DYNAMIQUE MOLECULAIRE ADAPTATIVE RESTRAINED PARTICLE SIMULATION with coplete forces'
     case (5)
-       if (rang==0) write (6,'(a)') '      TEST DES FORCES '
+       if (rang==0) write (uwrt,'(a)') '      TEST DES FORCES '
     case (8)
-       if (rang==0) write (6,'(a)') '      PARRINELLO RAHMAN AUTOCOHERENT '
+       if (rang==0) write (uwrt,'(a)') '      PARRINELLO RAHMAN AUTOCOHERENT '
        lprahman=.true.
     case (88)
-       if (rang==0) write (6,'(a)') '      PCst en LANGEVIN'
+       if (rang==0) write (uwrt,'(a)') '      PCst en LANGEVIN'
        lprahman=.true.
     case (6)
-       if (rang==0) write (6,'(a)') '      ANALYSE DES POSITIONS EN FIN DE CASCADE '
+       if (rang==0) write (uwrt,'(a)') '      ANALYSE DES POSITIONS EN FIN DE CASCADE '
+    case (16)
+       if (rang==0) write (uwrt,'(a)') '      BABAR ==> llangevin + lpr =true.' 
     case (9)
-       if (rang==0) write (6,'(a)') '      DRAG OR NEB DYNAMICS ' 
+       if (rang==0) write (uwrt,'(a)') '      DRAG OR NEB DYNAMICS ' 
        itesauvposition=-1
        itesauvforce=-1
        itetemp=-1;itesigma=-1
     case (11)
-       if (rang==0) write (6,'(a)') '      UN CALCUL DE FORCES '
-       if (rang==0) write (6,*)
+       if (rang==0) write (uwrt,'(a)') '      UN CALCUL DE FORCES '
+       if (rang==0) write (uwrt,*)
     case (19)
        if (rang==0) then
-          write (6,'(a)') '      FORCE Matrix calculation '
-          if (ltabvois) write (6,'(a)') '  BE SURE THAT RVOIS>RUE+DECAL'
+          write (uwrt,'(a)') '      FORCE Matrix calculation '
+          if (ltabvois) write (uwrt,'(a)') '  BE SURE THAT RVOIS>RUE+DECAL'
        end if
 #ifndef MKL
        if (rang==0)then
-          write(6,*)"dmtype=19 works with lapack or MKL"
-          write(6,*)"these libraries are NOT linked by default"
-          write(6,*)"the force matrix will be written to binary file"
+          write(uwrt,*)"dmtype=19 works with lapack or MKL"
+          write(uwrt,*)"these libraries are NOT linked by default"
+          write(uwrt,*)"the force matrix will be written to binary file"
        end if
        lwfm=.true.
 !       call arret_ndm
@@ -1203,80 +1241,74 @@ contains
 
        decal=decal*1d-8
        if((ndecal.le.0).or.(decal.le.0)) then 
-          if (rang==0) write (6,*)' problem decal, ndecal:',decal,ndecal
+          if (rang==0) write (uwrt,*)' problem decal, ndecal:',decal,ndecal
           call arret_ndm
        end if
-       if (rang==0) write (6,*)' decal, ndecal lparaFM, naparaFM:',decal,ndecal,lparafm,nparafm
-       if (rang==0) write (6,*)
+       if (rang==0) write (uwrt,*)' decal, ndecal lparaFM, naparaFM:',decal,ndecal,lparafm,nparafm
+       if (rang==0) write (uwrt,*)
     case (15,151)
-       if ((rang==0).and.(dmtype==151)) write (6,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
-       if ((rang==0).and.(dmtype==15)) write (6,'(a)') '      CALCUL MONTE CARLO DES CHEMINS '
-       if (rang==0) write (6,*)'LPARAPATH NPARAPATH', lparapath, nparapath
+       if ((rang==0).and.(dmtype==151)) write (uwrt,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
+       if ((rang==0).and.(dmtype==15)) write (uwrt,'(a)') '      CALCUL MONTE CARLO DES CHEMINS '
+       if (rang==0) write (uwrt,*)'LPARAPATH NPARAPATH', lparapath, nparapath
 !!$       if ((nparapath.gt.1).and.(.not.lparapath)) then
-!!$          write(6,*)'nparapath >1, needs lparapath = TRUE'
+!!$          write(uwrt,*)'nparapath >1, needs lparapath = TRUE'
 !!$          call arret_ndm
 !!$       end if
 
-       if (rang==0) write (6,*)
+       if (rang==0) write (uwrt,*)
        if ((lparapath).and.(nparapath.le.1)) then
-          write(6,*)'lparapath ET nparapath=1 stop'
+          write(uwrt,*)'lparapath ET nparapath=1 stop'
           call arret_ndm
        end if
 !       if (dmtype.ne.12) then
           if ((.not.lrestartmcgc) .and. (.not.((idirectionmcgc==0).or.(idirectionmcgc==1)))) then
-             write(6,*)'set idirectionmcgc to 0 or 1 '
+             write(uwrt,*)'set idirectionmcgc to 0 or 1 '
              call arret_ndm
           end if
           if (rang==0) then
-             write(6,*)'MCGC starts in direction, idirectionmcgc ', idirectionmcgc, " protocol=", protocol_mcc
+             write(uwrt,*)'MCGC starts in direction, idirectionmcgc ', idirectionmcgc, " protocol=", protocol_mcc
           end if
 !       end if
 #ifdef PARA
 #else
        if (lparapath) then
-          write(6,*)'lparapath=true et sequentiel==> lparapath=.false.'
+          write(uwrt,*)'lparapath=true et sequentiel==> lparapath=.false.'
           lparapath=.false.
        end if
 #endif
 
 !#ifdef ART    
     case (12)
-       if (rang==0) write (6,'(a)') '|=========NDM ENTERTAINMENTS presents:===============|'
-       if (rang==0) write (6,'(a)') '|---------ART nouveau by N MOUSSEAU.---------------|'
-       if (rang==0) write (6,'(a)') '|======== colored by Cosmin Marinica!==============|'
-       if (rang==0) write (6,'(a)') '|======== updated by J-P Crocombette!==============|'
+       if (rang==0) write (uwrt,'(a)') '|=========NDM ENTERTAINMENTS presents:===============|'
+       if (rang==0) write (uwrt,'(a)') '|---------ART nouveau by N MOUSSEAU.---------------|'
+       if (rang==0) write (uwrt,'(a)') '|======== colored by Cosmin Marinica!==============|'
+       if (rang==0) write (uwrt,'(a)') '|======== updated by J-P Crocombette!==============|'
 !#endif
-#ifdef SUNDAE    
-    case (16)
-       if (rang==0) write (6,'(a)') '|=========       NDM + SUNDAE       ===============|'
-       if (rang==0) write (6,'(a)') '|---------..........................---------------|'
-       if (rang==0) write (6,'(a)') '|==================================================|'
-#endif
 #ifdef MAB    
     case (17)
-       if (rang==0) write (6,'(a)') '|=========       NDM + MAB          ===============|'
-       if (rang==0) write (6,'(a)') '|---------..........................---------------|'
-       if (rang==0) write (6,'(a)') '|==================================================|'
+       if (rang==0) write (uwrt,'(a)') '|=========       NDM + MAB          ===============|'
+       if (rang==0) write (uwrt,'(a)') '|---------..........................---------------|'
+       if (rang==0) write (uwrt,'(a)') '|==================================================|'
 #endif
 
 
     case(112)
-       write(6,*)'simple test de distance entre atomes'
+       write(uwrt,*)'simple test de distance entre atomes'
     case(113)
-       write(6,*)'recvherche de la position la plus éloignée des atomes'
+       write(uwrt,*)'recvherche de la position la plus éloignée des atomes'
 
     case default
-       if (rang==0) write (6, *) 'mauvais type de calcul dmtype=TTT',dmtype
+       if (rang==0) write (uwrt, *) 'mauvais type de calcul dmtype=TTT',dmtype
        call arret_ndm
     end select
 
     if (any(ihbox0==0))then
        if (rang==0) then
-          write(6,*)'incomplete cell relaxation'
+          write(uwrt,*)'incomplete cell relaxation'
           do ic=1,3
              do ic2=1,3
                 if (ihbox0(ic,ic2)==1)then
-                   write(6,'(A,2I2,A,I2)')' ihbox0(',ic,ic2,')=',ihbox0(ic,ic2)
+                   write(uwrt,'(A,2I2,A,I2)')' ihbox0(',ic,ic2,')=',ihbox0(ic,ic2)
                 end if
              end do
           end do
@@ -1284,68 +1316,69 @@ contains
     end if
 
 
-    if (lcontr)  write (6, '(a)') '******************* CONTRAINTE !!! *****'
+    if (lcontr)  write (uwrt, '(a)') '******************* CONTRAINTE !!! *****'
 
 
     if (lTcon) then
-       if (rang==0) write (6, *) 'TEMPERATURE CONSTANTE a la main Text= ',text
+       if (rang==0) write (uwrt, *) 'TEMPERATURE CONSTANTE a la main Text= ',text
     endif
     if (lTberendsen) then
        if (text.le.0) then
-          write(6,*)'text<0' ;stop
+          write(uwrt,*)'text<0' ;stop
        endif
-       if (rang==0) write (6, *) 'TEMPERATURE CONSTANTE a la Berendsen Text= ',text
+       if (rang==0) write (uwrt, *) 'TEMPERATURE CONSTANTE a la Berendsen Text= ',text
     endif
     if ((text.gt.0).and.(.not.((dmtype==15).or.(dmtype==151)))) then
               if (.not.(ltberendsen.or.llangevin.or.lThoover.or.lTnose)) then
-          write(6,*)'text<0 mais pas dalgo',dmtype ;stop
+          write(uwrt,*)'text<0 mais pas dalgo',dmtype ;stop
        end if
     end if
     select case (igen)
     case (-1)
-       if (rang==0) write (6, *) 'generation du crystal'
+       if (rang==0) write (uwrt, *) 'generation du crystal'
     case (0)
-       if (rang==0) write (6, *) 'generation du crystal ; puis run'
+       if (rang==0) write (uwrt, *) 'generation du crystal ; puis run'
     case (1)
-       if (rang==0) write (6, *) 'run a partir du fichier .cin'
+       if (rang==0) write (uwrt, *) 'run a partir du fichier .cin'
     case (2)
-       if (rang==0) write (6, *) 'écriture de gin à partir du fichier .cin'
+       if (rang==0) write (uwrt, *) 'écriture de gin à partir du fichier .cin'
     case (3)
-       if (rang==0) write (6, *) 'modification du fichier .cin'
+       if (rang==0) write (uwrt, *) 'modification du fichier .cin'
 #ifdef DKIO
     case (11,12,13,14,15,16,17,18,19,21,22,23,25)
-       if (rang==0) write (6, *) 'generation du crystal a partir de dk_io ; puis run'
+       if (rang==0) write (uwrt, *) 'generation du crystal a partir de dk_io ; puis run'
 #endif
     case default
-       if (rang==0) write (6, *) 'mauvais igen=', igen
+       if (rang==0) write (uwrt, *) 'mauvais igen=', igen
        call arret_ndm
     end select
 
     if (ltabvois) then
        if (npotentiel.gt.1) then
-          if (rang==0) write(6,*)'ltabvois avec plusieurs potentiels= pas programmee (demi table ou table complete = prise de tete'
+          if (rang==0) write(uwrt,*)'ltabvois avec plusieurs potentiels= pas programmee&
+& (demi table ou table complete = prise de tete'
           call arret_ndm
        end if
 
        !     if (tempstopcel.gt.0) ltpcel=.true.
-       if (ltpcel) write (6, *) '   -> -> pas de contrainte par celulles'
+       if (ltpcel) write (uwrt, *) '   -> -> pas de contrainte par celulles'
 
-       if (rang==0) write(6,*)'IPOTENTIEL',ipotentiel
+       if (rang==0) write(uwrt,*)'IPOTENTIEL',ipotentiel
        select case (ipotentiel)
        case(:9)
           ldemitab=.TRUE.
-          if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
+          if (rang.eq.0) write (uwrt, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
        case(11:17)
           ldemitab=.false.
-          if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
+          if (rang.eq.0) write (uwrt, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
 
        case(10)  ! Potentiel EAM
           if(dmtype==7) then 
              ldemitab=.FALSE.
-             if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
+             if (rang.eq.0) write(uwrt,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
           else
              ldemitab=.TRUE.
-             if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
+             if (rang.eq.0) write (uwrt, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
           end if
        case(20)
           ltabvois=.true.
@@ -1356,10 +1389,10 @@ contains
 
        !     if(ipotentiel.le.10) then 
        !        ldemitab=.TRUE.
-       !        if (rang.eq.0) write (6, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
+       !        if (rang.eq.0) write (uwrt, *) '    DEMI-TABLE DES VOISINS rvois ',rvois
        !     else
        !        ldemitab=.false.
-       !        if (rang.eq.0) write(6,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
+       !        if (rang.eq.0) write(uwrt,*)'    TABLE DES VOISINS COMPLETE rvois ',rvois
        !     end if
 
     endif
@@ -1369,46 +1402,46 @@ contains
          &.or.(dmtype==33).or.(dmtype==31).or.(dmtype==34).or.(dmtype==35).or.(dmtype==9)&
           ) then    
        if ( (fpstop<0).and.(fsumstop<0)) then
-          if (rang==0) write(6,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
-          if (rang==0) write(6,*) 'STOP in readdm',fpstop,fsumstop
+          if (rang==0) write(uwrt,*) 'One of fpstop and fsumstop must be positive for dmtype=',dmtype
+          if (rang==0) write(uwrt,*) 'STOP in readdm',fpstop,fsumstop
           call arret_ndm
        end if
        if ( (fpstop < 0) .and. (dmtype==9) ) then
-          if (rang==0) write(6,*) 'NEB and DRAG implementation only for positive fpstop'
-          if (rang==0) write(6,*) 'STOP in readdm'
+          if (rang==0) write(uwrt,*) 'NEB and DRAG implementation only for positive fpstop'
+          if (rang==0) write(uwrt,*) 'STOP in readdm'
           call arret_ndm 
        end if
        if  ( (fpstop>0).and.(fsumstop>0) ) then
-          if (rang==0) write(6,*) 'DANGER - WARNING - ACHTUNG:  both fpstop and fsumstop are positive !!!'
+          if (rang==0) write(uwrt,*) 'DANGER - WARNING - ACHTUNG:  both fpstop and fsumstop are positive !!!'
        end if
        if ((dmtype==8).and.(sigstop.LT.0)) then
-          write(6,*)'trempe PR + sigstop <0 ; stop'; stop
+          write(uwrt,*)'trempe PR + sigstop <0 ; stop'; stop
        end if
     end if
 
     if  (dmtype==9) then
        if (lperiod) then
-          if (rang==0)  write(6,*) 'There is no NEB and DRAG implementation for lperiod true'
-          if (rang==0)  write(6,*) 'put your lperiod to false in din file and restart.'
+          if (rang==0)  write(uwrt,*) 'There is no NEB and DRAG implementation for lperiod true'
+          if (rang==0)  write(uwrt,*) 'put your lperiod to false in din file and restart.'
           call arret_ndm
        end if
     end if
 
     if ( (.not.lperiod).and.(itesauvposition>0).and.lsuivinonpbc) then  
-       if (rang==0) write(6,*)' lsuivinonpbc will be turn to FALSE'
+       if (rang==0) write(uwrt,*)' lsuivinonpbc will be turn to FALSE'
        lsuivinonpbc=.false.
     end if
     if (lsuivinonpbc) then
 
        if ((dmtype.ne.4).and.(dmtype.ne.41).and.(dmtype.ne.42)) then
-          if (rang==0) write(6,*) 'lsuivinonpbc is implemented only with velocity verlet'
-          if (rang==0) write(6,*) 'Or dmtype=4. Change and restart until there I will stop for you.'
+          if (rang==0) write(uwrt,*) 'lsuivinonpbc is implemented only with velocity verlet'
+          if (rang==0) write(uwrt,*) 'Or dmtype=4. Change and restart until there I will stop for you.'
           call arret_ndm 
        end if
 
        if (itesauvposition<=0) then
-          if (rang==0) write(6,*) 'itesauvpostion MUST be positive if you want lsuivinonpbc TRUE'
-          if (rang==0) write(6,*) 'STOP in readdm'
+          if (rang==0) write(uwrt,*) 'itesauvpostion MUST be positive if you want lsuivinonpbc TRUE'
+          if (rang==0) write(uwrt,*) 'STOP in readdm'
           call arret_ndm
        end if
     end if
@@ -1428,49 +1461,49 @@ contains
     end if
 
     if (itetemp2==-1) itetemp2=itetemp
-    if (rang==0) write(6,*)
-    if (rang==0) write (6, *) '     ANALYSES '
-    if (rang==0) write (6, *) 'itetemp=', itetemp, ' iteprtsigma=', iteprtsigma
-    if (itecoordo>0)  write(6,*)  ' itecoordo=', itecoordo
+    if (rang==0) write(uwrt,*)
+    if (rang==0) write (uwrt, *) '     ANALYSES '
+    if (rang==0) write (uwrt, *) 'itetemp=', itetemp, ' iteprtsigma=', iteprtsigma
+    if (itecoordo>0)  write(uwrt,*)  ' itecoordo=', itecoordo
     if (itedepla>0) then
        lax=.true.
-       if (rang==0) write (6, '(A,I3,A,D9.3,A,D9.3,A,I3,A,I3)') ' itedepla=', itedepla, &
+       if (rang==0) write (uwrt, '(A,I3,A,D9.3,A,D9.3,A,I3,A,I3)') ' itedepla=', itedepla, &
             ' tdepla=', tdepla*1D+8, ' tdepla2=', tdepla2*1D+8, ' itesauv=', &
             itesauv, ' itesauvposition=', itesauvposition
     end if
     if (lfilm) then
-       if (rang==0) write (6, '(A,D11.3)') ' film; seuil=', tdepla*1D+8
-       if (rang==0) write (6, '(A,D11.3)') ' film; seuil2=', tdepla2*1D+8
+       if (rang==0) write (uwrt, '(A,D11.3)') ' film; seuil=', tdepla*1D+8
+       if (rang==0) write (uwrt, '(A,D11.3)') ' film; seuil2=', tdepla2*1D+8
     endif
-    if (rang==0) write(6,*)
-    if (rang==0) write (6, *) '     CONTROLES '
-    if (rang==0) write (6, '(A,D11.3)') 'tstep=', tstep
-    if (rang==0) write (6, *) 'itmax=', itmax, 'timemax= ',timemax,' itab=', itab, ' itetimestep=', &
+    if (rang==0) write(uwrt,*)
+    if (rang==0) write (uwrt, *) '     CONTROLES '
+    if (rang==0) write (uwrt, '(A,D11.3)') 'tstep=', tstep
+    if (rang==0) write (uwrt, *) 'itmax=', itmax, 'timemax= ',timemax,' itab=', itab, ' itetimestep=', &
          itetimestep
-    if (itederive>0)  write(6,*) ' itederive=', itederive
-    if (rang==0) write (6, '(A,F10.1,A,F10.1,A,F10.1,A,F10.1)') 'tinit=', tinit
+    if (itederive>0)  write(uwrt,*) ' itederive=', itederive
+    if (rang==0) write (uwrt, '(A,F10.1,A,F10.1,A,F10.1,A,F10.1)') 'tinit=', tinit
     if (tempdeplainit.GT.0) then
        if (debyetemp==-1) then
-          write (6,*)"debyetemp  non definie mais tempdeplainit> 0" ; stop 
+          write (uwrt,*)"debyetemp  non definie mais tempdeplainit> 0" ; stop 
        end if
     end if
-    if (rang==0) write (6, '(A,F10.1)') 'tempdeplainit=', tempdeplainit
-    if (rang==0) write (6, '(A,F10.1)') 'debyetemp=', debyetemp
+    if (rang==0) write (uwrt, '(A,F10.1)') 'tempdeplainit=', tempdeplainit
+    if (rang==0) write (uwrt, '(A,F10.1)') 'debyetemp=', debyetemp
 
 
 
-    if ((tempstop>0.).and.(rang==0)) write(6,*)' tempstop=', tempstop
-    if ((tfcou>0.).and.(rang==0))         write (6, '(A,F10.1,A,F10.1,A,F10.1)') 'tfcou=', tfcou, ' epcou=', &
+    if ((tempstop>0.).and.(rang==0)) write(uwrt,*)' tempstop=', tempstop
+    if ((tfcou>0.).and.(rang==0))         write (uwrt, '(A,F10.1,A,F10.1,A,F10.1)') 'tfcou=', tfcou, ' epcou=', &
          epcou*1D+8
 
 
-    if (rang==0) write (6, *) ' ----------------------------------'
-    if (rang==0) write (6, *)
-    if (rang==0) write (6, *)
+    if (rang==0) write (uwrt, *) ' ----------------------------------'
+    if (rang==0) write (uwrt, *)
+    if (rang==0) write (uwrt, *)
 
 
 
-    if(lTandersen.and.rang==0) write(6,*)'Tandersen nuandersen = ',nuandersen
+    if(lTandersen.and.rang==0) write(uwrt,*)'Tandersen nuandersen = ',nuandersen
 
     if ((lprtsigat.eqv..true.).or.(lsigatcel.eqv..true.))then 
        lsigat=.true.
@@ -1479,7 +1512,7 @@ contains
     end if
 
     if(lPrtSigat.and.(.not.ltabvois)) then
-       write(6,'(a)')rang,'contrainte atomique programme en table des voisins&
+       write(uwrt,'(a)')rang,'contrainte atomique programme en table des voisins&
             & avec un potentiel EAM ou un terme a deux corps seulement'
        call arret_ndm
     end if
@@ -1490,12 +1523,12 @@ contains
     if ( ( (dmtype==3).OR.(dmtype==30).or.(dmtype==32).or.(dmtype==34).or.(dmtype==35)&
          &.or.(dmtype==33).or.(dmtype==31) ) &
          .and.(fpstop.le.0.0).and.(fsumstop.le.0.0)) then
-       if (rang==0) write(6,*) rang,'critere de conv. sur la force par atome max negative' 
-       if (rang==0) write(6,*) rang,'fpstop', fpstop
-       if (rang==0) write(6,*) rang,'critere de conv. sur la force sqrt ( sum_f F_i^2 ) negative' 
-       if (rang==0) write(6,*) rang,'fsumstop', fsumstop
-       if (rang==0) write(6,*) rang,'un de deux doit etre > 0. Exemple:'
-       if (rang==0) write(6,*) rang,'fpstop = 0.05, fsumstop=0.1 les unites sont eV/A'      
+       if (rang==0) write(uwrt,*) rang,'critere de conv. sur la force par atome max negative' 
+       if (rang==0) write(uwrt,*) rang,'fpstop', fpstop
+       if (rang==0) write(uwrt,*) rang,'critere de conv. sur la force sqrt ( sum_f F_i^2 ) negative' 
+       if (rang==0) write(uwrt,*) rang,'fsumstop', fsumstop
+       if (rang==0) write(uwrt,*) rang,'un de deux doit etre > 0. Exemple:'
+       if (rang==0) write(uwrt,*) rang,'fpstop = 0.05, fsumstop=0.1 les unites sont eV/A'      
        call arret_ndm
     end if
 
@@ -1504,35 +1537,35 @@ contains
     if (rulayer.gt.0.0)then
        rulayer=rulayer*1.0d-8
 
-       IF (rang==0)write(6,*)'atomes immobiles fixes par rulayer ', rulayer*1d8
+       IF (rang==0)write(uwrt,*)'atomes immobiles fixes par rulayer ', rulayer*1d8
     end if
 
 
-    !  if (rang==0) write(6,*) 'sortie readdm'
+    !  if (rang==0) write(uwrt,*) 'sortie readdm'
 
 
 
     if ((iteanapos.eq.-1).and.(itecompcr.ne.-1)) iteanapos=itecompcr
     usdh = 1/(two*tstep)
     if (rang==0)then 
-       write(6,*)'nb de potentiels', npotentiel
+       write(uwrt,*)'nb de potentiels', npotentiel
        if (npotentiel==1) then
-          write(6,*)'ipotentiel',ipotentiel
-          !        write(6,*)lpotentiel
+          write(uwrt,*)'ipotentiel',ipotentiel
+          !        write(uwrt,*)lpotentiel
        else
-!!$          write(6,*)'npotentiel buggué stop'
+!!$          write(uwrt,*)'npotentiel buggué stop'
 !!$          call arret_ndm
 
           do ipotcont=1,npotmax
-             if (lpotentiel(ipotcont).EQV..true.)write(6,*)'potentiel actif', ipotcont
+             if (lpotentiel(ipotcont).EQV..true.)write(uwrt,*)'potentiel actif', ipotcont
           end do
           if (lcasca.eqv..true.) then
-             if (rang==0) write(6,*)'ATTENTION!!! npotentiel>1 et ziegler surement faux !!!!'
+             if (rang==0) write(uwrt,*)'ATTENTION!!! npotentiel>1 et ziegler surement faux !!!!'
              call arret_ndm
           end if
        end if
     end if
-    if (rang==0) write(6,*)'fmt_cin',fmt_cin
+    if (rang==0) write(uwrt,*)'fmt_cin',fmt_cin
 
     if(lPkbar) then
        unitP=1.0d-9
@@ -1571,7 +1604,7 @@ contains
        position_conversion_lammps=A2cm*0.529177249
        pressure_conversion_lammps=10.
     else
-       write(6,*)'error in units_lammps',units_lammps
+       write(uwrt,*)'error in units_lammps',units_lammps
        call arret_ndm
     end if
  end if
@@ -1580,89 +1613,89 @@ contains
     !condition d'arret du prog si l'utilisateur veut utilise la methode mcgc mais n'a pas defini le pas lambda pour l'integration de la particule    
     if((dmtype == 15).or.(dmtype==151))then
        if (pas_lambda_mc.lt.0) then
-          write(6,*)'To use  MONTE-CARLO, indicate pas_lambda (number of insertion steps'
+          write(uwrt,*)'To use  MONTE-CARLO, indicate pas_lambda (number of insertion steps'
           call arret_ndm
        end if
        !idem dans le cas ou l'utilisatuer utilise le biais sur les retraits sans avoir defini la fonction alpha (fermi dirac) pilotant celui ci
        if(((dmtype == 15).or.(dmtype==151)) .and. (lbiais_retrait).and. (fdmc_1 .eq. -1000.0) .and. (fdmc_2 .eq. -1000.0)) then
-          write(6,*)'Pour utiliser la methode MCGC avec le biais sur les retraits: indiquer les param pour le fermidirac'
+          write(uwrt,*)'Pour utiliser la methode MCGC avec le biais sur les retraits: indiquer les param pour le fermidirac'
           call arret_ndm
        end if
        if(((dmtype == 15).or.(dmtype==151)) .and. (lbiais_retrait).and. (nbatplus.lt.1))then 
-          write(6,*)' methode MCGC avec  le biais sur les retraits: pas possible aev nbatplus>1'
+          write(uwrt,*)' methode MCGC avec  le biais sur les retraits: pas possible aev nbatplus>1'
           call arret_ndm
        end if
        if(((lbiais_retrait).or.(lbiais_inser)).and.(lspring)) then
-          write(6,*)'SPRING OR BIAS not both....'
+          write(uwrt,*)'SPRING OR BIAS not both....'
        end if
        if (lspring) then
-          if (rang==0) write(6,*) 'vanishing spring of strenght ', k_spring
+          if (rang==0) write(uwrt,*) 'vanishing spring of strenght ', k_spring
           k_spring=k_spring*1d16/erg2ev
           if ((ins_typ.ne.55).and.(ins_typ.ne.11).and.(ins_typ.ne.33).and.(ins_typ.ne.44)) then
-             if (rang==0) write(6,*) 'lspring==> ins_typ=11 (site) or 33 (plane)  or 44 (line)  or 55 (bubble) ', ins_typ
+             if (rang==0) write(uwrt,*) 'lspring==> ins_typ=11 (site) or 33 (plane)  or 44 (line)  or 55 (bubble) ', ins_typ
              call arret_ndm
           end if
           
        end if
        select case(ins_typ)
        case(0)
-          if (rang==0) write(6,*)' MCC N-> N+1 in all the box'
+          if (rang==0) write(uwrt,*)' MCC N-> N+1 in all the box'
        case(1,3,33,44,55,11)
           
           
              select case (ins_typ)
              case(1)
- if (rang==0)      write(6,*)'MCC N-> N+1 in a sphere',r0mcgc,bublcenter
+ if (rang==0)      write(uwrt,*)'MCC N-> N+1 in a sphere',r0mcgc,bublcenter
              case(11)
-                if (rang==0) write(6,*)'MCC N-> N+1 in a site with spring pos/spring ',bublcenter,kspring
+                if (rang==0) write(uwrt,*)'MCC N-> N+1 in a site with spring pos/spring ',bublcenter,kspring
              case(3)
                 do ic=1,3
                    if (ic==izlins) cycle
                    if ((zlcenter(ic).ne.0).or.(izlins==0)) then
-  if (rang==0)         write(6,*)'ins_typ,izlins zlcenter inconsitstency 3', ins_typ,izlins,zlcenter(:)
+  if (rang==0)         write(uwrt,*)'ins_typ,izlins zlcenter inconsitstency 3', ins_typ,izlins,zlcenter(:)
                       call arret_ndm
                    end if
                 end do
-  if (rang==0)    write(6,*)'MCC N-> N+1 in a slice ',r0mcgc,izlins,zlcenter(izlins)
+  if (rang==0)    write(uwrt,*)'MCC N-> N+1 in a slice ',r0mcgc,izlins,zlcenter(izlins)
              case(33)
                 do ic=1,3
                    if (ic==izlins) cycle
                    if ((zlcenter(ic).ne.0).or.(izlins==0)) then
-       if (rang==0)  write(6,*)'ins_typ,izlins zlcenter inconsitstency 33', ins_typ,izlins,zlcenter(:)
+       if (rang==0)  write(uwrt,*)'ins_typ,izlins zlcenter inconsitstency 33', ins_typ,izlins,zlcenter(:)
                       call arret_ndm
                    end if
                 end do
- if (rang==0)          write(6,*)'MCC N-> N+1 in a plane with spring norm/pos/spring ',izlins,zlcenter(izlins),kspring
+ if (rang==0)          write(uwrt,*)'MCC N-> N+1 in a plane with spring norm/pos/spring ',izlins,zlcenter(izlins),kspring
              case(44)
                 if ((zlcenter(izlins)==0).or.(izlins==0)) then
-      if (rang==0)     write(6,*)'ins_typ,izlins zlcenter inconsitstency 44 ', ins_typ,izlins,zlcenter(:)
+      if (rang==0)     write(uwrt,*)'ins_typ,izlins zlcenter inconsitstency 44 ', ins_typ,izlins,zlcenter(:)
                    call arret_ndm
                 end if
- if (rang==0)   write(6,*)'MCC N-> N+1 in a plane with spring norm/pos/spring ',izlins,zlcenter(izlins),kspring
+ if (rang==0)   write(uwrt,*)'MCC N-> N+1 in a plane with spring norm/pos/spring ',izlins,zlcenter(izlins),kspring
              case (55)
-                if (rang==0)      write(6,*)'MCC N-> N+1 in a sphere with a spring',r0mcgc,bublcenter, kspring
+                if (rang==0)      write(uwrt,*)'MCC N-> N+1 in a sphere with a spring',r0mcgc,bublcenter, kspring
              end select
           
           if ((R0mcgc.lt.0).and.(lspring.eqv..false.)) then
-             if (rang==0) write(6,*)' R0mcgc.lt.0'
+             if (rang==0) write(uwrt,*)' R0mcgc.lt.0'
              call arret_ndm
           end if
           R0mcgc=R0mcgc*1d-8
           if ((ins_typ==3).or.(ins_typ==33)) then
              if (izlins==-1) then
-                if (rang==0) write(6,*)' izlins 1,2 or 3 ?'
+                if (rang==0) write(uwrt,*)' izlins 1,2 or 3 ?'
                 call arret_ndm
              end if
           end if
        case(2)
           idirectionmcgc=0
-          if (rang==0) write(6,*)' MCC semi grand canonique'
+          if (rang==0) write(uwrt,*)' MCC semi grand canonique'
           if ((typswitch1==0).or.(typswitch2==0).or.(typswitch1==typswitch2))then
-             if (rang==0) write(6,*)'problem with typswitch'
+             if (rang==0) write(uwrt,*)'problem with typswitch'
              call arret_ndm
           end if
        case default
-          if (rang==0) write(6,*)' ins_typ =0 or 1, 2'
+          if (rang==0) write(uwrt,*)' ins_typ =0 or 1, 2'
           call arret_ndm
        end select
     end if
@@ -1673,13 +1706,13 @@ contains
        case(2,3,32,33,34,35,21,22,23,24)
           itetimestep=-1
        case default
-          if (rang==0) write(6,*)'dmtype inconsistent with creaDP', dmtype
+          if (rang==0) write(uwrt,*)'dmtype inconsistent with creaDP', dmtype
           call arret_ndm
        end select
     end if
 
     if (fstpdecr.le.1) then
-       write(6,*)'fstpdecr must be >1 ; stop'
+       write(uwrt,*)'fstpdecr must be >1 ; stop'
        stop
     endif
     If (Tinitbox==-1) then
@@ -1707,20 +1740,20 @@ contains
 #endif
     end if
     if (lseedcom   ) then
-       if (rang==0)    write(6,*)'all ranks  readdm iseed ',iseed
+       if (rang==0)    write(uwrt,*)'all ranks  readdm iseed ',iseed
     else
-       write(6,*)'rang readdm iseed ',rang,iseed
+       write(uwrt,*)'rang readdm iseed ',rang,iseed
     end if
 
     if (lpcube) then
        select case(dmtype)
        case(22,24,8)
           if (LTnose) then
-             write(6,*)'No LPCUBE for LTNose'
+             write(uwrt,*)'No LPCUBE for LTNose'
              call arret_ndm
           end if
        case default
-          write(6,*)'LPCUBE only for dmtype =22, 24 or 8, i.e. VV-Parinello-Rahman or fire or fast quenching'
+          write(uwrt,*)'LPCUBE only for dmtype =22, 24 or 8, i.e. VV-Parinello-Rahman or fire or fast quenching'
           call arret_ndm
        end select
     end if
@@ -1730,7 +1763,7 @@ contains
 456 print *,'Erreur lors de la lecture du fichier .din, verifier l''ajout de fmt_cin'
     if ((dmtype.ge.41).and.(dmtype.le.42)) then
        if ((any(noxyzkmin(:).ge.1)).and.(.not.lpartarps)) then
-          write(6,*)'NOT lpartarps and noyzkmin >0 STOP'
+          write(uwrt,*)'NOT lpartarps and noyzkmin >0 STOP'
           call arret_ndm
        end if
     end if

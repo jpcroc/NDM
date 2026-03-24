@@ -57,7 +57,7 @@ contains
     logical ::linter
     real(double)::sig2p(3,3),sigem(3,3)!,dxptab(1000,3),xptab(1000,3),deltadist(1000,3)
 !    integer::cellv(1000),indv(1000),m,n
-    !    write(6,*)'INNNI CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'
+    !    write(uwrt,*)'INNNI CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'
     sig2p=0;sigem=0
     rue=rue_pot(ipotentiel)
     aux = 23.06134575D-20
@@ -91,14 +91,14 @@ contains
        densityi=0.0 ; dEembi=0.0
        koo = atcf%ielat(i)                          ! Numero de la cellule
        iti = atcf%ityp(i)
-       !       write(6,*)'IXP, koo', atcf%xp(:,1), koo
+       !       write(uwrt,*)'IXP, koo', atcf%xp(:,1), koo
        ! pour chaque cel. voisine
        loop1cel:   do i1 = 0, celcf%ncelvois(koo)
           ko1 = celcf%ncel(koo,i1)
           ! pour chaque atome ds la cel. voisine
           loop1at2: do i2 = 1, celcf%nato(ko1)
              j = celcf%atincel(i2,ko1)
-             !             write(6,*)i,koo,i1, celcf%ncelvois(koo),i2,j
+             !             write(uwrt,*)i,koo,i1, celcf%ncelvois(koo),i2,j
              if (typ_pot_pair(ipo(atcf%ityp(i),atcf%ityp(j))).ne.ipotentiel) cycle
 
              itj=atcf%ityp(j)
@@ -145,16 +145,16 @@ contains
 !!$             deltadist(nvi,:)=celcf%deltadist(:,i1,koo)
 !!$           do m=1,nvi-1
 !!$              if (all(dxptab(m,:)-dxptab(nvi,:)==0)) then
-!!$                 write(6,*) 'm==nvi',m,nvi
-!!$                 write(6,*)'INDV',indv(m),cellv(m)
-!!$                 write(6,'(A,2I4,3E15.7)')'DXP',indv(m),cellv(m),dxptab(m,1:3)
-!!$                 write(6,*)'Xptab',xptab(m,1:3)
-!!$                 write(6,*)'celtadist',deltadist(m,:)
+!!$                 write(uwrt,*) 'm==nvi',m,nvi
+!!$                 write(uwrt,*)'INDV',indv(m),cellv(m)
+!!$                 write(uwrt,'(A,2I4,3E15.7)')'DXP',indv(m),cellv(m),dxptab(m,1:3)
+!!$                 write(uwrt,*)'Xptab',xptab(m,1:3)
+!!$                 write(uwrt,*)'celtadist',deltadist(m,:)
 !!$                 
-!!$                 write(6,*)'INDV',indv(nvi),cellv(nvi)
-!!$                 write(6,'(A,2I4,3E15.7)')'DXP',indv(nvi),cellv(nvi),dxptab(nvi,1:3)
-!!$                 write(6,*)'Xptab',xptab(nvi,1:3)
-!!$                 write(6,*)'celtadist',deltadist(nvi,:)
+!!$                 write(uwrt,*)'INDV',indv(nvi),cellv(nvi)
+!!$                 write(uwrt,'(A,2I4,3E15.7)')'DXP',indv(nvi),cellv(nvi),dxptab(nvi,1:3)
+!!$                 write(uwrt,*)'Xptab',xptab(nvi,1:3)
+!!$                 write(uwrt,*)'celtadist',deltadist(nvi,:)
 !!$                 stop
 !!$              end if
 !!$           end do
@@ -255,11 +255,11 @@ contains
        !          imax=i; kmax=k ; itimax=iti
        !       end if
 
-       !       write(6,*)i,iti,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
+       !       write(uwrt,*)i,iti,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
        !       write(110,'(2I8,3G17.8)')i,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
        !       if(k.gt.ngrid) then
-       !          write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo OU MAX DENS POUR CRG '
-       !          write(6,*)'densityi',k,ngrid,tabdensity(i)
+       !          write(uwrt,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo OU MAX DENS POUR CRG '
+       !          write(uwrt,*)'densityi',k,ngrid,tabdensity(i)
        !          call arret_ndm
        !       end if
        drk=tabdensity(i)-(rhomin(iti)+k*ktorho(iti))
@@ -276,7 +276,7 @@ contains
 
        tabdensity(i) = eamglue(2,iti,k) + drk*( 2.0*eamglue(3,iti,k) + 3.0*drk*eamglue(4,iti,k) )
     end do loop2at1
-    !    write(6,'(A,2I2,I4,G17.5,I7)')'rhm', rang, itimax,imax,rhmax,kmax
+    !    write(uwrt,'(A,2I2,I4,G17.5,I7)')'rhm', rang, itimax,imax,rhmax,kmax
     !  end block
 
 
@@ -288,7 +288,7 @@ contains
 
     !    write(3000+i,*)it
     !    do i=1,im
-    !       write(6,*)i,num_at_glob(i),tabdensity(i)
+    !       write(uwrt,*)i,num_at_glob(i),tabdensity(i)
     !    end do
 #endif
 
@@ -407,10 +407,10 @@ contains
     end if
 #endif
     if (test_sigma)sigcalfo=sigcalfo+sig2p+sigem
-!!$    if (rang==0)    write(6,*)
-!!$    if (rang==0)    write(6,*)'sig2p',sig2p
-!!$    if (rang==0)    write(6,*)
-!!$    if (rang==0)    write(6,*)'sigem',sigem
+!!$    if (rang==0)    write(uwrt,*)
+!!$    if (rang==0)    write(uwrt,*)'sig2p',sig2p
+!!$    if (rang==0)    write(uwrt,*)
+!!$    if (rang==0)    write(uwrt,*)'sigem',sigem
     potiseam=potisglue+potisrep
 !    call atcf%print
     return

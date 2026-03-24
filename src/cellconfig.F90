@@ -120,6 +120,7 @@ contains
        cell%natperc=0
     end if
     cell%icaltabt=0
+    !write(uwrt,*) 'nox', cell%nox(1)
     cell%ltpcel=ltpcel
     call dealloc_cel(cell)
     call allocatecelN(cell,lata)
@@ -137,6 +138,7 @@ contains
     logical::lata=.true.
     if (present(latomalloc))lata=latomalloc
     cell%noxyz=cell%nox(1)*cell%nox(2)*cell%nox(3)
+    !    write(uwrt,*)'NOX',cell%nox,cell%noxyz
     cell%ncelvmax=1
     do ic=1,3
        if(cell%ismall(ic)) then
@@ -233,6 +235,9 @@ contains
           maxdecx(ic)=1          
        end if
     end do
+    !    write(uwrt,*)'mindecx', mindecx
+    !    write(uwrt,*)'maxdecx', maxdecx
+    !    write(uwrt,*)'midnox', midnox
     if (cell%noxyz==1) then
        cell%ncel(1,0)=1
        cell%deltadist=0
@@ -344,6 +349,8 @@ contains
                          end if
 
                          l=l+1 ! on est dans une cellule voisine
+!!$                         write(uwrt,*)'kx ky kz koo', kx,ky,kz,koo
+!!$                         write(uwrt,*)'mx my mz ', mx,my,mz
                          if (cell%ismall(3)) then
                             cell%deltadist(3,l,koo) = -1*(mz-midnox(3))
                          else
@@ -384,6 +391,9 @@ contains
                          kxy = 1+(mx-1)+cell%nox(1)*((my-1)+cell%nox(2)*(mz-1))
                          !                         if (kxy==koo) cycle
                          cell%ncel(koo,l) = kxy
+                         !                        write(uwrt,*)koo,lz,ly,lx,l,kxy
+                         !                        if ((kz==cell%nox(3)).and.(lz==1))write(uwrt,*)koo,lz,l,kxy
+                         !                        if ((kz==1).and.(lz==-1))write(uwrt,*)koo,lz,l,kxy
                       end do loopin
                    end do
                 end do
@@ -449,6 +459,7 @@ contains
        iml=atcf%im
     end if
     icaltabt=icaltabt+1
+    !       write(uwrt,*)'caltabt',icaltabt
 
     cell%nato(1:cell%noxyz) = 0
     cell%atincel(1:cell%natperc,1:cell%noxyz) = 0
@@ -480,13 +491,19 @@ contains
        if (any(xpnp(:,1:iml).gt.1).or.any(xpnp(:,1:iml).lt.0)) then
           write(uwrt,*)'PLANTE',rang
           !          write(300+RANG,*)'PLANTE'
+!          do i=1,iml
+!             if (any(xpnp(:,i).gt.1).or.any(xpnp(:,i).lt.0))  write(uwrt,*) i,xpnp(:,i)
+!          end do
           write(uwrt,*)'caltabtc xpnp <0 ou >1 stop'
           call arret_ndm(.true.)
        end if
        !debug       write (*,*) 'sub caltabt 2',it,xp(1,1)
 
+       !     if (it.gt.1000) write(uwrt,*)'CALTABT',it
+       !       write(uwrt,*)'caltabt icaltabt im',icaltabt,atcf%im
 
        do i = 1, iml
+          !     if  ((it.ge.1000).and.(i.lt.20)) write(uwrt,'(I5,3G15.7)')i, xpnp(1,i),xpnp(2,i),xpnp(3,i)
           do ic=1,3
              if  (cell%ismall(ic)) then
                 kxyz(ic)=midnox(ic)-1
@@ -506,6 +523,7 @@ contains
           END IF
           if ((present(psc)).and.(lspacendm).and.lchktrav) then 
              if (cell%proc_cell(koo).ne.myidsp) then
+                !                write(uwrt,*)'atout',i,atcf%num_at_glob(i),rang,cell%proc_cell(koo),koo
 
                 if(.not.(any(psc%cell_ftm(:)==koo))) then
                    write(uwrt,'(A,6I7)')'WARNING ::: attrrav:i natg ielat rangem rangf newcell',i,&
@@ -528,12 +546,12 @@ contains
                    END IF
 
 
-                   !                   write(6,*)'atom', i,atcf%num_at_glob(i),'in cell', koo, ' originally in proc', &
+                   !                   write(uwrt,*)'atom', i,atcf%num_at_glob(i),'in cell', koo, ' originally in proc', &
                    !                        &myidsp, 'now in ', cell%proc_cell(koo),' travelled too far. its cell is not a frontier cell',&
                    !                        &'RANG actuel = ',rang
                    !                   call arret_ndm
                 else
-                   !                   if (cell%proc_cell(koo).ne.myidsp)       write(6,'(A,6I7)')'afrt:i natg ielat rangem rangf newcell',i,atcf%num_at_glob(i),atcf%ielat(i),rang,cell%proc_cell(koo),koo
+                   !                   if (cell%proc_cell(koo).ne.myidsp)       write(uwrt,'(A,6I7)')'afrt:i natg ielat rangem rangf newcell',i,atcf%num_at_glob(i),atcf%ielat(i),rang,cell%proc_cell(koo),koo
                    atcf%ielat(i) = koo
                    cell%nato(koo) = cell%nato(koo)+1
                    cell%atincel(cell%nato(koo),koo) = i
@@ -592,7 +610,7 @@ contains
        end do
     end if
     !    do koo=1,cell%noxyz
-    !       write(6,*)'nato',koo,cell%nato(koo)
+    !       write(uwrt,*)'nato',koo,cell%nato(koo)
     !    end do
 
 101 continue

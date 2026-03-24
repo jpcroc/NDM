@@ -13,7 +13,7 @@ subroutine init_mpi_mab()
   USE mpi
   USE mod_para,only:MPI_COMM_space,_mab
   USE gen_mpi
-  USE gen_com_m, ONLY: , ONLY: rangmab
+  USE gen_com_m, only:uwrt,lwrt, , ONLY: rangmab
   implicit none
 
   ! Routine d'initialisation de MPI pour le code NDM

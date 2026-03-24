@@ -32,15 +32,15 @@ module Parrinello_Rahman_Nose
 
 
   USE T_kind_param_m
-  USE gen_com_m, ONLY:   ecellpr,enose,fnose,kcell,kine,knose,lpcon2,sigext,sigtot,tbox,text,&
-       &tstep,ucell,unose,wboxf,wnose,enose,erg2ev,fnose,iteration,kcell,knose,leev,&
-       &lucell,rang,timel,tstep,unose,wnose,sigkine,rang,sig,bk,lspaceNDM,h0,ihbox0,lpcube,&
+  USE gen_com_m, only:uwrt,lwrt,  kine,lpcon2,sigext,sigtot,tbox,text,&
+       &tstep,wboxf,erg2ev,iteration,leev,&
+       &lucell,rang,timel,tstep,sigkine,rang,sig,bk,lspaceNDM,h0R,ihbox0,lpcube,&
        &astarsig,lpconxyz
   USE var_pot, ONLY:cm
   USE tempinstT_mod,only: tempinstT
   USE Mat_utils_mod,only:  matinv
   USE recips_mod,only: recips,calcvol
-  USE boxconfig,only:box_config,updatebox!,box_config_lpr
+  USE boxconfig,only:box_config,box_config_lpr,updatebox!,box_config_lpr
   use atomconfig,only:atom_config_d,atom_config_e
   use cellconfig,only:cell_config
 #ifdef PARA
@@ -52,7 +52,7 @@ module Parrinello_Rahman_Nose
   use  Parrinello_Rahman,only :set_MP
   implicit none
 
-  real(double), dimension(3,3), save , private ::h,trh,invh,invtrh,Gmat,invGmat,Area,hnew,hlast,hold,invhold
+  real(double), dimension(3,3), save , private ::h,trh,invh,invtrh,Gmat,invGmat,Area,hnew,hlast,hold,invhold,h0
   real(double), dimension(3,3), save , private ::hpoint, h2point, whpointpoint, Gpoint
   real(double), allocatable, save, private :: sp(:,:),sold(:,:),snew(:,:),sdot(:,:)
   
@@ -72,7 +72,7 @@ module Parrinello_Rahman_Nose
 contains
 
   subroutine initlprNose(atpr,celndm,boxndm)
-    class(box_config)::boxndm
+    class(box_config_lpr)::boxndm
     class(atom_config_d)::atpr
     type(cell_config):: celndm
 
@@ -85,45 +85,46 @@ contains
     ! Calcul de la température initiale
     temp0=tempinstT(atpr)
 
-    if (rang==0) WRITE(6,*)
-    if (rang==0) WRITE(6,'(a)') 'Algorithme de Parrinello-Rahman couplé au thermostat de Nosé (V2)'
-    if (rang==0) WRITE(6,'(a)') '  -> la vitesse de la boîte ne prend pas en compte la dérivée du tenseur h'
-    if (rang==0) WRITE(6,'(a)') "  -> l'énergie cinétique des atomes et de la boîte est thermalisée"
-    if (rang==0) WRITE(6,*)
+    if (rang==0) WRITE(uwrt,*)
+    if (rang==0) WRITE(uwrt,'(a)') 'Algorithme de Parrinello-Rahman couplé au thermostat de Nosé (V2)'
+    if (rang==0) WRITE(uwrt,'(a)') '  -> la vitesse de la boîte ne prend pas en compte la dérivée du tenseur h'
+    if (rang==0) WRITE(uwrt,'(a)') "  -> l'énergie cinétique des atomes et de la boîte est thermalisée"
+    if (rang==0) WRITE(uwrt,*)
     IF (lUcell) THEN
-       if (rang==0) WRITE(6,'(a)') "Repère de référence pour Parrinello-Rahman  (A):"
-       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*h0(1:3,1)
-       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*h0(1:3,2)
-       if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*h0(1:3,3)
-       if (rang==0) WRITE(6,*)
+       if (rang==0) WRITE(uwrt,'(a)') "Repère de référence pour Parrinello-Rahman  (A):"
+       if (rang==0) WRITE(uwrt,'(a,3(f0.5,1x))') ' h0(1:3,1) = ', 1e8*h0R(1:3,1)
+       if (rang==0) WRITE(uwrt,'(a,3(f0.5,1x))') ' h0(1:3,2) = ', 1e8*h0R(1:3,2)
+       if (rang==0) WRITE(uwrt,'(a,3(f0.5,1x))') ' h0(1:3,3) = ', 1e8*h0R(1:3,3)
+       if (rang==0) WRITE(uwrt,*)
+       h0=h0R
     ELSE
        h0 = boxndm%at
     END IF
-    if (rang==0) WRITE(6,'(a)') "Repère actuel  (A):"
-    if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,1) = ', 1e8*boxndm%at(1:3,1)
-    if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,2) = ', 1e8*boxndm%at(1:3,2)
-    if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h (1:3,3) = ', 1e8*boxndm%at(1:3,3)
+    if (rang==0) WRITE(uwrt,'(a)') "Repère actuel  (A):"
+    if (rang==0) WRITE(uwrt,'(a,3(f0.5,1x))') ' h (1:3,1) = ', 1e8*boxndm%at(1:3,1)
+    if (rang==0) WRITE(uwrt,'(a,3(f0.5,1x))') ' h (1:3,2) = ', 1e8*boxndm%at(1:3,2)
+    if (rang==0) WRITE(uwrt,'(a,3(f0.5,1x))') ' h (1:3,3) = ', 1e8*boxndm%at(1:3,3)
        wbox =wboxf*sum(0.5*cm(atpr%ityp(:atpr%im)))       ! La moitié de la masse totale des atomes
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
   call comm_space%sum(wbox)
 end if
 #endif
-    if (rang==0) WRITE(6,'(a,g20.12)')'Masse de la boîte pour Parrinello-Rahman: wbox=',wbox
+    if (rang==0) WRITE(uwrt,'(a,g20.12)')'Masse de la boîte pour Parrinello-Rahman: wbox=',wbox
 
     ! Nombre de degrés de liberté pour le thermostat de Nosé
     gNose = dble(3*atpr%im_glob+1)
 
-    IF (wNose.EQ.0) THEN
+    IF (boxndm%wNose.EQ.0) THEN
        ! On suppose que la fréquence de vibration typique du solide est
        !  1 THz = 1e-12 s¯¹
        !  => ça ne marche pas
        ! On veut qu'une variation de la température de 10K corresponde à
        ! une variation de f de 1% avec f~1
-       wNose = gNose*bk*10.d0*tstep**2/1.d-2**2
+       boxndm%wNose = gNose*bk*10.d0*tstep**2/1.d-2**2
     END IF
-    if (rang==0) WRITE(6,'(a,g20.12)')'Masse de la boîte pour thermostat de Nosé: wNose=',wNose
-    if (rang==0) WRITE(6,'(a,g20.12)')'Nombre de degrés de liberté: gNose=',gNose
+    if (rang==0) WRITE(uwrt,'(a,g20.12)')'Masse de la boîte pour thermostat de Nosé: wNose=',boxndm%wNose
+    if (rang==0) WRITE(uwrt,'(a,g20.12)')'Nombre de degrés de liberté: gNose=',gNose
 
 
     ! État de référence défini par la matrice h0
@@ -143,7 +144,7 @@ end if
     allocate(sp(3,atpr%imm),sdot(3,atpr%imm),sold(3,atpr%imm),snew(3,atpr%imm))
 
     ! Initialisation de la vitesse de la boîte
-    !if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation de la vitesse de la boîte pour la température ', temp0, ' K'
+    !if (rang==0) WRITE(uwrt,'(a,f0.3,a)') 'Initialisation de la vitesse de la boîte pour la température ', temp0, ' K'
     !do i=1,3
     !do j=1,3
     !call random_number(z1)
@@ -152,12 +153,12 @@ end if
     !hpoint(i,j)=sqrt(2*bk*temp0/wbox)*sqrt(-log(z1))*(1.-2*z2)
     !end do
     !end do
-    if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation de la vitesse de la boîte pour la température ', 0.d0, ' K'
+    if (rang==0) WRITE(uwrt,'(a,f0.3,a)') 'Initialisation de la vitesse de la boîte pour la température ', 0.d0, ' K'
     hpoint(:,:) = 0.d0
     hold(:,:) = h(:,:) - tstep*hpoint(:,:)
     ! Kinetic energy of the cell (Eq. 2.14 of Ref. [2])
     maux2 = MatMul( Transpose(hpoint), hpoint )
-    Kcell = 0.5d0*wbox*( maux2(1,1) + maux2(2,2) + maux2(3,3) )
+    boxndm%Kcell = 0.5d0*wbox*( maux2(1,1) + maux2(2,2) + maux2(3,3) )
     if(lEev) then
        unitE=erg2eV
        cunitE='  eV'
@@ -165,27 +166,27 @@ end if
        unitE=1.0
        cunitE=' erg'
     end if
-    write(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') 0,0.d0,'*Kcell = ',Kcell*unitE,cunitE, &
-         '  (', 2.d0*Kcell/(9.d0*bk), ' K)'
+    write(uwrt,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') 0,0.d0,'*Kcell = ',boxndm%Kcell*unitE,cunitE, &
+         '  (', 2.d0*boxndm%Kcell/(9.d0*bk), ' K)'
 
     ! Kinetic and potential energies of Nosé thermostat (Eq. 3.1 Ref. [3])
     !KNose = 0.5d0*bk*temp0
-    KNose = 0.d0
-    fpoint = Sqrt(2.d0*KNose/wNose)
-    UNose = 0.d0
-    ENose = KNose + UNose
-    fNose=1.d0
-    fold = fNose - fpoint*tstep
-    if (rang==0) WRITE(6,'(3(a,g22.12))') 'fNose = ', fNose, '  fold = ', fold, '  fpoint = ', fpoint
-    if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation du thermostat de Nosé pour la température ', &
+    boxndm%KNose = 0.d0
+    fpoint = Sqrt(2.d0*boxndm%KNose/boxndm%wNose)
+    boxndm%UNose = 0.d0
+    boxndm%ENose = boxndm%KNose + boxndm%UNose
+    boxndm%fNose=1.d0
+    fold = boxndm%fNose - fpoint*tstep
+    if (rang==0) WRITE(uwrt,'(3(a,g22.12))') 'fNose = ', boxndm%fNose, '  fold = ', fold, '  fpoint = ', fpoint
+    if (rang==0) WRITE(uwrt,'(a,f0.3,a)') 'Initialisation du thermostat de Nosé pour la température ', &
          0.d0, ' K'
-    !if (rang==0) WRITE(6,'(a,f0.3,a)') 'Initialisation du thermostat de Nosé pour la température ', &
+    !if (rang==0) WRITE(uwrt,'(a,f0.3,a)') 'Initialisation du thermostat de Nosé pour la température ', &
     !temp0, ' K'
-    if (rang==0) WRITE(6,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') iteration,timel,'*KNose = ',KNose*unitE,cunitE, &
-         '  (', 2.d0*KNose/bk, ' K)'
-    if (rang==0) WRITE(6,'(3(a,g22.12))') 'fNose = ', fNose, ' -  fold = ', fold, &
+    if (rang==0) WRITE(uwrt,'(I7,D10.3,A,D21.12,A,a,f0.3,a)') iteration,timel,'*KNose = ',boxndm%KNose*unitE,cunitE, &
+         '  (', 2.d0*boxndm%KNose/bk, ' K)'
+    if (rang==0) WRITE(uwrt,'(3(a,g22.12))') 'fNose = ', boxndm%fNose, ' -  fold = ', fold, &
          ' -  fpoint * tstep = ', fpoint*tstep
-    if (rang==0) WRITE(6,*)
+    if (rang==0) WRITE(uwrt,*)
 
     return
   end subroutine initlprNose
@@ -201,7 +202,7 @@ end if
   subroutine prNose(atpr,celndm,boxndm,psc)
 
     implicit none
-    class(box_config)::boxndm
+    class(box_config_lpr)::boxndm
     class(atom_config_d)::atpr
     type(cell_config):: celndm
     type(para_space_config)::psc
@@ -219,7 +220,7 @@ end if
 
 
     ! Paramètres du thermostat
-    fNose2=fNose*fNose
+    fNose2=boxndm%fNose**2
     if (lpconxyz) then
        sigtot(2,1)=0
        sigtot(1,2)=0
@@ -263,7 +264,7 @@ end if
 
     ! Potential energy of the cell (Eq. 2.25)
     maux1 = MatMul( tension, epsi )
-    Ucell = volu0*( maux1(1,1) + maux1(2,2) + maux1(3,3) )
+    boxndm%Ucell = volu0*( maux1(1,1) + maux1(2,2) + maux1(3,3) )
 
     ! Coordonnées réduites des atomes
     sp(1:3,1:atpr%imm) = MatMul(invh(1:3,1:3), atpr%xp(1:3,1:atpr%imm) )
@@ -281,21 +282,21 @@ end if
     !   variables at next time step ...........................................
     ! ce hnew est le premier h(in) de la boucle autocohérente (à noter pas de force sur h)
     hnew = 2.d0*h - hold
-    fnew = 2.d0*fNose - fold
+    fnew = 2.d0*boxndm%fNose - fold
     iter = 0
 
     ! Start selfconsistency loop to calculate P-R and Nosé variables ..........
 10  continue
     iter = iter + 1
 
-!!$    if (rang==0) WRITE(6,*)                                                          ! DEBUG
-!!$    if (rang==0) WRITE(6,'(a)') 'Parrinello-Rahman / Nosé self consistent loop'      ! DEBUG
-!!$    if (rang==0) WRITE(6,'(a,i0)') '  iter = ', iter                                 ! DEBUG
-!!$    if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h(1:3,1) = ', 1e8*hnew(1:3,1)           ! DEBUG
-!!$    if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h(1:3,2) = ', 1e8*hnew(1:3,2)           ! DEBUG
-!!$    if (rang==0) WRITE(6,'(a,3(f0.5,1x))') ' h(1:3,3) = ', 1e8*hnew(1:3,3)           ! DEBUG
-!!$    if (rang==0) WRITE(6,*)                                                          ! DEBUG
-!!$    if (rang==0) WRITE(6,'(4(a,g22.12))') 'fnew = ', fnew, '  fNose = ', fNose, &
+!!$    if (rang==0) WRITE(uwrt,*)                                                          ! DEBUG
+!!$    if (rang==0) WRITE(uwrt,'(a)') 'Parrinello-Rahman / Nosé self consistent loop'      ! DEBUG
+!!$    if (rang==0) WRITE(uwrt,'(a,i0)') '  iter = ', iter                                 ! DEBUG
+!!$    if (rang==0) WRITE(uwrt,'(a,3(f0.5,1x))') ' h(1:3,1) = ', 1e8*hnew(1:3,1)           ! DEBUG
+!!$    if (rang==0) WRITE(uwrt,'(a,3(f0.5,1x))') ' h(1:3,2) = ', 1e8*hnew(1:3,2)           ! DEBUG
+!!$    if (rang==0) WRITE(uwrt,'(a,3(f0.5,1x))') ' h(1:3,3) = ', 1e8*hnew(1:3,3)           ! DEBUG
+!!$    if (rang==0) WRITE(uwrt,*)                                                          ! DEBUG
+!!$    if (rang==0) WRITE(uwrt,'(4(a,g22.12))') 'fnew = ', fnew, '  fNose = ', fNose, &
 !!$        '  fold = ', fold, '  fpoint = ', fpoint                        ! DEBUG
 
     IF (iter.GT.Max_Iter) THEN
@@ -325,7 +326,7 @@ end if
     hpoint = (hnew - hold)/(2.d0*tstep)
     ! Kinetic energy of the cell (Eq. 2.14, Ref.[2])
     maux2 = MatMul( Transpose(hpoint), hpoint )
-    Kcell = 0.5d0*wbox*fNose2*( maux2(1,1) + maux2(2,2) + maux2(3,3) )
+    boxndm%Kcell = 0.5d0*wbox*fNose2*( maux2(1,1) + maux2(2,2) + maux2(3,3) )
     ! Time derivative of the metric tensor Gmat
     DO i=1, 3
        DO j=1, 3
@@ -337,14 +338,14 @@ end if
     ! Résolution de l'équation 3.2 de la Ref. [3]
     mf = 0.5d0*tstep*MatMul(invGmat,Gpoint)
     do i = 1,3
-       mf(i,i) = mf(i,i) + 1.d0 + tstep*fpoint/fNose
+       mf(i,i) = mf(i,i) + 1.d0 + tstep*fpoint/boxndm%fNose
     enddo
     call matinv(mf,mfi)
     mfi = 0.5d0/tstep*mfi
     sdot(1:3,1:atpr%im) = MatMul(mfi(1:3,1:3), snew(1:3,1:atpr%im) - sold(1:3,1:atpr%im) )
 
     ! avec ce sdot on peut calculer la vitesse des particules
-    atpr%vp(1:3,1:atpr%imm) = fNose*MatMul(h(1:3,1:3),sdot(1:3,1:atpr%imm))
+    atpr%vp(1:3,1:atpr%imm) = boxndm%fNose*MatMul(h(1:3,1:3),sdot(1:3,1:atpr%imm))
     !  ... la contrainte thermique associée
     sigkine(:,:)=0.d0
     do ia = 1, atpr%im
@@ -376,18 +377,18 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     ! Résolution de l'équation (3.3) de la Ref. [3]
     if(lpcon2.EQV..true.)then
        whpointpoint(:,:) = MatMul(sigtot,Area)- MatMul(h, grsig) &
-            - 2.d0*wbox*fNose*fpoint*hpoint(:,:) &
+            - 2.d0*wbox*boxndm%fNose*fpoint*hpoint(:,:) &
             - wbox/(tstep*tbox)*hpoint(:,:)
     else
        whpointpoint(:,:) = MatMul(sigtot,Area) - MatMul(h, grsig)&
-            - 2.d0*wbox*fNose*fpoint*hpoint(:,:)
+            - 2.d0*wbox*boxndm%fNose*fpoint*hpoint(:,:)
     end if
     whpointpoint(:,:) = whpointpoint(:,:) *ihbox0(:,:)
     hnew(:,:) = 2.d0*h(:,:) - hold(:,:) + whpointpoint(:,:)*tstep**2/(fNose2*wbox)
 
     ! Résolution de l'équation (3.4) de la Réf. [3]
-    f2point = (2.d0*(kine+Kcell) - gNose*bk*Text)/(fNose*wNose)
-    fnew = 2.d0*fNose - fold + f2point*tstep**2
+    f2point = (2.d0*(kine+boxndm%Kcell) - gNose*bk*Text)/(boxndm%fNose*boxndm%wNose)
+    fnew = 2.d0*boxndm%fNose - fold + f2point*tstep**2
 
     ! Vérifie l'autocohérence
     ! --- de h
@@ -408,7 +409,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     endif
 
     ! Ici hnew et fnew sont convergés
-!!$  if (rang==0) WRITE(6,'(a,i0)') 'PR: iter = ', iter
+!!$  if (rang==0) WRITE(uwrt,'(a,i0)') 'PR: iter = ', iter
     snew(1:3,1:atpr%imm) = sold(1:3,1:atpr%imm) + 2.d0*tstep*sdot(1:3,1:atpr%imm)
 
     ! Save current atomic positions as old ones,
@@ -418,8 +419,8 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
     sp(1:3,1:atpr%imm) = snew(1:3,1:atpr%imm)
     hold = h
     h = hnew
-    fold = fNose
-    fNose = fnew
+    fold = boxndm%fNose
+    boxndm%fNose = fnew
 
     ! Transform back to absolute coordinates
     call updatebox(boxndm,h)
@@ -432,12 +433,12 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        if (atpr%lxpp)    atpr%xpp(1:3,1:atpr%imm) = MatMul(hold(1:3,1:3), sold(1:3,1:atpr%imm) )
     end select
     ! Total energy of the cell
-    EcellPR = Kcell + Ucell
+    boxndm%EcellPR = boxndm%Kcell + boxndm%Ucell
 
     ! Kinetic and potential energies of Nosé thermostat (Eq. 3.1 Ref. [3])
-    KNose = 0.5d0*wNose*fpoint**2
-    UNose = gNose*bk*Text*log(fNose)
-    ENose = KNose + UNose
+    boxndm%KNose = 0.5d0*boxndm%wNose*fpoint**2
+    boxndm%UNose = gNose*bk*Text*log(boxndm%fNose)
+    boxndm%ENose = boxndm%KNose + boxndm%UNose
 #ifdef PARA
     atpr%vp(:,1:atpr%im) = MatMul( h(:,:), sdot(:,1:atpr%im) )
 !    sdot(:,1:atpr%im) = MatMul(invh(:,:), atpr%vp(:,1:atpr%im) )
@@ -451,7 +452,7 @@ if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
 #endif
 
        
-       timel=timel+fNose*tstep
+       timel=timel+boxndm%fNose*tstep
 
 
   end subroutine prNose

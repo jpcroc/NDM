@@ -9,7 +9,7 @@ module specialinit_mod
   
   use Tpara,only:para_space_config
 
-  USE gen_com_m, ONLY:lcasca,xko,xx0,yko,yy0,zko,zz0,eko,iko,rang,bk,lperiod 
+  USE gen_com_m, only:uwrt,lwrt,lcasca,xko,xx0,yko,yy0,zko,zz0,eko,iko,rang,bk,lperiod 
 
 
  use vect_dist_mod,only:distat
@@ -65,20 +65,20 @@ contains
     rheatinit=rheatinit*1d-8
     rpressinit=rpressinit*1d-8
     deltapressinit=deltapressinit*1d-8
-    if (rang==0) write(6,*)'lpressinit,lheatinit',lpressinit,lheatinit
+    if (rang==0) write(uwrt,*)'lpressinit,lheatinit',lpressinit,lheatinit
     if (lcasca) then
        select type(atdml)
        class is (atom_config_e)
-          if (rang==0) write (6, *) '----CASCADE-----'
-          if (rang==0) write (6, *) 'projectile=', iko, ' energie=', eko
-          if (rang==0) write (6, *) 'direction=', xko, yko, zko
-          if (rang==0) write (6, *) 'position de depart : ', xx0, yy0, zz0
+          if (rang==0) write (uwrt, *) '----CASCADE-----'
+          if (rang==0) write (uwrt, *) 'projectile=', iko, ' energie=', eko
+          if (rang==0) write (uwrt, *) 'direction=', xko, yko, zko
+          if (rang==0) write (uwrt, *) 'position de depart : ', xx0, yy0, zz0
           
           
           
           call initcasca(atdml,celndm,boxndm)
        class default
-          write(6,*) 'lcasca and not atom_donfig_e ?'
+          write(uwrt,*) 'lcasca and not atom_donfig_e ?'
           call arret_ndm
        end select
        
@@ -142,8 +142,8 @@ contains
     call atsph%backto(atdml)
     atdml%lgul=lgs
     if (rang==0) then
-       write(6,*)'heating of ', imsph, 'atoms inside Rheatinit',rheatinit*1d8
-       write(6,*)'from ', tempsph, ' to ', tempsph2
+       write(uwrt,*)'heating of ', imsph, 'atoms inside Rheatinit',rheatinit*1d8
+       write(uwrt,*)'from ', tempsph, ' to ', tempsph2
     end if
   end subroutine initspheat
 

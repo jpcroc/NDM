@@ -51,7 +51,7 @@ contains
     allocate(ktorho(ntyp))
     allocate(inv_ktorho(ntyp))
 
-    !  write(6,*)'eamtabvois'
+    !  write(uwrt,*)'eamtabvois'
     rue=rue_pot(ipotentiel)
     !  if (lprteat.EQV..true.) then
     !     eat(:)=0.
@@ -264,17 +264,17 @@ contains
        end do
 
        do i=1,atcf%im
-          !        write(6,*)'A',i,fp(:,i)
+          !        write(uwrt,*)'A',i,fp(:,i)
           do l=1,3
              atcf%fp(l,i)=atcf%fp(l,i)-fpnemdmoy(l)
              atcf%fp(l,i)=atcf%fp(l,i)+fpnemd(l,i)
           enddo
-          !        write(6,*)'B',i,fp(:,i)
+          !        write(uwrt,*)'B',i,fp(:,i)
        end do
     end if
 
 
-    !  write(6,*)'eamtabvois'
+    !  write(uwrt,*)'eamtabvois'
     return
   end SUBROUTINE calfoeamtabvois
 end module calfoeamtabvois_mod

@@ -2,6 +2,9 @@ module gen_com_m
   USE T_kind_param_m
   implicit none
 
+  integer::uwrt
+  logical::lwrt
+  logical::lregular=.true.
   integer,target :: rang, rangph, rangml, rangmab, ja_phondy, ja_ml
 !  logical :: parallele
 
@@ -26,7 +29,7 @@ module gen_com_m
 
   integer :: imm_glob 
 
-  real(double), dimension(3,3) :: h0     ! Vecteurs de base de la boite de reference en A (Parrinello, Rahman)
+  real(double), dimension(3,3) :: h0R     ! Vecteurs de base de la boite de reference en A (Parrinello, Rahman)
   logical :: lUcell                 ! affiche l'energie potentielle de la boite
   ! (cela suppose que h0 corresponde a l'etat de reference pour lequelle la contrainte est nulle)     
   logical :: lrctest    ! .true.: test sur rc ; false pas de test
@@ -150,15 +153,14 @@ module gen_com_m
 
 
   ! energies potentielle, cinetique et totale de la boite en Parrinello-Rahman
-  real(double):: EcellPR, Kcell, Ucell      
+!  real(double):: EcellPR, Kcell, Ucell      
 
 
   !Variables Nose
-  REAL(double) :: ENose, KNose, UNose
-  REAL(double) :: fNose
-  real(double) :: wNose     ! Poids associe au thermostat de Nose
+!  REAL(double) :: ENose, KNose, UNose
+!  REAL(double) :: fNose
+!  real(double) :: wNose     ! Poids associe au thermostat de Nose
   INTEGER :: nHoover        ! Nombre de chaines de Hoover
-  REAL(double), dimension(:), allocatable :: zHoover   ! Viscosite 
 
   real(double) :: deltax 
   real(double) :: dilat(3)
@@ -167,7 +169,7 @@ module gen_com_m
   logical,target :: lperiod   ! conditions periodiques
   logical :: lsuivinonpbc
 
-
+  logical ::lbabar
 
   integer  ::mdcg_noise
 

@@ -69,15 +69,15 @@ contains
  !   end if
     rue=rue_pot(ipotentiel)
     ktor=rue/ngrid
-    !      write(6,*) 'rue ngrid ktor ', rue,ngrid,ktor
+    !      write(uwrt,*) 'rue ngrid ktor ', rue,ngrid,ktor
     !repulsion
     do l=1,npair
-!            write(6,*)'pair pot', l,typ_pot_pair(l),lu_roff_pair(l)
+!            write(uwrt,*)'pair pot', l,typ_pot_pair(l),lu_roff_pair(l)
        if (typ_pot_pair(l).ne.ipotentiel) cycle
        do k=1,ngrid            
           rk=(k*ktor) !; rk2=rk**2
           xsp(k)=rk
-          !            write(6,*)k,rk
+          !            write(uwrt,*)k,rk
           select case(ipotentiel)
           case(10)
              call extrapolateRep(reppair(l),SPreppair(l),rk,Erep=ysp(k))
@@ -89,7 +89,7 @@ contains
 
           case(12)
              call extrapolateRepjl(reppairjl(l),rk2,Erep=ysp(k))
-             !            write(6,*)'REP k,repk ',l, k,ysp(k)
+             !            write(uwrt,*)'REP k,repk ',l, k,ysp(k)
           case(16)
              call extrapolateRepCRG(rk,l,ysp(k))
           end select
@@ -159,7 +159,7 @@ contains
     case(10)
        do iti=1,ntyp
           if (typ_and_pot(iti,ipotentiel).eqv..false.) cycle
-          !        if (rang==0) write(6,*)'type ',iti
+          !        if (rang==0) write(uwrt,*)'type ',iti
           do k=1,ngrid
              rk=(k*ktor) ; rk2=rk**2
              xsp(k)=rk
@@ -198,7 +198,7 @@ contains
        end do
        do iti=1,ntyp
           if (rhomax(iti)==0.)then
-!             if(rang==0)       write(6,*)'calpoeam Minrho MaxrhoBB ',minrho,maxrho
+!             if(rang==0)       write(uwrt,*)'calpoeam Minrho MaxrhoBB ',minrho,maxrho
              rhomax(iti)=maxrho*14 ; rhomin(iti)=minrho*14
 !             rhomax(iti)=maxrho*44 ; rhomin(iti)=minrho*14
           end if
@@ -222,7 +222,7 @@ contains
        end do
        do iti=1,ntyp
           if (rhomax(iti)==0.)then
-!             if(rang==0)       write(6,*)'calpoeam Minrho MaxrhoBB ',minrho,maxrho
+!             if(rang==0)       write(uwrt,*)'calpoeam Minrho MaxrhoBB ',minrho,maxrho
              rhomax(iti)=maxrho*14 ; rhomin(iti)=minrho*14
           end if
        end do
@@ -259,7 +259,7 @@ contains
              rk=(k*ktor) ; rk2=rk**2
              xsp(k)=rk
              call extrapolateRhojl(rhotypjl(l),rk2,rho=ysp(k))
-             !               write(6,*)'RHO k,rhok ', l,k,rk,ysp(k)
+             !               write(uwrt,*)'RHO k,rhok ', l,k,rk,ysp(k)
           end do
           minrho=min(minrho,minval(ysp))
           maxrho=max(maxrho,maxval(ysp))
@@ -271,7 +271,7 @@ contains
        end do
        do iti=1,ntyp
           if (rhomax(iti)==0.)then
-             !             if(rang==0)       write(6,*)'calpoeam Minrho MaxrhoBB ',minrho,maxrho
+             !             if(rang==0)       write(uwrt,*)'calpoeam Minrho MaxrhoBB ',minrho,maxrho
              rhomax(iti)=maxrho*14 ; rhomin(iti)=minrho*14
           end if
        end do
@@ -285,11 +285,11 @@ contains
     !glue
     select case(ipotentiel)
     case default
-!       if(rang==0)       write(6,*)'calpoeam Rhomin Rhomax ',rhomin,rhomax
+!       if(rang==0)       write(uwrt,*)'calpoeam Rhomin Rhomax ',rhomin,rhomax
        ktorho=(rhomax-rhomin)/ngrid
        do iti=1,ntyp
           if (typ_and_pot(iti,ipotentiel).eqv..false.) cycle
-          !     if (rang==0) write(6,*)'type ',iti
+          !     if (rang==0) write(uwrt,*)'type ',iti
           do k=1,ngrid
              rhok=(k*ktorho(iti)+rhomin(iti))
              xsp(k)=rhok
@@ -303,7 +303,7 @@ contains
                 call extrapolateEamerco(rhok,ysp(k))
              case(12)
                 call extrapolateEamjl(embtypjl(iti),rhok,Embf=ysp(k))
-                !            write(6,*)'GLUE k,gluek ', iti, k,ysp(k)
+                !            write(uwrt,*)'GLUE k,gluek ', iti, k,ysp(k)
              end select
 
           end do
@@ -330,14 +330,14 @@ contains
           !        do k=1,ngrid 
           !           write(812,*)xsp(k),eamglue(1,iti,k),eamglue(2,iti,k)
           !        end do
-          if (rang==0) write(6,*) 'calpoeam ktorho and the inverse: ',ktorho,1.d0/ktorho
+          if (rang==0) write(uwrt,*) 'calpoeam ktorho and the inverse: ',ktorho,1.d0/ktorho
 
        end do
     case(16)
        rhomin=0
        do iti=1,ntyp
           if (typ_and_pot(iti,ipotentiel).eqv..false.) cycle
-         ! if (rang==0) write(6,*)'type ',iti,rhomin(iti),rhomax(iti)
+         ! if (rang==0) write(uwrt,*)'type ',iti,rhomin(iti),rhomax(iti)
           ktorho(iti)=rhomax(iti)/ngrid
           do k=1,ngrid
              rhok=(k*ktorho(iti)) 

@@ -2,7 +2,7 @@ module dyn_vverlet_mod
   USE calfo_mod,only: calfo
   USE calfoberend_mod,only: calfoberend, dynlangevin
   use var_pot,only:ntyp
-  USE gen_com_m, ONLY:ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lprahman,&
+  USE gen_com_m, only:uwrt,lwrt,ilangevin,itab,dmtype,fnemd,lcalcjq,lnemd,lperiod,lprahman,&
        &l2T,llangevin,itesigma,iteration,itetabvois,ltberendsen,potist,sig,timel,tstep,&
        lspaceNDM,rang
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e!,ndm2config, config2ndm
@@ -100,7 +100,7 @@ contains
        if(ibrake.gt.0) call calceloss(celndm,atdml)
     end if
     if (lTberendsen) call calfoberend(atdml)
-    !  write(6,*)'dml potist ',potist,atdml%potist
+    !  write(uwrt,*)'dml potist ',potist,atdml%potist
 
 
     !    if (lnemd) then

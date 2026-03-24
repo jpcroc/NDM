@@ -43,9 +43,9 @@ contains
        call convert_cell (at,at_lammps,passage)
        call matinv(passage, passage_inv)
 !!$       do ic=1,3
-!!$          write(6,*)passage(:,ic)
+!!$          write(uwrt,*)passage(:,ic)
 !!$       end do
-       !  write(6,*)
+       !  write(uwrt,*)
     else
        at_lammps=at
        passage(:,:)=0

@@ -333,6 +333,8 @@ contains
              nasloc1(:)=0;nasloc2(:)=0
              natproc1(myidsp)=count(atdml%ityp(1:atdml%im)==typas1)
              natproc2(myidsp)=count(atdml%ityp(1:atdml%im)==typas2)
+!             write(uwrt,*)'NBAT',myidsp, typas1,natproc1(myidsp)
+!             write(uwrt,*)'NBAT',myidsp, typas2,natproc2(myidsp)
              call comm_space%sum(natproc1)
              call comm_space%sum(natproc2)
              do ip=1,nprocspace-1
@@ -391,7 +393,7 @@ contains
                    nasloc2(procas2(ias))=nasloc2(procas2(ias))+1
 
                 end do
-
+!                write(uwrt,*)'NASLOC',nasloc1,nasloc2
              end if
 
              call comm_space%bcast(0,procas1)
@@ -462,6 +464,15 @@ contains
 !                write(myidsp+450,*) typas2, i, indlocas2(i), atdml%num_at_glob(indlocas2(i)), atdml%ityp(indlocas2(i))
                 atdml%ityp(indlocas2(i))=typas1
              end do
+!             write(myidsp+450,*)
+!             if (myidsp==0) then
+!                do ip=0,nprocspace-1
+!                   write(uwrt,'(I5,A,I3,A,I4,A,I3)')nasloc1(ip),' atoms of type', typas1,'in proc ',ip ,' changed to type' ,typas2
+!                end do
+!                do ip=0,nprocspace-1
+!                   write(uwrt,'(I5,A,I3,A,I4,A,I3)')nasloc2(ip),' atoms of type', typas2,'in proc ',ip ,' changed to type', typas1
+!                end do
+!             end if
           end if
 
           
@@ -492,6 +503,7 @@ contains
                 iatvac(:)=0
                 do ivac=1,nvac(iti)
                    
+!                write(uwrt,*)'TTTYYYYYPPPP',rang,iti
                    natyp=0
                    nb_at_typ(:)=0
 
@@ -517,6 +529,7 @@ contains
 1                     continue
                       ntry=ntry+1
                       if (ntry==1000) then
+                         write(uwrt,*)'VAC NTRY exceeded'
                          call arret_ndm(.true.)
                       end if
                       call random_number(z1)
@@ -529,7 +542,7 @@ contains
                       if (lspacendm) then
                          looppr:do iproc=0,comm_space%nproc-1
                             if (last_at_typ(iproc).ge.iatvac(ivac)) then
-                               !                         write(6,*)'CHOIX',iproc, last_at_typ(iproc),iatvac(ivac)
+                               !                         write(uwrt,*)'CHOIX',iproc, last_at_typ(iproc),iatvac(ivac)
                                ivacloc=iatvac(ivac)-last_at_typ(iproc-1)
                                nvacproc(iproc)=nvacproc(iproc)+1
                                exit looppr !iproc est l'indice du proc qui contient iatvac et ivacloc est le rang  de l'atome de cette lacune dans les atomes de ce type
@@ -697,7 +710,7 @@ contains
                       end if
 
                       
-!                      write(6,*)'PROCint',numcell,numproc,myidsp,xpositest
+!                      write(uwrt,*)'PROCint',numcell,numproc,myidsp,xpositest
                       !if (numproc == myidsp) then
 
                        !  l2close=.false.
@@ -705,14 +718,14 @@ contains
                       !end if
 !                      call comm_space%bcast(numproc,l2close)
                       !#endif
-!                      write(6,*) 'l2close',l2close,lspacendm,myidsp,numproc
+!                      write(uwrt,*) 'l2close',l2close,lspacendm,myidsp,numproc
                       if (.not.l2close) then ! not too close ==> intertsitiel+1
                          atomint%ityp(iinttot)=iti
                          atomint%pos(:,iinttot)=xpositest(:)
                          natgM=maxval(atdml%num_at_glob(1:atdml%im))
                          !#ifdef PARA
                          if (lspacendm) call comm_space%max(natgM)
-!!                         write(6,*) 'lspacendm',myidsp,numproc
+!!                         write(uwrt,*) 'lspacendm',myidsp,numproc
                          if (lspacendm) then
                             if (myidsp==numproc)then
                                lsuiv=.true.
@@ -722,12 +735,12 @@ contains
                          else
                             lsuiv=.true.
                          end if
-!                         write(6,*) 'lsuiv',lsuiv
+!                         write(uwrt,*) 'lsuiv',lsuiv
                          if (lsuiv) then
 
                             !#endif                   
                             atdml%im=atdml%im+1
-!                            write(6,*)'testim ', atdml%im
+!                            write(uwrt,*)'testim ', atdml%im
                             atdml%xp(:,atdml%im)=xpositest(:)
                             atdml%ityp(atdml%im)=iti
                             atdml%fp(:,atdml%im)=0

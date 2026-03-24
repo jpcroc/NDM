@@ -36,7 +36,7 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
   !-----------------------------------------------
   !
   ! --------- Initialisation --------------
- !     write(6,*)'entree caltabtcr'
+ !     write(uwrt,*)'entree caltabtcr'
 
 
   noxyz=nox*noy*noz
@@ -48,14 +48,14 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
   !     call notperiod(im,xp,xpnp,at,bg)
   !  end if
 
-  !      write(6,*)'entree caltabt noxyz',noxyz
+  !      write(uwrt,*)'entree caltabt noxyz',noxyz
   !  -------- cas sans cellule  -----------
   if (noxyz==1) then
      natocr(1) = im
      do i = 1, im
         ielatcr(i) = 1
         lastcr(i,1) = i
-        !      write(6,*) 'atincel,i,im=',last(i,1),i,im
+        !      write(uwrt,*) 'atincel,i,im=',last(i,1),i,im
      end do
   else
 
@@ -79,9 +79,9 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
         kx = int(aux)
         ky = int(auy)
         kz = int(auz)
-        !               write(6,*)
-        !               write(6,*)xp(1,i),xp(2,i),xp(3,i)
-        !               write (6,*)'kxyzA',i,kx,ky,kz
+        !               write(uwrt,*)
+        !               write(uwrt,*)xp(1,i),xp(2,i),xp(3,i)
+        !               write (uwrt,*)'kxyzA',i,kx,ky,kz
         !==============================================================
         ! Ajout Emmanuel au cas ou les coordonnÃÂ©es rÃÂ©duites ne sont pas
         ! comprises entre 0 et 1 (en particulier pour lperio=.FALSE.)
@@ -112,7 +112,7 @@ subroutine caltabtcr (natperc,nox,noy,noz,xpcr,im,imm,bg,at)
 
 
   endif
-  !       write(6,*)'sortie caltabt'
+  !       write(uwrt,*)'sortie caltabt'
 
   return
 end subroutine caltabtcr

@@ -1,5 +1,5 @@
 module dyn_mod
-  USE gen_com_m, ONLY:cunite,erg2ev,fnemd,iteration,itetconst,lcalcjq,leev,lnemd,lperiod,&
+  USE gen_com_m, only:uwrt,lwrt,cunite,erg2ev,fnemd,iteration,itetconst,lcalcjq,leev,lnemd,lperiod,&
        &ltcon,text,timel,tstep,unite,usdh,bk
   use atomconfig,only:atom_config_d,atom_config_e
    USE arret_ndm_mod,only:arret_ndm
@@ -57,7 +57,7 @@ end select
 
     timel = timel+tstep
     aux(:ntyp) = tstep**2/cm(:ntyp)
-    !      write(6,*)'aux ',aux
+    !      write(uwrt,*)'aux ',aux
 
 !!$     select type (atdml)
 !!$     class is (atom_config_e)
@@ -68,7 +68,7 @@ end select
      select type (atdml)
      class is (atom_config_e)
         if (.not.atdml%lxpp) then
-           write(6,*)'inconsistency dmtypelxpp'
+           write(uwrt,*)'inconsistency dmtypelxpp'
            call arret_ndm
         end if
         do i = 1, im

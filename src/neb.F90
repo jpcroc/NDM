@@ -2,7 +2,7 @@ module neb_mod
   USE calfo_mod,only: calfo
   USE trempe_mod,only: trempe
   USE neb_controle_mod,only:neb_controle
-  USE gen_com_m, ONLY:itesauvforce,itesauvposition,lfire,cunitp,&
+  USE gen_com_m, only:uwrt,lwrt,itesauvforce,itesauvposition,lfire,cunitp,&
        &erg2ev,itesauv,lpkbar,sig,unitp,potist,angst,itetabvois,rang,&
        &fnam,lenfnam,lfire,itesauv,itetabvois,&
        &lperiod,lspacendm,latcomp
@@ -92,7 +92,7 @@ contains
     lmaster=.true.
 #endif    
     if (neb_noise.eq.1) then
-       if (rang==0) write(6,*)'NEB: We apply a random noise on the atoms '
+       if (rang==0) write(uwrt,*)'NEB: We apply a random noise on the atoms '
        call bruit_neb(atneb(1)%im)
 
     end if
@@ -100,16 +100,16 @@ contains
 
     !on connait atneb(ii),cellneb(ii) et boxneb
     if (nebrelaxation==1) then
-       if (rang==0) write(6,*)'NEB: nebrelaxation == 1'
-       if (rang==0) write(6,*)'NEB: relaxation NEB que pour les atomes' 
+       if (rang==0) write(uwrt,*)'NEB: nebrelaxation == 1'
+       if (rang==0) write(uwrt,*)'NEB: relaxation NEB que pour les atomes' 
        call find_relax(atneb(1)%im)
     else
        do ipath=1,npath
           atneb(ipath)%lgul(:)=.true.
        end do
        !irelax(:)=1
-       if (rang==0) write(6,*)'NEB: nebrelaxation /= 1'
-       if (rang==0) write(6,*)'NEB: relaxation NEB pour TOUS les atomes'
+       if (rang==0) write(uwrt,*)'NEB: nebrelaxation /= 1'
+       if (rang==0) write(uwrt,*)'NEB: relaxation NEB pour TOUS les atomes'
     end if
     !????
     do ii=1,npath
@@ -217,7 +217,7 @@ contains
 #endif
     select case (nebtype)
     case (1)
-       if (rang==0) write(6,*) 'NEB: !!!!-------this is DRAG----------!!!!!!'
+       if (rang==0) write(uwrt,*) 'NEB: !!!!-------this is DRAG----------!!!!!!'
        iter=0
 
        if (lmaster) then
@@ -304,8 +304,8 @@ contains
        end if
 
     case(2)  ! NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB NEB 
-       if (rang==0) write(6,*)'NEB: -------this is NEB--V2-------'
-       if (rang==0) write(6,*)'NEB: The MAX steps in NEB        :',maxneb
+       if (rang==0) write(uwrt,*)'NEB: -------this is NEB--V2-------'
+       if (rang==0) write(uwrt,*)'NEB: The MAX steps in NEB        :',maxneb
        nebtest(:)=0
        do ineb=1,maxneb     ! Main loop for NEB
           if (lvzeroneb)then
@@ -317,9 +317,9 @@ contains
           !   
           call build_s_path_neb(atneb(1)%im,atneb(1)%imm,ineb)
           ! 
-          if (rang==0) write(6,*)'("NEB:===============================================")'
-          if (rang==0) write(6,*)'("NEB:pas-neb image    force      force_NEB          energie      statut    energie/stable")'
-!          write(6,*)rang,limgclimb
+          if (rang==0) write(uwrt,*)'("NEB:===============================================")'
+          if (rang==0) write(uwrt,*)'("NEB:pas-neb image    force      force_NEB          energie      statut    energie/stable")'
+!          write(uwrt,*)rang,limgclimb
           do ii=2,npath-1
 #ifdef PARA
              if (ii==paraneb%image+2) then
@@ -329,7 +329,7 @@ contains
 
                 do while (it_neb_inter<=i_neb_drag)   ! drag-ize me that 5 steps while we keep NEB "attraction"
                    !
-!                   if (rang==0)                   write(6,*)
+!                   if (rang==0)                   write(uwrt,*)
                    it_neb_inter=it_neb_inter+1
                    iteration=it_neb_inter
 
@@ -346,7 +346,7 @@ contains
                       enePATH(ii)=potist
                       enePATHev(ii)=potist*erg2eV       
                       sigPATH(:,:,ii) = sig(:,:)      ! Contrainte
-!                      write(6,*)'STEP',ineb,it_neb_inter, enepath, 'IMG', ii,limgclimb(ii)
+!                      write(uwrt,*)'STEP',ineb,it_neb_inter, enepath, 'IMG', ii,limgclimb(ii)
                       call force_projection_neb(ii,atneb(ii)%xp,  atneb(ii)%vp,  atneb(ii)%fp, atneb(ii)%ityp,&
                            &atneb(ii)%imm,atneb(ii)%im,limgclimb(ii))
 
@@ -403,7 +403,7 @@ contains
                    !debug	            formaxperp, formaxparl, potist*erg2eV,nebtest(ii)
                    forneb = SQRT(MAXVAL(atneb(ii)%force_neb(1,:)**2 + atneb(ii)%force_neb(2,:)**2         &
                         + atneb(ii)%force_neb(3,:)**2))*erg2eV/angst 
-                   write(6,'(A,2i5, 2g14.5,g20.10,i3,g15.8)')  'NEB: ', ineb, ii,  formax, forneb,       &
+                   write(uwrt,'(A,2i5, 2g14.5,g20.10,i3,g15.8)')  'NEB: ', ineb, ii,  formax, forneb,       &
                         potist*erg2eV,nebtest(ii),potist*erg2eV-enepathev(1)
                    ! 
                 endif
@@ -414,7 +414,7 @@ contains
 
           end do      ! end ii,path
 
-          !          write(6,*)'OUTloop',rang
+          !          write(uwrt,*)'OUTloop',rang
 #ifdef PARA
           if (lmaster) then
              call paraneb%mpi_master%sum(nebtest)
@@ -433,11 +433,11 @@ contains
 
     case default
 
-       if (rang==0) write(6,*) 'NO NEB-DYNAMICS FOR THIS  nebtype = ', nebtype
-       if (rang==0) write(6,*) 'CHANGE nebtype AND TRY AGAIN.'
-       if (rang==0) write(6,*) 'nebtype=1 for DRAG'
-       if (rang==0) write(6,*) 'nebtype=2 for  NEB'
-       if (rang==0) write(6,*) 'STOP in the neb.f90'
+       if (rang==0) write(uwrt,*) 'NO NEB-DYNAMICS FOR THIS  nebtype = ', nebtype
+       if (rang==0) write(uwrt,*) 'CHANGE nebtype AND TRY AGAIN.'
+       if (rang==0) write(uwrt,*) 'nebtype=1 for DRAG'
+       if (rang==0) write(uwrt,*) 'nebtype=2 for  NEB'
+       if (rang==0) write(uwrt,*) 'STOP in the neb.f90'
        call arret_ndm
 
     end select

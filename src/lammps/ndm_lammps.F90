@@ -15,7 +15,7 @@ end MODULE vars_lammps !vars_lammps
 
 
 module lammps_util_mod
-  use gen_com_m, ONLY: rang,firsttime_lammps
+  use gen_com_m, ONLY: rang,firsttime_lammps,uwrt,lwrt
   !use gen_com_m,only:
         use LAMMPS
         use vars_lammps
@@ -65,41 +65,41 @@ subroutine init_lammps(inplammps,iopt)
 #ifdef PARA
 !!$   if (nprocspace==1) then
 !!$    call lammps_open_no_mpi('lmp -log none -screen none', lmp)
-!!$    write(*,*) "LAMMPS OPEN_NO_MPI_",rang,INPUT_LAMMPS_FILE
-!!$    if (rang==0) write(*,*) "before init potential lammps"
+!!$    write(uwrt,*) "LAMMPS OPEN_NO_MPI_",rang,INPUT_LAMMPS_FILE
+!!$    if (rang==0) write(uwrt,*) "before init potential lammps"
 !!$    
 !!$    call lammps_file (lmp, INPUT_LAMMPS_FILE)
 !!$    num=lammps_get_natoms(lmp)
-!!$     write(6,*)'NATLAMMPSP1',rang,num
+!!$     write(uwrt,*)'NATLAMMPSP1',rang,num
 !!$     
-!!$    if (rang==0) write(*,*) "after init potential lammps"
-!!$    if (rang==0) write(*,*) "init potential lammps"
-!!$    if (rang==0)   write(*,'("NDM: reading INPUT_LAMMPS_FILE file  :", (a))') INPUT_LAMMPS_FILE
+!!$    if (rang==0) write(uwrt,*) "after init potential lammps"
+!!$    if (rang==0) write(uwrt,*) "init potential lammps"
+!!$    if (rang==0)   write(uwrt,'("NDM: reading INPUT_LAMMPS_FILE file  :", (a))') INPUT_LAMMPS_FILE
 !!$  else
     !call define_communicators_lammps
     call MPI_COMM_Group (MPI_COMM_SPACE,grp_space,ierr)
     call MPI_comm_create(MPI_COMM_WORLD, grp_space,MPI_COMM_lammps,ierr)
     call MPI_COMM_SIZE( MPI_COMM_lammps, npl, ierr )
      call lammps_open('lmp -log none -screen none', MPI_COMM_lammps, lmp)
-     if (rang==0)write(*,*) "LAMMPS OPEN_MPI_",rang, INPUT_LAMMPS_FILE
+     if (rang==0)write(uwrt,*) "LAMMPS OPEN_MPI_",rang, INPUT_LAMMPS_FILE
      call lammps_file (lmp, INPUT_LAMMPS_FILE)
      num=lammps_get_natoms(lmp)
-     write(6,*)'NATOM LAMMPS',  rang,num
+     write(uwrt,*)'NATOM LAMMPS',  rang,num
 
 !!$  end if
 #else
 
     call lammps_open_no_mpi('lmp -log none -screen none', lmp)
-    write(*,*) "LAMMPS OPEN_NO_MPI-SEQ"
+    write(uwrt,*) "LAMMPS OPEN_NO_MPI-SEQ"
     call lammps_file (lmp, INPUT_LAMMPS_FILE)
      num=lammps_get_natoms(lmp)
-     if (rang==0) write(*,*) "after init potential lammps"
-    if (rang==0) write(*,*) "init potential lammps"
-    if (rang==0)   write(*,'("NDM: reading INPUT_LAMMPS_FILE file  :", (a))') INPUT_LAMMPS_FILE
+     if (rang==0) write(uwrt,*) "after init potential lammps"
+    if (rang==0) write(uwrt,*) "init potential lammps"
+    if (rang==0)   write(uwrt,'("NDM: reading INPUT_LAMMPS_FILE file  :", (a))') INPUT_LAMMPS_FILE
 #endif
 
   firsttime_lammps= .TRUE.
-  if (rang==0)write(*,'("NDM: LAMMPS force field init done")')
+  if (rang==0)write(uwrt,'("NDM: LAMMPS force field init done")')
 
 
 end subroutine init_lammps
@@ -142,21 +142,21 @@ end subroutine init_lammps
 !!$  icall=icall+1
 !!$  idd=1000+rang*100+icall
   !  box(:) = boxl(:)
-!  write(6,*)'IN CALFOLLAMPS',rang,xp(3,im)
+!  write(uwrt,*)'IN CALFOLLAMPS',rang,xp(3,im)
 
   if (allocated(pos_lammps)) deallocate (pos_lammps)
   allocate(pos_lammps(3*im), stat=ierr)
   if (firsttime_lammps) then
      num=lammps_get_natoms(lmp)
      if (num /= im) then
-        write(*,*) 'Big problem: gin and lammps files contain different number of atoms',rang,im,num
+        write(uwrt,*) 'Big problem: gin and lammps files contain different number of atoms',rang,im,num
         stop
      end if
      
      call lammps_gather_atoms(lmp, 'type', 1, lammps_types)
 
      if (num /= size(lammps_types)) then
-        write(*,*) 'WARNING:  the atoms type is not correctly read in the LAMMPS wrapper ndm_lammps'
+        write(uwrt,*) 'WARNING:  the atoms type is not correctly read in the LAMMPS wrapper ndm_lammps'
         stop
      end if
      do i=1,im
@@ -254,7 +254,7 @@ subroutine at2xhixlo (at,xp,pos_lammps,im,imm,im3)
   integer::ic,i,ip
   real(double), dimension(3) :: tmp_coord_i,new_tmp_coord_i
 
-!  write(6,*)'inatx',rang,at,atprec
+!  write(uwrt,*)'inatx',rang,at,atprec
   if (any(atprec.ne.at)) then ! NDM box has changed
      
      atprec=at

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+for ((tn=1 ; tn<=23; tn +=1)) ; do
+cd T$tn
+pwd
+pwd
+pwd
+sed -e /rundm/s/build/build_gfortran/ <jtest > jtestgf
+chmod u+x jtestgf
+./jtestgf
+mv    TXXX.out res/Tgf$tn.out
+rm -f *out *cfg *mol *~ *newgin *xfg fort*
+cd ../
+done
+

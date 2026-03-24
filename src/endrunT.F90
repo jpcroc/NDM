@@ -5,7 +5,7 @@ module endrunT_mod
   USE sauvegardeT_mod,only:sauvegardeT!,cin2gin
   USE calcdigr_mod,only: rdfT,rdf0
   USE rasmolT_mod,only:rasmolT
-  USE gen_com_m, ONLY:itesauv,lprtfat,lwgin,angst,unitP,cunitP,erg2eV,&
+  USE gen_com_m, only:uwrt,lwrt,itesauv,lprtfat,lwgin,angst,unitP,cunitP,erg2eV,&
        &iteanapos,iteangle,iterasmol,itesigma,itetemp,linstantfda,&
        &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,unitP,iterdf,&
        &lwgin, lposmoy,l2T,angst,dmtype,iteration,lenfnam,rang,timel,&
@@ -28,7 +28,7 @@ contains
     USE elec_cell, ONLY:  sauveelec
     
     implicit none
-    type(box_config)::boxndm
+    class(box_config)::boxndm
     class(atom_config)::atdml
     type(cell_config):: celndm
     logical,intent(in)::latcomp
@@ -46,10 +46,10 @@ contains
 
  if (rang==0) then
 
-    write (6, *)
-    write (6, *)
+    write (uwrt, *)
+    write (uwrt, *)
 
-    write (6, *) '####### END OF RUN  ######## = ', iteration, '  time = ', timel
+    write (uwrt, *) '####### END OF RUN  ######## = ', iteration, '  time = ', timel
  endif
 
  IF (iteSauv.GE.0) then

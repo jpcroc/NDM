@@ -30,7 +30,7 @@ module init_mod
   
   use Tpara,only:para_space_config
 
-  USE gen_com_m, ONLY:fnam,lenfnam,dmtype,fnamcout,igen,ilangevin,iteration,iteanapos,iterasmol,&
+  USE gen_com_m, only:uwrt,lwrt,fnam,lenfnam,dmtype,fnamcout,igen,ilangevin,iteration,iteanapos,iterasmol,&
        &itetimestep,kinemean,lcasca,lperiod,lrestart,pmean,rang,timel,two,&
        &itmax,tmean,tstep,usdh,lspacendm,latcomp,l2T,lcdp,lspecialinit,lwgin
   use read_val,only:ltabvois
@@ -77,7 +77,7 @@ contains
     kinemean = 0.0
     lufilmpaf = 79
 
-    !     write(6,*)'entree dans init.f'
+    !     write(uwrt,*)'entree dans init.f'
     !potentiel BKS
 #ifdef PARAPH
     rang=rangph
@@ -112,16 +112,16 @@ contains
     if ((ipotentiel==-10).or.(ipotentiel==-11))then
        firsttime_lammps=.true.
        call init_lammps()
-       if (rang==0) write(6,*)'postinitlammps'
+       if (rang==0) write(uwrt,*)'postinitlammps'
     end if
 #endif  
 #ifdef ML
     ! MiLaDy
     if(ipotentiel==20) then
       if (rang.eq.0) then
-           write(6,*)
-           write(6,*)' ML  ..... configuration MiLady '
-           write(6,*)
+           write(uwrt,*)
+           write(uwrt,*)' ML  ..... configuration MiLady '
+           write(uwrt,*)
       end if
       !  !This comes with MiLaDy Package
 
@@ -138,7 +138,7 @@ contains
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
        call rasmolT (atdml,boxndm,-1,latcomp=latcomp,ivisumol=5)
        if (lwgin) call rasmolT (atdml,boxndm,latcomp=latcomp)
-       if (rang==0) write (6, *) 'generation terminee'
+       if (rang==0) write (uwrt, *) 'generation terminee'
        call arret_ndm
     case (2)
        !          call cin2gin
@@ -149,7 +149,7 @@ contains
        formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
        if (lwgin) call rasmolT (atdml,boxndm,-1,latcomp=latcomp,ivisumol=5)
-       if (rang==0) write (6, *) 'modification terminee'
+       if (rang==0) write (uwrt, *) 'modification terminee'
        call arret_ndm
     case default
     end select
@@ -160,8 +160,8 @@ contains
        CALL comm_space%BARRIER
        call init_voisinage(celndm,psc,lwrite=.true.)
 
-!       if (rang==0)  write(6,*) 'NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR'
-!       write(6,*) 'Le proc ',myidsp,' a ',psc%nbr_proc_voisin,' processeur voisin'
+!       if (rang==0)  write(uwrt,*) 'NOMBRE DE CELLULES FRONTIERES ASSOCIEES A CHAQUE PROCESSEUR'
+!       write(uwrt,*) 'Le proc ',myidsp,' a ',psc%nbr_proc_voisin,' processeur voisin'
     end if
 #endif
     !<---------end setting the cell diviion ----------------------
@@ -177,23 +177,23 @@ contains
 
     if (L2T.eqv..true.) then
        call readelec(celndm,boxndm)
-       if (rang==0) write(6,*)'!*!*!*!*! 2T MD version =', i2t,'*!*!*!*!'
+       if (rang==0) write(uwrt,*)'!*!*!*!*! 2T MD version =', i2t,'*!*!*!*!'
        dmtype=4
        if ((ibrake.ne.1).and.(ibrake.ne.3)) then
-          if(rang==0) write(6,*) 'ibrake1 or 3 for l2T'
+          if(rang==0) write(uwrt,*) 'ibrake1 or 3 for l2T'
           call arret_ndm
        end if
        ilangevin=1
        if((ecelec==0))then
-          write(6,*) 'eccelec<>0  and l2T : STOP'
+          write(uwrt,*) 'eccelec<>0  and l2T : STOP'
           call arret_ndm
        end if
        if ((i2T==0).and.(t_cpl.lt.0)) then
-          write(6,*) 'i2T=0 t_cpl<0 and l2T : STOP'
+          write(uwrt,*) 'i2T=0 t_cpl<0 and l2T : STOP'
           call arret_ndm
        end if
        if (celndm%nox(1).le.0 ) then
-          write(6,*) 'nox noy noz MUST be defined in .din with 2T: STOP'
+          write(uwrt,*) 'nox noy noz MUST be defined in .din with 2T: STOP'
           call arret_ndm
        end if
 

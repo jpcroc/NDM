@@ -12,7 +12,7 @@ subroutine init_voisinage (cellv,psc,lwrite)
   !-----------------------------------------------
   !   M o d u l e s
   !-----------------------------------------------
-  use gen_com_m,only:rang
+  use gen_com_m,only:uwrt,lwrt,rang
   use Tpara,only: nprocspace,myidsp,NDM_MPI_REAl_DOUBLE
 !  use mod_para,only:nbr_cell_ftm,NBR_CELL_FRONTIERE,RES_CPU,CELL_FRONTIERE,cell_ftm
 
@@ -20,7 +20,7 @@ subroutine init_voisinage (cellv,psc,lwrite)
   type(cell_config),intent(in)::cellv
   type(para_space_config)::psc ! para_space_config
   logical,optional::lwrite
-  logical::lwrt=.false.
+  logical::lwrtl=.false.
   !-----------------------------------------------
   !   L o c a l   V a r i a b l e s
   !-----------------------------------------------
@@ -35,7 +35,7 @@ subroutine init_voisinage (cellv,psc,lwrite)
   integer :: i
   integer :: i_cell_ftm
   integer :: num_proc_vois
-  if (present(lwrite))lwrt=lwrite
+  if (present(lwrite))lwrtl=lwrite
   ! intialisations preliminaires
   if( allocated(psc%proc_voisin)) deallocate(psc%proc_voisin)
   allocate(psc%proc_voisin(min(nprocspace,cellv%ncelvmax)))
@@ -162,7 +162,7 @@ subroutine init_voisinage (cellv,psc,lwrite)
   end block
 
     
-  if ((myidsp.le.2).or.(rang.ge.nprocspace-2))write(6,*)'rang rangspace ',rang, myidsp,' nbr procs voisins ', psc%nbr_proc_voisin
+  if ((myidsp.le.2).or.(rang.ge.nprocspace-2))write(uwrt,*)'rang rangspace ',rang, myidsp,' nbr procs voisins ', psc%nbr_proc_voisin
 
 !call arret_ndm
 !  call psc%print(unit=700+myidsp)

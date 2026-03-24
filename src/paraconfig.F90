@@ -1,6 +1,6 @@
 module paraconfig
    USE arret_ndm_mod,only:arret_ndm
-
+  USE gen_com_m, only:uwrt,lwrt
 #ifdef PARA
   use mpi
   use Tpara,only:mpi_communicator
@@ -46,7 +46,7 @@ contains
     integer,allocatable::npimg(:),GL(:),CL(:),ipimg(:,:)
     nimage=div%nimage
     if (div%nimage.gt.div%mpi_orig%nproc) then
-       write(6,*)' division para impossible nimage > nprocs'
+       write(uwrt,*)' division para impossible nimage > nprocs'
        call arret_ndm
        call MPI_FINALIZE(ierr)
     end if
@@ -128,13 +128,13 @@ contains
     end if
 Cl=0;GL=0
     do img=1,nimage
-!       if (div%mpi_orig%rank==0) write(6,*)img,ipimg(img,1:npimg(img))
+!       if (div%mpi_orig%rank==0) write(uwrt,*)img,ipimg(img,1:npimg(img))
        call MPI_GROUP_INCL(div%mpi_orig%group,npimg(img),ipimg(img,1:npimg(img)),GL(img-1),ierr)
        call MPI_COMM_CREATE(div%mpi_orig%comm,GL(img-1),CL(img-1),ierr)
     end do
-!    write(6,*)'TOTO', div%mpi_orig%rank,CL
-!    write(6,*)'TATA', div%mpi_orig%rank,GL
-!    write(6,*)'IMG',div%image,CL(div%image)
+!    write(uwrt,*)'TOTO', div%mpi_orig%rank,CL
+!    write(uwrt,*)'TATA', div%mpi_orig%rank,GL
+!    write(uwrt,*)'IMG',div%image,CL(div%image)
     call MPI_COMM_DUP(CL(div%image),div%mpi_image%comm,ierr)
 
     
@@ -142,10 +142,10 @@ Cl=0;GL=0
 !!$    call MPI_COMM_SIZE( div%mpi_image%comm, npi, ierr )
 !!$    call MPI_COMM_RANK(div%mpi_image%comm, div%mpi_image%rank,ierr)
     if (div%mpi_orig%rank==0)then
-!       write(6,*)'*************MPI DIVISION**************'
-!       write(6,*)'orig_rank rank_in_image LMASTER Image'
+!       write(uwrt,*)'*************MPI DIVISION**************'
+!       write(uwrt,*)'orig_rank rank_in_image LMASTER Image'
     end if
-!    write(6,*) div%mpi_orig%rank,div%mpi_image%rank,div%lmaster,div%image
+!    write(uwrt,*) div%mpi_orig%rank,div%mpi_image%rank,div%lmaster,div%image
 
     call MPI_BARRIER(div%mpi_orig%comm,ierr)
     
@@ -156,15 +156,15 @@ Cl=0;GL=0
        call MPI_COMM_RANK(div%mpi_master%comm, div%mpi_master%rank,ierr)
        call MPI_COMM_SIZE( div%mpi_master%comm, npm, ierr )
        if (npm.ne.div%nimage) then
-          write(6,*)'NPMPB',npm,div%nimage
+          write(uwrt,*)'NPMPB',npm,div%nimage
           call arret_ndm
        end if
        div%mpi_master%nproc=npm
-!      write(6,*)'Ranks among masters',div%mpi_orig%rank, div%mpi_master%rank
+!      write(uwrt,*)'Ranks among masters',div%mpi_orig%rank, div%mpi_master%rank
     end if
     call MPI_BARRIER(div%mpi_orig%comm,ierr)
     if (div%mpi_orig%rank==0)then
-!       write(6,*)'*************MPI DIVISION**************'
+!       write(uwrt,*)'*************MPI DIVISION**************'
     end if
     call MPI_BARRIER(div%mpi_orig%comm,ierr)
     div%nimage=div%nimage
@@ -229,17 +229,17 @@ Cl=0;GL=0
 !!$    integer, dimension( MPI_STATUS_SIZE) :: statut
 !!$
 !!$    if (.not.(allocated(xrecv)))allocate(xrecv(1:nel))
-!!$    !     write(6,*)div
+!!$    !     write(uwrt,*)div
 !!$    !    if (div%lmaster) then
-!!$    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank,div%mpi_master%rank
+!!$    !       write(uwrt,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank,div%mpi_master%rank
 !!$    !    else
-!!$    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank
+!!$    !       write(uwrt,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank
 !!$    !    end if
 !!$    if (div%mpi_orig%rank==0) then
 !!$       xrecv(:)=x(0,:)
-!!$       write(6,*)'rg0 ',xrecv
+!!$       write(uwrt,*)'rg0 ',xrecv
 !!$       do img=1,div%nimage-1
-!!$          !           write(6,*)'send 0->',img,x(img,:)
+!!$          !           write(uwrt,*)'send 0->',img,x(img,:)
 !!$          call MPI_SEND (x(img,1:nel),nel, MPI_REAL ,img,100, div%mpi_master%comm,ierr)
 !!$       end do
 !!$       do isp=1,div%mpi_image%nproc-1
@@ -248,7 +248,7 @@ Cl=0;GL=0
 !!$    else
 !!$       if (div%lmaster) then
 !!$          call MPI_RECV(xrecv(1:nel),nel,MPI_REAL,0,100,div%mpi_master%comm,statut,ierr)
-!!$          !           write(6,*)'recv->',xrecv(:),div%mpi_master%rank
+!!$          !           write(uwrt,*)'recv->',xrecv(:),div%mpi_master%rank
 !!$          do isp=1,div%mpi_image%nproc-1
 !!$             call MPI_SEND(xrecv(1:nel),nel,MPI_REAL,isp,101,div%mpi_image%comm,ierr)
 !!$          end do
@@ -272,17 +272,17 @@ Cl=0;GL=0
 !!$    integer, dimension( MPI_STATUS_SIZE) :: statut
 !!$
 !!$    if (.not.(allocated(xrecv)))allocate(xrecv(1:nel))
-!!$    !     write(6,*)div
+!!$    !     write(uwrt,*)div
 !!$    !    if (div%lmaster) then
-!!$    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank,div%mpi_master%rank
+!!$    !       write(uwrt,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank,div%mpi_master%rank
 !!$    !    else
-!!$    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank
+!!$    !       write(uwrt,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank
 !!$    !    end if
 !!$    if (div%mpi_orig%rank==0) then
 !!$       xrecv(:)=x(0,:)
-!!$       write(6,*)'rg0 ',xrecv
+!!$       write(uwrt,*)'rg0 ',xrecv
 !!$       do img=1,div%nimage-1
-!!$          !           write(6,*)'send 0->',img,x(img,:)
+!!$          !           write(uwrt,*)'send 0->',img,x(img,:)
 !!$          call MPI_SEND (x(img,1:nel),nel, NDM_MPI_REAL_DOUBLE ,img,100, div%mpi_master%comm,ierr)
 !!$       end do
 !!$       do isp=1,div%mpi_image%nproc-1
@@ -291,7 +291,7 @@ Cl=0;GL=0
 !!$    else
 !!$       if (div%lmaster) then
 !!$          call MPI_RECV(xrecv(1:nel),nel,NDM_MPI_REAL_DOUBLE,0,100,div%mpi_master%comm,statut,ierr)
-!!$          !           write(6,*)'recv->',xrecv(:),div%mpi_master%rank
+!!$          !           write(uwrt,*)'recv->',xrecv(:),div%mpi_master%rank
 !!$          do isp=1,div%mpi_image%nproc-1
 !!$             call MPI_SEND(xrecv(1:nel),nel,NDM_MPI_REAL_DOUBLE,isp,101,div%mpi_image%comm,ierr)
 !!$          end do
@@ -313,17 +313,17 @@ Cl=0;GL=0
 !!$    integer, dimension( MPI_STATUS_SIZE) :: statut
 !!$
 !!$    if (.not.(allocated(xrecv)))allocate(xrecv(1:nel))
-!!$    !     write(6,*)div
+!!$    !     write(uwrt,*)div
 !!$    !    if (div%lmaster) then
-!!$    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank,div%mpi_master%rank
+!!$    !       write(uwrt,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank,div%mpi_master%rank
 !!$    !    else
-!!$    !       write(6,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank
+!!$    !       write(uwrt,*)'PRE',div%lmaster,div%mpi_orig%rank,div%mpi_image%rank
 !!$    !    end if
 !!$    if (div%mpi_orig%rank==0) then
 !!$       xrecv(:)=x(0,:)
-!!$       write(6,*)'rg0 ',xrecv
+!!$       write(uwrt,*)'rg0 ',xrecv
 !!$       do img=1,div%nimage-1
-!!$          !           write(6,*)'send 0->',img,x(img,:)
+!!$          !           write(uwrt,*)'send 0->',img,x(img,:)
 !!$          call MPI_SEND (x(img,1:nel),nel, MPI_INTEGER ,img,200, div%mpi_master%comm,ierr)
 !!$       end do
 !!$       do isp=1,div%mpi_image%nproc-1
@@ -332,7 +332,7 @@ Cl=0;GL=0
 !!$    else
 !!$       if (div%lmaster) then
 !!$          call MPI_RECV(xrecv(1:nel),nel,MPI_INTEGER,0,200,div%mpi_master%comm,statut,ierr)
-!!$          !           write(6,*)'recv->',xrecv(:),div%mpi_master%rank
+!!$          !           write(uwrt,*)'recv->',xrecv(:),div%mpi_master%rank
 !!$          do isp=1,div%mpi_image%nproc-1
 !!$             call MPI_SEND(xrecv(1:nel),nel,MPI_INTEGER,isp,201,div%mpi_image%comm,ierr)
 !!$          end do
@@ -352,7 +352,7 @@ Cl=0;GL=0
   subroutine print(paraprt,rang)
     class(para_config),intent(in)::paraprt
     integer,intent(in)::rang
-!    write(6,*)'in print paraprt'
+!    write(uwrt,*)'in print paraprt'
     write(rang+100,*)'rang rank comm group nproc'
     write(rang+100,*)'ORIG',rang,paraprt%mpi_orig%rank,paraprt%mpi_orig%comm,paraprt%mpi_orig%group,paraprt%mpi_orig%nproc
     write(rang+100,*)'NIMAGE',rang,paraprt%nimage

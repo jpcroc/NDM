@@ -1,5 +1,5 @@
 module tempinstT_mod
-  USE gen_com_m, ONLY:bk,lspaceNDM
+  USE gen_com_m, only:uwrt,lwrt,bk,lspaceNDM
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace
 

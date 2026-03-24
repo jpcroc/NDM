@@ -3,6 +3,7 @@
 ! ************************************************
 
 subroutine modecalc(im,xp,vp,ax)
+  USE gen_com_m, only:uwrt,lwrt
   USE T_kind_param_m, ONLY:  double
   implicit none
 
@@ -42,7 +43,7 @@ subroutine modecalc(im,xp,vp,ax)
            dxp(iu,ir)=dxp(iu,ir)/sq1
         enddo
      enddo
-     write(6,*)'post vecteurs'
+     write(uwrt,*)'post vecteurs'
      close(50)
      open(51,file='eigenValuesREAL.dat',&
      &       status='unknown')
@@ -61,7 +62,7 @@ subroutine modecalc(im,xp,vp,ax)
 36   continue
      close(51)
 
-     write(6,*)'post eigval'
+     write(uwrt,*)'post eigval'
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
      ! je choisis 3 modes parmis le total , ici les modes 10, im+10 et 3im-10
@@ -103,7 +104,7 @@ subroutine modecalc(im,xp,vp,ax)
              scaa=scaa+xp_t(j,i)*(xp(j,i)-Ax(j,i))*1e8
           enddo
        enddo
-!       write(6,*)'P1'
+!       write(uwrt,*)'P1'
 
 
        open(42,file='sca.dat',status='unknown',position='append')

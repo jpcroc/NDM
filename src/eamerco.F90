@@ -1,6 +1,6 @@
 module eamerco
   USE T_kind_param_m
-  USE gen_com_m, ONLY: ev2erg,A2cm
+  USE gen_com_m, only:uwrt,lwrt, ev2erg,A2cm
   USE alloc_typ_mod,only: alloc_typ
   use var_pot,only:rhomax,rhomin
   USE arret_ndm_mod,only:arret_ndm
@@ -57,7 +57,7 @@ contains
 !    allocate(reppair(npair)) 
 
     if (npotentiel.gt.1) then
-       write(6,*)'eamerco and npotentiel>1 stop'
+       write(uwrt,*)'eamerco and npotentiel>1 stop'
        call arret_ndm
     end if
     allocate (typ_and_pot(1,npotmax))
@@ -69,16 +69,16 @@ contains
     read(lupotin,*) rue
     rue=rue*1.0d-8
     rumax=max(rue,rumax)
-    if(rang==0)  write(6,*) 'Types d_atomes :'
+    if(rang==0)  write(uwrt,*) 'Types d_atomes :'
     do i = 1, ntyp
        read (lupotin,*) cm(i),catom(i),ty(i)
        if (rang/=0) cycle
-       write (6, '(I4,2F9.3,A5)') i, cm(i),catom(i),ty(i)
+       write (uwrt, '(I4,2F9.3,A5)') i, cm(i),catom(i),ty(i)
     end do
     do i = 1, npair
        read (lupotin,*) roff1(i),roff2(i)
        if (rang/=0) cycle
-       write (6, '(2F9.3)') roff1(i),roff2(i)
+       write (uwrt, '(2F9.3)') roff1(i),roff2(i)
     end do
     roff1=roff1*1.0d-8
     roff2=roff2*1.0d-8

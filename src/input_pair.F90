@@ -4,7 +4,7 @@ module input_pair_mod
   USE spline_mod,only: cspline
   USE alloc_typ_mod,only: alloc_typ
   USE arret_ndm_mod,only: arret_ndm
-  USE gen_com_m, ONLY:a2cm,e2on4pieps0,ecgs,ev2erg,lopt,rang,tstep,two,umass,usdh,lspaceNDM
+  USE gen_com_m, only:uwrt,lwrt,a2cm,e2on4pieps0,ecgs,ev2erg,lopt,rang,tstep,two,umass,usdh,lspaceNDM
   USE var_pot,only:typ_and_pot,cm,catom,ty,q,zz,lue_typ, ipotentiel,npotentiel,lue_paire,ipo,lue_trip,ipo3c, poly3,&
        &shel,ray,bm,xsi,sigmawat,rumax,rp5p3,rbp5,r3cm2,r3cm,precisew,poly5,pot_pair_tab,ntyp,ntrip,npair,rp3c,npotmax,&
        &ncoucx,ncoucy,ncoucz,ngr,ncouc3,l3c,lambda,kpmey,kpmex,kpmez,ipotrep,ipo_2_pair_tab,gm1,gm2,gm3,gm4,gm5,gR,gD,&
@@ -95,30 +95,30 @@ contains
     RcWolf=0
 
 
-    if (rang==0) write (6, *)
+    if (rang==0) write (uwrt, *)
     select case (ipotentiel)
     case(0)
-       if (rang==0) write (6, *) ' -------- POTENTIEL BMH -----------------'
+       if (rang==0) write (uwrt, *) ' -------- POTENTIEL BMH -----------------'
     case(1)
-       if (rang==0) write (6, *) '----------- POTENTIEL BUCKINGHAM --------------'
+       if (rang==0) write (uwrt, *) '----------- POTENTIEL BUCKINGHAM --------------'
     case(2)
-       if (rang==0) write (6, *) '----------- POTENTIEL WATANABE --------------'
+       if (rang==0) write (uwrt, *) '----------- POTENTIEL WATANABE --------------'
     case(3)
-       if (rang==0) write (6, *) '----------- POTENTIEL BUCKINGHAM +R8 --------------'
+       if (rang==0) write (uwrt, *) '----------- POTENTIEL BUCKINGHAM +R8 --------------'
     case(4)
-       if (rang==0) write (6, *) '----------- POTENTIEL UO2 -----------'
+       if (rang==0) write (uwrt, *) '----------- POTENTIEL UO2 -----------'
     case(6)
-       if (rang==0) write (6, *) '----------- POTENTIEL Stillinger Weber a la Vashista -----------'
+       if (rang==0) write (uwrt, *) '----------- POTENTIEL Stillinger Weber a la Vashista -----------'
     case(7)
-       if (rang==0) write (6, *) '----------- POTENTIEL PAIRE TABULE -----------'
+       if (rang==0) write (uwrt, *) '----------- POTENTIEL PAIRE TABULE -----------'
     case(5)
-       if (rang==0) write (6, *) '----------- POTENTIEL BMH+Morse -----------'
+       if (rang==0) write (uwrt, *) '----------- POTENTIEL BMH+Morse -----------'
     case(9)
-       if (rang==0) write (6, *) '----------- POTENTIEL Basak -----------'
+       if (rang==0) write (uwrt, *) '----------- POTENTIEL Basak -----------'
     case(8)
-       if (rang==0) write (6, *) '----------- POTENTIEL BMH+Morse+FermiDirac+Inverse Gaussian (Bandura 2017) -----------'
+       if (rang==0) write (uwrt, *) '----------- POTENTIEL BMH+Morse+FermiDirac+Inverse Gaussian (Bandura 2017) -----------'
     case default
-       write (6, *) rang,'Bienvenue dans le cote obscur de la force : pas de potentiel ?DDD'
+       write (uwrt, *) rang,'Bienvenue dans le cote obscur de la force : pas de potentiel ?DDD'
        call arret_ndm
     end select
 
@@ -148,7 +148,7 @@ contains
     case(7)
        fnampotin = 'pair_tab.potin'
     case default
-       write (6, *) rang, '2-Bienvenue dans le cote obscur de la force :pas de potentiel ?BBB'
+       write (uwrt, *) rang, '2-Bienvenue dans le cote obscur de la force :pas de potentiel ?BBB'
        call arret_ndm
     end select
 
@@ -176,7 +176,7 @@ contains
 
        !              if (iewald==2) then
        !                 iewald=1
-       !                 write(6,*)'IEWALD MIS A 1'
+       !                 write(uwrt,*)'IEWALD MIS A 1'
        !              endif
        !           end if
 #endif
@@ -185,34 +185,34 @@ contains
        rue_pot(ipotentiel)=rue*A2cm
        alpha=alpha*1d8
        if (iewald==0) then
-          if (rang==0) write (6, *) '-*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-'
+          if (rang==0) write (uwrt, *) '-*-*-*-* PAS DE SOMMATION D-EWALD *-*-*-*-'
        elseif (iewald==1) then
           if (rang==0) then
-             write (6, *) '-*-*-*-*-* SOMMATION D-EWALD CLASSIQUE *-*-*-*-*-'
-!             if (npotentiel.gt.1) write(6,*)'FONCTIONNEMENT NON GARANTI!!!'
+             write (uwrt, *) '-*-*-*-*-* SOMMATION D-EWALD CLASSIQUE *-*-*-*-*-'
+!             if (npotentiel.gt.1) write(uwrt,*)'FONCTIONNEMENT NON GARANTI!!!'
           end if
        elseif (iewald==2) then
-          if (rang==0) write (6, *) '-*-*-*-*-* SOMMATION D-EWALD METHODE PME *-*-*-*-*-'
-          if (npotentiel.gt.1) write(6,*)'FONCTIONNEMENT NON GARANTI!!!'
-          if (rang==0) write (6, *) 'probablement buggué STOP'
+          if (rang==0) write (uwrt, *) '-*-*-*-*-* SOMMATION D-EWALD METHODE PME *-*-*-*-*-'
+          if (npotentiel.gt.1) write(uwrt,*)'FONCTIONNEMENT NON GARANTI!!!'
+          if (rang==0) write (uwrt, *) 'probablement buggué STOP'
           call arret_ndm
        elseif (iewald==3) then
-          if (rang==0) write (6, *) '-*-*-*-*-* SOMMATION DE WOLF *-*-*-*-*-'
+          if (rang==0) write (uwrt, *) '-*-*-*-*-* SOMMATION DE WOLF *-*-*-*-*-'
           if (RcWolf==0) RcWolf=Rue*A2cm
           if ((rue==0).or.(alpha==0)) then
-             if (rang==0) write (6, *) 'RUE and alpha must be set'
+             if (rang==0) write (uwrt, *) 'RUE and alpha must be set'
              call arret_ndm
           else
-             if (rang==0)write(6,*)'RcWolf=',rcwolf,' alpha= ',alpha
+             if (rang==0)write(uwrt,*)'RcWolf=',rcwolf,' alpha= ',alpha
           end if
        else
-          write (6, *) rang, 'Valeur de iewald erronee : iewald=',iewald
+          write (uwrt, *) rang, 'Valeur de iewald erronee : iewald=',iewald
           call arret_ndm
        endif
        if (l3c) then
-          if (rang==0) write (6, *) '-*-*-*-*-* TERMES  A 3 CORPS *-*-*-*-*-'
+          if (rang==0) write (uwrt, *) '-*-*-*-*-* TERMES  A 3 CORPS *-*-*-*-*-'
        else
-          if (rang==0) write (6, *) '-*-*-*-* PAS DE TERMES  A 3 CORPS *-*-*-*-'
+          if (rang==0) write (uwrt, *) '-*-*-*-* PAS DE TERMES  A 3 CORPS *-*-*-*-'
        endif
 
        ! initialisations de ipo3c
@@ -229,7 +229,7 @@ contains
           !ntyp
           if (npotentiel .gt.1)then
              read(lupotin,*) ntypr
-!             if (rang==0)write(6,*)'ntypr pour ce pot',ntypr
+!             if (rang==0)write(uwrt,*)'ntypr pour ce pot',ntypr
 !             allocate(ityplu(ntypr))
           else
              read(lupotin,*) ntyp
@@ -240,9 +240,9 @@ contains
           !types
           if (npotentiel .gt.1)then
              if (iewald==0) then
-                if (rang==0) write (6, *) 'CM, masse,type, NUMERO DU TYPE D ATOME'
+                if (rang==0) write (uwrt, *) 'CM, masse,type, NUMERO DU TYPE D ATOME'
              else
-                if (rang==0) write (6, *) 'CHARGE,CM, masse,type, NUMERO DU TYPE D ATOME'
+                if (rang==0) write (uwrt, *) 'CHARGE,CM, masse,type, NUMERO DU TYPE D ATOME'
              end if
              do i = 1, ntypr
                 if (iewald==0)then
@@ -258,9 +258,9 @@ contains
                 lue_typ(iti)=.true.
                 if (rang==0) then 
                    if (iewald==0)then
-                      write (6, '(E12.3,F9.3,A5,I4)') cm(iti),catom(iti),ty(iti),iti
+                      write (uwrt, '(E12.3,F9.3,A5,I4)') cm(iti),catom(iti),ty(iti),iti
                    else
-                      write (6, '(2E12.3,F9.3,A5,I4)') q(iti),cm(iti),catom(iti),ty(iti),iti
+                      write (uwrt, '(2E12.3,F9.3,A5,I4)') q(iti),cm(iti),catom(iti),ty(iti),iti
                    end if
                 end if
              end do
@@ -273,9 +273,9 @@ contains
 
           else
              if (iewald==0) then
-                if (rang==0) write (6, *) 'CM, masse,type'
+                if (rang==0) write (uwrt, *) 'CM, masse,type'
              else
-                if (rang==0) write (6, *) 'CHARGE,CM, masse,type'
+                if (rang==0) write (uwrt, *) 'CHARGE,CM, masse,type'
              end if
              do i = 1, ntyp
                 if (iewald==0)then
@@ -284,7 +284,7 @@ contains
                    read(lupotin,  *) q(i),cm(i),catom(i),ty(i)
                 end if
                 cm(i)=cm(i)*umass
-                if (rang==0) write (6, '(I4,2F9.3,A5)') i,cm(i),catom(i),ty(i)
+                if (rang==0) write (uwrt, '(I4,2F9.3,A5)') i,cm(i),catom(i),ty(i)
 
              end do
              do i=1,ntyp
@@ -304,7 +304,7 @@ contains
           pot_pair_tab=0
 
 
-          if (rang==0) write(6,*)'nb de paires grille',  nb_paire_a_lire, ngr
+          if (rang==0) write(uwrt,*)'nb de paires grille',  nb_paire_a_lire, ngr
           do lect_paire=1,nb_paire_a_lire
              if(ipotrep==2) then
                 read(lupotin,*) tt1,tt2,rof1b,rof2b
@@ -321,13 +321,13 @@ contains
              ipo_2_pair_tab(l)=lect_paire
 
              if(lue_paire(l)) then
-                write(6,*) rang,'paire l lue deux fois ', l,tt1,tt2
+                write(uwrt,*) rang,'paire l lue deux fois ', l,tt1,tt2
                 call arret_ndm
              endif
              lue_paire(l)=.TRUE. 
              typ_pot_pair(l)=ipotentiel       
              rue_pair(l)=rue*A2cm
-             if (rang==0) write(6,*)'paire l active  ipotentiel: ',l, ipotentiel
+             if (rang==0) write(uwrt,*)'paire l active  ipotentiel: ',l, ipotentiel
              do igr=1,ngr
                 read(lupotin,*)pot_pair_tab(igr,0,lect_paire),pot_pair_tab(igr,1,lect_paire)
              end do
@@ -335,13 +335,13 @@ contains
              if (ecrue.ne.0)then
                 rm2d=rue-2*ecrue
                 rmd=rue-ecrue
-                !                write(6,*)'rmd',rue,ecrue,rmd
+                !                write(uwrt,*)'rmd',rue,ecrue,rmd
                 do igr=1,ngr
                    if (pot_pair_tab(igr,0,lect_paire).ge.rm2d) then
                       xd=10.*(pot_pair_tab(igr,0,lect_paire)-rmd)/ecrue
                       fcd=1./(1.+exp(xd))
                       pot_pair_tab(igr,1,lect_paire)=pot_pair_tab(igr,1,lect_paire)*fcd
-                      !                    write(6,*)'dp',pot_pair_tab(igr,0,lect_paire),xd,fcd
+                      !                    write(uwrt,*)'dp',pot_pair_tab(igr,0,lect_paire),xd,fcd
                    end if
                 end do
              end if
@@ -376,12 +376,12 @@ contains
           end if
           if (npotentiel .gt.1)then
 
-             if (rang==0) write (6, *) 'numero, charge, CM, masse,type BASAK'
+             if (rang==0) write (uwrt, *) 'numero, charge, CM, masse,type BASAK'
              do i = 1, ntypr
                 read(lupotin,  *) qr,cmr,catomr,tyr,iti
                 call checklu(iti,tyr,cmr,catomr,qr)
                 lue_typ(iti)=.true.
-                !                write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
+                !                write (uwrt, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
                 cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
                 !                ityplu(i)=iti
                 typ_and_pot(iti,ipotentiel)=.true.
@@ -393,10 +393,10 @@ contains
 !                end do
 !             end do
           else
-             if (rang==0) write (6, *) 'numero, charge, CM, masse,type'
+             if (rang==0) write (uwrt, *) 'numero, charge, CM, masse,type'
              do i = 1, ntyp
                 read(lupotin,  *) q(i),cm(i),catom(i),ty(i)
-                !                write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
+                !                write (uwrt, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
                 cm(i)=cm(i)*umass
              end do
              rue_pair(:)=rue*A2cm
@@ -420,12 +420,12 @@ contains
           abasak=0; cbasak=0
           rhobasak=0
 
-          if (rang==0) write(6,*)'nb de paires ',  nb_paire_a_lire
+          if (rang==0) write(uwrt,*)'nb de paires ',  nb_paire_a_lire
           do lect_paire=1,nb_paire_a_lire
              if (ipotrep==0) then
                 read(lupotin,*) tt1,tt2, abasakr,rhor, cbasakr, Dr,betar,rstar
                 l=ipo(tt1,tt2)
-                write(6,*)'paire',l,tt1,tt2
+                write(uwrt,*)'paire',l,tt1,tt2
                 lu_roff_pair(l)=.false.
 
              else
@@ -450,7 +450,7 @@ contains
 
        case(0)
           if (npotentiel.gt.1) then
-             write(6,*)'ipotentiel=0 impossible'
+             write(uwrt,*)'ipotentiel=0 impossible'
              call arret_ndm
           end if
           ! MPI
@@ -467,11 +467,11 @@ contains
           ! initialisations
           usdh = 1/(two*tstep)
 
-          if (rang==0) write (6, *) 'type ;charge ; rayon ; bm ; shell ; type'
+          if (rang==0) write (uwrt, *) 'type ;charge ; rayon ; bm ; shell ; type'
           do i = 1, ntyp
              read(lupotin, *) q(i), ray(i), bm(i), shel(i),ty(i)
 
-             if (rang==0) write (6, '(I2,4F8.4,a4)') i, q(i), ray(i), bm(i), shel(i),ty(i)
+             if (rang==0) write (uwrt, '(I2,4F8.4,a4)') i, q(i), ray(i), bm(i), shel(i),ty(i)
           end do
           do i=1,ntyp
              do j=1,ntyp
@@ -496,9 +496,9 @@ contains
           lu_roff_pair(:)=.true.
           ! 2. paires non standards
           read(lupotin, *) nprns
-          if (rang==0) write(6,*)'nprns ',nprns
+          if (rang==0) write(uwrt,*)'nprns ',nprns
           do i = 1, nprns
-             !            if (rang==0) write(6,*) i
+             !            if (rang==0) write(uwrt,*) i
              read(lupotin, *) l, ror, dipr, pmr, rof1m, rof2m
              ror = ror*A2cm                     ! conversion A --> cm
              dipr = dipr*evA62ergcm6              ! conversion eV.A^6 --> erg.cm^6
@@ -528,7 +528,7 @@ contains
              call  alloc_typ
           end if
           if (npotentiel .gt.1)then
-             if (rang==0) write (6, *) 'numero, charge, CM, masse,type, NUMERO DU TYPE D ATOME'
+             if (rang==0) write (uwrt, *) 'numero, charge, CM, masse,type, NUMERO DU TYPE D ATOME'
              do i = 1, ntypr
                 read(lupotin,  *) qr,cmr,catomr,tyr,iti
                 call checklu(iti,tyr,cmr,catomr,qr)
@@ -536,7 +536,7 @@ contains
                 q(iti)=qr;cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
                 lue_typ(iti)=.true.
                 typ_and_pot(iti,ipotentiel)=.true.
-                if (rang==0) write (6, '(I4,3F9.3,A5)') iti, q(iti),cm(iti),catom(iti),ty(iti)
+                if (rang==0) write (uwrt, '(I4,3F9.3,A5)') iti, q(iti),cm(iti),catom(iti),ty(iti)
              end do
 !             do i=1,ntypr
 !                do j=1,ntypr
@@ -547,10 +547,10 @@ contains
 
 
           else
-             if (rang==0) write (6, *) 'numero, charge, CM, masse,type'
+             if (rang==0) write (uwrt, *) 'numero, charge, CM, masse,type'
              do i = 1, ntyp
                 read(lupotin,  *) q(i),cm(i),catom(i),ty(i)
-                if (rang==0)  write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
+                if (rang==0)  write (uwrt, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
                 cm(i)=cm(i)*umass
              end do
              rue_pair(:)=rue*A2cm
@@ -566,7 +566,7 @@ contains
              ! initialisations
              !          if(ipotentiel.ne.(5)) then
              read(lupotin,*)nb_paire_a_lire
-             if (rang==0) write(6,*)'nb de paires ',  nb_paire_a_lire
+             if (rang==0) write(uwrt,*)'nb de paires ',  nb_paire_a_lire
              do lect_paire=1,nb_paire_a_lire
                 if (ipotentiel==3) then
                    read(lupotin,*) tt1,tt2, a_factorm, rom, dipm, rof1m, rof2m, r8m
@@ -575,12 +575,12 @@ contains
                 endif
                 l=ipo(tt1,tt2)
                 if(lue_paire(l)) then
-                   write(6,*) rang,'paire l lue deux fois ', l,tt1,tt2
+                   write(uwrt,*) rang,'paire l lue deux fois ', l,tt1,tt2
                    call arret_ndm
                 endif
                 lue_paire(l)=.TRUE. ; typ_pot_pair(l)=ipotentiel       
                 rue_pair(l)=rue*A2cm
-                if (rang==0) write(6,*)'paire l active  ipotentiel: ',l, ipotentiel
+                if (rang==0) write(uwrt,*)'paire l active  ipotentiel: ',l, ipotentiel
 
                 !        conversions d'unites
                 a_factorm = a_factorm*ecgs           ! conversion eV --> erg
@@ -603,7 +603,7 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!88888888888888888!!!!!!!!!!!!!             
           case(8)
              read(lupotin,*)nb_paire_a_lire
-             if (rang==0) write(6,*)'nb de paires ',  nb_paire_a_lire
+             if (rang==0) write(uwrt,*)'nb de paires ',  nb_paire_a_lire
              do lect_paire=1,nb_paire_a_lire
                 if (ipotrep==0) then
                    read(lupotin,*) tt1,tt2, a_factorm, rom, dipm, dmr,amr,rmr, afdr,bfdr,r0fdr,aigr,bigr,r0igr
@@ -617,12 +617,12 @@ contains
                    roff2(l) = rof2m*1d-8
                 end if
                 if(lue_paire(l)) then
-                   write(6,*) rang,'paire l lue deux fois ', l,tt1,tt2
+                   write(uwrt,*) rang,'paire l lue deux fois ', l,tt1,tt2
                    call arret_ndm
                 endif
                 lue_paire(l)=.TRUE. ; typ_pot_pair(l)=ipotentiel       
                 rue_pair(l)=rue*A2cm
-                if (rang==0) write(6,*)'paire l active  ipotentiel: ',l, ipotentiel
+                if (rang==0) write(uwrt,*)'paire l active  ipotentiel: ',l, ipotentiel
 
                 !        conversions d'unites
                 a_factorm = a_factorm*ecgs/96.485           ! conversion eV --> erg
@@ -647,7 +647,7 @@ contains
 
              !        if (ipotentiel==5) then ! terme Morse
              read(lupotin,*)nb_paire_a_lire
-             if (rang==0) write(6,*)'nb de paires ',  nb_paire_a_lire
+             if (rang==0) write(uwrt,*)'nb de paires ',  nb_paire_a_lire
              do lect_paire=1,nb_paire_a_lire
                 if (ipotrep==0) then
                    read(lupotin,*) tt1,tt2, a_factorm, rom, dipm
@@ -661,12 +661,12 @@ contains
                    roff2(l) = rof2m*1d-8
                 end if
                 if(lue_paire(l)) then
-                   write(6,*) rang,'paire l lue deux fois ', l,tt1,tt2
+                   write(uwrt,*) rang,'paire l lue deux fois ', l,tt1,tt2
                    call arret_ndm
                 endif
                 lue_paire(l)=.TRUE. ; typ_pot_pair(l)=ipotentiel       
                 rue_pair(l)=rue*A2cm
-                if (rang==0) write(6,*)'paire l active  ipotentiel: ',l, ipotentiel
+                if (rang==0) write(uwrt,*)'paire l active  ipotentiel: ',l, ipotentiel
 
                 !        conversions d'unites
 
@@ -693,7 +693,7 @@ contains
              call  alloc_typ
           end if
           if (npotentiel .gt.1)then
-             if (rang==0) write (6, *) 'numero, charge, CM, masse,type, NUMERO DU TYPE D ATOME'
+             if (rang==0) write (uwrt, *) 'numero, charge, CM, masse,type, NUMERO DU TYPE D ATOME'
              do i = 1, ntypr
                 read(lupotin,  *) qr,cmr,catomr,tyr,iti
                 call checklu(iti,tyr,cmr,catomr,qr)
@@ -701,7 +701,7 @@ contains
                 q(iti)=qr;cm(iti)=cmr*umass;catom(iti)=catomr;ty(iti)=tyr
                 lue_typ(iti)=.true.
                 typ_and_pot(iti,ipotentiel)=.true.
-                if (rang==0) write (6, '(I4,3F9.3,A5)') iti, q(iti),cm(iti),catom(iti),ty(iti)
+                if (rang==0) write (uwrt, '(I4,3F9.3,A5)') iti, q(iti),cm(iti),catom(iti),ty(iti)
              end do
 !             do i=1,ntypr
 !                do j=1,ntypr
@@ -710,11 +710,11 @@ contains
 !             end do
 
           else
-             if (rang==0) write (6, *) 'numero, charge, CM, masse,type'
+             if (rang==0) write (uwrt, *) 'numero, charge, CM, masse,type'
              do i = 1, ntyp
                 read(lupotin,  *) q(i),cm(i),catom(i),ty(i)
                 cm(i)=cm(i)*umass
-                if (rang==0)  write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
+                if (rang==0)  write (uwrt, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
              end do
              do i=1,ntyp
                 do j=1,ntyp
@@ -729,18 +729,18 @@ contains
           lue_paire(:)=.false.
 
           read(lupotin,*)nb_paire_a_lire
-          if (rang==0) write(6,*)'nb de paires ',  nb_paire_a_lire
+          if (rang==0) write(uwrt,*)'nb de paires ',  nb_paire_a_lire
           do lect_paire=1,nb_paire_a_lire
              read(lupotin,*) tt1,tt2, a_factorm, rom, dipm, rof1m, rof2m
              l=ipo(tt1,tt2)
              if(lue_paire(l)) then
-                write(6,*) rang,'paire l lue deux fois ', l,tt1,tt2
+                write(uwrt,*) rang,'paire l lue deux fois ', l,tt1,tt2
                 call arret_ndm
              endif
              lue_paire(l)=.TRUE.
              rue_pair(l)=rue *A2cm
              typ_pot_pair(l)=ipotentiel       
-             !            if (rang==0) write(6,*)'paire l active  : ',l
+             !            if (rang==0) write(uwrt,*)'paire l active  : ',l
 
              !        conversions d'unites
              a_factorm = a_factorm*ecgs    ! conversion eV --> erg
@@ -760,14 +760,14 @@ contains
           read(lupotin,*) poly5(:)
           read(lupotin,*) poly3(:)
 
-          if (rang==0) write(6,*)'Specificite de l interaction O-O '
+          if (rang==0) write(uwrt,*)'Specificite de l interaction O-O '
           do i = 1, 6
              poly5(i) = poly5(i)*ecgs*(1.d8)**(i-1)
-             if (rang==0) write(6,*)'Polynome de degre 5 a',i,' = ', poly5(i)
+             if (rang==0) write(uwrt,*)'Polynome de degre 5 a',i,' = ', poly5(i)
           enddo
           do i = 1, 4
              poly3(i) = poly3(i)*ecgs*(1.d8)**(i-1)
-             if (rang==0) write(6,*)'Polynome de degre 3 b',i,' = ', poly3(i)
+             if (rang==0) write(uwrt,*)'Polynome de degre 3 b',i,' = ', poly3(i)
           enddo
 
           read(lupotin,*) rbp5, rp5p3, rp3c
@@ -791,22 +791,22 @@ contains
           l3ctyp(:)=.false.
           l3cpair(:)=.false.
           read(lupotin,*)n3c     !nb de triplets actifs
-          if (rang==0) write(6,*)'n3c ',n3c
+          if (rang==0) write(uwrt,*)'n3c ',n3c
           do l=1,n3c
              read(lupotin,*)ic,i,j, lambr,gamgr,gamdr,agcr,adcr,cangler
-             if (rang==0) write(6,*)l
+             if (rang==0) write(uwrt,*)l
              gamgr=gamgr*A2cm ; gamdr=gamdr*A2cm ! A -> cm
              adcr=adcr*A2cm ; agcr=agcr*A2cm ! A -> cm
              lambr=lambr*ecgs                    ! eV -> erg
              k=ipo3c(ic,i,j)
-             if (rang==0) write(6,*)'k ntrp ', k,ntrip
-             if (rang==0) write(6,*) 'triplet lu :',k,ic,i,j
+             if (rang==0) write(uwrt,*)'k ntrp ', k,ntrip
+             if (rang==0) write(uwrt,*) 'triplet lu :',k,ic,i,j
              if (lue_trip(k)) then
-                write(6,*) rang,'triplet deja lu ', ic,i,j,k
+                write(uwrt,*) rang,'triplet deja lu ', ic,i,j,k
                 call arret_ndm
              endif
              lue_trip(k)=.TRUE.
-             !           if (rang==0) write(6,*)l
+             !           if (rang==0) write(uwrt,*)l
              l3ctyp(ic)=.TRUE. ; l3ctyp(i)=.TRUE. ; l3ctyp(j)=.TRUE.
 
              npg=ipo(ic,min(i,j)) ; npd=ipo(ic,max(i,j))
@@ -817,10 +817,10 @@ contains
              coup3c(k,npg)=agcr
              coup3c(k,npd)=adcr
              cangle(k)=cangler
-             !            if (rang==0) write(6,*) 'r3cm=',r3cm,' agcr=',agcr,' adcr=',adcr
+             !            if (rang==0) write(uwrt,*) 'r3cm=',r3cm,' agcr=',agcr,' adcr=',adcr
              if(agcr.gt.r3cm) r3cm=agcr
              if(adcr.gt.r3cm) r3cm=adcr
-             if (rang==0) write(6,*) 'r3cm=',r3cm
+             if (rang==0) write(uwrt,*) 'r3cm=',r3cm
           enddo
           c3c(:)=0.
        endif !l3c
@@ -834,10 +834,10 @@ contains
        l3c= .TRUE.
        rumaxa=0
 
-       if (rang==0) write(6,*)'-*-*-*-*-* TERMES  A 3 CORPS *-*-*-*-*-'
+       if (rang==0) write(uwrt,*)'-*-*-*-*-* TERMES  A 3 CORPS *-*-*-*-*-'
 
        if (npotentiel .gt.1)then
-          write(6,*)'ipotentiel==2 et Npotentiel> 1 stop'
+          write(uwrt,*)'ipotentiel==2 et Npotentiel> 1 stop'
           call arret_ndm
 
        else
@@ -922,7 +922,7 @@ contains
           read(lupotin,*)ic,i,j,lambr,gamgr,gamdr,agcr,adcr,cangler
           num_3c=ipo3c(ic,i,j)
           if (lue_trip(num_3c)) then
-             if (rang==0) write(6,*)'triplet deja lu ', ic,i,j,num_3c
+             if (rang==0) write(uwrt,*)'triplet deja lu ', ic,i,j,num_3c
              call arret_ndm
           endif
           lue_trip(num_3c)=.TRUE.
@@ -949,12 +949,12 @@ contains
        r3cm2=r3cm**2
 
        rue_pair(:) = rumax
-       if (rang==0) write(6,*)'rayon de coupure max = ', rumax
+       if (rang==0) write(uwrt,*)'rayon de coupure max = ', rumax
 
     case(6)
 
        if (npotentiel .gt.1)then
-          write(6,*)'ipotentiel==6 et Npotentiel> 1 stop'
+          write(uwrt,*)'ipotentiel==6 et Npotentiel> 1 stop'
           call arret_ndm
        end if
        iewald=0
@@ -965,10 +965,10 @@ contains
        npair=  ntyp*(ntyp+1)/2 ; ntrip= ntyp*ntyp *(ntyp+1)/2
        call  alloc_typ
 
-       if (rang==0) write (6, *) 'numero, "charge", CM, masse,type'
+       if (rang==0) write (uwrt, *) 'numero, "charge", CM, masse,type'
        do i = 1, ntyp
           read(lupotin,*)q(i), cm(i),catom(i),ty(i)
-          if (rang==0) write (6, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
+          if (rang==0) write (uwrt, '(I4,3F9.3,A5)') i, q(i),cm(i),catom(i),ty(i)
        end do
 
        ! initialisations
@@ -976,19 +976,19 @@ contains
        !     usdh = 1/(two*tstep)
 
        read(lupotin,*)rue, lambda,xsi
-       write(6,'(A,3F12.5)')'rue, lambda,xsi',rue, lambda,xsi
+       write(uwrt,'(A,3F12.5)')'rue, lambda,xsi',rue, lambda,xsi
        rue=rue*A2cm; lambda=lambda*A2cm; xsi=xsi*A2cm
 
        rue_pair(:)=rue
        lue_paire(:npair)=.false.
 
        read(lupotin,*)nb_paire_a_lire
-       if (rang==0) write(6,*)'nb de paires ',  nb_paire_a_lire
+       if (rang==0) write(uwrt,*)'nb de paires ',  nb_paire_a_lire
        do lect_paire=1,nb_paire_a_lire
           read(lupotin,*) tt1,tt2,ietaijlu,capHijlu,capDijlu,capWijlu
           l=ipo(tt1,tt2)
           if(lue_paire(l)) then
-             write(6,*) rang,'paire l lue deux fois ', l,tt1,tt2
+             write(uwrt,*) rang,'paire l lue deux fois ', l,tt1,tt2
              call arret_ndm
           endif
           lue_paire(l)=.TRUE.
@@ -1019,7 +1019,7 @@ contains
        rumax=max(rumax,rue)     
 
     case default
-       write (6, *) rang, '3-Bienvenue dans le cote obscur de la force :pas de potentiel ?CCC'
+       write (uwrt, *) rang, '3-Bienvenue dans le cote obscur de la force :pas de potentiel ?CCC'
        call arret_ndm
     end select
     !if(allocated (typ_and_pot).eqv..false.), i.e. si npotentiel==1 
@@ -1033,7 +1033,7 @@ contains
     ! ********** Fin de lecture des donnees du fichier potentiel.potin ********
     close(lupotin)
 
-!    write(6,*)'ALPHA',alpha
+!    write(uwrt,*)'ALPHA',alpha
     return
   end subroutine input_pair
 
@@ -1046,19 +1046,19 @@ contains
 
 
     if(lue_typ(iti).EQV..true.)then
-       if (rang==0)write(6,*) 'type',iti,'deja lu ; verification de la cohérence'
+       if (rang==0)write(uwrt,*) 'type',iti,'deja lu ; verification de la cohérence'
        if (cml*umass.ne.cm(iti))then
-          if (rang==0)write(6,*) 'pb avec cm',iti,cm(iti),cml
+          if (rang==0)write(uwrt,*) 'pb avec cm',iti,cm(iti),cml
           call arret_ndm
        end if
        if (tyl.ne.ty(iti))then
-          if (rang==0)write(6,*) 'pb avec ty',iti,ty(iti),tyl
+          if (rang==0)write(uwrt,*) 'pb avec ty',iti,ty(iti),tyl
           call arret_ndm
        end if
        ! pas besoin de vérifier la charge
        if(present(ql))then
           if (ql.ne.q(iti))then
-             if (rang==0)write(6,*) 'pb avec q',q(iti),ql
+             if (rang==0)write(uwrt,*) 'pb avec q',q(iti),ql
              call arret_ndm
           end if
        end if
@@ -1069,7 +1069,7 @@ contains
     integer,intent(in)::iewt
     if (luewald) then
        if (iewt.ne.iewaldS) then
-          if (rang==0) write(6,*)'inconsistency iewald '
+          if (rang==0) write(uwrt,*)'inconsistency iewald '
           call arret_ndm
        end if
     else

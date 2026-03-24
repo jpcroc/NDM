@@ -18,7 +18,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:dmtype,rang,iteration,itmax,mdcg_noise,&
+    USE gen_com_m, only:uwrt,lwrt,dmtype,rang,iteration,itmax,mdcg_noise,&
          &angst,erg2ev,lperiod,lspacendm,latcomp
 
     USE work_cgII,only: funct

@@ -3,18 +3,22 @@
         ipotentiel=10
 	imm=2000
 	igen=0
-	dmtype=21,fpstop=0.1!,sigstop=5
+	dmtype=1   ! 7 ph ; 3 CG
+	lprteat=.true.
 	tinit=600
 	iseed=1
-	itmax=3000
-	itetemp=10,	itesigma=10
+	itmax=6
+	itetemp=1
 	lEev=.true. 
 	lEparat=.true.,
-        lPkbar=.true.
+        lPkbar=.true. 	
+	itesigma=1
+	iterasmol=5,ivisu=1
+	ltriclin=.true.
 
-	iterasmol=5000,ivisu=4
 	lconstrtot=.false.
 	lperiod=.true.
+	itetabvois=10,ltabvois=.true.rvois=7
 
 
         

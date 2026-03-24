@@ -250,17 +250,17 @@ contains
 
           k=Int(r/csive)
           drk=r-k*csive
-          !            write(6,*)'k r drk ',k,r,drk
-          !            write(6,*)pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
+          !            write(uwrt,*)'k r drk ',k,r,drk
+          !            write(uwrt,*)pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
           Nv2mid=pot(1,l,k)+pot(2,l,k)*drk+pot(3,l,k)*drk**2+pot(4,l,k)*drk**3
           v2mid=Nv2mid
 
-          !            write(6,*)'l r1,r2 ',l,roff1(l),roff2(l)
-          !            write(6,*)' v2, vd2, vdd2 ',v2,vd2,vdd2
-          !            write(6,*)'Nv2,Nvd2,Nvdd2 ',Nv2,Nvd2,Nvdd2
+          !            write(uwrt,*)'l r1,r2 ',l,roff1(l),roff2(l)
+          !            write(uwrt,*)' v2, vd2, vdd2 ',v2,vd2,vdd2
+          !            write(uwrt,*)'Nv2,Nvd2,Nvdd2 ',Nv2,Nvd2,Nvdd2
           ! 
-          !           write(6,*)'v2mid Nv2mid',v2mid,Nv2mid
-          !            write(6,*)
+          !           write(uwrt,*)'v2mid Nv2mid',v2mid,Nv2mid
+          !            write(uwrt,*)
 
 
           ! --- Decalage du potentiel de Ziegler

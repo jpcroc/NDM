@@ -1,5 +1,5 @@
 module calfojulicel_mod
-  USE gen_com_m, ONLY:nvat,fnemd,lcalcjq,lnemd,lperiod,zero
+  USE gen_com_m, only:uwrt,lwrt,nvat,fnemd,lcalcjq,lnemd,lperiod,zero
   USE var_pot, ONLY:ipotentiel,potisglue,potisrep,rhomax,rhomin,rue_pot,ngrid,npair,&
        &eamrep,ipo,typ_pot_pair,eamglue,eamrho,ntyp
   USE calfocommon
@@ -76,7 +76,7 @@ contains
     do l=1,npair
        rcut2(l)=(reppairjl(l)%rc*1.0d-8)**2
        rcut2(l)=(reppairjl(l)%rc*1.0d-8)
-       !       write(6,*)l,sqrt(rcut2(l))
+       !       write(uwrt,*)l,sqrt(rcut2(l))
     end do
 
     ktor=rue/ngrid
@@ -100,12 +100,12 @@ contains
        rhoitot=0.
        iti = atcf%ityp(i)
        densityi=0.0 ;Eembi=0.0; dEembi=0.0
-       !     write(6,*)'I',i
+       !     write(uwrt,*)'I',i
        koo= atcf%ielat(i)      
        ! pour chaque cel. voisine
        loop1cel:   do i1 = 0, celcf%ncelvois(koo)
           ko1 = celcf%ncel(koo,i1)
-          !        write(6,*)'celI',ko1
+          !        write(uwrt,*)'celI',ko1
 
           ! pour chaque atome ds la cel. voisine
           loop1at2: do i2 = 1, celcf%nato(ko1)
@@ -120,19 +120,19 @@ contains
 
         c1ij=dxp(1);c2ij=dxp(2);c3ij=dxp(3)
         k=Int(rij/ktor)
-             !       write(6,*)'k ',k
+             !       write(uwrt,*)'k ',k
              drk=rij-k*ktor
              ll = ipo(iti,itj)
              rhoj=eamrho(1,ll,k)+eamrho(2,ll,k)*drk+eamrho(3,ll,k)*drk**2+eamrho(4,ll,k)*drk**3  !rho de j sur i
              drhoj=eamrho(2,ll,k)+2.0*eamrho(3,ll,k)*drk+3.0*eamrho(4,ll,k)*drk**2  !rho' de j sur i
 
-             !          write(6,*)'i j rij rh',i,j,rij,rhoj
+             !          write(uwrt,*)'i j rij rh',i,j,rij,rhoj
              !          if (iti==1.and.itj==1) then
              !             trh=exp(czz*(dzz-rij/1.0d-8)+kzz/(rij/1.0d-8-rczz))
              !          else
              !             trh=exp(2.0*(czc*(dzc-rij/1.0d-8)+kzc/(rij/1.0d-8-rczc)))
              !          end if
-             !          write(6,*)'i jrij trh',i,j,rij,trh
+             !          write(uwrt,*)'i jrij trh',i,j,rij,trh
 
 
 
@@ -148,7 +148,7 @@ contains
        !     end do loopvois
 
        !boucle sur les voisins de i
-       !                 write(6,*)'i nvi', i,nvi
+       !                 write(uwrt,*)'i nvi', i,nvi
        sij(:)=0.
        loopvj1 : do iw=1,nvi
           j=jvi(iw)
@@ -156,7 +156,7 @@ contains
           !          if((itj==2).and.(iti==2))cycle
           if(atcf%ityp(j).ne.iti) then
              itj=atcf%ityp(j)
-             !        write(6,*)'i j dis ',i,j,Vrij(iw)
+             !        write(uwrt,*)'i j dis ',i,j,Vrij(iw)
              c1ij=Vc1ij(iw) ;c2ij= Vc2ij(iw); c3ij=Vc3ij(iw)
              rij=Vrij(iw)
 
@@ -170,19 +170,19 @@ contains
                 IF (L==J)cycle
                 !
                 if(itl.eq.iti) cycle 
-                !                write(6,*)'L i iti j itj l itl ',i,iti,j,itj,l,itl
+                !                write(uwrt,*)'L i iti j itj l itl ',i,iti,j,itj,l,itl
                 c1il=Vc1ij(iwl) ;c2il= Vc2ij(iwl); c3il=Vc3ij(iwl)
                 ril=Vrij(iwl)
                 rholsi=rhojsi(iwl)
 
                 costetlij=(c1ij*c1il+c2ij*c2il+c3ij*c3il)/(rij*ril)             
-                !                write(6,*)'costetlij',costetlij
+                !                write(uwrt,*)'costetlij',costetlij
                 tdepcos=1.0+costetlij
                 if (tdepcos.le.0.0) tdepcos=1.0d-10
-                !                write(6,*)'tdepcos',tdepcos
+                !                write(uwrt,*)'tdepcos',tdepcos
                 sijl=rholsi*(tdepcos**beta)/alphaPbeta          
                 sij(iw)=sij(iw)+sijl
-                !                write(6,*)'Lsijl',i,iw,j,l,sij(iw),sijl
+                !                write(uwrt,*)'Lsijl',i,iw,j,l,sij(iw),sijl
              end do loopvli1
 
              ! fin terme l debut terme "k"
@@ -204,7 +204,7 @@ contains
                    !           iw2j=iwmax(j)
                    !           loopvjk1 :do iwl = iw1j, iw2j          
                    !              l = indi(iwl)
-                   !                write(6,*)'i j l',i,j,l
+                   !                write(uwrt,*)'i j l',i,j,l
                    itl=atcf%ityp(l)
                    if(itl==itj) cycle
                                       !
@@ -219,16 +219,16 @@ contains
                    ll = ipo(itj,itl)
                    rholsj=eamrho(1,ll,k)+eamrho(2,ll,k)*drk+eamrho(3,ll,k)*drk**2+eamrho(4,ll,k)*drk**3  !rho de l sur j
                    costetijl=-(c1ij*c1jl+c2ij*c2jl+c3ij*c3jl)/(rij*rjl)
-                   !                write(6,*)'costetijk',costetijl
+                   !                write(uwrt,*)'costetijk',costetijl
                    tdepcos=1+costetijl
 
                    if (tdepcos.le.0.0) tdepcos=1.0d-10
-                   !                write(6,*)'tdepcos',tdepcos
+                   !                write(uwrt,*)'tdepcos',tdepcos
                    sijl=rholsj*(tdepcos**beta)/alphaPbeta          
 
                    !                sijl=rholsj*((1+costetijl)**beta)/alphaPbeta          
                    sij(iw)=sij(iw)+sijl 
-                   !                write(6,*)'Ksijl',i,iw,j,l,sij(iw),sijl
+                   !                write(uwrt,*)'Ksijl',i,iw,j,l,sij(iw),sijl
 
                 end do loop2at2
              end do loop2cel
@@ -239,7 +239,7 @@ contains
                 ecrsij(iw)=exp(-2.0*sqrt(sij(iw)/rhojsi(iw)))
              end if
              rhotildjsi(iw)=rhojsi(iw)*ecrsij(iw)
-             !if (i==344)  write(6,*)'ecr ',i,j,sij(iw),rhojsi(iw),sij(iw)/rhojsi(iw),ecrsij(iw)
+             !if (i==344)  write(uwrt,*)'ecr ',i,j,sij(iw),rhojsi(iw),sij(iw)/rhojsi(iw),ecrsij(iw)
           else
              sij(iw)=0.0
              ecrsij(iw)=1.0
@@ -255,22 +255,22 @@ contains
        ! calcul et stockage de Eembi et dEembi
        k=Int((densityi-rhomin(iti))/ktorho(iti))
        k=max(k,3) ; k=min(k,ngrid-3)
-       !       write(6,*)'i rhoitot densityi ',i,rhoitot,densityi
+       !       write(uwrt,*)'i rhoitot densityi ',i,rhoitot,densityi
        drk=densityi-(rhomin(iti)+k*ktorho(iti))
-       !       write(6,*)i,iti,k
+       !       write(uwrt,*)i,iti,k
        Eembi=eamglue(1,iti,k)+eamglue(2,iti,k)*drk+eamglue(3,iti,k)*drk**2+eamglue(4,iti,k)*drk**3
        dEembi=eamglue(2,iti,k)+2.0*eamglue(3,iti,k)*drk+3.0*eamglue(4,iti,k)*drk**2
-       !       if(i==344)write(6,*)'dembi ', dEembi,k,drk,eamglue(2,iti,k),eamglue(3,iti,k),eamglue(4,iti,k)
-       !             write(6,*)'i Eembi', i ,Eembi
+       !       if(i==344)write(uwrt,*)'dembi ', dEembi,k,drk,eamglue(2,iti,k),eamglue(3,iti,k),eamglue(4,iti,k)
+       !             write(uwrt,*)'i Eembi', i ,Eembi
        !       call extrapolateEam(embtyp(iti),density(i),Embf=Eembi, dembF=dEembi)
        !densityi, Eembi et dEembi sont des scalaires associés au i courant
 
        !******************************************************************************************************************
 
        !boucle des forces
-       !    write(6,*)
-       !    write(6,*)'REP'
-       !    write(6,*)
+       !    write(uwrt,*)
+       !    write(uwrt,*)'REP'
+       !    write(uwrt,*)
        loopvj2 :do iw = 1, nvi 
           j = jvi(iw)
           c1ij=Vc1ij(iw) ;c2ij= Vc2ij(iw); c3ij=Vc3ij(iw)
@@ -288,16 +288,16 @@ contains
              !             Erep=0. ; dErep=0.
              Erep=2.0*eamrep(1,ll,k)+eamrep(2,ll,k)*drk+eamrep(3,ll,k)*drk**2+eamrep(4,ll,k)*drk**3
              dErep=2.0*(eamrep(2,ll,k)+2.0*eamrep(3,ll,k)*drk+3.0*eamrep(4,ll,k)*drk**2)
-             !             write(6,*)'i iti j itj rij Erep',i,iti,j,itj,rij,Erep
-             !             write(6,*)
-             !          write(6,*)'i iti j  itj r ',i,iti,j,itj
-             !          write(6,*)'i j rij erep',i,j,rij,erep
+             !             write(uwrt,*)'i iti j itj rij Erep',i,iti,j,itj,rij,Erep
+             !             write(uwrt,*)
+             !          write(uwrt,*)'i iti j  itj r ',i,iti,j,itj
+             !          write(uwrt,*)'i j rij erep',i,j,rij,erep
              !          if (iti==1.and.itj==1) then
              !             trh=exp(azz*(bzz-rij/1.0d-8)+kzz/(rij/1.0d-8-rczz))*ev2erg
              !          else
              !             trh=exp((azc*(bzc-rij/1.0d-8)+kzc/(rij/1.0d-8-rczc)))*ev2erg
              !          end if
-             !          write(6,*)'i jrij terp',i,j,rij,trh
+             !          write(uwrt,*)'i jrij terp',i,j,rij,trh
 
 
              potistcalfo=potistcalfo+Erep
@@ -305,11 +305,11 @@ contains
              atcf%fp(1:3,i)=atcf%fp(1:3,i)-dErep*gradij(1:3)
              atcf%fp(1:3,j)=atcf%fp(1:3,j)+dErep*gradij(1:3)
              !           if((i==1).or.(j==1))then
-             !              write(6,'(A,4I5,3G15.7)')'FF1',i,j,ityp(i),ityp(j),dErep*gradij(1),dErep, gradij(1)
-             !              write(6,'(A,3G15.7)')'FF1',dErep*gradij(1),dErep*gradij(2),dErep*gradij(3)
-             !              write(6,'(A,I5,3G15.7)')'FF1',i,xp(1,i),xp(2,i),xp(3,i)
-             !              write(6,'(A,I5,3G15.7)')'FF1',j,xp(1,j),xp(2,j),xp(3,j)
-             !              write(6,*)'FF1'
+             !              write(uwrt,'(A,4I5,3G15.7)')'FF1',i,j,ityp(i),ityp(j),dErep*gradij(1),dErep, gradij(1)
+             !              write(uwrt,'(A,3G15.7)')'FF1',dErep*gradij(1),dErep*gradij(2),dErep*gradij(3)
+             !              write(uwrt,'(A,I5,3G15.7)')'FF1',i,xp(1,i),xp(2,i),xp(3,i)
+             !              write(uwrt,'(A,I5,3G15.7)')'FF1',j,xp(1,j),xp(2,j),xp(3,j)
+             !              write(uwrt,*)'FF1'
              !           end if
              if (lnemd) then
                 XijdotF=c1ij*Fnemd
@@ -339,7 +339,7 @@ contains
 !!$             end if
 
 
-             !if ((i==1).or.(j==1))  write(6,*)'f1 ',fp(1,1),fp(2,1),fp(3,1)
+             !if ((i==1).or.(j==1))  write(uwrt,*)'f1 ',fp(1,1),fp(2,1),fp(3,1)
           end if  !i>j
 
           !          if((itj==2).and.(iti==2))cycle
@@ -351,11 +351,11 @@ contains
              atcf%fp(1:3,i)=atcf%fp(1:3,i)-dEembi*drhoj*gradij(1:3)
              atcf%fp(1:3,j)=atcf%fp(1:3,j)+dEembi*drhoj*gradij(1:3)
              !           if((i==1).or.(j==1))then
-             !              write(6,'(A,2I5,G15.7)')'FF2', i,j,dEembi*drhoj*gradij(1)
-             !              write(6,'(A,3G15.7)')'FF2',dEembi*drhoj*gradij(1),dEembi*drhoj*gradij(2),dEembi*drhoj*gradij(3)
-             !              write(6,'(A,I5,3G15.7)')'FF2',i,xp(1,i),xp(2,i),xp(3,i)
-             !              write(6,'(A,I5,3G15.7)')'FF2',j,xp(1,j),xp(2,j),xp(3,j)
-             !              write(6,'(A)')'FF2'
+             !              write(uwrt,'(A,2I5,G15.7)')'FF2', i,j,dEembi*drhoj*gradij(1)
+             !              write(uwrt,'(A,3G15.7)')'FF2',dEembi*drhoj*gradij(1),dEembi*drhoj*gradij(2),dEembi*drhoj*gradij(3)
+             !              write(uwrt,'(A,I5,3G15.7)')'FF2',i,xp(1,i),xp(2,i),xp(3,i)
+             !              write(uwrt,'(A,I5,3G15.7)')'FF2',j,xp(1,j),xp(2,j),xp(3,j)
+             !              write(uwrt,'(A)')'FF2'
              !           end if
 
              sigcalfo(1:3,1) = sigcalfo(1:3,1) -dEembi*drhoj*gradij(1:3)*c1ij/boxcf%volu
@@ -381,9 +381,9 @@ contains
 !!$                end do
 !!$             end if
 
-             !if ((i==1).or.(j==1))  write(6,*)'f 2 ',fp(1,1),fp(2,1),fp(3,1)
+             !if ((i==1).or.(j==1))  write(uwrt,*)'f 2 ',fp(1,1),fp(2,1),fp(3,1)
              !             auxt=dEembi*drhoj*gradij(1)
-             !             write(6,*)'auxt 1 ', auxt
+             !             write(uwrt,*)'auxt 1 ', auxt
           else
              !terme quasi-standard sans d(sij)
              if (ecrsij(iw).ne.0) then
@@ -391,11 +391,11 @@ contains
                 atcf%fp(1:3,i)=atcf%fp(1:3,i)-dEembi*aux1*drhoj*gradij(1:3)
                 atcf%fp(1:3,j)=atcf%fp(1:3,j)+dEembi*aux1*drhoj*gradij(1:3)
                 !              if((i==1).or.(j==1))then
-                !                 write(6,'(A,2I5,G15.7)')'FF3', i,j,dEembi*aux1*drhoj*gradij(1)
-                !              write(6,'(A,3G15.7)')'FF3',dEembi*aux1*drhoj*gradij(1),dEembi*aux1*drhoj*gradij(2),dEembi*aux1*drhoj*gradij(3)
-                !              write(6,'(A,I5,3G15.7)')'FF3',i,xp(1,i),xp(2,i),xp(3,i)
-                !             write(6,'(A,I5,3G15.7)')'FF3',j,xp(1,j),xp(2,j),xp(3,j)
-                !             write(6,'(A)')'FF3'
+                !                 write(uwrt,'(A,2I5,G15.7)')'FF3', i,j,dEembi*aux1*drhoj*gradij(1)
+                !              write(uwrt,'(A,3G15.7)')'FF3',dEembi*aux1*drhoj*gradij(1),dEembi*aux1*drhoj*gradij(2),dEembi*aux1*drhoj*gradij(3)
+                !              write(uwrt,'(A,I5,3G15.7)')'FF3',i,xp(1,i),xp(2,i),xp(3,i)
+                !             write(uwrt,'(A,I5,3G15.7)')'FF3',j,xp(1,j),xp(2,j),xp(3,j)
+                !             write(uwrt,'(A)')'FF3'
                 !              end if
 
                 sigcalfo(1:3,1) = sigcalfo(1:3,1) -dEembi*aux1*drhoj*gradij(1:3)*c1ij/boxcf%volu
@@ -429,9 +429,9 @@ contains
           if(itj==iti) cycle
           if (ecrsij(iw)==0) cycle
           !       
-          !          if(i==344) write(6,*)'i iw j sij(iw) ',i,iw,j,sij(iw)
+          !          if(i==344) write(uwrt,*)'i iw j sij(iw) ',i,iw,j,sij(iw)
           aux1=-1.0*dEembi*ecrsij(iw)*sqrt(rhoj/sij(iw))/alphaPbeta  !chgt de signe par rapport à d(E)-> force
-          !          if(i==344) write(6,*)'aux1',aux1,dEembi,ecrsij(iw),rhoj,sij(iw)
+          !          if(i==344) write(uwrt,*)'aux1',aux1,dEembi,ecrsij(iw),rhoj,sij(iw)
           !calcul terme l voisins de i
           !voisins l de i de type itj
           loopvli2 : do iwl=1,nvi
@@ -458,13 +458,13 @@ contains
              atcf%fp(1:3,i)=atcf%fp(1:3,i)-aux1*aux4(1:3)/rij
              atcf%fp(1:3,j)=atcf%fp(1:3,j)+aux1*aux4(1:3)/rij
              !           if((i==1).or.(j==1).or.(l==1))then
-             !              write(6,'(A,3I5,2G15.7)')'FF4', i,j,l,aux1*(aux2(1)+aux3(1))/ril,aux1*aux4(1)/rij
-             !              write(6,'(A,3G15.7)')'FF4',aux1*(aux2(1)+aux3(1))/ril,aux1*(aux2(2)+aux3(2))/ril,aux1*(aux2(3)+aux3(3))/ril
-             !              write(6,'(A,3G15.7)')'FF4',aux1*aux4(1)/rij,aux1*aux4(2)/rij,aux1*aux4(3)/rij
-             !              write(6,'(A,I5,3G15.7)')'FF4',i,xp(1,i),xp(2,i),xp(3,i)
-             !              write(6,'(A,I5,3G15.7)')'FF4',j,xp(1,j),xp(2,j),xp(3,j)
-             !              write(6,'(A,I5,3G15.7)')'FF4',l,xp(1,l),xp(2,l),xp(3,l)
-             !              write(6,*)'FF4'
+             !              write(uwrt,'(A,3I5,2G15.7)')'FF4', i,j,l,aux1*(aux2(1)+aux3(1))/ril,aux1*aux4(1)/rij
+             !              write(uwrt,'(A,3G15.7)')'FF4',aux1*(aux2(1)+aux3(1))/ril,aux1*(aux2(2)+aux3(2))/ril,aux1*(aux2(3)+aux3(3))/ril
+             !              write(uwrt,'(A,3G15.7)')'FF4',aux1*aux4(1)/rij,aux1*aux4(2)/rij,aux1*aux4(3)/rij
+             !              write(uwrt,'(A,I5,3G15.7)')'FF4',i,xp(1,i),xp(2,i),xp(3,i)
+             !              write(uwrt,'(A,I5,3G15.7)')'FF4',j,xp(1,j),xp(2,j),xp(3,j)
+             !              write(uwrt,'(A,I5,3G15.7)')'FF4',l,xp(1,l),xp(2,l),xp(3,l)
+             !              write(uwrt,*)'FF4'
              !           end if
 
 
@@ -534,7 +534,7 @@ contains
               c1jl=dxpjl(1);              c2jl=dxpjl(2);              c3jl=dxpjl(3);
 
                 gradjl(1)=c1jl/rjl ; gradjl(2)=c2jl/rjl ; gradjl(3)=c3jl/rjl
-                !       write(6,*)'k ',k
+                !       write(uwrt,*)'k ',k
                 k=Int(rjl/ktor)
                 drk=rjl-k*ktor
                 ll = ipo(itj,itl)
@@ -556,13 +556,13 @@ contains
                 atcf%fp(1:3,i)=atcf%fp(1:3,i)-aux1*aux4(1:3)/rij
                 atcf%fp(1:3,j)=atcf%fp(1:3,j)+aux1*aux4(1:3)/rij
                 !              if((i==1).or.(j==1).or.(l==1))then
-                !                 write(6,'(A,3I5,2G15.7)')'FF5', i,j,l,aux1*(aux2(1)+aux3(1))/rjl,aux1*aux4(1)/rij
-                !              write(6,'(A,3G15.7)')'FF5',aux1*(aux2(1)+aux3(1))/rjl,aux1*(aux2(2)+aux3(2))/rjl,aux1*(aux2(3)+aux3(3))/rjl
-                !              write(6,'(A,3G15.7)')'FF5',aux1*aux4(1)/rij,aux1*aux4(2)/rij,aux1*aux4(3)/rij
-                !              write(6,'(A,I5,3G15.7)')'FF5',i,xp(1,i),xp(2,i),xp(3,i)
-                !              write(6,'(A,I5,3G15.7)')'FF5',j,xp(1,j),xp(2,j),xp(3,j)
-                !              write(6,'(A,I5,3G15.7)')'FF5',l,xp(1,l),xp(2,l),xp(3,l)
-                !              write(6,*)'FF5'
+                !                 write(uwrt,'(A,3I5,2G15.7)')'FF5', i,j,l,aux1*(aux2(1)+aux3(1))/rjl,aux1*aux4(1)/rij
+                !              write(uwrt,'(A,3G15.7)')'FF5',aux1*(aux2(1)+aux3(1))/rjl,aux1*(aux2(2)+aux3(2))/rjl,aux1*(aux2(3)+aux3(3))/rjl
+                !              write(uwrt,'(A,3G15.7)')'FF5',aux1*aux4(1)/rij,aux1*aux4(2)/rij,aux1*aux4(3)/rij
+                !              write(uwrt,'(A,I5,3G15.7)')'FF5',i,xp(1,i),xp(2,i),xp(3,i)
+                !              write(uwrt,'(A,I5,3G15.7)')'FF5',j,xp(1,j),xp(2,j),xp(3,j)
+                !              write(uwrt,'(A,I5,3G15.7)')'FF5',l,xp(1,l),xp(2,l),xp(3,l)
+                !              write(uwrt,*)'FF5'
                 !              end if
 
                 if (lnemd) then
@@ -610,15 +610,15 @@ contains
 
              end do loop3at2
           end do loop3cel
-          !if (i==1)  write(6,*)'fb1 ',fp(1,1),fp(2,1),fp(3,1)
+          !if (i==1)  write(uwrt,*)'fb1 ',fp(1,1),fp(2,1),fp(3,1)
        end do loopvj2
-       !if (i==1)  write(6,*)'fb2 ',fp(1,1),fp(2,1),fp(3,1)
+       !if (i==1)  write(uwrt,*)'fb2 ',fp(1,1),fp(2,1),fp(3,1)
 
        potistcalfo=potistcalfo+Eembi
 !       if (lcalcjq) eat(i)=eat(i)+Eembi
        potisglue=potisglue+Eembi
 
-       !    write(6,*)
+       !    write(uwrt,*)
 
 
     end do loop1at1
@@ -631,17 +631,17 @@ contains
        end do
 
        do i=1,atcf%im
-          !        write(6,*)'A',i,fp(:,i)
+          !        write(uwrt,*)'A',i,fp(:,i)
           do l=1,3
              atcf%fp(l,i)=atcf%fp(l,i)-fpnemdmoy(l)
              atcf%fp(l,i)=atcf%fp(l,i)+fpnemd(l,i)
           enddo
-          !        write(6,*)'B',i,fp(:,i)
+          !        write(uwrt,*)'B',i,fp(:,i)
        end do
     end if
 
 
-    !  write(6,*)'f8 ',fp(1,1),fp(2,1),fp(3,1)
+    !  write(uwrt,*)'f8 ',fp(1,1),fp(2,1),fp(3,1)
     !  stop
     return
   end SUBROUTINE calfojulicel

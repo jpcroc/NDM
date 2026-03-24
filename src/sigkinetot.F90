@@ -3,7 +3,7 @@ module sigkinetot_mod
   USE arret_ndm_mod,only:arret_ndm
 
   USE atomconfig,only : atom_config_d
-  USE gen_com_m, ONLY:lspaceNDM,lpcube,rang
+  USE gen_com_m, only:uwrt,lwrt,lspaceNDM,lpcube,rang
   USE boxconfig,only:box_config_lpr,box_config
   USE var_pot, ONLY:cm
     

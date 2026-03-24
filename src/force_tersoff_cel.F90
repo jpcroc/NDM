@@ -1,7 +1,7 @@
 module force_tersoff_cel_mod
   USE arret_ndm_mod,only:arret_ndm
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:lcalcjq,potistersoff,potiszbl
+  USE gen_com_m, only:uwrt,lwrt,lcalcjq,potistersoff,potiszbl
   USE calfocommon
   use vect_dist_mod,only:vect_dist
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
@@ -66,11 +66,11 @@ contains
     !  jq(:)=0; sigcalfo(:,:)=0
 
     ER1=0. ;  ER2=0. ;  ER3=0.
-    !         write(6,*)'boite quelc'
+    !         write(uwrt,*)'boite quelc'
 !    call cryst_to_cart(imm,xp,bg,-1)
 
-    !  write(6,*)sigcalfo
-    !  write(6,*)
+    !  write(uwrt,*)sigcalfo
+    !  write(uwrt,*)
     do i=1,atcf%im
        if(typ_and_pot(atcf%ityp(i),ipotentiel).eqv..false.) cycle
        v_ij = 0
@@ -85,7 +85,7 @@ contains
                 cycle
              else
                 ij=ipo(atcf%ityp(i),atcf%ityp(j))
-                !              write(6,*)ij,typ_pot_pair(ij),ipotentiel
+                !              write(uwrt,*)ij,typ_pot_pair(ij),ipotentiel
 !!$              if (typ_pot_pair(ij).ne.ipotentiel) cycle
 !!$              do l=1,3
 !!$                 Xij(l)= xp(l,i)-xp(l,j)
@@ -128,10 +128,10 @@ contains
                          if (.not.linterik) cycle
 
                          ! CONDITIONS PERIODIQUES
-                         !write(6,*)'XP i j k',i,j,k
-                         !write(6,*)xp(:,i)
-                         !write(6,*)xp(:,j)
-                         !write(6,*)xp(:,k)
+                         !write(uwrt,*)'XP i j k',i,j,k
+                         !write(uwrt,*)xp(:,i)
+                         !write(uwrt,*)xp(:,j)
+                         !write(uwrt,*)xp(:,k)
 !!$                          do l=1,3
 !!$                             Xik(l)= xp(l,i)-xp(l,k)
 !!$                          end do
@@ -140,8 +140,8 @@ contains
 !!$                             if (XiK(l)<(-0.5)) Xik(l)=Xik(l)+1.
 !!$                             cvik(1,l) = Xik(l)
 !!$                          end do
-!!$                          !                       write(6,*)'cvik'
-!!$                          !                       write(6,*)cvik(1,:)
+!!$                          !                       write(uwrt,*)'cvik'
+!!$                          !                       write(uwrt,*)cvik(1,:)
 !!$                          call cryst_to_cart(1,cvik,at,1)
 !!$                          rik2=cvik(1,1)**2+cvik(1,2)**2+cvik(1,3)**2
 !!$                          if (rik2>Coupr(ik)**2) then               !borne sup de Lisa Porter 89
@@ -234,9 +234,9 @@ contains
                          end do
                       end if
                    end do
-                   !write(6,*)i,j,'P'
-                   !write(6,*)sig
-                   !write(6,*)
+                   !write(uwrt,*)i,j,'P'
+                   !write(uwrt,*)sig
+                   !write(uwrt,*)
 
                    if (lcalcjq) then
                       do l=1,3
@@ -245,9 +245,9 @@ contains
                    end if
                    !*********************************************************************************************
                    do nk=1,n_voisin
-                      !write(6,*)'NV',n_voisin
+                      !write(uwrt,*)'NV',n_voisin
                       k=indice(nk) 
-                      !write(6,*)k,nk
+                      !write(uwrt,*)k,nk
                       rik = tmp(nk,1)
                       fc_rik = tmp(nk,2)
                       ik=ipo(atcf%ityp(i),atcf%ityp(k))
@@ -260,7 +260,7 @@ contains
                       cvik(1,:)=tmp1(nk,:)
                       do l=1,3
                          !                          cvik(1,l) = tmp1(nk,l)
-                         !                          write(6,*)'cvik l',cvik(1,l),l
+                         !                          write(uwrt,*)'cvik l',cvik(1,l),l
 
                          !                                 triplet_ij = 0.5*fc_rij*fa_rij*0.5*psi(ij)*beta(ityp(i))**n*sui_ij**(n-1)*&
                          !                                      (1.+beta(ityp(i))**n*sui_ij**n)**(-(1.+2.*n)/(2.*n)) * &   
@@ -301,8 +301,8 @@ contains
 !!$                             Scal_FikVk=Scal_FikVk - triplet_ik*vp(l,k)
 !!$                          end if
                          !Contrainte
-                         !write(6,*)'sig AV l',l
-                         !write(6,*)sig
+                         !write(uwrt,*)'sig AV l',l
+                         !write(uwrt,*)sig
                          if (test_sigma) then 
                             do m=1,3
                                sigT(l,m)=sigT(l,m) + triplet_ij*cvij(1,m)/boxcf%volu
@@ -316,13 +316,13 @@ contains
 
                             end do
                          end if
-                         !write(6,*)i,j,k,'T'
-                         !write(6,*)sig
-                         !write(6,*)'tik tik'
-                         !write(6,*)triplet_ij,triplet_ik
-                         !write(6,*)'cvij cvik'
+                         !write(uwrt,*)i,j,k,'T'
+                         !write(uwrt,*)sig
+                         !write(uwrt,*)'tik tik'
+                         !write(uwrt,*)triplet_ij,triplet_ik
+                         !write(uwrt,*)'cvij cvik'
                          !                       do m=1,3
-                         !write(6,*)cvij(1,m),cvik(1,m)
+                         !write(uwrt,*)cvij(1,m),cvik(1,m)
                          !                       end do
 
                       end do
@@ -334,12 +334,12 @@ contains
                    end do
                 end if
                 if (rij.le.roff2(ij)) then
-                   !                    write(6,*)'BINGO'
+                   !                    write(uwrt,*)'BINGO'
                    sk = rij/csive
                    kk = sk
                    !                    ! spline
                    dr = rij-float(kk)*csive
-                   !                    write(6,*)'TZBL',rij,dr,kk,csive
+                   !                    write(uwrt,*)'TZBL',rij,dr,kk,csive
                    potiszbl = potiszbl+0.5*(pot(1,ij,kk)+ rij*(dr*(pot(2,ij,kk)+dr*(pot(3,ij,kk) +dr*(pot(4,ij,kk))))))
                    phu = -1.0*(pot(2,ij,kk)+dr*(2.0*pot(3,ij,kk)+dr*(3.0*pot(4,ij,kk))))
                    atcf%fp(:,i)=atcf%fp(:,i)+0.5*phu*cvij(1,:)/rij
@@ -375,13 +375,13 @@ contains
 
 #ifdef PARA
     if (nprocspace.gt.1) then
-       write(6,*)'tersoff para ne fonctionne pas (envoi de "fp" non définis)'
+       write(uwrt,*)'tersoff para ne fonctionne pas (envoi de "fp" non définis)'
 !       call arret_ndm
        call maj_fp_frt(psc,atcf,celcf)
     end if
 #endif
-    !  write(6,*)sig
-    !  write(6,*)
+    !  write(uwrt,*)sig
+    !  write(uwrt,*)
 
     return
 

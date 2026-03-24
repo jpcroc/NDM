@@ -474,9 +474,9 @@ END FUNCTION matdet
     integer::i,iloc
     iloc=0
     buf=0
-!    write(6,*)'masq',size(masq),size(vect),size(buf)
+!    write(uwrt,*)'masq',size(masq),size(vect),size(buf)
     do i=1,size(masq)
- !      write(6,*)i,masq(i),vect(:,i),iloc
+ !      write(uwrt,*)i,masq(i),vect(:,i),iloc
        if (masq(i))then
           iloc=iloc+1
           buf(:,iloc)=vect(:,i)
@@ -492,9 +492,9 @@ END FUNCTION matdet
     integer::i,iloc
     iloc=0
     buf=0
-!    write(6,*)'masq',size(masq),size(vect),size(buf)
+!    write(uwrt,*)'masq',size(masq),size(vect),size(buf)
     do i=1,size(masq)
- !      write(6,*)i,masq(i),vect(:,i),iloc
+ !      write(uwrt,*)i,masq(i),vect(:,i),iloc
        if (masq(i))then
           iloc=iloc+1
           buf(:,:,iloc)=vect(:,:,i)
@@ -634,10 +634,10 @@ END FUNCTION matdet
 !!$    detab(3)=matdet(ab3)
 !!$    
 !!$    x(:)=detab(:)/deta
-!!$    write(6,*)'X1',x
+!!$    write(uwrt,*)'X1',x
     call matinv(a,am1)
     call matmult3(am1,b,x)
-!    write(6,*)'X2',x
+!    write(uwrt,*)'X2',x
   end subroutine reslin33
 
 

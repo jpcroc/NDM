@@ -1,6 +1,6 @@
 module force_tersoff_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:fnemd,lcalcjq,lnemd,potistersoff,potiszbl
+  USE gen_com_m, only:uwrt,lwrt,fnemd,lcalcjq,lnemd,potistersoff,potiszbl
   USE calfocommon
   use vect_dist_mod,only:vect_dist
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
@@ -57,10 +57,10 @@ contains
     case(14,15)
        coupR(:)=rter(:)+ster(:)
     end select
-    !write(6,*)'coupR',coupR
+    !write(uwrt,*)'coupR',coupR
     if ((boxcf%at(1,2).ne.0).or.(boxcf%at(1,3).ne.0).or.(boxcf%at(2,3).ne.0).or.&
          &(boxcf%at(2,1).ne.0).or.(boxcf%at(3,2).ne.0).or.(boxcf%at(3,1).ne.0)) then
-       write(6,*)'Tersoff seulement en tetragonal'
+       write(uwrt,*)'Tersoff seulement en tetragonal'
        call arret_ndm
     end if
 
@@ -88,7 +88,7 @@ contains
        idv = atcf%iwmax(i)
        Tloop1at2 :do ivj=ipv, idv
           j = atcf%indi (ivj)
-          !               write(6,*)i,j
+          !               write(uwrt,*)i,j
           if (j==i) then  !Cette condition n'est pas necessaire si JP. fais correctement sa table
              cycle
           else
@@ -107,7 +107,7 @@ contains
 !!$             end do
 !!$             call cryst_to_cart(1,cvij,at,1)
 !!$             rij2=cvij(1,1)**2+cvij(1,2)**2+cvij(1,3)**2
-!!$             !                  write(6,*)i,j,rij2
+!!$             !                  write(uwrt,*)i,j,rij2
 !!$             if (rij2>CoupR(ij)**2) then         !borne sup de Lisa Porter 89
 !!$                !if (rij2>(Rter(ij)+CoupR(ij))**2) then   !borne sup de Tersoff 88
 !!$                cycle
@@ -136,8 +136,8 @@ contains
 !!$                         if (XiK(l)<(-0.5)) Xik(l)=Xik(l)+1.
 !!$                         cvik(1,l) = Xik(l)
 !!$                      end do
-!!$                      !                       write(6,*)'cvik'
-!!$                      !                       write(6,*)cvik(1,:)
+!!$                      !                       write(uwrt,*)'cvik'
+!!$                      !                       write(uwrt,*)cvik(1,:)
 !!$                      call cryst_to_cart(1,cvik,at,1)
 !!$                      rik2=cvik(1,1)**2+cvik(1,2)**2+cvik(1,3)**2
 !!$                      if (rik2>CoupR(ik)**2) then               !borne sup de Lisa Porter 89
@@ -219,9 +219,9 @@ contains
                          end do
                       end if
                    end do
-                   !write(6,*)i,j,'P'
-                   !write(6,*)sig
-                   !write(6,*)
+                   !write(uwrt,*)i,j,'P'
+                   !write(uwrt,*)sig
+                   !write(uwrt,*)
                    if (lcalcjq) then
                       do l=1,3
                          jq(l) = jq(l) - Scal_FjVj*(cvij(1,l))
@@ -229,9 +229,9 @@ contains
                    end if
                    !*********************************************************************************************
                    Tloop2at3:        do nk=1,n_voisin
-                      !write(6,*)'NV',n_voisin
+                      !write(uwrt,*)'NV',n_voisin
                       k=indice(nk) 
-                      !write(6,*)k,nk
+                      !write(uwrt,*)k,nk
                       rik = tmp(nk,1)
                       fc_rik = tmp(nk,2)
                       ik=ipo(atcf%ityp(i),atcf%ityp(k))
@@ -245,7 +245,7 @@ contains
                       if(lnemd) XikdotF=tmp1(nk,1)*Fnemd*boxcf%zl(1)
                       do l=1,3
                          !                          cvik(1,l) = tmp1(nk,l)
-                         !                          write(6,*)'cvik l',cvik(1,l),l
+                         !                          write(uwrt,*)'cvik l',cvik(1,l),l
 
                          !                              triplet_ij = 0.5*fc_rij*fa_rij*0.5*psi(ij)*beta(atcf%ityp(i))**n*sui_ij**(n-1)*&
                          !                                   (1.+beta(atcf%ityp(i))**n*sui_ij**n)**(-(1.+2.*n)/(2.*n)) * &   
@@ -288,21 +288,21 @@ contains
 !!$                               Scal_FikVk=Scal_FikVk - triplet_ik*vp(l,k)
 !!$                            end if
                          !Contrainte
-                         !write(6,*)'sig AV l',l
-                         !write(6,*)sig
+                         !write(uwrt,*)'sig AV l',l
+                         !write(uwrt,*)sig
                          if (test_sigma.EQV..true.) then  
                             do m=1,3
                                sigcalfo(l,m)=sigcalfo(l,m) + triplet_ij*cvij(1,m)/boxcf%volu
                                sigcalfo(l,m)=sigcalfo(l,m) + triplet_ik*cvik(1,m)/boxcf%volu
                             end do
                          end if
-                         !write(6,*)i,j,k,'T'
-                         !write(6,*)sig
-                         !write(6,*)'tik tik'
-                         !write(6,*)triplet_ij,triplet_ik
-                         !write(6,*)'cvij cvik'
+                         !write(uwrt,*)i,j,k,'T'
+                         !write(uwrt,*)sig
+                         !write(uwrt,*)'tik tik'
+                         !write(uwrt,*)triplet_ij,triplet_ik
+                         !write(uwrt,*)'cvij cvik'
                          !                       do m=1,3
-                         !write(6,*)cvij(1,m),cvik(1,m)
+                         !write(uwrt,*)cvij(1,m),cvik(1,m)
                          !                       end do
 
                       end do
@@ -313,13 +313,13 @@ contains
                       end if
                    end do Tloop2at3
                 end if
-                !                 write(6,*)'rij roff',rij,roff2(ij)
+                !                 write(uwrt,*)'rij roff',rij,roff2(ij)
                 if (rij.le.roff2(ij)) then
                    sk = rij/csive
                    kk = sk
                    ! spline
                    dr = rij-float(kk)*csive
-                   !                       write(6,*)'rij roff',rij,roff2(ij),pot(1,l,kk)
+                   !                       write(uwrt,*)'rij roff',rij,roff2(ij),pot(1,l,kk)
                    potiszbl = potiszbl+0.5*(pot(1,ij,kk)+ rij*(dr*(pot(2,ij,kk)+dr*(pot(3,ij,kk) +dr*(pot(4,ij,kk))))))
                    phu = -1.0*(pot(2,ij,kk)+dr*(2.0*pot(3,ij,kk)+dr*(3.0*pot(4,ij,kk))))
                    atcf%fp(:,i)=atcf%fp(:,i)+0.5*phu*cvij(1,:)/rij

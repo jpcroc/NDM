@@ -142,8 +142,8 @@ contains
 
   SUBROUTINE ZXCGRII(FUNCT,N,ACC,MAXFN,X,G,F,W,IER,criterion,NCALLS,psc)
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:dfpred,rang,lspacendm
-    !  USE gen_com_m, ONLY:
+    USE gen_com_m, only:uwrt,lwrt,dfpred,rang,lspacendm
+    !  USE gen_com_m, only:uwrt,lwrt,
     !                                  SPECIFICATIONS FOR ARGUMENTS         
 
     type(para_space_config)::psc
@@ -211,13 +211,13 @@ contains
 
 5   NCALLS = NCALLS+1 
 !    if (rang==0) then
-!       write(6,*)'X1',x
-!       write(6,*)'G1',G
+!       write(uwrt,*)'X1',x
+!       write(uwrt,*)'G1',G
 !    end if
-!    write(6,*)'funct',rang,ncalls
+!    write(uwrt,*)'funct',rang,ncalls
     CALL FUNCT (N,X,F,G,NCALLS,psc)                                
  !   unitw=ncalls+rang*10+100
- !   write(6,*)'unitw',unitw
+ !   write(uwrt,*)'unitw',unitw
  !   write(unitw,*)'F',F
  !   write(unitw,*)'X',X
  !   write(unitw,*)'G',G
@@ -226,13 +226,13 @@ contains
     call comm_space%barrier
 #endif
 
-!    write(6,*)'functBACK',rang,ncalls
+!    write(uwrt,*)'functBACK',rang,ncalls
 
 
 
     if (myidsp==0) then
-!       write(6,*)'X',x
-!       write(6,*)'G',G
+!       write(uwrt,*)'X',x
+!       write(uwrt,*)'G',G
        
        if (NCALLS .eq. 1) then
           !cos	if (do_print) print 3000, F

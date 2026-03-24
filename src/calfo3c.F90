@@ -58,7 +58,7 @@ contains
 
 
     DO  I=Deb,Fin
-       !write(6,*)'debut',i
+       !write(uwrt,*)'debut',i
        ITI=atcf%ityp(i)
        I3=0
 
@@ -76,7 +76,7 @@ contains
                 YTC(I3)=dxp(2)            !Yi-Yj
                 ZTC(I3)=dxp(3)            !Zi-Zj
                 INDIC(I3)=J           !# de l'atome j
-                !           write(6,*)i,j,r2
+                !           write(uwrt,*)i,j,r2
              endif
 
           end do
@@ -111,7 +111,7 @@ contains
 
        end if
 
-       !write(6,*)'milieu',i
+       !write(uwrt,*)'milieu',i
 
        !C --- fin de la boucle sur les paires
 
@@ -124,7 +124,7 @@ contains
 
              J=INDIC(I1)
              K=INDIC(I2)
-             !write(6,*)i1,i2,i3,j,k
+             !write(uwrt,*)i1,i2,i3,j,k
 
              ITJ=atcf%ITYP(J)
              ITK=atcf%ITYP(K)
@@ -140,29 +140,29 @@ contains
              PSCAL=XTC(I1)*XTC(I2)+YTC(I1)*YTC(I2)+ZTC(I1)*ZTC(I2)
              PSCAL2=PSCAL*PSCAL
              PROR2=RTC(I1)*RTC(I2)
-             !write(6,*)'tota'
+             !write(uwrt,*)'tota'
              PROR=SQRT(PROR2)
-             !write(6,*)'tota2'
-             !write(6,*)rtc(i1),rtc(i2),lj,lk
+             !write(uwrt,*)'tota2'
+             !write(uwrt,*)rtc(i1),rtc(i2),lj,lk
              !C --- calcul de l'angle jik
              TETJIK=PSCAL/PROR     ! tetijk=cos_angle ijk
              if (TETJIK.lt.-1) TETJIK=-1.0
              !C --- calcul de termes intermediaires
              Rayij=SQRT(RTC(i1))
-             !write(6,*)'tota3'
+             !write(uwrt,*)'tota3'
              Rayik=SQRT(RTC(i2))
-             !write(6,*)'tota4'
+             !write(uwrt,*)'tota4'
              inv_Rij=1/(Rayij-coup3c(itrip,lj))
-             !write(6,*)'tota5'
+             !write(uwrt,*)'tota5'
              inv_Rik=1/(Rayik-coup3c(itrip,lk))
-             !write(6,*)'tota6'
+             !write(uwrt,*)'tota6'
              INTER1j=gam(itrip,lj)*inv_Rij**2/Rayij
-             !write(6,*)'tota7'
+             !write(uwrt,*)'tota7'
              INTER1k=gam(itrip,lk)*inv_Rik**2/Rayik
-             !write(6,*)'tota8'
+             !write(uwrt,*)'tota8'
              INTER2exp=gam(itrip,lj)*inv_Rij+gam(itrip,lk)*inv_Rik
              INTER2=0.
-             !write(6,*)'toto'
+             !write(uwrt,*)'toto'
              if(INTER2exp.gt.(-1./precexp))&
                   INTER2=lamb(itrip)* &
                   EXP(INTER2exp)
@@ -181,7 +181,7 @@ contains
              !C --- calcul de l'energie potentiel du terme a 3 corps
              POTCP=POTCP+INTER2*COSI2
              !           if ((i==1).or.(j==1).or.(k==1))then
-             !write(6,'(3I5,2F15.5,D15.5)')i,j,k,rayij*1d8,rayik*1d8,inter2*cosi2*erg2ev
+             !write(uwrt,'(3I5,2F15.5,D15.5)')i,j,k,rayij*1d8,rayik*1d8,inter2*cosi2*erg2ev
              !           end if
 
              !C --- calcul des differents terme intervenant dans le calcul des forces
@@ -317,7 +317,7 @@ contains
 
 
     potistcalfo=potistcalfo+potcp
-    !  write(6,*)'sortie 3c'
+    !  write(uwrt,*)'sortie 3c'
     return
   end subroutine calfo3c
 

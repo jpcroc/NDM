@@ -76,6 +76,12 @@ contains
        nbr_cpumin=nbr_cpuin
     end if
     if (present(atdec))then
+       !    write(uwrt,*)'OHLALA1',imm_glob
+       !    write(uwrt,*)'OHLALA2',atdec%imm_glob
+       !    if (imm_glob.ne.atdec%imm_glob) then
+       !       write(uwrt,*)'OHLALA',imm_glob,atdec%imm_glob
+       !       call arret_ndm
+       !    end if
     end if
 
 #else
@@ -96,10 +102,8 @@ contains
        iudecoup=6
     end if
 
-
     if ((nprocspace.gt.1).or.(ldecoup)) then
        loop1:     do nbr_cpu=nbr_cpumin,nbr_cpuIN
-
 
 
 
@@ -396,9 +400,11 @@ contains
                       endif
                    end do
                    call comm_space%sum(natloc)
-
+                   !             if (rang==0) write(uwrt,*)'natloc',natloc
                    natlocm=maxval(natloc)
+                   !             write(uwrt,*)'IMLOC1 ',natlocm
                    natlocm=int(natlocm*float(cellules_max)/cellules_int)
+                   !             write(uwrt,*)'IMLOC2 ',natlocm,imm_glob
                    imm_loc=min( imm_glob, int(1.2 * natlocm))
                    imm = imm_loc
                 else
@@ -411,10 +417,13 @@ contains
 
                 end if
                 im_glob=atdec%im_glob
+
                 call atdec%dealloc
                 call atdec%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob,imm_glob=imm_glob)
              end if
              !       imm_loc1 = min( imm_glob, int(1.2 * imm_glob * cellules_max / noxyz) )
+             !       if (rang==0) write(uwrt,*)'loc1 ',imm_glob ,cellules_max , noxyz
+             !       if (rang==0) write(uwrt,*)'IMM std nouv ',imm_loc1,imm
              ! Initialisation des donnees geometriques qui serviront pour le reste du code :
           end if
 #endif
@@ -493,8 +502,11 @@ contains
                       endif
                    end do
                    call comm_space%sum(natloc)
+                   !             if (rang==0) write(uwrt,*)'natloc',natloc
                    natlocm=maxval(natloc)
+                   !             write(uwrt,*)'IMLOC1 ',natlocm
                    natlocm=int(natlocm*float(cellules_max)/cellules_int)
+                   !             write(uwrt,*)'IMLOC2 ',natlocm,imm_glob
                    imm_loc=min( imm_glob, int(1.2 * natlocm))
                    imm = imm_loc
                 else
@@ -511,6 +523,8 @@ contains
                 call atdec%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob,imm_glob=imm_glob)
              end if
              !       imm_loc1 = min( imm_glob, int(1.2 * imm_glob * cellules_max / noxyz) )
+             !       if (rang==0) write(uwrt,*)'loc1 ',imm_glob ,cellules_max , noxyz
+             !       if (rang==0) write(uwrt,*)'IMM std nouv ',imm_loc1,imm
              ! Initialisation des donnees geometriques qui serviront pour le reste du code :
           end if
 #endif
@@ -588,6 +602,7 @@ contains
        end do
     end do
     call comm_space%sum(natloc)
+    !             if (rang==0) write(uwrt,*)'natloc',natloc
     natlocm=maxval(natloc)
     natlocm=int(natlocm*float(cellules_max)/cellules_int)
     imm_loc=min( imm_glob, int(1.2 * natlocm))
@@ -610,6 +625,7 @@ contains
                 call cryst_to_cart (1, xpcur, boxcf%at, 1)
                 call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox(1),celcf%nox(2),celcf%nox(3))
                 numproc=celcf%proc_cell(numcell)
+!                write(uwrt,*)'np ',i,numproc,MYIDSP
                 if (numproc == myidsp) then
                    i=i+1
                    im=im+1
@@ -684,6 +700,7 @@ contains
        endif
     end do
     call comm_space%sum(natloc)
+    !             if (rang==0) write(uwrt,*)'natloc',natloc
     natlocm=maxval(natloc)
     natlocm=int(natlocm*float(cellules_max)/cellules_int)
     imm_loc=min( imm_glob, int(1.2 * natlocm))

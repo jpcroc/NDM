@@ -235,9 +235,9 @@ contains
 
 
 !!$    if (any(boxcf%at.ne.boxcr%at) )then
-!!$       write(6,*)'boxf <> boxcr'
-!!$       write(6,*)'atcf',boxcf%at
-!!$       write(6,*)'atcr',boxcr%at
+!!$       write(uwrt,*)'boxf <> boxcr'
+!!$       write(uwrt,*)'atcf',boxcf%at
+!!$       write(uwrt,*)'atcr',boxcr%at
 !!$!       call arret_ndm
 !!$    end if
 
@@ -571,10 +571,14 @@ contains
           !       write(uwrt,*)'koo,ko1',koo,ko1
           do i2 = 1, celcf%nato(ko1)
              j = celcf%atincel(i2,ko1)
+             !         write(uwrt,*)'j',j
+             !         write(uwrt,*)i,xp(:,i)
+             !         write(uwrt,*)j,xp(:,j)
              if (i==j) cycle
 
              call vect_dist(atcf,celcf,boxcf,i,j,XJI,i1,lperiod,rcm,rdist,linter)
 
+             !        write(uwrt,*)c1,c2,c3,r2,rc(iti)
 
              if (linter) then 
                 if (rdist<rc(iti))then
@@ -593,6 +597,8 @@ contains
           do itj=1,ntyp
              if (nvityp(i,itj).ne.nbvoisparf(iti,itj))then
                 lvoisok=.false.
+                !                write(uwrt,*)'pour i de type mauvais nb de voisins de type j'
+                !                write(uwrt,*)i,iti, itj, nvityp(i,itj),nbvoisparf(iti,itj)
              end if
           end do
 
@@ -611,6 +617,7 @@ contains
                 costheta = (dx(1,j11)*dx(1,k11)+dx(2,j11)*dx(2,k11)+dx(3,j11)*dx(3,k11))/ &
                      (sqrt(dx(1,j11)**2+dx(2,j11)**2+dx(3,j11)**2)*sqrt(dx(1,k11)**2+ &
                      dx(2,k11)**2+dx(3,k11)**2))
+                !		write(uwrt,*)i,j11,k11,indice_mtheta1 , costheta OK
 
                 if (costheta>-1.0000001 .and. costheta<-0.9999999) then
                    thetajik=pi
@@ -618,6 +625,7 @@ contains
                    thetajik = dacos(costheta)
                 end if
 
+                !		write(uwrt,*) 'thetajik', thetajik OK
 
                 mtheta(nteta)=thetajik
 
@@ -739,6 +747,7 @@ contains
        atcf%lgul=.false.
        do iatvi=1,20
           if(natvi(iatvi).ne.0) then
+             !          write(uwrt,*)it,'Nb d_at. avec',iatvi,'vois. =',natvi(iatvi)!
              lenfn2 = 2
              write(extension2,'(i2.2)') iatvi
              if (itapp.gt.0) then
@@ -802,6 +811,7 @@ contains
 
 
 
+    ! write(uwrt,*) 'coucou',ldistord,distordflag, icall
   end subroutine nbvois
 
   !  ------------------------------------------------------------
@@ -840,7 +850,7 @@ contains
 !!$    immin=min(atc%im,atr%im)
 !!$    immax=max(atc%im,atr%im)
 !!$
-!!$    write(6,*)'comparison with reference structure', atc%im,atr%im,immin,immax
+!!$    write(uwrt,*)'comparison with reference structure', atc%im,atr%im,immin,immax
 !!$    ncelvois = min(celc%noxyz,27)-1
 !!$
 !!$    allocate(indplt(atc%imm))
@@ -855,7 +865,7 @@ contains
 !!$    nremp=0 ; nplt=0
 !!$
 !!$
-!!$    !write(6,*)'ecr pos'
+!!$    !write(uwrt,*)'ecr pos'
 !!$    !  do i=1,im
 !!$    !  write(852,*)i
 !!$    !  write(852,*)xp(1,i),xp(2,i),xp(3,i)
@@ -866,7 +876,7 @@ contains
 !!$    atc%lgul=.false. ! lgul = true pour les déplacés
 !!$    atr%lgul=.false.
 !!$    if (ldeptest.EQV..true.) then
-!!$       write(6,*)' displacement detection assumes that the atoms are identically sorted in currect and reference state'
+!!$       write(uwrt,*)' displacement detection assumes that the atoms are identically sorted in currect and reference state'
 !!$       call cryst_to_cart (atc%im, atc%xp, boxc%bg, -1)    !cart vers cryst
 !!$       call cryst_to_cart (atr%im, atr%xp, boxr%bg, -1)    !cart vers cryst
 !!$
@@ -897,8 +907,8 @@ contains
 !!$          end if
 !!$
 !!$       end do  !boucle i
-!!$       write(6,*)
-!!$       write(6,*)'number of true displaced atoms nombres d atomes deplaces de plus deby more than ',tdep*1.0d8,' = ',ndep
+!!$       write(uwrt,*)
+!!$       write(uwrt,*)'number of true displaced atoms nombres d atomes deplaces de plus deby more than ',tdep*1.0d8,' = ',ndep
 !!$
 !!$       if (immin.lt.immax)then
 !!$          do i=immin,immax
@@ -913,8 +923,8 @@ contains
 !!$       end if
 !!$       call cryst_to_cart (atc%im, atc%xp, boxc%at, 1)    !cryst vers cart
 !!$       call cryst_to_cart (atr%im, atr%xp, boxr%at, 1)    !cryst vers cart
-!!$       write(6,*)
-!!$       write(6,*)'nombres d atomes deplaces de plus de ',tdep*1.0d8,' = ',ndep
+!!$       write(uwrt,*)
+!!$       write(uwrt,*)'nombres d atomes deplaces de plus de ',tdep*1.0d8,' = ',ndep
 !!$       !       end if
 !!$
 !!$
@@ -943,11 +953,11 @@ contains
 !!$          if (i.gt.atc%im)cycle
 !!$          if(ldefcat.and.atc%ityp(i)==2) cycle iloop0
 !!$          koo = atc%ielat(i)                          ! Numero de la cellule
-!!$!          write(6,*)'i idp ',i,idp
+!!$!          write(uwrt,*)'i idp ',i,idp
 !!$          ! pour chaque cel. voisine
 !!$          do i1 = 0, ncelvois
 !!$             ko1=celr%ncel(koo,i1)
-!!$             !              write(6,*)i,idp,koo,i1,ko1,natocr(ko1)
+!!$             !              write(uwrt,*)i,idp,koo,i1,ko1,natocr(ko1)
 !!$             do i2 = 1, celr%nato(ko1) !atomes dans la cel dans la conf. init.
 !!$                j = celr%atincel(i2,ko1)
 !!$
@@ -965,7 +975,7 @@ contains
 !!$                cv(1,3) = c3
 !!$                call cryst_to_cart (1, cv,boxc%at, 1) !cryst vers cart sur cv
 !!$                r = sqrt(cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3))
-!!$!                write(6,*)'j', j,r
+!!$!                write(uwrt,*)'j', j,r
 !!$                if(r.lt.tvac) then ! i est sur le site d'un atome du crystal de depart
 !!$                   natsit(j)=natsit(j)+1
 !!$                   indatsit(j,natsit(j))=i
@@ -1023,11 +1033,11 @@ contains
 !!$
 !!$       call cryst_to_cart (atc%im, atc%xp, boxc%at, 1)     !cryst vers cart
 !!$       call cryst_to_cart (atr%im, atr%xp, boxr%at, 1)     !cryst vers cart
-!!$       write(6,*)'IT = ',it,' nombres de lacunes ',nvac
-!!$       write(6,*)'IT = ',it,'nombres d_interstitiels ',nint
-!!$       write(6,*)'IT = ',it,'nombres d_antisites ',nanti
+!!$       write(uwrt,*)'IT = ',it,' nombres de lacunes ',nvac
+!!$       write(uwrt,*)'IT = ',it,'nombres d_interstitiels ',nint
+!!$       write(uwrt,*)'IT = ',it,'nombres d_antisites ',nanti
 !!$    end if
-!!$    if(lpdep)     write(6,*)'IT = ',it,'nombres de remplacements ',nremp
+!!$    if(lpdep)     write(uwrt,*)'IT = ',it,'nombres de remplacements ',nremp
 !!$    if (lpdef) then
 !!$       call  plt_extr(ndep,inddep,'displaced',atc,boxc)
 !!$       call  plt_extr(nvac,indvac,'vacancies',atc,boxc)
@@ -1328,8 +1338,8 @@ contains
 !!$    integer::ndeft,ndeft2,id1,id2,id
 !!$    character*2::ch2
 !!$    integer, dimension (1000):: nscIn,nscVn
-!!$!    write(6,*)'indvac',indvac(1:nvac)
-!!$!    write(6,*)'indint',indint(1:nint)
+!!$!    write(uwrt,*)'indvac',indvac(1:nvac)
+!!$!    write(uwrt,*)'indint',indint(1:nint)
 !!$
 !!$    ndeft=nvac+nint
 !!$    allocate (deft(ndeft)) 
@@ -1343,7 +1353,7 @@ contains
 !!$
 !!$       do ic=1,3
 !!$          defT(id)%xd(ic)=xp(ic,indvac(ivac))
-!!$!          write(6,*)xp(ic,indvac(ivac))
+!!$!          write(uwrt,*)xp(ic,indvac(ivac))
 !!$       end do
 !!$       deft(id)%typ=1
 !!$       deft(id)%nvd=0
@@ -1359,12 +1369,12 @@ contains
 !!$       deft(id)%nvd=0
 !!$       deft(id)%attyp=ityp(indint(iint))
 !!$    end do
-!!$    write(6,*)'nb de defauts pour SC=',ndeft,nvac
+!!$    write(uwrt,*)'nb de defauts pour SC=',ndeft,nvac
 !!$!    do id=1,ndeft
-!!$!       write(6,*)id,deft(id)%xd
+!!$!       write(uwrt,*)id,deft(id)%xd
 !!$!    end do
 !!$    ndefvois=0
-!!$    write(6,*)'TATA'
+!!$    write(uwrt,*)'TATA'
 !!$    do id1=1,ndeft
 !!$       do id2=id1+1,ndeft
 !!$          cv(1,1) = deft(id1)%xd(1)-deft(id2)%xd(1)
@@ -1379,7 +1389,7 @@ contains
 !!$          if (cv(1,3)<(-0.5)) cv(1,3) = cv(1,3)+1.
 !!$          call cryst_to_cart (1, cv, at, 1) !cryst vers cart sur cv
 !!$          dist= sqrt(cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3))
-!!$!          write(6,*)'dist',dist,rdv
+!!$!          write(uwrt,*)'dist',dist,rdv
 !!$          if (dist.le.(rdv*1d-8)) then
 !!$             deft(id1)%nvd=deft(id1)%nvd+1
 !!$             deft(id1)%indvd(deft(id1)%nvd)=id2
@@ -1388,7 +1398,7 @@ contains
 !!$          end if
 !!$       end do
 !!$    end do
-!!$    write(6,*)'TOTO'
+!!$    write(uwrt,*)'TOTO'
 !!$
 !!$    do id1=1,ndeft
 !!$       deft(id1)%nvdvois=deft(id1)%nvd
@@ -1399,12 +1409,12 @@ contains
 !!$
 !!$    ndeft2=0
 !!$    do id1=1,ndeft
-!!$!       write(6,*)deft(id1)%nvd,deft(id1)%nvdvois
+!!$!       write(uwrt,*)deft(id1)%nvd,deft(id1)%nvdvois
 !!$       if(deft(id1)%nvdvois.ge.ndvblob)then
 !!$          ndeft2=ndeft2+1
 !!$       end if
 !!$    end do
-!!$    write(6,*)'nb de defauts dans les SC ',ndeft2
+!!$    write(uwrt,*)'nb de defauts dans les SC ',ndeft2
 !!$    allocate (deft2(ndeft2))
 !!$    do id2=1,ndefT2
 !!$       allocate(defT2(id2)%indvd(ndeft2))
@@ -1467,9 +1477,9 @@ contains
 !!$                sc1=deft2(id2)%sc
 !!$                sc2=deft2(id1)%sc
 !!$             end if
-!!$             !                          write(6,*)'ndefc'
-!!$             !                          write(6,*)ndefsc(sc1)
-!!$             !                          write(6,*)ndefsc(sc2)
+!!$             !                          write(uwrt,*)'ndefc'
+!!$             !                          write(uwrt,*)ndefsc(sc1)
+!!$             !                          write(uwrt,*)ndefsc(sc2)
 !!$             do id3sc=1,ndefsc(sc2)
 !!$                id3=inddefsc(id3sc,sc2)
 !!$                ndefsc(sc1)=ndefsc(sc1)+1
@@ -1490,7 +1500,7 @@ contains
 !!$    end do
 !!$
 !!$
-!!$    write(6,'(A,G14.5,I4,A,I6,A)')'POUR RDV/ndvblob =',RDV,ndvblob,' il y a ', nsc,' sous cascades'
+!!$    write(uwrt,'(A,G14.5,I4,A,I6,A)')'POUR RDV/ndvblob =',RDV,ndvblob,' il y a ', nsc,' sous cascades'
 !!$
 !!$    allocate(indrg(nsc))
 !!$    allocate(rgsc(nsc))
@@ -1499,7 +1509,7 @@ contains
 !!$       indrg(isc)=isc
 !!$    end do
 !!$    do isc=1,nsc  !on ordonne les cascades
-!!$       !       write(6,*)'ISC',isc
+!!$       !       write(uwrt,*)'ISC',isc
 !!$       do jrsc=1,isc-1  ! cascades ordonn�es
 !!$          jsc=indrg(jrsc)  ! indices de la jrsc �me cascade
 !!$          if (ndefsc(jsc).ge.ndefsc(isc))cycle
@@ -1513,7 +1523,7 @@ contains
 !!$          exit
 !!$       end do
 !!$       !       do jrsc=1,isc
-!!$       !          write(6,*)'ndef scR',jrsc,indrg(jrsc),ndefsc(indrg(jrsc))
+!!$       !          write(uwrt,*)'ndef scR',jrsc,indrg(jrsc),ndefsc(indrg(jrsc))
 !!$       !       end do
 !!$    end do
 !!$    nclustI=0; nclustV=0
@@ -1525,22 +1535,22 @@ contains
 !!$          id2=inddefsc(id,isc)
 !!$          ntypdefsc(deft2(id2)%typ)=ntypdefsc(deft2(id2)%typ)+1
 !!$          nattypdefsc(deft2(id2)%attyp)=nattypdefsc(deft2(id2)%attyp)+1
-!!$          !             write(6,*)
+!!$          !             write(uwrt,*)
 !!$       end do
-!!$       write(6,'(A,I7,I7,A,8I7)')'sous cascade ',isc,ndefsc(isc),' defauts',ntypdefsc(1:3),nattypdefsc(1:ntyp)
+!!$       write(uwrt,'(A,I7,I7,A,8I7)')'sous cascade ',isc,ndefsc(isc),' defauts',ntypdefsc(1:3),nattypdefsc(1:ntyp)
 !!$       if (ntypdefsc(2)==ndefsc(isc))          nscIn(ndefsc(isc))=nscIn(ndefsc(isc))+1
 !!$       if (ntypdefsc(1)==ndefsc(isc))          nscVn(ndefsc(isc))=nscVn(ndefsc(isc))+1
 !!$    end do
-!!$    if (ndeft.ne.ndeft2) write(6,*)'defauts isoles ', ndeft-ndeft2
-!!$    write(6,*)
+!!$    if (ndeft.ne.ndeft2) write(uwrt,*)'defauts isoles ', ndeft-ndeft2
+!!$    write(uwrt,*)
 !!$       do i=1,maxval(ndefsc)
-!!$       write(6,*)'nclustI ', i,' = ',nscIn(i)
+!!$       write(uwrt,*)'nclustI ', i,' = ',nscIn(i)
 !!$       enddo
-!!$       write(6,*)
+!!$       write(uwrt,*)
 !!$       do i=1,maxval(ndefsc)
-!!$       write(6,*)'nclustV ', i,' = ',nscVn(i)
+!!$       write(uwrt,*)'nclustV ', i,' = ',nscVn(i)
 !!$       enddo
-!!$       write(6,*)
+!!$       write(uwrt,*)
 !!$
 !!$
 !!$
@@ -1827,7 +1837,7 @@ contains
        do i1 = 0, celr%ncelvois(koo)
           ko1=celr%ncel(koo,i1)
 
-          !              write(6,*)i,idp,koo,i1,ko1,natocr(ko1)
+          !              write(uwrt,*)i,idp,koo,i1,ko1,natocr(ko1)
           do i2 = 1, celr%nato(ko1) !atomes dans la cel dans la conf. init.
              j = celr%atincel(i2,ko1)
 
@@ -1853,7 +1863,7 @@ contains
              r = sqrt(cv(1,1)*cv(1,1)+cv(1,2)*cv(1,2)+cv(1,3)*cv(1,3))
 
              if(r.lt.r2min) then ! j est pour l'instant le site le plus proche de i
-                !                write(6,*)r,i,j
+                !                write(uwrt,*)r,i,j
                 r2min=r
                 indws(i)=j
              end if

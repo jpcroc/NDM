@@ -1,7 +1,7 @@
 module elec_cell
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
-  USE gen_com_m, ONLY: bk,tstep,erg2eV,pi,rang,lspacendm,&
+  USE gen_com_m, only:uwrt,lwrt, bk,tstep,erg2eV,pi,rang,lspacendm,&
        &elosscel,lenfnam,fnam,lrestart,lTPcel,joule2erg,erg2eV,iteration,timel,igen,lrestart,itesauvinter
   USE var_pot, ONLY:cm
   USE eloss,ONLY :Ecelec ,elstopforce,ngrdel
@@ -86,9 +86,9 @@ contains
     ncer=1000
     igenelec=igen
 
-    if (rang.eq.0) write(6,*) 
-    if (rang.eq.0) write(6,*) 
-    if (rang.eq.0) write(6,*) '>>>>>>>>>>> entree readelec  input units are SI, internal units are cgs'
+    if (rang.eq.0) write(uwrt,*) 
+    if (rang.eq.0) write(uwrt,*) 
+    if (rang.eq.0) write(uwrt,*) '>>>>>>>>>>> entree readelec  input units are SI, internal units are cgs'
 
     fnamedin=  fnam(1:lenfnam)//'.edin'
 
@@ -98,7 +98,7 @@ contains
     close(luelec)
 
     if (i2t==1) then
-       if ((rang==0).and.(t_cpl.ge.0)) write(6,*)'t_cpl set to zero as i2t=1'
+       if ((rang==0).and.(t_cpl.ge.0)) write(uwrt,*)'t_cpl set to zero as i2t=1'
        t_cpl=-1
     end if
 
@@ -108,12 +108,12 @@ contains
     CeC=Cec*joule2erg*1d-6
     KeC=KeC*joule2erg*1d-2
     deltaxyz=deltaxyz*1d-8
-    if (rang.eq.0)    write(6,*)nexov,neyov
+    if (rang.eq.0)    write(uwrt,*)nexov,neyov
     if(nexov==0)nex=celndm%nox(1)
     if(neyov==0)ney=celndm%nox(2)
     if(nezov==0)nez=celndm%nox(3)
     if (ibc==-1) then
-       if (rang.eq.0)       write(6,*)'ibc=-1, stop'
+       if (rang.eq.0)       write(uwrt,*)'ibc=-1, stop'
        call arret_ndm
     end if
     !    call recips (at(1,1), at(1,2), at(1,3), bg(1,1), bg(1,2), bg(1,3))
@@ -143,10 +143,10 @@ contains
     Vecell=cellside(1)*cellside(2)*cellside(3)
     !volume
     if (rang==0) then
-       write(6,*)'nex ney nez',nex,ney,nez
-       write(6,*)'nexmp neymp nezmp',nexmp,neymp,nezmp
-       write(6,*)'deltayz= ',deltaxyz
-       write(6,*)'cellside',cellside
+       write(uwrt,*)'nex ney nez',nex,ney,nez
+       write(uwrt,*)'nexmp neymp nezmp',nexmp,neymp,nezmp
+       write(uwrt,*)'deltayz= ',deltaxyz
+       write(uwrt,*)'cellside',cellside
     end if
     allocate(EedT(0:nTmax))
     if (CeC.lt.0) call prepCe
@@ -158,11 +158,11 @@ contains
 
     if (rang==0) then
        if (igenelec==1) then
-          write(6,*)'ELECTRONIC TEMPERATURE READ FROM FILE, T0 NOT USED'
-          if (igen.ne.1) write(6,*)'BUT NOT THE ATOMIC CONFIGURATION'
+          write(uwrt,*)'ELECTRONIC TEMPERATURE READ FROM FILE, T0 NOT USED'
+          if (igen.ne.1) write(uwrt,*)'BUT NOT THE ATOMIC CONFIGURATION'
        else
-          write(6,*)'ELECTRONIC TEMPERATURE INITIALZED AT T0=',T0
-          if (igen==1)write(6,*)'BUT ATOMIC CONFIGURATION IS READ'
+          write(uwrt,*)'ELECTRONIC TEMPERATURE INITIALZED AT T0=',T0
+          if (igen==1)write(uwrt,*)'BUT ATOMIC CONFIGURATION IS READ'
        end if
     end if
     if (igenelec==1) then
@@ -203,14 +203,14 @@ contains
     end if
     
 
-    if (rang.eq.0) write(6,*) 
-    if (rang.eq.0) write(6,*) 
+    if (rang.eq.0) write(uwrt,*) 
+    if (rang.eq.0) write(uwrt,*) 
 
     etstep=tstep/necyclemin
     !     if (etstep.gt.6d-17)then
     !        etstep=2d-16
     !        necycle=int(tstep/etstep)
-    !        write(6,*)'chgt etstep',etstep,necycle
+    !        write(uwrt,*)'chgt etstep',etstep,necycle
     !     end if
 
 
@@ -275,10 +275,10 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
              if (ekin.gt.Ecelec) then
                 vn=sqrt(vpn2)
                 v1=elstopforce(atdml%ityp(i),1,1)
-                !           write(6,*)v1,vn
+                !           write(uwrt,*)v1,vn
                 nv1=1+INT(vn/v1)
                 if (nv1.gt.ngrdel) then
-                   if (rang.eq.0)  write(6,*)'elstop velocity > 49, rebuild elstop.in'
+                   if (rang.eq.0)  write(uwrt,*)'elstop velocity > 49, rebuild elstop.in'
 #ifdef PARA
                       call endMPI
 #endif
@@ -295,7 +295,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
              else
                 gamlat=VeCell*Gep/(3*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%NionS)
-                !if(i==1) write(6,*)'gamf',VeCell,Gep,bk,ecell(ixyze(1),ixyze(2),ixyze(3))%Nion
+                !if(i==1) write(uwrt,*)'gamf',VeCell,Gep,bk,ecell(ixyze(1),ixyze(2),ixyze(3))%Nion
              end if
           case(0) ! DDuffy version
              vpn2 = atdml%vp(1,i)**2+atdml%vp(2,i)**2+atdml%vp(3,i)**2
@@ -303,10 +303,10 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
              if (ekin.gt.Ecelec) then
                 vn=sqrt(vpn2)
                 v1=elstopforce(atdml%ityp(i),1,1)
-                !           write(6,*)v1,vn
+                !           write(uwrt,*)v1,vn
                 nv1=1+INT(vn/v1)
                 if (nv1.gt.ngrdel) then
-                   if (rang.eq.0)  write(6,*)'elstop velocity > 49, rebuild elstop.in'
+                   if (rang.eq.0)  write(uwrt,*)'elstop velocity > 49, rebuild elstop.in'
 #ifdef PARA
                       call endMPI
 #endif
@@ -333,7 +333,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
              else 
                 gamlat=0.
              end if
-                !if(i==1) write(6,*)'gamf',VeCell,Gep,bk,ecell(ixyze(1),ixyze(2),ixyze(3))%Nion
+                !if(i==1) write(uwrt,*)'gamf',VeCell,Gep,bk,ecell(ixyze(1),ixyze(2),ixyze(3))%Nion
 
           end select
 
@@ -342,53 +342,53 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
           case(1)
              rga=exp(-gamlat*tstep/2)
 
-             !             if ((it.ge.1000).and.(i.lt.20)) write(6,'(A,3G15.7)')'gamstd 1 ',gamlat,rga
+             !             if ((it.ge.1000).and.(i.lt.20)) write(uwrt,'(A,3G15.7)')'gamstd 1 ',gamlat,rga
              !                if ((it.ge.1000).and.(i.lt.20))then
-             !                write(6,'(A,2I5,3G15.7)')' vpa1',it,i,vp(:,i)
-             !                write(6,'(A,2I5,3G15.7)')' xpa1',it,i,xp(:,i)
-             !                write(6,'(A,2I5,3G15.7)')' fpa1',it,i,fp(:,i)
-             !                write(6,'(A,3I2,G15.7)')'ixyze1',ixyze(1),ixyze(2),ixyze(3),ecell(ixyze(1),ixyze(2),ixyze(3))%Temp
+             !                write(uwrt,'(A,2I5,3G15.7)')' vpa1',it,i,vp(:,i)
+             !                write(uwrt,'(A,2I5,3G15.7)')' xpa1',it,i,xp(:,i)
+             !                write(uwrt,'(A,2I5,3G15.7)')' fpa1',it,i,fp(:,i)
+             !                write(uwrt,'(A,3I2,G15.7)')'ixyze1',ixyze(1),ixyze(2),ixyze(3),ecell(ixyze(1),ixyze(2),ixyze(3))%Temp
              !             end if
 
              do ic=1,3
-                !  write(6,*)'ct',cm(ityp(1)),tstep
+                !  write(uwrt,*)'ct',cm(ityp(1)),tstep
                 call random_number(u1)
                 call random_number(u2)
                 Atdml%Glangv(ic,i)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
-                !if (i==1)write(6,*) vp(ic,i)
+                !if (i==1)write(uwrt,*) vp(ic,i)
 
                 atdml%vp(ic,i) = atdml%vp(ic,i)*rga+ atdml%fp(ic,i)*tstep/(cm(atdml%ityp(i))*2)+Atdml%Glangv(ic,i)*&
                      &sqrt(cm(atdml%ityp(i))*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%temp*(1-rga))/cm(atdml%ityp(i))
-                !if (i==1)write(6,*) vp(ic,i)
+                !if (i==1)write(uwrt,*) vp(ic,i)
 
              end do
-             !if (i==1)write(6,*) 
+             !if (i==1)write(uwrt,*) 
           case(2)
              rga=exp(-gamlat*tstep/2)
-             !            if ((it.ge.1000).and.(i.lt.20)) write(6,'(A,3G15.7)')'gamstd 2 ',gamlat,rga
+             !            if ((it.ge.1000).and.(i.lt.20)) write(uwrt,'(A,3G15.7)')'gamstd 2 ',gamlat,rga
              !            if ((it.ge.1000).and.(i.lt.20))then
-             !               write(6,'(A,2I5,3G15.7)')' vpa2',it,i,vp(:,i)
-             !               write(6,'(A,2I5,3G15.7)')' xpa2',it,i,xp(:,i)
-             !               write(6,'(A,2I5,3G15.7)')' fpa2',it,i,fp(:,i)
-             !               write(6,'(A,3I2,G15.7)')'ixyze2',ixyze(1),ixyze(2),ixyze(3),ecell(ixyze(1),ixyze(2),ixyze(3))%Temp
+             !               write(uwrt,'(A,2I5,3G15.7)')' vpa2',it,i,vp(:,i)
+             !               write(uwrt,'(A,2I5,3G15.7)')' xpa2',it,i,xp(:,i)
+             !               write(uwrt,'(A,2I5,3G15.7)')' fpa2',it,i,fp(:,i)
+             !               write(uwrt,'(A,3I2,G15.7)')'ixyze2',ixyze(1),ixyze(2),ixyze(3),ecell(ixyze(1),ixyze(2),ixyze(3))%Temp
              !            end if
 
 
              do ic=1,3
-                !if (i==1)write(6,*) vp(ic,i)
+                !if (i==1)write(uwrt,*) vp(ic,i)
 
 
                 atdml%vp(ic,i) = atdml%vp(ic,i)*rga+ atdml%fp(ic,i)*tstep/(cm(atdml%ityp(i))*2)+Atdml%Glangv(ic,i)*&
                      &sqrt(cm(atdml%ityp(i))*bk*ecell(ixyze(1),ixyze(2),ixyze(3))%temp*(1-rga))/cm(atdml%ityp(i))
-                !if (i==1)write(6,*) vp(ic,i)
+                !if (i==1)write(uwrt,*) vp(ic,i)
 
 
              end do
-             !            if ((it.ge.1000).and.(i.lt.20))write(6,'(A,2I5,3G15.7)')&
+             !            if ((it.ge.1000).and.(i.lt.20))write(uwrt,'(A,2I5,3G15.7)')&
              !&' vpa2',it,i,vp(:,i)
 
           case default 
-             if (rang.eq.0)             write(6,*)'check ilangevin'
+             if (rang.eq.0)             write(uwrt,*)'check ilangevin'
              call arret_ndm
           end select
        end do
@@ -418,11 +418,11 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
           do iey=1,ney
              do iez=1,nez
                 iet=iex+iey*nex+iez*nex*ney
-!                write(6,*)iet,iex,iey,iez
+!                write(uwrt,*)iet,iex,iey,iez
                 if (lalletemp.or.(ecell(iex,iey,iez)%lionovlp))then
-                   !                   write(6,*)
-                   !                   write(6,'(A,3I3,G15.7)')'ecell%temp',iex,iey,iez,ecell(iex,iey,iez)%lionovlp
-                   !                   write(6,'(A,I5,2G15.7)')'ecell%temp',it,timel,ecell(iex,iey,iez)%temp
+                   !                   write(uwrt,*)
+                   !                   write(uwrt,'(A,3I3,G15.7)')'ecell%temp',iex,iey,iez,ecell(iex,iey,iez)%lionovlp
+                   !                   write(uwrt,'(A,I5,2G15.7)')'ecell%temp',it,timel,ecell(iex,iey,iez)%temp
 !                   if (rang.eq.0) write(iet,*)it,timel, ecell(iex,iey,iez)%temp
                 end if
              end do
@@ -444,13 +444,13 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     do ko=1,celndm%noxyz
        call nox_2_nex(ko,ixyze,celndm)
        !       if (elosscel(ko).ne.0) then
-       !          write(6,'(4I3)')ko,ixyze(:)
-       !          write(6,*)'ko',elosscel(ko)
+       !          write(uwrt,'(4I3)')ko,ixyze(:)
+       !          write(uwrt,*)'ko',elosscel(ko)
        !       end if
-!       write(6,'(A,I4,I6,G15.7)')'rg ko el', rang, ko, elosscel(ko)
+!       write(uwrt,'(A,I4,I6,G15.7)')'rg ko el', rang, ko, elosscel(ko)
        ecell(ixyze(1),ixyze(2),ixyze(3))%Qi2e=ecell(ixyze(1),ixyze(2),ixyze(3))%Qi2e+elosscel(ko)/tstep
     end do
-    !    write(6,*)ecell%Qi2e
+    !    write(uwrt,*)ecell%Qi2e
 
     !EP coupling    
     do ixe=1,nex
@@ -464,7 +464,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
                 endif
              end if
              !             if (ecell(ixe,iye,ize)%Qi2e.ne.0) &
-             !&  write(6,'(I6,A,3I4,G15.7)')it,' TRF ',ixe,iye,ize,ecell(ixe,iye,ize)%Qi2e
+             !&  write(uwrt,'(I6,A,3I4,G15.7)')it,' TRF ',ixe,iye,ize,ecell(ixe,iye,ize)%Qi2e
 
           end do
        end do
@@ -495,11 +495,11 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
              Typ1=ecell(iex,iey+1,iez)%temp
              Tzm1=ecell(iex,iey,iez-1)%temp
              Tzp1=ecell(iex,iey,iez+1)%temp 
-             !             if (it.ge.900)             write(6,'(I5,A,3I3)')it,'it iex',iex,iey,iez
-             !             if (it.ge.900)             write(6,'(I8,A,3I4,7G12.6)')it*necycle+ite,' TCpp ',iex,iey,iez,&
+             !             if (it.ge.900)             write(uwrt,'(I5,A,3I3)')it,'it iex',iex,iey,iez
+             !             if (it.ge.900)             write(uwrt,'(I8,A,3I4,7G12.6)')it*necycle+ite,' TCpp ',iex,iey,iez,&
              !&TC,txm1,txp1,tym1,typ1,tzm1,tzp1
-!             write(6,'(I5,A,3I3)')it,'it iex',iex,iey,iez
-!             write(6,'(I8,A,3I4,7G15.6)')it*necycle+ite,' TCpp ',iex,iey,iez,&
+!             write(uwrt,'(I5,A,3I3)')it,'it iex',iex,iey,iez
+!             write(uwrt,'(I8,A,3I4,7G15.6)')it*necycle+ite,' TCpp ',iex,iey,iez,&
 !             &TC,txm1,txp1,tym1,typ1,tzm1,tzp1
 
              select case(integrTtype)
@@ -507,10 +507,10 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
                 call CeT(Ce, TC)
 
 
-                !            write(6,'(2G15.7)')'ke ce alpha',iex,iey,iez,ke,ce,ke/ce
+                !            write(uwrt,'(2G15.7)')'ke ce alpha',iex,iey,iez,ke,ce,ke/ce
                 !alpha=Ke/Ce
                 !tfact=min(Ax(1)/cellside(1),Ax(2)/cellside(2),Ax(3)/cellside(3))/(6*alpha)
-                !            write(6,*)'etstep,tfact',etstep,tfact
+                !            write(uwrt,*)'etstep,tfact',etstep,tfact
 
 
                 !iex
@@ -548,10 +548,10 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
                      &*(Tzp1-TC)
 
                 nexttemp(iex,iey,iez)=nexttemp(iex,iey,iez)+(etstep/Ce)*ecell(iex,iey,iez)%Qi2e/Vecell
-                !                if (ecell(iex,iey,iez)%Qi2e.ne.0)write(6,'(I6,A,3I3,G15.6)')it,' qi2ets ',iex,iey,iez,&
+                !                if (ecell(iex,iey,iez)%Qi2e.ne.0)write(uwrt,'(I6,A,3I3,G15.6)')it,' qi2ets ',iex,iey,iez,&
                 !&etstep*ecell(iex,iey,iez)%Qi2e
                 ! integration for insulators (energy input then temperature change)
-!                write(6,*)nexttemp(iex,iey,iez)
+!                write(uwrt,*)nexttemp(iex,iey,iez)
              case(2)
                 deltaE=0
                 Tm=0.5*(Txm1+TC)
@@ -586,17 +586,17 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
                 ecell(iex,iey,iez)%En=deltaE+ecell(iex,iey,iez)%En
                 EcN=ecell(iex,iey,iez)%En/Vecell
-                !                write(6,*)iex,iey,iez,ecN,deltaE
+                !                write(uwrt,*)iex,iey,iez,ecN,deltaE
 
                 if (deltaE.gt.0) then
                    iTC=Int(TC)
                    itn=itC
                    !2                  continue
                    do while(EedT(itn).lt.EcN)
-                      !                      write(6,*)itn,eedt(itn)
+                      !                      write(uwrt,*)itn,eedt(itn)
                       itn=itn+1
                    end do
-                   !                   write(6,*)itn,eedt(itn)
+                   !                   write(uwrt,*)itn,eedt(itn)
                    Ebase=EedT(itn-1)
                    nexttemp(iex,iey,iez)=(itn-1)+(Ecn-Ebase)/(Eedt(itn)-EedT(itn-1))
 
@@ -607,10 +607,10 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
                    !2                  continue
                    do while(EedT(itn).gt.ecN)
-                      !                   write(6,*)itn,eedt(itn)
+                      !                   write(uwrt,*)itn,eedt(itn)
                       itn=itn-1
                    end do
-                   !                   write(6,*)itn,eedt(itn)
+                   !                   write(uwrt,*)itn,eedt(itn)
                    Ebase=EedT(itn+1)
                    nexttemp(iex,iey,iez)=(itn+1)+(Ecn-Ebase)/(Eedt(itn+1)-EedT(itn))
 
@@ -625,7 +625,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     end do
     ecell(:,:,:)%temp=nexttemp
 
-    !    write(6,*)'Elec222',ecell(2,2,2)%temp*Ce*Vecell
+    !    write(uwrt,*)'Elec222',ecell(2,2,2)%temp*Ce*Vecell
     Teavg=SUM(ecell(2:nex-1,2:ney-1,2:nez-1)%temp)/((nex-2)*(ney-2)*(nez-2))
     Tecmax=maxval(ecell(:,:,:)%temp)
     ietm(:)=maxloc(ecell(:,:,:)%temp)
@@ -643,7 +643,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     end if
 
 
-    !    write(6,*)'Eelectr Teavg cell ',Eelec*erg2eV,Teavg
+    !    write(uwrt,*)'Eelectr Teavg cell ',Eelec*erg2eV,Teavg
     return
   end subroutine Tevolv
 
@@ -721,24 +721,24 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     type(cell_config)::celndm
     integer::kx,ky,kz,koc
     koc=ko
-    !    write(6,*)'ko',ko
+    !    write(uwrt,*)'ko',ko
     kx=mod(koc-1,celndm%nox(1))+1
     koc=(koc-kx)/celndm%nox(1)
-    !    write(6,*)'kx koc',kx,koc
+    !    write(uwrt,*)'kx koc',kx,koc
     ky=mod(koc,celndm%nox(2))+1
-    !    write(6,*)'ky,koc',ky,(koc-ky+1)/noy
+    !    write(uwrt,*)'ky,koc',ky,(koc-ky+1)/noy
     kz=(koc-ky+1)/celndm%nox(3)+1
-    !    write(6,*)'kz',kz
+    !    write(uwrt,*)'kz',kz
 
-    !    write(6,*)'ko,kx,ky,kz'
-    !    write(6,*)ko,kx,ky,kz
+    !    write(uwrt,*)'ko,kx,ky,kz'
+    !    write(uwrt,*)ko,kx,ky,kz
 
     ixyze(1)=1+(kx-1)*nexov/celndm%nox(1)+nexmp
     ixyze(2)=1+(ky-1)*neyov/celndm%nox(2)+neymp
     ixyze(3)=1+(kz-1)*nezov/celndm%nox(3)+nezmp
 
 
-    !    write(6,*)'           ',ixyze
+    !    write(uwrt,*)'           ',ixyze
 
   end subroutine nox_2_nex
 
@@ -779,7 +779,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     else
        G=GepC
     endif
-!    write(6,*) 'g ',g
+!    write(uwrt,*) 'g ',g
   end subroutine GepT
 
   subroutine prepCe
@@ -790,7 +790,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     allocate(cerf(0:ncer))
     allocate(CedT(0:nTmax))
     allocate(temprf(0:ncer))
-    if (rang==0) write(6,*) 'Ce read from Ce.in ! ATTENTION AUX UNITES 1O^5Jm-3K-1'
+    if (rang==0) write(uwrt,*) 'Ce read from Ce.in ! ATTENTION AUX UNITES 1O^5Jm-3K-1'
     open(unit=84, file='Ce.in',form='formatted')
     cerf(0)=0 ; temprf(0)=0
     do itr=1,ncer
@@ -802,7 +802,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     itr=0
     do it=1,ntmax
        !1      continue
-       !       write(6,*)'it itr temprf(itr)',it, itr, temprf(itr)
+       !       write(uwrt,*)'it itr temprf(itr)',it, itr, temprf(itr)
        do while (float(it).gt.temprf(itr))
           itr=itr+1
        end do
@@ -810,12 +810,12 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        CedT(it)=cerf(itr-1)+(cerf(itr)-cerf(itr-1))*factT
 
     end do
-    !   write(6,*)'it,itr',it,itr
+    !   write(uwrt,*)'it,itr',it,itr
 
     Eedt(0)=0.
     do it=1,nTmax
        Eedt(it)=EedT(it-1)+CedT(it)
-       !       write(6,'(A,I5,G15.7)')'T eedt',it,eedt(it)
+       !       write(uwrt,'(A,I5,G15.7)')'T eedt',it,eedt(it)
     end do
     if (integrTtype==2) then
        do iex=2,nex-1
@@ -823,7 +823,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
              do iez=2,nez-1
                 ittc=INT(ecell(iex,iey,iez)%temp)
                 ecell(iex,iey,iez)%En=(Eedt(ittc)+(ecell(iex,iey,iez)%temp-ittc)*(Eedt(ittc+1)-Eedt(ittc)))*Vecell
-                !                write(6,*)'%En',iex,iey,iez,ecell(iex,iey,iez)%En
+                !                write(uwrt,*)'%En',iex,iey,iez,ecell(iex,iey,iez)%En
              end do
           end do
        end do
@@ -840,7 +840,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     allocate(Geprf(0:ncer))
     allocate(GepdT(0:nTmax))
     allocate(temprf(0:ncer))
-    if (rang==0) write(6,*) 'Gep read from Gep.in! ATTENTION AUX UNITES 1O^17Jm-3K-1'
+    if (rang==0) write(uwrt,*) 'Gep read from Gep.in! ATTENTION AUX UNITES 1O^17Jm-3K-1'
     open(unit=84, file='Gep.in',form='formatted')
     Geprf(0)=0 ; temprf(0)=0
     do itr=1,ncer
@@ -872,7 +872,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     allocate(Kerf(0:ncer))
     allocate(KedT(0:nTmax))
     allocate(temprf(0:ncer))
-    if (rang==0) write(6,*) 'Ke read from Ke.in'
+    if (rang==0) write(uwrt,*) 'Ke read from Ke.in'
     open(unit=84, file='Ke.in',form='formatted')
     Kerf(0)=0 ; temprf(0)=0
     do itr=1,ncer
@@ -903,9 +903,9 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
   character :: extension*9
 
     luecout=65
-!    write(6,*)'IN SVEL'
+!    write(uwrt,*)'IN SVEL'
     if (rang.ne.0)then
-       write(6,*) 'WTF sauvE rang <>0!'
+       write(uwrt,*) 'WTF sauvE rang <>0!'
        call arret_ndm
     end if
     if (itesauvinter>0) then
@@ -931,7 +931,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     character ::  fnamecin*80
     integer:: luecin
     luecin=66
-    write(6,*)'in Erestart',nez,nex,nez
+    write(uwrt,*)'in Erestart',nez,nex,nez
     if (lrestart) then
        fnamecin = fnam(1:lenfnam)//'.ecout'
     else 
@@ -943,7 +943,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
     read(luecin)Eelec
     read(luecin) Teavg
     close (luecin)
-    write(6,*)'out restart'
+    write(uwrt,*)'out restart'
   end subroutine restartelec
 
   subroutine fillrbuf (tabe,buftab,nx,ny,nz,ir)

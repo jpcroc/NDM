@@ -148,7 +148,6 @@ contains
     integer::nv
     logical ::ltbv,lrealloc
     real(double)::rv
-    
     lrealloc=.false.
     if (present(lreallocate))lrealloc=lreallocate
     ltbv=.false.
@@ -157,7 +156,6 @@ contains
     end if
     nv=0 ;  if(present(nvois))nv=nvois
     rv=0;  if(present(rvois))rv=rvois
-
     if (ltbv) then
        if(.not.(present(rvois)))then
           write(uwrt,*)'rvois must be set in initialization of atcf when ltabvois =True'
@@ -175,7 +173,6 @@ contains
           end if
        end if
     end if
- 
 
 
     atconf%im=imin
@@ -186,6 +183,7 @@ contains
 !       atconf%im_glob=0
     end if
     if (present(imm_glob))then
+!       write(uwrt,*)'PRESENT imMglob',imm_glob
        atconf%imm_glob=imm_glob
 !    else
 !       atconf%imm_glob=0
@@ -235,7 +233,6 @@ contains
        atconf%ltabvois=.false.
        atconf%rvois=rv ! Ajouté pour éviter des erreurs d'initilaisations
     end if
-
     select type (atconf)
     class is (atom_config_d)
        if ((lrealloc).and.(allocated(atconf%vp)))then
@@ -910,6 +907,8 @@ contains
        class is (atom_config_d)
        select type (atcible)
        class is (atom_config_d)
+!          write(uwrt,*)'cible',atcible%imm,atcible%im,size(atcible%vp)
+!          write(uwrt,*)'source',atsource%imm,atsource%im,size(atsource%vp)
           atcible%vp(:,1:atsource%imm)=atsource%vp(:,1:atsource%imm)
        end select
     end select
@@ -1081,7 +1080,7 @@ contains
     real(double)::rvois
 
     if (present(lrescl))lrescale=lrescl
-
+!    write(uwrt,*)'FAB lrescale',lrescale
     if (lrescale) then
        call atcible%dealloc 
        if (atsource%ltabvois)then
@@ -1096,7 +1095,7 @@ contains
        else
           immtrf=imtrf
        end if
-
+!       write(uwrt,*)'FAB',imtrf
        call atsource%Eegal(atcible)
        call atcible%init(imtrf,immtrf,atsource%ltabvois,nvois,rvois)
     end if
@@ -1281,7 +1280,7 @@ contains
     else
        imp=atin%im
     end if
-
+!    write(uwrt,*)'AAAAA',rang,atin%im,atin%imf
 #else
     imp=atin%im
 #endif
@@ -1413,7 +1412,7 @@ contains
 !!$    else
 !!$       imp=atin%im
 !!$    end if
-!!$    write(6,*)'AAAAA',rang,atin%im,atin%imf
+!!$    write(uwrt,*)'AAAAA',rang,atin%im,atin%imf
 !!$#else
 !!$    imp=atin%im
 !!$#endif
@@ -1431,7 +1430,7 @@ contains
 !!$             if(atin%num_at_glob(i)==ig) then
 !!$                iprt=iprt+1
 !!$                if (iprt.gt.natpr) then
-!!$                   write(6,*)'num_at_glob multiples ?'
+!!$                   write(uwrt,*)'num_at_glob multiples ?'
 !!$                   call arret_ndm
 !!$                end if
 !!$             end if
@@ -1446,7 +1445,7 @@ contains
 !!$             if(atin%num_at_glob(i)==ig) then
 !!$                iprt=iprt+1
 !!$                if (iprt.gt.natpr) then
-!!$                   write(6,*)'num_at_glob multiples ?'
+!!$                   write(uwrt,*)'num_at_glob multiples ?'
 !!$                   call arret_ndm
 !!$                end if
 !!$                call atin%copy_atom(i,atprt,iprt)
@@ -1460,7 +1459,7 @@ contains
 !!$             if(atin%num_at_glob(i)==ig) then
 !!$                iprt=iprt+1
 !!$                if (iprt.gt.natpr) then
-!!$                   write(6,*)'num_at_glob multiples ?'
+!!$                   write(uwrt,*)'num_at_glob multiples ?'
 !!$                   call arret_ndm
 !!$                end if
 !!$                call atin%copy_atom(i,atprt,iprt)
@@ -1497,7 +1496,7 @@ contains
 !!$    
 !!$    write(unitw,*)'icaltabt = ',atprt%icaltabt
 !!$    write(unitw,*)'ltabvois ', atprt%ltabvois
-!!$!    write(6,*)
+!!$!    write(uwrt,*)
 !!$    ideb=1
 !!$    ifin=atprt%im
 !!$    if (present(i1))then
@@ -1742,7 +1741,7 @@ contains
                 else
                    icomp=inag(nag(iloc))
                 end if
-!                write(6,*)'L2M',iproc,iloc,nag(iloc)
+!                write(uwrt,*)'L2M',iproc,iloc,nag(iloc)
                 if (nag(iloc).ne.atcfcomp%num_at_glob(icomp))then
                    write(uwrt,*)'erreur NATG',iloc,icomp,nag(iloc),atcfcomp%num_at_glob(icomp)
                    call arret_ndm(.true.)
@@ -2074,18 +2073,18 @@ contains
        !call MPI_SEND(atcf%ityp, size1, MPI_INTEGER, rgcib,105,comm,ierr)
        nvi=nvi+1
        Iposf(nvi)=Iposf(nvi-1)+size1
- !      write(6,*)'nvi iposf ityp', nvi, iposf(nvi)
+ !      write(uwrt,*)'nvi iposf ityp', nvi, iposf(nvi)
     end if
     if(scan('e',carac).ne.0) then
        !       call MPI_SEND(atcf%ielat, size1, MPI_INTEGER, rgcib,106,comm,ierr)
        nvi=nvi+1
        Iposf(nvi)=Iposf(nvi-1)+size1
-!       write(6,*)'nvi iposf ielat', nvi, iposf(nvi)
+!       write(uwrt,*)'nvi iposf ielat', nvi, iposf(nvi)
     end if
     if(scan('p',carac).ne.0) then
        nvi=nvi+1
        Iposf(nvi)=Iposf(nvi-1)+size1
-!       write(6,*)'nvi iposf proc_at', nvi, iposf(nvi)
+!       write(uwrt,*)'nvi iposf proc_at', nvi, iposf(nvi)
        !       call MPI_SEND(atcf%proc_at, size1, MPI_INTEGER, rgcib,102,comm,ierr)
     end if
     if(scan('l',carac).ne.0)  then
@@ -2219,7 +2218,7 @@ contains
     ivi=0;ivl=0;ivR=0
     csi=0;csl=0;csr=0
     !****************************************************
-!    write(6,*)'CARAC',carac
+!    write(uwrt,*)'CARAC',carac
     if(scan('n',carac).ne.0)  then
        ivi=ivi+1
        ip=0

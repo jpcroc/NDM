@@ -1,5 +1,6 @@
 module dervbeest_mod
-   USE arret_ndm_mod,only:arret_ndm
+  USE gen_com_m, only:uwrt,lwrt
+  USE arret_ndm_mod,only:arret_ndm
   USE calerf_mod,only: calerf 
   implicit none 
   contains  
@@ -127,12 +128,12 @@ subroutine maxVBEEST(rrep,csive,l,auxe,alpha,ngrid,ntyp, &
 
         err=20
         convrep=20
-        write(6,*) 'l=',l,'rrep=',rrep
+        write(uwrt,*) 'l=',l,'rrep=',rrep
         return
 
      else
         if(k==ngrid-1.and.istop==0) then
-           !               write(6,*) 'pas de maximum local pour l=',l
+           !               write(uwrt,*) 'pas de maximum local pour l=',l
            rrep=0.D0
            err=20
            convrep=20
@@ -142,9 +143,9 @@ subroutine maxVBEEST(rrep,csive,l,auxe,alpha,ngrid,ntyp, &
 
            if(j1==maxconv.and.istop==1) then
 
-              write(6,*)'perdu max loc pour l=',l
-              write(6,*)'problemes de convergence dans la routine max2VBEEST'
-              write(6,*)'Verifiez les parametres'
+              write(uwrt,*)'perdu max loc pour l=',l
+              write(uwrt,*)'problemes de convergence dans la routine max2VBEEST'
+              write(uwrt,*)'Verifiez les parametres'
               call arret_ndm
            endif
         endif

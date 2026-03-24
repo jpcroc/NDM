@@ -1,7 +1,7 @@
 module sauvegardeT_mod
    USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:rang,iteration,itesauvinter,lspaceNDM,&
+  USE gen_com_m, only:uwrt,lwrt,rang,iteration,itesauvinter,lspaceNDM,&
        &pmean,timel,tmean,tstep,fnam,lenfnam,lcasca,l2T
 
   USE elec_cell, ONLY : sauveelec
@@ -50,11 +50,11 @@ contains
 
 
 #endif
-!    if (rang==0) write(6,*)'insauvegarde',iteration,timel
+!    if (rang==0) write(uwrt,*)'insauvegarde',iteration,timel
     formatsauvmod = mod(formatsauv,2)
     im =atdml%im
     if (atdml%im_glob==0) then
-       write(6,*)'sauvegarde imglob=0 stop'
+       write(uwrt,*)'sauvegarde imglob=0 stop'
        call arret_ndm
     end if
 
@@ -70,7 +70,7 @@ contains
 !!$          formatsauvw=formatsauv
 !!$       end select
 #ifdef PARA
-!       write(6,*)'SPDBG1 ',rang,formatsauv
+!       write(uwrt,*)'SPDBG1 ',rang,formatsauv
     if (.not.latcomp) then 
        if (myidsp==0) then
 
@@ -87,7 +87,7 @@ contains
           allocate (buffer(3,atdml%imm))
           allocate (ibuffer(atdml%imm))
        end if
-!       write(6,*)'SPDBG2 ',rang,formatsauv,formatsauvmod
+!       write(uwrt,*)'SPDBG2 ',rang,formatsauv,formatsauvmod
        if (myidsp==0) then
           im_loc(0)=im
           ibuffer=0
@@ -142,7 +142,7 @@ contains
           write (lucout) tstep
           write (lucout) tmean, pmean, iteration, timel
           if (l2T)call sauveelec
-!       write(6,*)'SPDBG3 ',rang
+!       write(uwrt,*)'SPDBG3 ',rang
     else ! myidsp different de 0 :
           if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
              call comm_space%send(im,0,11001)
@@ -162,9 +162,9 @@ contains
 !!$                      call comm_space%send(atdml%ax(1:3,1:im),0,11007)
 !!$                   end if
                 end select
-!!$                write(6,*)'SPDBG251 ',rang,lwax
+!!$                write(uwrt,*)'SPDBG251 ',rang,lwax
 !!$                if (.not.lwax)call comm_space%send(atdml%xp(1:3,1:im),0,11008)
-!                write(6,*)'SPDBG25 ',rang
+!                write(uwrt,*)'SPDBG25 ',rang
              endif
           end if
        endif

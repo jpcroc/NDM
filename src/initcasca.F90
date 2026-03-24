@@ -4,7 +4,7 @@ module initcasca_mod
   use vect_dist_mod,only:closest_at
 
 
-  USE gen_com_m, ONLY:depmaxts,dmtype,ecgs,eko,iko,lderive,lperiod,&
+  USE gen_com_m, only:uwrt,lwrt,depmaxts,dmtype,ecgs,eko,iko,lderive,lperiod,&
        &oldtstep,rang,tsmin,tstep,two,usdh,vmax,xko,xx0,yko,yy0,zko,zz0,l2T,&
        lspacendm
   use constrconf_mod,only:repartition
@@ -75,7 +75,7 @@ contains
  
     allocate (vpmod2(atcf%imm_glob))
     if (atcf%im_glob==0) then
-       write(6,*)'inicasca im_glob stop'
+       write(uwrt,*)'inicasca im_glob stop'
        call arret_ndm
     end if
 
@@ -96,7 +96,7 @@ contains
           call cryst_to_cart (1, cv, boxndm%at, 1) !cryst vers cart sur cv
           
           call closest_at(cv(1,:),atcf,celndm,boxndm,lperiod,iclose=indclose(myidsp),dist=dclose(myidsp),itypt=itko)
-!          write(6,*)'closest',indclose(myidsp),dclose(myidsp)
+!          write(uwrt,*)'closest',indclose(myidsp),dclose(myidsp)
 #ifdef PARA
           call comm_space%sum(dclose)
           call comm_space%sum(indclose)
@@ -108,7 +108,7 @@ contains
                 dmin=dclose(iproc)
              end if
           end do
-!          write(6,*)'cloproc',dmin,iproclose
+!          write(uwrt,*)'cloproc',dmin,iproclose
           if (myidsp==iproclose) then
              ipka=indclose(iproclose)
              iko=atcf%num_at_glob(ipka)
@@ -119,7 +119,7 @@ contains
 #ifdef PARA
           call comm_space%bcast(iproclose,iko)
 #endif
-!          write(6,*)'IPROCCLOSE',iproclose
+!          write(uwrt,*)'IPROCCLOSE',iproclose
 
           if (myidsp==iproclose) then
           
@@ -127,16 +127,16 @@ contains
 
           if (znorm==0)then
 !             if (nprocspace.ne.1) then
-!                write(6,*) 'tirage al�atoire projectile pas programm�'
+!                write(uwrt,*) 'tirage al�atoire projectile pas programm�'
 !                call arret_ndm
 !             endif
-             write(6,*) 'tirage al�atoire xko '
+             write(uwrt,*) 'tirage al�atoire xko '
              call random_seed(size=seed_size)
              allocate(iseedt(seed_size))
              iseedt = 0
              !        if (iseed==0) then
              call system_clock (count=isl)
-             write(6,*)'ISLxko',isl
+             write(uwrt,*)'ISLxko',isl
              iseedt(1)=isl
              !        else
              !           iseedt(1)=iseed
@@ -156,11 +156,11 @@ contains
           z3 = zko/znorm
 
           if (rang==0) then
-             write (6, 576) z1, z2, z3
+             write (uwrt, 576) z1, z2, z3
           endif
 
-          write (6, *) 'POSITIONS CASCADE',iko,atcf%xp(1:3,ipka)*1.0d8     
-!          write(6,'("Positions initiales du projectile (CRYST)",I9,3(f8.4,1x))')&
+          write (uwrt, *) 'POSITIONS CASCADE',iko,atcf%xp(1:3,ipka)*1.0d8     
+!          write(uwrt,'("Positions initiales du projectile (CRYST)",I9,3(f8.4,1x))')&
 !               &ipka, atcf%xp(1,ipka),atcf%xp(2,ipka),atcf%xp(3,ipka)
           aux1 = sqrt(eko*ecgs*2./cm(atcf%ityp(ipka)))    !Vitesse en cgs
           atcf%vp(1,ipka) = atcf%vp(1,ipka)+z1*aux1
@@ -236,10 +236,10 @@ contains
           
        if (myidsp==0) then
 
-          write (6, *) 'initialisation de la cascade'
-          write(6,*)'ATOM ',iko, '  TYPE ',atcfcasc%ityp(iko), ' energy=',eko,atcfcasc%xp(:,iko)
+          write (uwrt, *) 'initialisation de la cascade'
+          write(uwrt,*)'ATOM ',iko, '  TYPE ',atcfcasc%ityp(iko), ' energy=',eko,atcfcasc%xp(:,iko)
           if (iko>atcf%im_glob) then
-             write (6, *) 'wrong input cascade iko eko ', iko, eko
+             write (uwrt, *) 'wrong input cascade iko eko ', iko, eko
              call arret_ndm
           endif
           !    endif                                      ! rang=0
@@ -258,16 +258,16 @@ contains
                 if (atcf%lxpp)          call cryst_to_cart (atcfcasc%imm, atcfcasc%xpp, boxndm%bg, -1)    !cart vers cryst
              end select
              if (.not.atcf%lax) then
-                write(6,*) 'no ax and casca stop'
+                write(uwrt,*) 'no ax and casca stop'
                 call arret_ndm
              end if
              call cryst_to_cart (atcfcasc%imm, atcfcasc%ax, boxndm%bg, -1)    !cart vers cryst
-             !debug write(6,*)xp(1,ikoloc),xx0
+             !debug write(uwrt,*)xp(1,ikoloc),xx0
              t1 = atcfcasc%xp(1,iko)-xx0
              t2 = atcfcasc%xp(2,iko)-yy0
              t3 = atcfcasc%xp(3,iko)-zz0
 
-             write(6,*)'t1 t2 t3 zl', t1,t2,t3
+             write(uwrt,*)'t1 t2 t3 zl', t1,t2,t3
              select type (atcf)
              class is (atom_config_e)
                 if (atcf%lxpp) then 
@@ -291,7 +291,7 @@ contains
 !!             call cryst_to_cart (atcfcasc%imm, atcfcasc%ax, boxndm%at, 1)     !cryst vers cart
              call periodbox  (boxndm,atcfcasc)
              atcfcasc%ax=atcfcasc%xp
-             !  write(6,*)xp(1,iko)
+             !  write(uwrt,*)xp(1,iko)
              !                                                !Conditions periodiques
 
              ! --- Fin de la translation ---
@@ -301,16 +301,16 @@ contains
 
           if (znorm==0)then
 !             if (nprocspace.ne.1) then
-!                write(6,*) 'tirage al�atoire projectile pas programm�'
+!                write(uwrt,*) 'tirage al�atoire projectile pas programm�'
 !                call arret_ndm
 !             endif
-             write(6,*) 'tirage al�atoire xko '
+             write(uwrt,*) 'tirage al�atoire xko '
              call random_seed(size=seed_size)
              allocate(iseedt(seed_size))
              iseedt = 0
              !        if (iseed==0) then
              call system_clock (count=isl)
-             write(6,*)'ISLxko',isl
+             write(uwrt,*)'ISLxko',isl
              iseedt(1)=isl
              !        else
              !           iseedt(1)=iseed
@@ -330,13 +330,13 @@ contains
           z3 = zko/znorm
 
           if (rang==0) then
-             write (6, 576) z1, z2, z3
+             write (uwrt, 576) z1, z2, z3
 576          format('Direction du projectile ',3(f8.4,1x))
           endif
 
 577       format('Positions initiales du projectile (A) ',I9,3(f20.14,1x))
-          write (6, 577)iko, atcfcasc%xp(1:3,iko)*1.0d8     
-          write(6,'("Positions initiales du projectile (CRYST)",3(f8.4,1x))') xx0,yy0,zz0
+          write (uwrt, 577)iko, atcfcasc%xp(1:3,iko)*1.0d8     
+          write(uwrt,'("Positions initiales du projectile (CRYST)",3(f8.4,1x))') xx0,yy0,zz0
           aux1 = sqrt(eko*ecgs*2./cm(atcfcasc%ityp(iko)))    !Vitesse en cgs
           atcfcasc%vp(1,iko) = atcfcasc%vp(1,iko)+z1*aux1
           atcfcasc%vp(2,iko) = atcfcasc%vp(2,iko)+z2*aux1
@@ -385,7 +385,7 @@ contains
           vmax = sqrt(vmax2)
 
           if (rang==0) then
-             write (6, *) 'Vitesse maximale sur I=', imax, vmax
+             write (uwrt, *) 'Vitesse maximale sur I=', imax, vmax
           endif
           tseuil = depmaxts/(1.0D0*vmax)
           lts = log10(tseuil)
@@ -401,7 +401,7 @@ contains
           ! HP, DEC
 
           if (tifac1<1.0) then
-             write (6, *) 'sthing wrong deftimestep 1.0'
+             write (uwrt, *) 'sthing wrong deftimestep 1.0'
              call arret_ndm
           else if (tifac1<2.0) then
              tifac2 = float(1)
@@ -410,7 +410,7 @@ contains
           else if (tifac1<=10.0) then
              tifac2 = float(5)
           else
-             write (6, *) 'sthing wrong deftimestep 1.0'
+             write (uwrt, *) 'sthing wrong deftimestep 1.0'
              call arret_ndm
           endif
           oldtstep = tstep
@@ -424,7 +424,7 @@ contains
 
 
           if (rang==0) then
-             write (6, *) 'Nouveau tstep : ', tstep, '   Ancien tstep :',oldtstep
+             write (uwrt, *) 'Nouveau tstep : ', tstep, '   Ancien tstep :',oldtstep
           endif                                ! rang=0
 
 
@@ -435,7 +435,7 @@ contains
              if (etstep.gt.6d-17)then
                 etstep=2d-16
                 necycle=int(tstep/etstep)
-                write(6,*)'chgt etstep',etstep,necycle
+                write(uwrt,*)'chgt etstep',etstep,necycle
              end if
           end if
 

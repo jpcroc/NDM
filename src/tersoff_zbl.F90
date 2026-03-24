@@ -9,7 +9,7 @@ subroutine tersoff_zbl
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m
-  USE gen_com_m, ONLY:
+  USE gen_com_m, only:uwrt,lwrt
   USE var_pot, ONLY:ngrid,catom,csive,ipo,lu_roff_pair,npair,ntyp,pot,pot_d,roff1,roff2,typ_pot_pair,typ_pot_pair
   USE force_tersoff_facteurs
 
@@ -48,16 +48,16 @@ subroutine tersoff_zbl
 !end interface
 
 
- write(6,*)'AJOUT ZBK a TERSOFF roff',roff1,roff2,csive
+ write(uwrt,*)'AJOUT ZBK a TERSOFF roff',roff1,roff2,csive
   ktor=csive
 !C'est ça qui va pas !!! POT=0
      pot=0.0
-     write(6,*)csive,ngrid,ntyp,npair,catom,roff1,roff2
-!     write(6,*)'tersoff + ziegler = probablement plante voir force_tersiff_cel commente et initialisation de pot '
+     write(uwrt,*)csive,ngrid,ntyp,npair,catom,roff1,roff2
+!     write(uwrt,*)'tersoff + ziegler = probablement plante voir force_tersiff_cel commente et initialisation de pot '
 !     call arret_ndm
 
      call zieg2(pot,pot_d,csive,ngrid,ntyp,npair,catom,roff1,roff2,lu_roff_pair,ipotentiel,typ_pot_pair,ipo)
-!    write(6,*)pot
+!    write(uwrt,*)pot
     
   do l=1,npair
      select case (typ_pot_pair(l))
@@ -80,7 +80,7 @@ subroutine tersoff_zbl
 
 
         case default
-           write(6,*)'Tersoff zbl pas appliqu� � la paire , l, typ_pot_pair(l) = ',l, typ_pot_pair(l)
+           write(uwrt,*)'Tersoff zbl pas appliqu� � la paire , l, typ_pot_pair(l) = ',l, typ_pot_pair(l)
         end select
 end do
 

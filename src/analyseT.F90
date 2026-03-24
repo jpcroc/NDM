@@ -11,13 +11,13 @@ module analyseT_mod
   use notperiod_mod,only:notperiod
   use var_pot, only: iewald,l3c,npotmax,potisglue,potisrep,lpotentiel,ntyp,nkmax,contmax,zz,potis1,&
        &cm
-  use gen_com_m, only:uwrt,lwrt,bk,cunite,fnose,iteanapos,iteangle,itebdv,ecellpr,itesigma,&
-       &itecoordo,iterasmol,iterdf,iteprtsigma,itetemp,itetemp2,kcell,kine,kinemean,knose,&
+  use gen_com_m, only:uwrt,lwrt,bk,cunite,iteanapos,iteangle,itebdv,itesigma,&
+       &itecoordo,iterasmol,iterdf,iteprtsigma,itetemp,itetemp2,kine,kinemean,&
        &leev,leparat,linstantfda,lprahman,lprteattotm,lsigatcel,lthoover,ltnose,ltpcel,lucell,&
        &nfda,pist,pmean,potcp,potis2,potis3,potist,potistersoff,potiszbl,thetamin,thetamax,&
-       &tcou,temp,tempep,tfcou,tmean,ucell,unite,unose,zhoover,sig,sigkine,lprtcel,rcangle,&
+       &tcou,temp,tempep,tfcou,tmean,unite,sig,sigkine,lprtcel,rcangle,&
        &tpseuils,sigtot,unitP,nrdf,lprtsigat,lprteat,lpkbar,linstantrdf,linstantfda,&
-       &itloopmax,cunitp,erg2ev,lperiod,pi,rang,timel,latcomp,h0,rcrdf,iteangle,itedepla,tdepla,tdepla2,&
+       &itloopmax,cunitp,erg2ev,lperiod,pi,timel,latcomp,rcrdf,iteangle,itedepla,tdepla,tdepla2,&
        & itesauvforce,itesauv,fnamcout,itesauvinter,itesauvposition,fnam,lenfnam,iteration,l2T,iteprtkin,lpcube
 
   USE cellconfig,only:cell_config, caltabtC,cell_config_arps
@@ -30,9 +30,6 @@ module analyseT_mod
   implicit none
 
 contains
-  ! ************************************************
-  !         Sous-programme analyse.f
-  ! ************************************************
 
   subroutine analyseT(atdml,celndm,boxndm,psc,lwrtanaR,uwrtanaR)
     !-----------------------------------------------
@@ -452,10 +449,10 @@ contains
 
 !!$    select type (atdml)
 !!$    type is (atom_config_e)
-!!$       write(6,*)'prteat'
+!!$       write(uwrtana,*)'prteat'
 !!$       if (lprteat) then
 !!$          do i=1,atdml%im
-!!$             write(6,*)atdml%eat(i)
+!!$             write(uwrtana,*)atdml%eat(i)
 !!$          end do
 !!$       end if
 !!$    end select

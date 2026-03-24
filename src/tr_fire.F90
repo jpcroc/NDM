@@ -4,7 +4,7 @@ MODULE FireModule
   ! Ref.: Bitzek, E., Koskinen, P., Gähler, F., Moseler, M., and Gumbsch, P.
   !       "Structural Relaxation Made Simple"
   !       Phys. Rev. Lett. 97, 170201 (2006).
-  use gen_com_m,only:iteration
+  use gen_com_m,only:uwrt,lwrt,iteration
   USE T_kind_param_m, ONLY:  double
   use atomconfig,only:atom_config_e
   ! --- Paramètres de l'algorithme fire -----------------------
@@ -74,7 +74,7 @@ subroutine trempe_fire(atdml, dt, nstep, alph)
   ! 2/ Renormalisation des vitesses par l'algorithme fire
   ! Puissance dissipée
   pScal = Sum( atdml%vp(:,1:im)*atdml%fp(:,1:im) )
-!  write(6,*)'PSCAL',iteration,nstep,pscal,dt
+!  write(uwrt,*)'PSCAL',iteration,nstep,pscal,dt
   ! Modification du vecteur vitesse
   if (pScal.gt.0) then
           ! Norme du vecteur force
@@ -94,7 +94,7 @@ subroutine trempe_fire(atdml, dt, nstep, alph)
           alph=alph_start
           nstep=0
   end if
-  !write(6,'(A,4g14.5)')'FIRE p, dt, alpha, v: ', pscal,dt,alph,norme_de_vp
+  !write(uwrt,'(A,4g14.5)')'FIRE p, dt, alpha, v: ', pscal,dt,alph,norme_de_vp
   return
 end subroutine trempe_fire
 

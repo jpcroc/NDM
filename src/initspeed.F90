@@ -5,8 +5,8 @@ module initspeed_mod
   USE Mat_utils_mod,only: MatInv
   USE tempinstT_mod,only: tempinstT
   USE arret_ndm_mod,only: arret_ndm
-  USE gen_com_m, ONLY:pi,debyetemp,dmtype,hbar,iseed,lcalcjq,lperiod,ltpcel,&
-       &lvpread,oldtstep,one,rang,tempdeplainit,tinit,tstep,iseed,&
+  USE gen_com_m, only:uwrt,lwrt,pi,debyetemp,dmtype,hbar,iseed,lcalcjq,lperiod,ltpcel,&
+       &lvpread,oldtstep,one,tempdeplainit,tinit,tstep,iseed,&
        bk,lspacendm,mdcg_noise
   use neb_module, only : neb_noise_scale,mdcg_noise_scale
   USE var_pot, ONLY:ntyp,cm
@@ -19,6 +19,7 @@ module initspeed_mod
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   use boxconfig,only:box_config,periodbox
   implicit none
+  logical:: lwrts
 contains
   ! *********************************************************************
   subroutine bruit_xp (bruitmd,im)
@@ -62,7 +63,7 @@ contains
        totalbruit=totalbruit + bruitmd(1,ia)**2 + bruitmd(2,ia)**2 + bruitmd(3,ia)**2
     end do
 
-    if (myidsp==0)  write(6,*) 'ISEED for MD, NORM of the noise ',iseed, neb_noise_scale, totalbruit
+    if (lwrt)  write(uwrt,*) 'ISEED for MD, NORM of the noise ',iseed, neb_noise_scale, totalbruit
 !    bruitmd(1:3,1:im) = bruitmd(1:3,1:im) * mdcg_noise_scale * xp(1:3,1:im) / (sqrt(totalbruit))
     bruitmd(1:3,1:im) = bruitmd(1:3,1:im) * mdcg_noise_scale  / (sqrt(totalbruit))
     bruitmd=bruitmd*1d-8
@@ -72,14 +73,14 @@ contains
 
 
   ! *********************************************************************
-  subroutine initspeed(atcf,boxndm,latcomp,lprt)
+  subroutine initspeed(atcf,boxndm,latcomp,lprt,tinitr,lwrtsR)
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:
     USE var_pot, ONLY:
     implicit none
+    logical,optional::lwrtsR
     !-----------------------------------------------
     class(atom_config_d)::atcf
     !    type(cell_config):: celndm
@@ -104,13 +105,25 @@ contains
     integer::iti,imtot
     real(double)::sd,grnd,theta,fhi ! ,decx(2)
 
+    real(double),optional::tinitr
+    real(double)::tinit0
+    if(present(lwrtSR)) then
+       lwrts=lwrtsR
+    else
+       lwrts=lwrt
+    end if
 
-    
+ if(present(tinitr)) then
+       tinit0=tinitr
+    else
+       tinit0=tinit
+    end if
+
     if (present(lprt))lprint=lprt
-!    if (rang==0) write(6,*) 'PARA-T entree initspeed',iseed,lvpread
+!    if (lwrts) write(uwrt,*) 'PARA-T entree initspeed',iseed,lvpread
     if(present(latcomp))latc=latcomp
-!    if (rang==0) write(6,*)
-!    write(6,*)'ISEED initspeed',iseed
+!    if (lwrts) write(uwrt,*)
+!    write(uwrt,*)'ISEED initspeed',iseed
     select case (dmtype)
     case(3,30,5,11,31,32,33,21,22,2)
        atcf%vp = 0.0
@@ -130,26 +143,26 @@ contains
 1   continue
     if (lvpread) then
        tempsauv=tempinstT(atcf)
-      if (myidsp==0) write(6,*)'tempsauv ',tempsauv
+      if (myidsp==0) write(uwrt,*)'tempsauv ',tempsauv
        select type (atcf)
        class is (atom_config_e)
                    if (atcf%lxpp)  atcf%xpp(1:3,1:atcf%im) = atcf%xp(1:3,1:atcf%im)-atcf%vp(1:3,1:atcf%im)*tstep
        end select
        !     vp(:,:im)=vp(:,:im)*tstep/oldtstep
 
-       if (tinit<0) then
+       if (tinit0<0) then
           ! velocities are read from file and not modified
-       if ((rang==0).and.(lprint)) write (6,*) 'pas de chgt des vitesses= '
+       if ((lwrts).and.(lprint)) write (uwrt,*) 'pas de chgt des vitesses= '
           !        return
        else
           ! velocities are read from file and rescaled
-                 if ((rang==0).and.(lprint)) write (6,*) 'scaling read velocities at TINIT = ', &
-               tinit, 'K'
-          !   if (rang==0) write(6,*)'tempsauv ',tempsauv
+                 if ((lwrts).and.(lprint)) write (uwrt,*) 'scaling read velocities at TINIT = ', &
+               tinit0, 'K'
+          !   if (lwrts) write(uwrt,*)'tempsauv ',tempsauv
           if (tempsauv.le.1.) then
              lvpread=.false. ; goto 1
           end if
-          vv = sqrt(tinit/tempsauv)
+          vv = sqrt(tinit0/tempsauv)
           atcf%vp(:,:atcf%im) = atcf%vp(:,:atcf%im)*vv
           
           select type (atcf)
@@ -159,9 +172,9 @@ contains
        endif
 
     else
-!       write(6,*)'TINIT',tinit
+!       write(6,*)'TINIT0',tinit0
 
-       if (tinit<=0) then
+       if (tinit0<=0) then
           ! velocities are not read and no starting temperature is given
              atcf%vp(1,:atcf%im) = 0.0
              atcf%vp(2,:atcf%im) = 0.0
@@ -174,20 +187,20 @@ contains
              atcf%xpp(3,:atcf%im) = atcf%xp(3,:atcf%im)
           end if
        end select
-       if ((rang==0).and.(lprint))  write (6,*) 'ZERO VELOCITY '
+       if ((lwrts).and.(lprint))  write (uwrt,*) 'ZERO VELOCITY '
        else
           !  a starting temperature is given
-                 if ((rang==0).and.(lprint))  write (6,*) 'random velocities at TINIT = ', tinit, &
+                 if ((lwrts).and.(lprint))  write (uwrt,*) 'random velocities at TINIT = ', tinit0, &
                'K'
                  call random_seed(size=seed_size)
-!          if (rang==0)write(6,*)'seed_size',seed_size
+!          if (lwrts)write(uwrt,*)'seed_size',seed_size
           allocate(iseedt(seed_size))
 
           iseedt(:)=iseed
           call    random_seed (put=iseedt)
           deallocate(iseedt)
 
-          v0 = sqrt(2.D0*bk*tinit)
+          v0 = sqrt(2.D0*bk*tinit0)
           vt1(:)=0.0
           do i = 1, atcf%im
              !******************************************
@@ -218,7 +231,7 @@ contains
                 kinx(ic)=kinx(ic)+0.5*atcf%vp(ic,i)*atcf%vp(ic,i)*cm(atcf%ityp(i))
                 !write(*,*) ic, i,kinx(ic),  cm(ityp(i)), vp(ic,i)
              end do
-             ka=0.5*bk*tinit 
+             ka=0.5*bk*tinit0 
 !!$             imtot=atcf%im
 !!$#ifdef PARA
 !!$             if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
@@ -227,7 +240,7 @@ contains
 !!$             end if
 !!$#endif
 !!$             kinx(ic)=kinx(ic)+0.5*atcf%vp(ic,i)*atcf%vp(ic,i)*cm(atcf%ityp(i))/imtot
-             !if (rang==0) write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
+             !if (lwrts) write(uwrt,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
           end do
           !***************************************************************
           !       Make total momentum zero
@@ -265,10 +278,10 @@ contains
              pav (ia) = pav (ia)/float(imtot)
           enddo
 
-          if (rang==0) then
-!             write (6,*) 'center of mass = ',scom(1)*1d8,&
+          if (lwrts) then
+!             write (uwrt,*) 'center of mass = ',scom(1)*1d8,&
 !                  scom(2)*1d8,scom(3)*1d8
-!             write (6,*) 'Momentum/atom  = ',pav(1),pav(2),pav(3)
+!             write (uwrt,*) 'Momentum/atom  = ',pav(1),pav(2),pav(3)
           endif
 
           !         Shift velocities to make the total momemtum zero
@@ -285,7 +298,7 @@ contains
           enddo
 
           if (lcalcjq) then
-             ka=0.5*bk*tinit
+             ka=0.5*bk*tinit0
              kinx=0.
              do ic=1,3
                 do i=1,atcf%im
@@ -301,7 +314,7 @@ contains
              end if
 #endif
              kinx(ic)=kinx(ic)+0.5*atcf%vp(ic,i)*atcf%vp(ic,i)*cm(atcf%ityp(i))/imtot
-                if (rang==0)write(6,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
+                if (lwrts)write(uwrt,*)'dir ',ic,' ka Ktinit ', kinx(ic),ka
                 do i=1,atcf%im
                    atcf%vp(ic,i)= atcf%vp(ic,i)*dsqrt(ka/kinx(ic))
                 end do
@@ -350,10 +363,10 @@ contains
              end if
 #endif          
 
-!             if (rang==0) then
-!                write(6,997) (ainer(1,ib),ib=1,3),prx
-!                write(6,997) (ainer(2,ib),ib=1,3),pry
-!                write(6,997) (ainer(3,ib),ib=1,3),prz
+!             if (lwrts) then
+!                write(uwrt,997) (ainer(1,ib),ib=1,3),prx
+!                write(uwrt,997) (ainer(2,ib),ib=1,3),pry
+!                write(uwrt,997) (ainer(3,ib),ib=1,3),prz
 !             endif
 997          format('Inertia/anglm = ',3e12.4,5x,e12.4)
 
@@ -387,7 +400,7 @@ contains
        end if
        tempsauv=tempinstT(atcf)
        if (tempsauv.ne.0)       then
-          vv = sqrt(tinit/tempsauv)
+          vv = sqrt(tinit0/tempsauv)
           atcf%vp(:,:atcf%im) = atcf%vp(:,:atcf%im)*vv
           select type (atcf)
           class is (atom_config_e)
@@ -396,7 +409,7 @@ contains
 
        end if
     endif
-    !     write(6,*)'sortie initspeed'
+    !     write(uwrt,*)'sortie initspeed'
     select type (atcf)
     class is (atom_config_e)
        if (atcf%lxpp) then 
@@ -405,7 +418,7 @@ contains
     end select
     
     tempsauv=tempinstT(atcf)
-    if (rang==0) write(6,*)'temperature fin initspeed ',tempsauv
+    if (lwrts) write(uwrt,*)'temperature fin initspeed ',tempsauv
 
     if (mdcg_noise==1) then
        call bruit_xp (bruitmd,atcf%im)
@@ -416,14 +429,14 @@ contains
     end if
     if (tempdeplainit.gt.0)then
 
-       if ((rang==0).and.(lprint)) then
-          write(6,*)
-          write(6,*)'-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'
-          write(6,*)'depla init Tempdeplainit',tempdeplainit,'debyetemp= ',debyetemp
+       if ((lwrts).and.(lprint)) then
+          write(uwrt,*)
+          write(uwrt,*)'-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*'
+          write(uwrt,*)'depla init Tempdeplainit',tempdeplainit,'debyetemp= ',debyetemp
 
           do iti=1,ntyp
              sd=sqrt((3*tempdeplainit*hbar**2)/(bk*cm(iti)*debyetemp**2))
-             write(6,*)'sd2 de iti',sd*sd,iti
+             write(uwrt,*)'sd2 de iti',sd*sd,iti
           end do
        end if
        !       decx=0
@@ -432,7 +445,7 @@ contains
 
           do ic=1,3
              call gaussianrand(grnd)
-             !                        write(6,*)grnd
+             !                        write(uwrt,*)grnd
              atcf%xp(ic,i)=atcf%xp(ic,i)+sd*grnd
              select type (atcf)
              class is (atom_config_e)
@@ -463,7 +476,7 @@ contains
 
   subroutine gaussianrand(gr)
     USE T_kind_param_m
-    USE gen_com_m, ONLY:pi
+    USE gen_com_m, only:uwrt,lwrt,pi
     implicit none
     real(double),intent(out)::gr
 

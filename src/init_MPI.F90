@@ -9,7 +9,7 @@ module init_mpi_mod
 contains
 
   subroutine init_mpi()
-    use gen_com_m,only:rang
+    use gen_com_m,only:uwrt,lwrt,rang
 
     use Tpara,only:comm_space
 #ifdef PARA
@@ -36,6 +36,11 @@ contains
 #else
     call comm_space%init(1)
 #endif
+    if (rang==0) then
+       lwrt=.true.
+    else
+       lwrt=.false.
+    end if
   end subroutine init_mpi
 
 

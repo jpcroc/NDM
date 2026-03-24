@@ -7,7 +7,7 @@ subroutine cspline(n, x, y, b, c, d)
   !   M o d u l e s
   !-----------------------------------------------
   USE T_kind_param_m
-  use gen_com_m,only:low_limit
+  use gen_com_m,only:uwrt,lwrt,low_limit
   implicit none
   !-----------------------------------------------
   !   D u m m y   A r g u m e n t s
@@ -54,7 +54,7 @@ subroutine cspline(n, x, y, b, c, d)
   !
   !
   !
-! write(6,*)'spline'
+! write(uwrt,*)'spline'
   nm1 = n-1
   if (n<2) return
   if (n>=3) then
@@ -87,12 +87,12 @@ subroutine cspline(n, x, y, b, c, d)
      !  forward elimination
      !
      do i = 2, n
-!        write(6,*)i,c(i),n,c(i-1),t
+!        write(uwrt,*)i,c(i),n,c(i-1),t
         t = d(i-1)/b(i-1)
         b(i) = b(i)-t*d(i-1)
         c(i) = c(i)-t*c(i-1)
         if (c(i).lT.low_limit)c(i)=0
- !       write(6,*)i,c(i),n,c(i-1),t
+ !       write(uwrt,*)i,c(i),n,c(i-1),t
      end do
      !
      !  back substitution

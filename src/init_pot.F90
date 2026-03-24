@@ -5,7 +5,7 @@ module init_pot_mod
   USE calpo_mod,only: calpo
   USE arret_ndm_mod,only:arret_ndm
   USE tersoff_zbl_mod,only: tersoff_zbl
-  USE gen_com_m, ONLY:firsttime_lammps,rang,umass,A2cm,rang
+  USE gen_com_m, only:uwrt,lwrt,firsttime_lammps,rang,umass,A2cm,rang
   USE var_pot !, ONLY:npair,ntrip,r3cm,rumax,typ_and_pot,lpotentiel,l3c,npotmax,rue_pot,ipotentiel,ngrid,csive,npotentiel,&
        !&typ_pot_pair,rue_pair,catom,cm,iewald,ipo,lu_roff_pair,lue_paire,lue_typ,ntyp,roff1,roff2,ty,typ_pot_pair,&
        !&q,rue_lammps
@@ -41,9 +41,9 @@ contains
 
     !>---------setting the potential------------------
     if (rang.eq.0) then
-       write(6,*)
-       write(6,*)'-*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-'
-       write(6,*)
+       write(uwrt,*)
+       write(uwrt,*)'-*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-'
+       write(uwrt,*)
     end if
 
     !#ifdef LAMMPS_VERSION
@@ -61,15 +61,15 @@ contains
        typ_pot_pair(:)=20
        !rue_pot(20)=rue_ml
        if (rang.eq.0) then
-          write(6,*)
-          write(6,*)' MILADY ..... rvois = ', rvois
-          write(6,*)
+          write(uwrt,*)
+          write(uwrt,*)' MILADY ..... rvois = ', rvois
+          write(uwrt,*)
        end if
 #else
        if (rang.eq.0) then
-          write(6,*)
-          write(6,*)'NOT COMPILED FOR MILADY '
-          write(6,*)
+          write(uwrt,*)
+          write(uwrt,*)'NOT COMPILED FOR MILADY '
+          write(uwrt,*)
        end if
        call arret_ndm
 #endif
@@ -86,9 +86,9 @@ contains
           
           if (ipotentiel.lt.10) then
              if (rang.eq.0) then
-                write(6,*)
-                write(6,*)'POTENTIEL DE PAIRES '
-                write(6,*)
+                write(uwrt,*)
+                write(uwrt,*)'POTENTIEL DE PAIRES '
+                write(uwrt,*)
              end if
 
              call input_pair
@@ -96,10 +96,10 @@ contains
              select case(ipotentiel)
              case(10,16)
                 if (rang.eq.0) then
-                   write(6,*)
-                   write(6,*)'POTENTIEL EAM'
-                   if(ipotentiel==16)write(6,*)'+ CHARGE = CRG'
-                   write(6,*)
+                   write(uwrt,*)
+                   write(uwrt,*)'POTENTIEL EAM'
+                   if(ipotentiel==16)write(uwrt,*)'+ CHARGE = CRG'
+                   write(uwrt,*)
                 end if
                 call inputeam(ntyp,npair,ntrip,cm,catom,ty,umass,rue_pot(ipotentiel),rumax,&
                      iewald,l3c,r3cm,roff1,roff2,typ_and_pot,npotmax,&
@@ -110,10 +110,10 @@ contains
                 end do
              case(11)
                 if (rang.eq.0) then
-                   write(6,*)
+                   write(uwrt,*)
 
-                   write(6,*)'POTENTIEL EAM ERCOLESI'
-                   write(6,*)
+                   write(uwrt,*)'POTENTIEL EAM ERCOLESI'
+                   write(uwrt,*)
                 end if
                 call inputeamerco(ntyp,npair,ntrip,cm,catom,ty,umass,rue_pot(ipotentiel),rumax,&
                      iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,npotmax,&
@@ -124,9 +124,9 @@ contains
                 end do
              case(12)
                 if (rang.eq.0) then
-                   write(6,*)
-                   write(6,*)'POTENTIEL Ju Li'
-                   write(6,*)
+                   write(uwrt,*)
+                   write(uwrt,*)'POTENTIEL Ju Li'
+                   write(uwrt,*)
                 end if
                 call inputeamjl(ntyp,npair,ntrip,cm,catom,ty,umass,rue_pot(ipotentiel),&
                      rumax,iewald,l3c,rang,r3cm,roff1,roff2,typ_and_pot,&
@@ -135,18 +135,18 @@ contains
              case(13,14,15)
                 !nguyen mettre input tersoff
                 !        if (rang.eq.0) then
-                !           if (rang==0)   write(6,*)'POTENTIEL tersoff.potin'
+                !           if (rang==0)   write(uwrt,*)'POTENTIEL tersoff.potin'
                 !           if (ipotentiel==13) then
                 !
                 !           else
-                !              write(6,*)'POTENTIEL tersoff.potin COUPURE MODIFIEE !!!!!!!!!!!!!!!!!!!!!!!!'
+                !              write(uwrt,*)'POTENTIEL tersoff.potin COUPURE MODIFIEE !!!!!!!!!!!!!!!!!!!!!!!!'
                 !           end if
-                !           write(6,*)
+                !           write(uwrt,*)
                 !        end if
                 if (rang.eq.0) then
-                   write(6,*)
-                   write(6,*)'POTENTIEL Tersoff-Brenner'
-                   write(6,*)
+                   write(uwrt,*)
+                   write(uwrt,*)'POTENTIEL Tersoff-Brenner'
+                   write(uwrt,*)
                 end if
                 
                 call inputtersoff
@@ -158,13 +158,13 @@ contains
        end do
        do iti=1,ntyp
           if (all(typ_and_pot(iti,:).eqv..false.)) then
-             write(6,*)'type ',iti,' has no potential'
+             write(uwrt,*)'type ',iti,' has no potential'
              call arret_ndm
           end if
        end do
        do ipair=1,npair
           if (typ_pot_pair(ipair)==0) then
-             write(6,*)'pair ',ipair,' has no potential'
+             write(uwrt,*)'pair ',ipair,' has no potential'
              call arret_ndm
           end if
        end do
@@ -173,7 +173,7 @@ contains
           do iti=1,ntyp
              do ipotcont=1,npotentiel 
                 if (typ_and_pot(iti,ipotcont)) then
-                   write(6,*)'type ',iti,' is in potential',ipotcont
+                   write(uwrt,*)'type ',iti,' is in potential',ipotcont
                 end if
              end do
           end do
@@ -181,7 +181,7 @@ contains
              do iti=1,ntyp
                 do iti2=iti,ntyp
                    l=ipo(iti,iti2)
-                   write(6,'(A,I3,A,I3,A,A,I3,A,I3)')'types', iti,TY(ITI),iti2,TY(iti2),&
+                   write(uwrt,'(A,I3,A,I3,A,A,I3,A,I3)')'types', iti,TY(ITI),iti2,TY(iti2),&
                         &'=pair ',l,' is of potential ',typ_pot_pair(l)
                 end do
              end do
@@ -210,9 +210,9 @@ contains
     integer::ipotcont
     integer,save::iwrt=0
     if ((rang==0).and.(iwrt==0))then
-          write(6,*)
-       write(6,*)' -------------------------------------------------------------------'
-       write(6,*)'             2nd step of potential initialization , dependancy on box size'
+          write(uwrt,*)
+       write(uwrt,*)' -------------------------------------------------------------------'
+       write(uwrt,*)'             2nd step of potential initialization , dependancy on box size'
     end if
     call param_det(boxndm)
        ! rumax défini en ce point
@@ -237,10 +237,10 @@ contains
     if ((iewald.gt.0).and.(iewald.ne.3)) call calpo_ew(boxndm,immT)
     if ((npotentiel.gt.1).and.(rang==0)) then
        if ((rang==0).and.(iwrt==0)) then
-          write(6,*)
-          write(6,*)'decoupage en cellule suivant'
-          write(6,*)'rumax',rumax*1d8
-          write(6,*)
+          write(uwrt,*)
+          write(uwrt,*)'decoupage en cellule suivant'
+          write(uwrt,*)'rumax',rumax*1d8
+          write(uwrt,*)
        end if
 
     end if
@@ -252,7 +252,7 @@ contains
     
   subroutine init_potential_simple(rue,rum)
     USE T_kind_param_m, ONLY:  double
-!    USE gen_com_m, ONLY: rang,A2cm,umass
+!    USE gen_com_m, only:uwrt,lwrt, rang,A2cm,umass
 !    USE var_pot, ONLY: ntyp, npair, ntrip,cm,catom, ty,rue_pair,ipotentiel,q
     implicit none
     integer :: i,lupotin
@@ -276,13 +276,13 @@ contains
        do i = 1, ntyp
           read (lupotin,*) cm(i),catom(i),ty(i)
           if (rang/=0) cycle
-          write (6, '(I4,2F9.3,A5)') i, cm(i),catom(i),ty(i)
+          write (uwrt, '(I4,2F9.3,A5)') i, cm(i),catom(i),ty(i)
        end do
     case(-11)
            do i = 1, ntyp
           read (lupotin,*) cm(i),catom(i),ty(i),q(i)
           if (rang/=0) cycle
-          write (6, '(I4,2F9.3,A5,F9.3)') i, cm(i),catom(i),ty(i),q(i)
+          write (uwrt, '(I4,2F9.3,A5,F9.3)') i, cm(i),catom(i),ty(i),q(i)
        end do
 
     end select

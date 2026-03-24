@@ -1,6 +1,6 @@
 module eloss
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:ev2erg,rang,tstep,elosscel,l2T,erg2eV,iko,lspacendm
+  USE gen_com_m, only:uwrt,lwrt,ev2erg,rang,tstep,elosscel,l2T,erg2eV,iko,lspacendm
   USE var_pot, ONLY:ntyp,cm,gamlt
 #ifdef PARA
   USE Tpara,only:COMM_space,myidsp,endmpi
@@ -57,16 +57,16 @@ contains
     allocate (gams(ntyp))
     call newunit(unit99)
     open (unit=unit99,file='elstop.in')
-    if(rang==0)  write(6,*)'electronic loss eV ; eV/Ang tstep',tstep
+    if(rang==0)  write(uwrt,*)'electronic loss eV ; eV/Ang tstep',tstep
     do i=1,ntyp
        select case(ibrake)
        case(3)
-          if (rang==0) write (6,*)' ELSTOP READ : gams parameter in ps^-1'
+          if (rang==0) write (uwrt,*)' ELSTOP READ : gams parameter in ps^-1'
           read(unit99,*) gams(i)
           gams(i)=gams(i)*1d12*cm(i)
        case default
           
-          if(rang==0)     write(6,*)'TYPE ',i
+          if(rang==0)     write(uwrt,*)'TYPE ',i
        read(unit99,*)npr
        allocate(veloc(0:npr))
        allocate(stoppow(0:npr))
@@ -75,7 +75,7 @@ contains
           read(unit99,*)vel,sp
           !        vel=clum*sqrt(1-1./((veloc(j)*ev2erg/(cm(i)*clum**2)+1)**2))
           vel2=dsqrt(2*vel*ev2erg/cm(i))
-          !        write(6,'(2G15.5)')vel,vel2
+          !        write(uwrt,'(2G15.5)')vel,vel2
           veloc(j)=vel2 ! vitesse en cm.sec-1
           stoppow(j)=sp*ev2erg*1e8 
 #ifdef CHECK
@@ -101,7 +101,7 @@ contains
           end do loopj
           elstopforce(i,2,k)=stoppow(j0)+(stoppow(j1)-stoppow(j0))*(vmaxel(i)*k/ngrdel-veloc(j0))/(veloc(j1)-veloc(j0))
 #ifdef CHECK
-          if((rang==0).and.(mod(k,20)==0)) write(6,*)i,elstopforce(i,1,k),elstopforce(i,2,k)
+          if((rang==0).and.(mod(k,20)==0)) write(uwrt,*)i,elstopforce(i,1,k),elstopforce(i,2,k)
           write(61,*)i,elstopforce(i,1,k),elstopforce(i,2,k)
 #endif
 
@@ -116,7 +116,7 @@ contains
           v1=elstopforce(i,1,1)
           nv1=1+INT(vnlt/v1)
           if (nv1.gt.ngrdel) then
-             write(6,*)'elstop velocity > ngrdel, rebuild elstop.in,nv1',nv1
+             write(uwrt,*)'elstop velocity > ngrdel, rebuild elstop.in,nv1',nv1
 #ifdef PARA
              call endMPI
 #endif 
@@ -124,7 +124,7 @@ contains
           end if
           f1=elstopforce(i,2,nv1)-(elstopforce(i,2,nv1)-elstopforce(i,2,nv1-1))*(nv1-vnlt/v1)
           gamlt(i)=f1/(cm(i)*vnlt)
-!          if(rang==0) write(6,'(A,I3,2G15.7)')'typ gaml',i,gamlt(i),vnlt
+!          if(rang==0) write(uwrt,'(A,I3,2G15.7)')'typ gaml',i,gamlt(i),vnlt
        end if
     end select
  end do
@@ -164,7 +164,7 @@ ikoloc=iko
 #endif
 
 if (L2T.eqv..true.)     elosscel(:)=0
-!write(6,*)gams
+!write(uwrt,*)gams
     do i=1,atdml%im
        if(tcelec.gt.0) then
           koo = atdml%ielat(i)                          ! Numero de la cellule
@@ -174,7 +174,7 @@ if (L2T.eqv..true.)     elosscel(:)=0
        vn= atdml%vp(1,i)**2+atdml%vp(2,i)**2+atdml%vp(3,i)**2
        ekin=0.5*erg2ev*vn*cm(atdml%ityp(i))
 !       if (ikoloc.gt.0)  then
-!          if (i==ikoloc) write(6,*)ekin,ecelec
+!          if (i==ikoloc) write(uwrt,*)ekin,ecelec
 !       end if
        if (ekin.gt.Ecelec) then
 
@@ -191,7 +191,7 @@ if (L2T.eqv..true.)     elosscel(:)=0
              end if
              if (i==ikoloc)then 
 
-                !                write(6,*)'elfp',fp(ic,i)
+                !                write(uwrt,*)'elfp',fp(ic,i)
                 Elosselecstep1=Elosselecstep1+(atdml%vp(ic,i)*gams(atdml%ityp(i)))*(atdml%vp(ic,i)*tstep)*erg2ev
              end if
           end do
@@ -199,12 +199,12 @@ if (L2T.eqv..true.)     elosscel(:)=0
           case default
              vn=sqrt(vn)
 
-          !	write(6,*)'RG',rang,i,ekin
+          !	write(uwrt,*)'RG',rang,i,ekin
           v1=elstopforce(atdml%ityp(i),1,1)
-          !           write(6,*)v1,vn
+          !           write(uwrt,*)v1,vn
           nv1=1+INT(vn/v1)
           if (nv1.gt.ngrdel) then
-             write(6,*)'elstop velocity > 49, rebuild elstop.in'
+             write(uwrt,*)'elstop velocity > 49, rebuild elstop.in'
 #ifdef PARA
              call endMPI
 #endif 
@@ -212,14 +212,14 @@ if (L2T.eqv..true.)     elosscel(:)=0
           end if
           f1=elstopforce(atdml%ityp(i),2,nv1)-(elstopforce(atdml%ityp(i),2,nv1)-&
                &elstopforce(atdml%ityp(i),2,nv1-1))*(nv1-vn/v1)
-          !           write (6,'(A,4G15.7)')'felstop ',f1,vn, vn/v1,elstopforce(ityp(i),2,nv1)
+          !           write (uwrt,'(A,4G15.7)')'felstop ',f1,vn, vn/v1,elstopforce(ityp(i),2,nv1)
           if (f1.le.0) then
-             write(6,*)'f1<0 ?', f1
+             write(uwrt,*)'f1<0 ?', f1
              stop
           end if
           if (ibrake==2) then
              iti=atdml%ityp(i)
-!	     write(6,*)rang,i,iti
+!	     write(uwrt,*)rang,i,iti
              eta=f1/vn
              vc=sqrt(2*Ecelec*ev2erg/cm(iti))
              v1=elstopforce(iti,1,1)
@@ -228,8 +228,8 @@ if (L2T.eqv..true.)     elosscel(:)=0
              etavc=f1vc/vc
              
              f1=f1-etavc*vn
-          !           write(6,'(A,5G15.7)')'EL222',ekin,vn,f1,gamlt(ityp(i))*sqrt(cm(ityp(i))*2*Ecelec*ev2erg),f1/vn
-          !           write(6,*)
+          !           write(uwrt,'(A,5G15.7)')'EL222',ekin,vn,f1,gamlt(ityp(i))*sqrt(cm(ityp(i))*2*Ecelec*ev2erg),f1/vn
+          !           write(uwrt,*)
           end if
           do ic=1,3
              atdml%fp(ic,i)=atdml%fp(ic,i)-atdml%vp(ic,i)*f1/vn
@@ -239,17 +239,17 @@ if (L2T.eqv..true.)     elosscel(:)=0
              end if
              if (atdml%num_at_glob(i)==iko)then 
 
-                !                write(6,*)'elfp',fp(ic,i)
+                !                write(uwrt,*)'elfp',fp(ic,i)
                 Elosselecstep1=Elosselecstep1+(atdml%vp(ic,i)*f1/vn)*(atdml%vp(ic,i)*tstep)*erg2ev
              end if
           end do
-          !                 write (6,*)'felstop',f1,vn                
+          !                 write (uwrt,*)'felstop',f1,vn                
 
        end select
        end if
 
     end do
-    !	write(6,*)'RG el',rang,elosselecstep,elosselecstep1
+    !	write(uwrt,*)'RG el',rang,elosselecstep,elosselecstep1
 #ifdef PARA
 if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
    call comm_space%sum(elosselecstep)
@@ -264,7 +264,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 #else
 
 #endif
-!if (rang==0)   write(6,*)'TEST electronic losses ', elosselec, elosselec1
+!if (rang==0)   write(uwrt,*)'TEST electronic losses ', elosselec, elosselec1
 
 
   end subroutine calceloss

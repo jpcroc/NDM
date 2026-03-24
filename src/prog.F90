@@ -12,19 +12,19 @@ module prog_mod
   USE neb_module,only:boxneb,init_neb0
   USE var_pot
   USE ForceMatrix_mod, only: calcFM, init_MPI_FM, pscFM,paraFM
-  USE montecarlo_mod, only: montecarlo,init_montecarlo,init_mpi_mcgc!!atconf_n,cells_n,boxmcgc,init_mpi_mcgc,initNP1,pscgc,config_atom_n&
-  !       &,config_atom_nplus1,config_cells_n,config_cells_nplus1,atconf_nplus1,nparapath,cells_nplus1,&
-  !       &idirectionmcgc,initN,init_instyp,ins_typ,boxmcgc_p,boxmcgcpath,paramcgc,seed!,initmclpr
+  USE montecarlo_mod, only: montecarlo,init_montecarlo,init_mpi_mcgc
   USE init_simple_mod,only:init_simple
   USE boxconfig,only:box_config,box_config_lpr
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e,atom_config_arps
   USE cellconfig, only:cell_config,cell_config_arps
-  USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax,timemax,timeloopmax,iseed,&
+  USE gen_com_m, only:uwrt,lwrt,potist,rang,sig,lspaceNDM,l2t,itmax,itloopmax,timemax,timeloopmax,iseed,&
        &lprteat,lsigat,dmtype,lax,llangevin,latcomp,imm_glob,lcdp,firsttime_lammps,lprahman,lanaposart
 
   use read_val,only:imm,ltabvois,rvois
   use posana,only:initanapos
   use NGC_mod,only:ngc
+  use babar_mod,only:babar,init_mpi_babar,init_babar
+!  use babar_mod,only:init_babar,init_mpi_babar, babar
 #ifdef ML
   use NDM_ML,only:init_config_ml
 #endif
@@ -50,7 +50,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM&
+    USE gen_com_m, only:uwrt,lwrt,potist,rang,sig,lspaceNDM&
          &,lprteat,lsigat,dmtype,lax,llangevin,itetimestep
 
     use read_val,only:imm,ltabvois,rvois
@@ -63,6 +63,7 @@ contains
     USE Tpara,only:nprocspace,para_space_config
 #endif
     USE neb_module,only:init_mpi_neb
+
     implicit none
     character :: extension*2
     integer::im,nvois
@@ -152,7 +153,7 @@ contains
     atdml%ltabvois=ltabvois
     atdml%rvois=rvois
     select case(dmtype)
-    case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix) or 12 ART
+    case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix) or 12 ART 
 
 
 #ifdef PARA
@@ -163,7 +164,7 @@ contains
        ! la concentration moyenne
        if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
           imm      = min( imm_glob, int(1.2 * imm_glob / nprocspace) )
-          if (rang==0) write(6,*)'IMM PARA = ',imm,imm_glob
+          if (rang==0) write(uwrt,*)'IMM PARA = ',imm,imm_glob
        endif
 #endif
        call init(atdml,boxndm,celndm,psc0)
@@ -196,7 +197,7 @@ contains
           else ! no change in atom number MD
              itloopmax=itmax
              timeloopmax=timemax
-             !             write(6,*)'TIMELOOPMAX ITLOOPMAX',timeloopmax,itloopmax
+             !             write(uwrt,*)'TIMELOOPMAX ITLOOPMAX',timeloopmax,itloopmax
              select case (dmtype) 
              case(30,31)
                 call gcII (atdml,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
@@ -208,7 +209,7 @@ contains
        class is (atom_config_d) !velocities
           select case (dmtype) ! select from dmtype 
           case(5)
-             write(6,*)'loopforcetest pas NDM2020' ; stop
+             write(uwrt,*)'loopforcetest pas NDM2020' ; stop
           case(4,8,1,21,22,23,24,88,41,42) ! some form of MD, including quenchings
              if (lcdp) then ! special case defect creation
                 call creadp(atdml,celndm,boxndm,psc0)
@@ -220,7 +221,7 @@ contains
              end if
           case(30,31) ! old CG probably does not work anymore
              if (lcdp) then
-                write(6,*)'noc cdp with old CG'
+                write(uwrt,*)'noc cdp with old CG'
                 call arret_ndm
              else
                 call gcII (atdml%atom_config,celndm,boxndm,psc0) ! ON PASSE LA VRAIE VARIABLE ET PAS LE POINTEUR !
@@ -238,26 +239,15 @@ contains
           case(111)
              call arret_ndm
           case(11) ! one iteration
-             if (rang==0) write (6, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
+             if (rang==0) write (uwrt, *) '***** PREMIERE ET UNIQUE ITERATION  ****'
              CALL CalFo(sig,potist,atdml,celndm,boxndm,psc=psc0) !(xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
              call analyseT(atdml,celndm,boxndm,psc0)
              call controleT(atdml,celndm,boxndm,psc0)
              call endrunT(atdml,celndm,boxndm,latcomp)
 
 
-!!$#ifdef SUNDAE    
-!!$             case (16) 
-!!$                call sundae
-!!$#endif
-!!$
-!!$#ifdef MAB    
-!!$             case (17) 
-!!$                call mab
-!!$#endif
-
-
           case default
-             write(6,*)'WTF dmtype',dmtype
+             write(uwrt,*)'WTF dmtype',dmtype
           end select
           !          end select
        end select
@@ -320,7 +310,15 @@ contains
        call init_montecarlo(boxndm,rv)
 
        call montecarlo
-
+    case(16)
+       call init_mpi_babar
+       if (ltabvois) then
+          rv=rvois
+       else
+          rv=0
+       end if ! PARAPATH
+       call init_babar(rv)
+       call babar
     end select
   end subroutine prog
 end module prog_mod

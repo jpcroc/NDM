@@ -11,7 +11,7 @@ subroutine moduli
   !   M o d u l e s
   !----------------------------------------------
   USE T_kind_param_m
-  USE gen_com_m, ONLY:
+  USE gen_com_m, only:uwrt,lwrt
   USE var_pot, ONLY:maxorder,kpme,bsmod1,bsmod2,bsmod3,kpmex,kpmey,kpmez
 
   implicit none

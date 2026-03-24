@@ -123,7 +123,9 @@ contains
 
  end do
 
-    !        
+    !        do i=1,im,100
+    !           write(uwrt,*)i,fp(1,i),fp(2,i),fp(3,i)
+    !        end do
 
 
 !    call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart

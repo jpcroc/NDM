@@ -44,7 +44,7 @@ contains
     real(double)::dxp(3)
 
     ! sig=0
-    !       write(6,*)'entree calfw'
+    !       write(uwrt,*)'entree calfw'
 
 
     if (test_sigma)  then
@@ -94,18 +94,18 @@ contains
        ! plus some des fonctions de SW pour les forces qui suivent
 
        do i=1,atcf%im
-          !         write(6,*)i
+          !         write(uwrt,*)i
           iti=atcf%ityp(i)
           if(iti.eq.itO) then
 
              koo=atcf%ielat(i)   ! Numero de la cellule
              do  i1=0,celcf%ncelvois(koo)
                 ko1=celcf%ncel(koo,i1)
-                !         write(6,*)'ko1',ko1
+                !         write(uwrt,*)'ko1',ko1
 
                 do  i2=1,celcf%nato(ko1)
                    j=celcf%atincel(i2,ko1)
-                   !         write(6,*)'j ', j
+                   !         write(uwrt,*)'j ', j
                    itj=atcf%ityp(j)
                    if(itj.eq.itSi)then
                       l=ipo(iti,itj)
@@ -115,13 +115,13 @@ contains
                       sk=r/csive
                       k=int(sk)
                       dr=r-float(k)*csive
-                      !         write(6,*)'i j 2eme ',i,j
-                      !         write(6,*)'r sk k dr ',r,sk,k,dr
+                      !         write(uwrt,*)'i j 2eme ',i,j
+                      !         write(uwrt,*)'r sk k dr ',r,sk,k,dr
                       z(i)= z(i)+ fcr(k)+    &                ! calul de la coordination
                            bspf(k)*dr+cspf(k)*dr**2+dspf(k)*dr**3
                       spotr(i)= spotr(i)+     &               ! calcul de la somme des termes de SW
                            potw(l,k)+bspw(l,k)*dr+cspw(l,k)*dr**2+dspw(l,k)*dr**3
-                      !         write(6,*)'tata'
+                      !         write(uwrt,*)'tata'
                       dzdxpart=(bspf(k)+2.0*cspf(k)*dr+3.0*dspf(k)*dr**2)/r
                       dzdx(i,1)= dzdx(i,1) +dzdxpart *dxp(1)
                       dzdx(i,2)= dzdx(i,2) +dzdxpart *dxp(2)
@@ -136,7 +136,7 @@ contains
        ! boucle de calcul des forces
 
        DO 699 I=1,ATCF%IM
-          !         write(6,*)i
+          !         write(uwrt,*)i
           KOO=atcf%IELAT(I)   ! Numero de la cellule
           ITI=atcf%ITYP(I)
 
@@ -159,7 +159,7 @@ contains
                 ! spline
 
                 dr=r-float(k)*csive
-                !      write(6,*)l,k
+                !      write(uwrt,*)l,k
                 potr=potw(l,k)+&                          ! partie Stillinger Weber (r)
                      &     bspw(l,k)*dr+cspw(l,k)*dr**2+dspw(l,k)*dr**3
                 dpotr=bspw(l,k)+2.0*cspw(l,k)*dr+3.0*dspw(l,k)*dr**2 ! derivation de la partie SW
@@ -201,7 +201,7 @@ contains
                 ATCF%FP(1,i)=ATCF%FP(1,i)+F1
                 ATCF%FP(2,i)=ATCF%FP(2,i)+F2
                 ATCF%FP(3,i)=ATCF%FP(3,i)+F3
-                !     if(i.eq.4) write(6,*)'it,fp1itesigma=',it,fp(1,i)
+                !     if(i.eq.4) write(uwrt,*)'it,fp1itesigma=',it,fp(1,i)
 
                 ! calcul des contraintes
                 if (test_sigma) then

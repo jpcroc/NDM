@@ -8,7 +8,7 @@ module parautils
   use Tpara,only:para_space_config
   use T_kind_param_m, ONLY:  double
   USE decoupage_mod,only: decoupage
-  use gen_com_m,only:lspacendm,rang,erg2ev,itetabvois
+  use gen_com_m,only:uwrt,lwrt,lspacendm,rang,erg2ev,itetabvois
   use atomconfig,only: atom_config,atom_config_d,atom_config_e
   USE boxconfig,only:box_config,periodbox,updatebox
   USE cellconfig,only:cell_config,caltabtC
@@ -89,6 +89,10 @@ contains
        celloc=>cellcomp
     end if
     atloc%im_glob=atcomp%im_glob
+!    call atcomp%print(unit=100)
+!    call atloc%print(unit=200)
+!    call cellcomp%print(unit=101)
+!    call celloc%print(unit=201)
     if (lspacendm.and.div%mpi_image%nproc.gt.1) then
        call caltabtC(celloc,atloc,lperiod,box,psc=psc,lchktrav=.true.)
     else
@@ -286,7 +290,7 @@ contains
              cycle ! upon return cycle to wait next call
           end if
        end select
-       write(6,*)'you shoulndt be here', div%mpi_orig%rank
+       write(uwrt,*)'you shoulndt be here', div%mpi_orig%rank
        call arret_ndm
     end do
 
@@ -294,7 +298,7 @@ contains
 
   subroutine depeche_mode(div,lchgboxT)
     !    use mpi
-    use gen_com_m,only:rang
+    use gen_com_m,only:uwrt,lwrt,rang
     type(para_config)::div
     logical, optional,intent(in)::lchgboxT
     logical::lchgbox
@@ -328,7 +332,7 @@ contains
   subroutine driver_caltabt_para(atcf,celcf,boxcf,psc,lperiod,lcalcvois)
 
     use Tpara,only:nprocspace
-    use gen_com_m,only:iteration,itetabvois
+    use gen_com_m,only:uwrt,lwrt,iteration,itetabvois
     class(atom_config),intent(inout),target::atcf
     type(cell_config),intent(inout),target::celcf
     class(box_config),intent(inout)::boxcf

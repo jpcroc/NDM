@@ -7,7 +7,7 @@ module dmloop_vverlet_mod
   USE cellconfig, only:cell_config
   USE boxconfig,only:box_config
   use var_pot,only:ntyp,cm
-  USE gen_com_m, ONLY: itesauvforce,itesauvposition,ev2erg,rang,iteration,l2t,lTberendsen,potist,sig,sigtot,&
+  USE gen_com_m, only:uwrt,lwrt, itesauvforce,itesauvposition,ev2erg,rang,iteration,l2t,lTberendsen,potist,sig,sigtot,&
        &tstep,itesauv,itesigma,lsigat,ltpcel,lspaceNDM,itloopmax,sigkine,timeloopmax,timel,lpcube
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
@@ -47,7 +47,7 @@ contains
     !   L o c a l   V a r i a b l e s
     !-----------------------------------------------
     logical :: test_sigma,lreturn
-    if (rang==0) write (6, *) '***** PREMIERE ITERATION  VVERLET****',itloopmax,timeloopmax
+    if (rang==0) write (uwrt, *) '***** PREMIERE ITERATION  VVERLET****',itloopmax,timeloopmax
     ! Appel de la routine generale des forces
     test_sigma=(mod(iteration,itesigma)==0)
 

@@ -1,7 +1,7 @@
 module work_cgII
    USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:  inv_angst, lperiod, rang,itmax,leev,sig, &
+  USE gen_com_m, only:uwrt,lwrt,  inv_angst, lperiod, rang,itmax,leev,sig, &
        iteration, itesauv, itesauvposition, itesauvforce,itmax, fnam,lenfnam,fnamcout,&
        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, &
        dmtype, potist,mdcg_noise,lspaceNDM,latcomp
@@ -89,9 +89,9 @@ contains
 
     if (iteration==1) then
        if (lEev.EQV..true.) then 
-          if (rang==0) write(6,*)'Resultats en eV, Ang'
+          if (rang==0) write(uwrt,*)'Resultats en eV, Ang'
        else
-          if (rang==0) write(6,*)'Resultats en cgs'
+          if (rang==0) write(uwrt,*)'Resultats en cgs'
        end if
        if (rang==0)      write(*,'(70("="))')
        if (rang==0)      write(*,'("CG:     ","iter",10(" "),"epsi",14(" "),"Fmax",14(" "), "Energy")')
@@ -116,16 +116,16 @@ if (nprocspace.gt.1) then
              !           if (rang==0) write(*,'("GC: ",3E20.10)') forctot, formax, potist*erg2eV
              if (fpstop>0) then   
                 if (formax.le.fpstop) then
-                   if (rang==0) write(6,*)'force par atome  max  ev/Ang ', formax
-                   if (rang==0) write (6, *) 'energie ', potist*erg2eV
+                   if (rang==0) write(uwrt,*)'force par atome  max  ev/Ang ', formax
+                   if (rang==0) write (uwrt, *) 'energie ', potist*erg2eV
                    !                 if (it.le.1) xp(:,:)=ax(:,:)
                    lover=.true.
                 end if
              end if
              if (fsumstop>0) then   
                 if (forctot.le.fsumstop) then
-                   if (rang==0) write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
-                   if (rang==0) write(6, *) 'energie ', potist*erg2eV
+                   if (rang==0) write(uwrt,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
+                   if (rang==0) write(uwrt, *) 'energie ', potist*erg2eV
                    !                 if (it.le.1) xp(:,:)=ax(:,:)
                    lover=.true.
                    !call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp)
@@ -136,8 +136,8 @@ if (nprocspace.gt.1) then
              if (rang==0) write(*,'("GC: ",i6,3E20.10)') iteration,forctot, formax, potist
              if (fpstop>0) then   
                 if (formax.le.fpstop) then
-                   if (rang==0) write(6,*)'force par atome  max cgs ',formax
-                   if (rang==0) write (6, *) 'energie ', potist
+                   if (rang==0) write(uwrt,*)'force par atome  max cgs ',formax
+                   if (rang==0) write (uwrt, *) 'energie ', potist
 
                    lover=.true.
                    !call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp)
@@ -147,8 +147,8 @@ if (nprocspace.gt.1) then
 
              if (fsumstop>0) then   
                 if (forctot.le.fsumstop) then
-                   if (rang==0) write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
-                   if (rang==0) write (6, *) 'energie ', potist
+                   if (rang==0) write(uwrt,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
+                   if (rang==0) write (uwrt, *) 'energie ', potist
                    lover=.true.
                    !call endrunT(atcgcomp,cellcgcomp,boxcg,latcomp)
                 end if
@@ -163,7 +163,7 @@ if (nprocspace.gt.1) then
    call gcpara%mpi_image%BCAST(0,lover)
 end if
 #endif
-!    write(6,*)'LOVER',lover,rang,it
+!    write(uwrt,*)'LOVER',lover,rang,it
 if (iteration>=itmax)then
    call arret_ndm
 end if
@@ -174,7 +174,7 @@ end if
 
        if (iteration.ne.0) then
           !       if (rang==0) then
-          !           write(6,*)'work_cg_II analyse -> sauvegarde',it
+          !           write(uwrt,*)'work_cg_II analyse -> sauvegarde',it
           if (itesauv.GT.0) then
              formatsauv=2
              if (mod(iteration,itesauv)==0) call sauvegardeT(atcgcomp,cellcgcomp,boxcg,formatsauv,fnamcout,latcomp)

@@ -7,7 +7,7 @@ module zieg3_mod
   USE Mat_utils_mod,only: reslin33
   use var_pot,only:auxe,lprtpot
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:erg2eV
+  USE gen_com_m, only:uwrt,lwrt,erg2eV
   implicit none 
 contains
 
@@ -47,7 +47,7 @@ contains
 
 
     data rbohr/ 0.529D-8/
-!          write(6,*)'***********************************ZIEG3 l '
+!          write(uwrt,*)'***********************************ZIEG3 l '
     c1 = 0.1818
     c2 = 0.5099
     c3 = 0.2802
@@ -74,7 +74,7 @@ contains
           
           iroff1=int(roff1(l)/csive)
           iroff2=int(roff2(l)/csive)
-!          write(6,*)'IROFF',roff1(l),iroff1,roff2(l),iroff2
+!          write(uwrt,*)'IROFF',roff1(l),iroff1,roff2(l),iroff2
           rr1=iroff1*csive; rrp1=(iroff1+1)*csive ; rrm1=(iroff1-1)*csive
           rr2=iroff2*csive; rrp2=(iroff2+1)*csive; rrm2=(iroff2-1)*csive
           call calc_ziegp(zr1,catom,ntyp,i1,i2,rr1) ! valeur de Zieg à roff1
@@ -89,12 +89,12 @@ contains
           gpx=(pot(1,l,iroff2)-pot(1,l,iroff2-1))/csive
           g2px=(-2*pot(1,l,iroff2)+pot(1,l,iroff2+1)+pot(1,l,iroff2-1))/(csive**2)
           
-!          write(6,*)'POT Z', zr1, pr2,prp2
+!          write(uwrt,*)'POT Z', zr1, pr2,prp2
           x=rr2-rr1
           dd=f2p0/2
           ee=fp0
           ff=f0
-!          write(6,*)'dd ee ff',dd,ee,ff
+!          write(uwrt,*)'dd ee ff',dd,ee,ff
           AM(1,1)=x**5
           AM(1,2)=x**4
           AM(1,3)=x**3
@@ -110,7 +110,7 @@ contains
           BM(3)=g2px-2*dd
 
           call reslin33(ABC,BM,AM)
-!          write(6,*)'ABC',ABC
+!          write(uwrt,*)'ABC',ABC
 !          stop
           aa=ABC(1);bb=ABC(2);cc=ABC(3)
           
@@ -120,8 +120,8 @@ contains
 !!$          delt=(gpx-cc)/(3*x**2)
 !!$          bb=(alph-delt)/(bet-gam)
 !!$          aa=alph-bet*bb
-!          write(6,*)'***********************************ZIEG3 l '
-!          write(6,*)'ZIEG3 l ',l,aa,bb,cc,dd
+!          write(uwrt,*)'***********************************ZIEG3 l '
+!          write(uwrt,*)'ZIEG3 l ',l,aa,bb,cc,dd
 
           do j1 = 1, ngrid
              !               k = k+1

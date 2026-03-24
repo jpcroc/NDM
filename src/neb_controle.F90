@@ -1,6 +1,6 @@
 module neb_controle_mod
   USE recips_mod,only: recips
-  USE gen_com_m, ONLY:fpstop,fsumstop,tempstop,temp,rang,potist,leev,itetimestep,itetemp,&
+  USE gen_com_m, only:uwrt,lwrt,fpstop,fsumstop,tempstop,temp,rang,potist,leev,itetimestep,itetemp,&
        &angst,erg2ev
   implicit none
 contains
@@ -48,15 +48,15 @@ contains
 !                      write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist*erg2eV
           if (fpstop>0) then   
              if (formax.le.fpstop) then
-                write(6,*)'force par atome  max  ev/Ang ', formax
-                write (6, *) 'energie ', potist*erg2eV
+                write(uwrt,*)'force par atome  max  ev/Ang ', formax
+                write (uwrt, *) 'energie ', potist*erg2eV
                 dragtest=1
              end if
           end if
           if (fsumstop>0) then   
              if (forctot.le.fsumstop) then
-                write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
-                write (6, *) 'energie ', potist*erg2eV
+                write(uwrt,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
+                write (uwrt, *) 'energie ', potist*erg2eV
                 dragtest=1
              end if
           end if
@@ -67,8 +67,8 @@ contains
           !            write(*,'("GC: ",i6,3E20.10)') it,forctot, formax, potist
           if (fpstop>0) then   
              if (formax.le.fpstop) then
-                write(6,*)'force par atome  max cgs ',formax
-                write (6, *) 'energie ', potist
+                write(uwrt,*)'force par atome  max cgs ',formax
+                write (uwrt, *) 'energie ', potist
 
                 dragtest=1                  
              end if
@@ -76,8 +76,8 @@ contains
 
           if (fsumstop>0) then   
              if (forctot.le.fsumstop) then
-                write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
-                write (6, *) 'energie ', potist
+                write(uwrt,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
+                write (uwrt, *) 'energie ', potist
                 dragtest=1  
              end if
           end if
@@ -100,16 +100,16 @@ contains
 
           if (fpstop>0) then   
              if (formax.le.fpstop) then
-                !                  write(6,*)'force par atome  max  ev/Ang ', formax
-                !                  write (6, *) 'energie ', potist*erg2eV
+                !                  write(uwrt,*)'force par atome  max  ev/Ang ', formax
+                !                  write (uwrt, *) 'energie ', potist*erg2eV
                 !               write(*,*) 'NEB : image  and force .....:', formax 
                 nebtest(ii)=1
              end if
           end if
           if (fsumstop>0) then   
              if (forctot.le.fsumstop) then
-                write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
-                write (6, *) 'energie ', potist*erg2eV
+                write(uwrt,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
+                write (uwrt, *) 'energie ', potist*erg2eV
                 nebtest(ii)=1
              end if
           end if
@@ -120,8 +120,8 @@ contains
           !            write(*,'("GC: ",i6,3E15.5)') it,forctot, formax, potist
           if (fpstop>0) then   
              if (formax.le.fpstop) then
-                write(6,*)'force par atome  max cgs ',formax
-                write (6, *) 'energie ', potist
+                write(uwrt,*)'force par atome  max cgs ',formax
+                write (uwrt, *) 'energie ', potist
 
                 nebtest(ii)=1
              end if
@@ -129,8 +129,8 @@ contains
 
           if (fsumstop>0) then   
              if (forctot.le.fsumstop) then
-                write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
-                write (6, *) 'energie ', potist
+                write(uwrt,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
+                write (uwrt, *) 'energie ', potist
                 nebtest(ii)=1
              end if
           end if

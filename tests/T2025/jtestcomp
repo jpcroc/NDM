@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for ((tn=1 ; tn<=22; tn +=1)) ; do
+for ((tn=1 ; tn<=23; tn +=1)) ; do
 cd T$tn
 pwd
 pwd

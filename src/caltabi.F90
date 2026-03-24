@@ -140,15 +140,15 @@ contains
           iwo=iw
           koo = atvois%ielat(i)                          ! Numero de la cellule
           iti=atvois%ityp(i)
-          !        write(6,*)'atome i',i,iti
+          !        write(uwrt,*)'atome i',i,iti
           ! pour chaque cel. voisine
           do i1 = 0, celvois%ncelvois(koo)
              ko1 = celvois%ncel(koo,i1)
-             !           write(6,*)'i1 ko1 ',i1,ko1
+             !           write(uwrt,*)'i1 ko1 ',i1,ko1
              if (ko1==0) cycle
              loop_j: do i2 = 1, celvois%nato(ko1)
                 j = celvois%atincel(i2,ko1)
-                !                                write(6,*)'j ',j
+                !                                write(uwrt,*)'j ',j
 
                 if(ldemitab) then
                    if(j.le.i) cycle !terme deja calcule
@@ -168,12 +168,12 @@ contains
                 nvi=nvi+1
                 iw = iw+1
                 iwph = iwph+1
-                !              write(6,*)i,koo,ko1,j,iw, at,bg,sqrt(r2)
+                !              write(uwrt,*)i,koo,ko1,j,iw, at,bg,sqrt(r2)
                 if (present(cn2m)) then
                    call buildvoisext(cn2m,atvois%ityp(j),i,j,nvi,dij,VJI,koo,ko1)
                 end if
                    
-!                write(6,*)rang,iw,size(atvois%indi)
+!                write(uwrt,*)rang,iw,size(atvois%indi)
                 atvois%indi(iw) = j
 
                 if (ipotentiel==20) then
@@ -186,7 +186,7 @@ contains
           end do !ncelvois
           atvois%iwmax(i) = iw
           nvij=iw-iwo
-          !                 write(6,*)'NVIJ',i,nvij,iw
+          !                 write(uwrt,*)'NVIJ',i,nvij,iw
        end do ! fin i
        maxvoi=iw
 

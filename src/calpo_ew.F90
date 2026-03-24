@@ -27,7 +27,7 @@ contains
     boxndm%volu=calcvol(boxndm%at(1:3,1),boxndm%at(1:3,2),boxndm%at(1:3,3))
     fact1 = auxe/2./pi/boxndm%volu
     fact2 = auxe*2./boxndm%volu
-!    write(6,*)'KPME',kpme
+!    write(uwrt,*)'KPME',kpme
     do nb1 = -ncoucx, ncoucx
        do nb2 = -ncoucy, ncoucy
           do nb3 = -ncoucz, ncoucz
@@ -39,7 +39,7 @@ contains
              ex2 = ex*fact2
              tabv3(nb1,nb2,nb3) = ex1
              tabf3(:,nb1,nb2,nb3) = ex2*q(:)
-!             write(6,*)nb1,nb2,nb3,ex1,ex2,q
+!             write(uwrt,*)nb1,nb2,nb3,ex1,ex2,q
           end do
        end do
     end do

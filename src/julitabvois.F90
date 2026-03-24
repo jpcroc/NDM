@@ -1,6 +1,6 @@
 module calfojuli_mod
   USE calfocommon
-  USE gen_com_m, ONLY:nvat,fnemd,lcalcjq,lnemd,lperiod, zero
+  USE gen_com_m, only:uwrt,lwrt,nvat,fnemd,lcalcjq,lnemd,lperiod, zero
   use vect_dist_mod,only:vect_dist
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only : cell_config
@@ -94,7 +94,7 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
      nvi=0.
      rhoitot=0.
      iti = atcf%ityp(i)
-!            write(6,*)'i iti = ',i,iti
+!            write(uwrt,*)'i iti = ',i,iti
      densityi=0.0 ;Eembi=0.0; dEembi=0.0
      if (i==1) then
         iw1 = 1
@@ -110,9 +110,9 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
              &,linter=linter,dist=rij)
         if (.not.linter) cycle
         
-        !          write(6,*)'i iti j  itj r ',i,iti,j,itj
+        !          write(uwrt,*)'i iti j  itj r ',i,iti,j,itj
         k=Int(rij/ktor)
-        !       write(6,*)'k ',k
+        !       write(uwrt,*)'k ',k
         drk=rij-k*ktor
         ll = ipo(iti,itj)
         rhoj=eamrho(1,ll,k)+eamrho(2,ll,k)*drk+eamrho(3,ll,k)*drk**2+eamrho(4,ll,k)*drk**3  !rho de j sur i
@@ -128,7 +128,7 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
      end do loopvois
 
      !boucle sur les voisins de i
-     !       write(6,*)'i nvi', i,nvi
+     !       write(uwrt,*)'i nvi', i,nvi
      sij(:)=0.
      loopvj1 : do iw=1,nvi
         j=jvi(iw)
@@ -136,7 +136,7 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
         !          if((itj==2).and.(iti==2))cycle
         if(atcf%ityp(j).ne.iti) then
            itj=atcf%ityp(j)
-           !        write(6,*)'i j dis ',i,j,Vrij(iw)
+           !        write(uwrt,*)'i j dis ',i,j,Vrij(iw)
            c1ij=Vc1ij(iw) ;c2ij= Vc2ij(iw); c3ij=Vc3ij(iw)
            rij=Vrij(iw)
 
@@ -150,19 +150,19 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
               IF (L==J)cycle
               !
               if(itl.eq.iti) cycle 
-              !                write(6,*)'L i iti j itj l itl ',i,iti,j,itj,l,itl
+              !                write(uwrt,*)'L i iti j itj l itl ',i,iti,j,itj,l,itl
               c1il=Vc1ij(iwl) ;c2il= Vc2ij(iwl); c3il=Vc3ij(iwl)
               ril=Vrij(iwl)
               rholsi=rhojsi(iwl)
 
               costetlij=(c1ij*c1il+c2ij*c2il+c3ij*c3il)/(rij*ril)             
-              !                write(6,*)'costetlij',costetlij
+              !                write(uwrt,*)'costetlij',costetlij
               tdepcos=1.0+costetlij
               if (tdepcos.le.0.0) tdepcos=1.0d-10
-              !                write(6,*)'tdepcos',tdepcos
+              !                write(uwrt,*)'tdepcos',tdepcos
               sijl=rholsi*(tdepcos**beta)/alphaPbeta          
               sij(iw)=sij(iw)+sijl
-              !                write(6,*)'Lsijl',i,iw,j,l,sij(iw),sijl
+              !                write(uwrt,*)'Lsijl',i,iw,j,l,sij(iw),sijl
            end do loopvli1
 
            ! fin terme l debut terme "k"
@@ -178,7 +178,7 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
 
            loopvjk1 :do iwl = iw1j, iw2j          
               l = atcf%indi(iwl)
-              !                write(6,*)'i j l',i,j,l
+              !                write(uwrt,*)'i j l',i,j,l
               itl=atcf%ityp(l)
               if(itl==itj) cycle 
               IF (L==I)cycle
@@ -192,16 +192,16 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
               ll = ipo(itj,itl)
               rholsj=eamrho(1,ll,k)+eamrho(2,ll,k)*drk+eamrho(3,ll,k)*drk**2+eamrho(4,ll,k)*drk**3  !rho de l sur j
               costetijl=-(c1ij*c1jl+c2ij*c2jl+c3ij*c3jl)/(rij*rjl)
-              !                write(6,*)'costetijk',costetijl
+              !                write(uwrt,*)'costetijk',costetijl
               tdepcos=1+costetijl
 
               if (tdepcos.le.0.0) tdepcos=1.0d-10
-              !                write(6,*)'tdepcos',tdepcos
+              !                write(uwrt,*)'tdepcos',tdepcos
               sijl=rholsj*(tdepcos**beta)/alphaPbeta          
 
               !                sijl=rholsj*((1+costetijl)**beta)/alphaPbeta          
               sij(iw)=sij(iw)+sijl 
-              !                write(6,*)'Ksijl',i,iw,j,l,sij(iw),sijl
+              !                write(uwrt,*)'Ksijl',i,iw,j,l,sij(iw),sijl
            end do loopvjk1
            if (abs(sij(iw)/rhojsi(iw)).gt.50.0) then
               ecrsij(iw)=0.0
@@ -209,7 +209,7 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
               ecrsij(iw)=exp(-2.0*sqrt(sij(iw)/rhojsi(iw)))
            end if
            rhotildjsi(iw)=rhojsi(iw)*ecrsij(iw)
-           !if (i==344)  write(6,*)'ecr ',i,j,sij(iw),rhojsi(iw),sij(iw)/rhojsi(iw),ecrsij(iw)
+           !if (i==344)  write(uwrt,*)'ecr ',i,j,sij(iw),rhojsi(iw),sij(iw)/rhojsi(iw),ecrsij(iw)
         else
            sij(iw)=0.0
            ecrsij(iw)=1.0
@@ -225,22 +225,22 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
      ! calcul et stockage de Eembi et dEembi
      k=Int((densityi-rhomin(iti))/ktorho(iti))
      k=max(k,3) ; k=min(k,ngrid-3)
-     !       write(6,*)'i rhoitot densityi ',i,rhoitot,densityi
+     !       write(uwrt,*)'i rhoitot densityi ',i,rhoitot,densityi
      drk=densityi-(rhomin(iti)+k*ktorho(iti))
-     !       write(6,*)i,iti,k
+     !       write(uwrt,*)i,iti,k
      Eembi=eamglue(1,iti,k)+eamglue(2,iti,k)*drk+eamglue(3,iti,k)*drk**2+eamglue(4,iti,k)*drk**3
      dEembi=eamglue(2,iti,k)+2.0*eamglue(3,iti,k)*drk+3.0*eamglue(4,iti,k)*drk**2
-     !       if(i==344)write(6,*)'dembi ', dEembi,k,drk,eamglue(2,iti,k),eamglue(3,iti,k),eamglue(4,iti,k)
-     !             write(6,*)'i Eembi', i ,Eembi
+     !       if(i==344)write(uwrt,*)'dembi ', dEembi,k,drk,eamglue(2,iti,k),eamglue(3,iti,k),eamglue(4,iti,k)
+     !             write(uwrt,*)'i Eembi', i ,Eembi
      !       call extrapolateEam(embtyp(iti),density(i),Embf=Eembi, dembF=dEembi)
      !densityi, Eembi et dEembi sont des scalaires associés au i courant
 
      !******************************************************************************************************************
 
      !boucle des forces
-     !    write(6,*)
-     !    write(6,*)'REP'
-     !    write(6,*)
+     !    write(uwrt,*)
+     !    write(uwrt,*)'REP'
+     !    write(uwrt,*)
      loopvj2 :do iw = 1, nvi 
         j = jvi(iw)
         c1ij=Vc1ij(iw) ;c2ij= Vc2ij(iw); c3ij=Vc3ij(iw)
@@ -321,9 +321,9 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
         if(itj==iti) cycle
         if (ecrsij(iw)==0) cycle
         !       
-        !          if(i==344) write(6,*)'i iw j sij(iw) ',i,iw,j,sij(iw)
+        !          if(i==344) write(uwrt,*)'i iw j sij(iw) ',i,iw,j,sij(iw)
         aux1=-1.0*dEembi*ecrsij(iw)*sqrt(rhoj/sij(iw))/alphaPbeta  !chgt de signe par rapport à d(E)-> force
-        !          if(i==344) write(6,*)'aux1',aux1,dEembi,ecrsij(iw),rhoj,sij(iw)
+        !          if(i==344) write(uwrt,*)'aux1',aux1,dEembi,ecrsij(iw),rhoj,sij(iw)
         !calcul terme l voisins de i
         !voisins l de i de type itj
         loopvli2 : do iwl=1,nvi
@@ -412,7 +412,7 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
               if (.not.linterjl)cycle
               c1jl=dxpjl(1);              c2jl=dxpjl(2);              c3jl=dxpjl(3);
            gradjl(1)=c1jl/rjl ; gradjl(2)=c2jl/rjl ; gradjl(3)=c3jl/rjl
-           !       write(6,*)'k ',k
+           !       write(uwrt,*)'k ',k
            k=Int(rjl/ktor)
            drk=rjl-k*ktor
            ll = ipo(itj,itl)
@@ -478,15 +478,15 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
 
 
         end do loopvjk2
-        !if (i==1)  write(6,*)'fb1 ',fp(1,1),fp(2,1),fp(3,1)
+        !if (i==1)  write(uwrt,*)'fb1 ',fp(1,1),fp(2,1),fp(3,1)
      end do loopvj2
-     !if (i==1)  write(6,*)'fb2 ',fp(1,1),fp(2,1),fp(3,1)
+     !if (i==1)  write(uwrt,*)'fb2 ',fp(1,1),fp(2,1),fp(3,1)
 
      potistcalfo=potistcalfo+Eembi
 !     if (lcalcjq) eat(i)=eat(i)+Eembi
      potisglue=potisglue+Eembi
 
-     !    write(6,*)
+     !    write(uwrt,*)
 
 
   end do loop1at1
@@ -499,12 +499,12 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
      end do
 
      do i=1,atcf%im
-!        write(6,*)'A',i,fp(:,i)
+!        write(uwrt,*)'A',i,fp(:,i)
         do l=1,3
            atcf%fp(l,i)=atcf%fp(l,i)-fpnemdmoy(l)
            atcf%fp(l,i)=atcf%fp(l,i)+fpnemd(l,i)
         enddo
-!        write(6,*)'B',i,fp(:,i)
+!        write(uwrt,*)'B',i,fp(:,i)
      end do
   end if
 
@@ -515,7 +515,7 @@ SUBROUTINE calfojuli(atcf,celcf,boxcf)
 
 
 
-  !  write(6,*)'f8 ',fp(1,1),fp(2,1),fp(3,1)
+  !  write(uwrt,*)'f8 ',fp(1,1),fp(2,1),fp(3,1)
   return
 end SUBROUTINE calfojuli
 

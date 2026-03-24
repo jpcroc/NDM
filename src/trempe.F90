@@ -1,5 +1,5 @@
 module trempe_mod
-  USE gen_com_m, ONLY:lperiod,tstep,usdh,rang
+  USE gen_com_m, only:uwrt,lwrt,lperiod,tstep,usdh,rang
   use atomconfig,only:atom_config_d,atom_config_e
   implicit none
 contains
@@ -61,11 +61,11 @@ contains
        forctot = forctot+sum(atdml%fp(:,i)**2)
     end do
     forctot = sqrt(forctot)
-    !  write(6,*)'vp',vp
-    !  call calctemp (temptyp) ; write (6,*) 'temp',temptyp
+    !  write(uwrt,*)'vp',vp
+    !  call calctemp (temptyp) ; write (uwrt,*) 'temp',temptyp
 
-    !  if(rang==0) write (6, *) 'ITTRP ', it, pqotist, forctot, usdh, aux(:ntyp),vp(:,1)
-    !if (rang==0) write(6,*) 'PARA-T sortie trempe'
+    !  if(rang==0) write (uwrt, *) 'ITTRP ', it, pqotist, forctot, usdh, aux(:ntyp),vp(:,1)
+    !if (rang==0) write(uwrt,*) 'PARA-T sortie trempe'
     return
   end subroutine trempe
 end module trempe_mod

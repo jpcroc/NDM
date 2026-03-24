@@ -3,7 +3,7 @@ module plottpcel_mod
   USE cellconfig,only:cell_config, cell_config_arps
   USE T_kind_param_m, ONLY:  double
   USE arret_ndm_mod,only: arret_ndm
-  use gen_com_m,only:iteration,unitP,timel,rang
+  use gen_com_m,only:uwrt,lwrt,iteration,unitP,timel,rang
   use newunit_mod,only:newunit
   use Tpara,only:para_space_config    
 #ifdef PARA
@@ -99,7 +99,7 @@ module plottpcel_mod
     iplotcel=0 
     icall=icall+1
     if (.not.celcf%ltpcel) then
-       write(6,*)'coding error in plottpcel call, %ltpcel.ne.true'
+       write(uwrt,*)'coding error in plottpcel call, %ltpcel.ne.true'
        call arret_ndm
     end if
 !    if (icall==1) then 
@@ -114,7 +114,7 @@ module plottpcel_mod
     else
        itp=iteration
     end if
-    if (rang==0)write(6,*)'PLOTCEL',itp,iplotcel,iteplotcomp
+    if (rang==0)write(uwrt,*)'PLOTCEL',itp,iplotcel,iteplotcomp
     if (mod(iplotcel,2)==0) then
        if (iteplotcomp.gt.0) then
           if (mod(itp,iteplotcomp)==0)then
@@ -135,7 +135,7 @@ module plottpcel_mod
          if (myidsp==0) then
             if (lppl) then
                if (all(slxyz==0)) then
-                  write(6,*)'inconsistent slxyz=0 and lppl'
+                  write(uwrt,*)'inconsistent slxyz=0 and lppl'
                   call arret_ndm
                else
                   call plotslice(cellcomp,boxcf,slxyz,itp)
@@ -161,7 +161,7 @@ module plottpcel_mod
     integer::iko,kos,i1,i2,i3,ic,ndom,idom
     real(double)::dist,posr(3),cv(1,3),distm,edge(3)
     if ((any(sphere%posplt(:).gt.1)).or.(any(sphere%posplt(:).lt.0))) then
-       write(6,*)' check 0<=POSPLT <=1'
+       write(uwrt,*)' check 0<=POSPLT <=1'
        call arret_ndm
     end if
 
@@ -238,7 +238,7 @@ module plottpcel_mod
        dist=norm2(cv(1,:)) ! dist en cm
        idom=1+int(dist/sphere%rplt)
        sphere%ncs(idom)=sphere%ncs(idom)+1
-!       write(6,*)'idom',idom,ndom,sphere%ncs(idom),sphere%maxncs
+!       write(uwrt,*)'idom',idom,ndom,sphere%ncs(idom),sphere%maxncs
        sphere%indc(sphere%ncs(idom),idom)=iko
 
        sphere%nato(idom)=sphere%nato(idom)+celcf%nato(iko)
@@ -310,7 +310,7 @@ module plottpcel_mod
     
     if (slxyz(1).ne.0) then
        if (mod(celcf%nox(1),slxyz(1)).ne.0) then
-          write(6,*)'choose a slxyz(1) which divides nox',celcf%nox(1)
+          write(uwrt,*)'choose a slxyz(1) which divides nox',celcf%nox(1)
           call arret_ndm
        end if
        nx(1)=celcf%nox(1)/slxyz(1)
@@ -320,7 +320,7 @@ module plottpcel_mod
 
     if (slxyz(2).ne.0) then
        if (mod(celcf%nox(2),slxyz(2)).ne.0) then
-          write(6,*)'choose a slxyz(2) which divides noy',celcf%nox(2)
+          write(uwrt,*)'choose a slxyz(2) which divides noy',celcf%nox(2)
           call arret_ndm
        end if
        nx(2)=celcf%nox(2)/slxyz(2)
@@ -330,7 +330,7 @@ module plottpcel_mod
     
     if (slxyz(3).ne.0) then
        if (mod(celcf%nox(3),slxyz(3)).ne.0) then
-          write(6,*)'choose a slxyz(3) which divides noz',celcf%nox(3)
+          write(uwrt,*)'choose a slxyz(3) which divides noz',celcf%nox(3)
           call arret_ndm
        end if
        nx(3)=celcf%nox(3)/slxyz(3)
@@ -358,11 +358,11 @@ module plottpcel_mod
        slice%nato(kos)=slice%nato(kos)+celcf%nato(iko)
        
     end do
-    !    write(6,*)'RANG',slice%nato
+    !    write(uwrt,*)'RANG',slice%nato
     
     do iko=1,slice%noxyz
        if (slice%ncs.ne.ncs(iko)) then
-          write(6,*)'erreur constr slice'
+          write(uwrt,*)'erreur constr slice'
        end if
     end do
 

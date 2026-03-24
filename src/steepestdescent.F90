@@ -1,6 +1,6 @@
 module steepestdescent_mod
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:rang,fpstop,fsumstop,dmtype,itmax
+  USE gen_com_m, only:uwrt,lwrt,rang,fpstop,fsumstop,dmtype,itmax
 
   use WGC_mod,only:setV_F,nstep,ndir,beta,test_conv,ncalls,lvm,Rmin,unitgc,Fmin,fpstopsig,ityprel,&
        &lvarstop,fstpdecr,ft2,fm2,fs2,beta35,gammas,gammav
@@ -36,7 +36,7 @@ contains
     !        write(unitgc,*)'post sVF0',V
     if (lover) then
        if (rang==0)       write(unitgc,*)'NO NEED TO RELAX'
-       if (rang==0)       write(6,*)'NO NEED TO RELAX'
+       if (rang==0)       write(uwrt,*)'NO NEED TO RELAX'
        return
     end if
 
@@ -56,7 +56,7 @@ contains
        sk=gammas*sk+(1-gammas)*(1-gammas)*fsq
        vel(:)=vel(:)/(1-gammav**k)
        sk=sk/(1-gammas**k)
-       write(6,*)'sk',sk,1/(eps+sqrt(sk))
+       write(uwrt,*)'sk',sk,1/(eps+sqrt(sk))
        R(:)=R(:)+vel(:)/(eps+sqrt(sk))
        call setV_F (N,R,V,F,lover,lvm,idesc)
        if (lvm)then
@@ -66,7 +66,7 @@ contains
        !        write(unitgc,*)'post sVF0',V
        if (lover) then
           if (rang==0)       write(unitgc,*)'NO NEED TO RELAX'
-          if (rang==0)       write(6,*)'NO NEED TO RELAX'
+          if (rang==0)       write(uwrt,*)'NO NEED TO RELAX'
           return
        end if
 
@@ -95,26 +95,26 @@ contains
     !        write(unitgc,*)'post sVF0',V
     if (lover) then
        if (rang==0)       write(unitgc,*)'NO NEED TO RELAX'
-       if (rang==0)       write(6,*)'NO NEED TO RELAX'
+       if (rang==0)       write(uwrt,*)'NO NEED TO RELAX'
        return
     end if
 
     if (lvarstop) then
-       write(6,*)'VARIABLE FPSTOP/SIGSTOP/SUMSTOP'
+       write(uwrt,*)'VARIABLE FPSTOP/SIGSTOP/SUMSTOP'
        fpstopI=fpstop
        fsumstopI=fsumstop
        fpstopsigI=fpstopsig
        lcritI=.false.
        if (ityprel==1) then
-          write(6,*)'fpstop fsumstop at start',fpstop,fsumstop
+          write(uwrt,*)'fpstop fsumstop at start',fpstop,fsumstop
        else
-          write(6,*)'fsigstop at start',fpstopsig
+          write(uwrt,*)'fsigstop at start',fpstopsig
        end if
        do while (.not.lcritI)
 !!$          if (ityprel==1) then
-!!$             write(6,*)'fpstop fsumstop at this poistart',fpstop,fsumstop
+!!$             write(uwrt,*)'fpstop fsumstop at this poistart',fpstop,fsumstop
 !!$          else
-!!$             write(6,*)'fsigstop at start',fpstopsig
+!!$             write(uwrt,*)'fsigstop at start',fpstopsig
 !!$          end if
 
           if (ityprel==1) then 
@@ -136,7 +136,7 @@ contains
                    fsumstop=fsumstopI
                 end if
              end if
-             write(6,*)'fpstop and/or fsumstop set to',fpstop,fsumstop
+             write(uwrt,*)'fpstop and/or fsumstop set to',fpstop,fsumstop
           else
              fsigts=fs2/fstpdecr
              if (fsigts.gt.fpstopsig) then
@@ -145,12 +145,12 @@ contains
              else
                 fpstopsig=fpstopsigI
              end if
-             write(6,*)'fpstopsig set to',fpstopsig
+             write(uwrt,*)'fpstopsig set to',fpstopsig
           end if
           
           call do_CG(N,R,V,F,lover,lorig,beta0)
           ldecr=.false.
-          write(6,*)'--- end of intermediate minimization---'
+          write(uwrt,*)'--- end of intermediate minimization---'
           if ((fpstop==fpstopI).and.(fsumstop==fsumstopI).and.(fpstopsig==fpstopsigI))lcritI=.true.
        end do
     else
@@ -189,21 +189,21 @@ contains
        write(unitgc,*)
        write(unitgc,*)'**************************'
        write(unitgc,*)'callmindir idir beta E0',idir,beta,V0
-       !              write(6,*)'callmindir idir  E0',idir,beta
+       !              write(uwrt,*)'callmindir idir  E0',idir,beta
        call mindir(lover,beta,N,R0,V0,H,R,V,F,lOK,ldirOK,idesc)
 
 
        if (rang==0) write(unitgc,'(A,I3,2L2,E20.10)')' >>> minimization idirection; lOVER; LDIROK; beta ',idir,lover,ldirOK,beta
-       if (rang==0) write(6,'(A,I3,2L2,E20.10)')' >>> minimization idirection; lOVER; LDIROK; beta ',idir,lover,ldirOK,beta
-       !       if (rang==0) write(6,'(A,I3,L2)')' >>> minimization idirection lover ldirOK ',idir,lover,ldirOK
+       if (rang==0) write(uwrt,'(A,I3,2L2,E20.10)')' >>> minimization idirection; lOVER; LDIROK; beta ',idir,lover,ldirOK,beta
+       !       if (rang==0) write(uwrt,'(A,I3,L2)')' >>> minimization idirection lover ldirOK ',idir,lover,ldirOK
        if (lover) then
           if (lok) then
              if (rang==0)  write(unitgc,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
-             if (rang==0)  write(6,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
+             if (rang==0)  write(uwrt,*)'RELAXED AFTER ',idir,' DIRECTIONS and ', NCALLS,' force calculations'
              return
           else
              if (rang==0)  write(unitgc,*)'NOT RELAXED!!!!!!!'
-             if (rang==0)  write(6,*)'NOT RELAXED!!!!!!!'
+             if (rang==0)  write(uwrt,*)'NOT RELAXED!!!!!!!'
              call test_conv(N,F,lover,V,R,lvm)
              if (.not.lvm)then
                 R=Rmin
@@ -234,7 +234,7 @@ contains
                 R0(1:N)=R(1:N)
              else
                 write(unitgc,*) 'position set at minimum energy found during line search'
-                write(6,*) 'position set at minimum energy found during line search'
+                write(uwrt,*) 'position set at minimum energy found during line search'
                 R0=Rmin
                 G=Fmin
                 H=Fmin
@@ -243,7 +243,7 @@ contains
              fpstop=fpstop/1.5
              fsumstop=fsumstop/1.5
              write(unitgc,'(A,2G18.8)') 'fpstop, fsumstop divided by 1.5',fpstop,fsumstop
-             write(6,'(A,2G18.8)') 'fpstop, fsumstop divided by 1.5',fpstop,fsumstop
+             write(uwrt,'(A,2G18.8)') 'fpstop, fsumstop divided by 1.5',fpstop,fsumstop
           end if
        else
           if (ldirOK) then
@@ -272,7 +272,7 @@ contains
              end select
           else
              write(unitgc,*) 'position set at minimum energy found during line search'
-             write(6,*) 'position set at minimum energy found during line search'
+             write(uwrt,*) 'position set at minimum energy found during line search'
              R0=Rmin
              G=Fmin
              H=Fmin
@@ -307,7 +307,7 @@ contains
     linit=.false.
     normF02=SUM(F0(:)**2)
     Rbeta(:)=R0(:)+beta*F0(:)
-!!$    write(6,*)'IN mindir betaIN',beta
+!!$    write(uwrt,*)'IN mindir betaIN',beta
 !!$    write(unitgc,*)'IN mindir betaIN',beta
     call calcETcheck(N,Rbeta,Vbeta,Fbeta,lover,lvm,Rmin,R,V,F,R0,F0,V0,normF02,ldir,idesc)
 !    if (ldir) beta=beta/3
@@ -462,7 +462,7 @@ contains
       real(double)::normF02
       lover=.false.
       ldir=.false.
-!     write(6,*)'DBG in calcetcheck'
+!     write(uwrt,*)'DBG in calcetcheck'
       call setV_F (N,Rcalc,Vcalc,Fcalc,lover,lvm,idesc)
       if (lvm)Rmin=R
       call checkline(lover,ldir,F0,normF02,N,R,V,F,Rcalc,Vcalc,Fcalc)

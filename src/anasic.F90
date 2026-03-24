@@ -24,23 +24,23 @@ contains
     integer::nviT(2),itypT(4,2)
     real*8:: eatomT(2),eatomdiff(im)
 
-!    write(6,*)'entree anasic',it
+!    write(uwrt,*)'entree anasic',it
     ncall=ncall+1
     nvhomo=0
     nviT(:)=4 ; itypT(:,1)=2; itypT(:,2)=1
     open(unit=547,file='eatomin')
     read(547,*)eatomT(1)
-!    write(6,*)eatomT(1)
+!    write(uwrt,*)eatomT(1)
     read(547,*)eatomT(2)
     close (547)
-!    write(6,*)'eatomin lu'
+!    write(uwrt,*)'eatomin lu'
  !    eatomT(1)=-6.0102327 ;    eatomT(2)=-6.7642684
     ty(1)='Si' ; ty(2)='C '
 
     do i=1,im
        eatomdiff(i)=eatom(i)*erg2ev-eatomT(ityp(i))
     end do
- !   write(6,*)'post eatD'
+ !   write(uwrt,*)'post eatD'
     luxlf=839
     inquire(unit=luxlf,OPENED=lop)
     if (.not.lop) open(luxlf, file='sic.axsf', form='formatted', &
@@ -48,7 +48,7 @@ contains
 
     if ((ncall==1).and.(itmax.ne.0))write(luxlf,*)'ANIMSTEPS ',itmax
     do i=1,im
- !      write(6,*)i
+ !      write(uwrt,*)i
        if (ityp(i)==1) then
           plottyp(i)=14
        else
@@ -65,7 +65,7 @@ contains
           end if
        end do
        if (plottyp(i).ge.20) nvhomo=nvhomo+1
-!       write(6,*)i,nvi(i),(ityp(ivois(j,i)),j=1,nvi(i)),plottyp(i)
+!       write(uwrt,*)i,nvi(i),(ityp(ivois(j,i)),j=1,nvi(i)),plottyp(i)
     end do
     if(nvhomo.gt.0)write(uwrt,*)'Nb d''atomes avec liaison homopolaire = ', nvhomo
     write(luxlf,*)'ATOMS',ncall

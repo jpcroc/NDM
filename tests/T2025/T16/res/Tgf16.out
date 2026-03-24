@@ -1,0 +1,119 @@
+ Process            0  of            2  is alive
+ Process            1  of            2  is alive
+ nom fichier din=Febulk.din                                                                      
+ nom fichier din=Febulk.din                                                                      
+ rang readdm iseed            1           1
+ LTABVOIS MIS A FALSE en PARA
+
+ -------- caracteristiques du run DM-------- 3
+     GRADIENT CONJUGUE STANDARD 
+ run a partir du fichier .cin
+
+      ANALYSES 
+ itetemp=           1  iteprtsigma=           1
+
+      CONTROLES 
+tstep=  0.100D-14
+ itmax=         200 timemax=    10000000000.000002       itab=           1  itetimestep=          -1
+tinit=     600.0
+tempdeplainit=      -1.0
+debyetemp=      -1.0
+  ----------------------------------
+
+
+ nb de potentiels           1
+ ipotentiel          10
+ fmt_cin           1
+ rang readdm iseed            0           1
+ IMM PARA =         1200        2000
+
+ -*-*-*-*-*-*-*POTENTIELS*-*-*-*-*-
+
+
+ POTENTIEL EAM
+
+ NTYP NPAIR            1           1
+ Types d_atomes pour ce potentiel:
+ CM, masse,type, NUMERO DU TYPE D ATOME
+   1   55.847   26.000  Fe 
+ nb of readed pairs           1
+ nptmax in the max number of points on grid        249999
+ EAM           1           1
+ EAM number of points in potin and the step      249999   6.8178370289999997E-004
+ dens           1           1
+ RHO potin points and the step:       249999   2.4000000000000001E-005
+ paire eam ; paire complete           1           1
+ rep
+
+  *-*-*-*-*-*CONSTRUCTION DE LA BOITE*-*-*-*-*-*-
+ imm,imm_glob,nprocspace        1200        2000           2
+
+ ********** reading configuration from file********
+
+  *-*-*-*-*-*READING OF CIN FILE*-*-*-*-*-*-
+  *-*-*-*-*- LRESTART = F
+ config type of  .cin file :            5
+volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
+ nox,noy,noz dans .din =          -1          -1          -1
+nox noy noz and ghost cells from ru
+  nox in direction  1=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+  nox in direction  2=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+  nox in direction  3=  4 if not specified =Int(   0.2855E-06/  0.6000E-07) 
+          64  active cells among           64
+celsizes   0.7138295E-07  0.7138295E-07  0.7138295E-07
+ sur            2  cpus           0
+
+
+ -----------------------------------------------------------
+ Procedure de decoupage pour une boite de taille  :           4           4           4
+ sur            2  cpus           0
+ Nbre de solutions possibles :            3
+LE_MEILLEUR_DECOUPAGE :    2    1    1    2    0.9286
+ -----------------------------------------------
+           FIN DU CALCUL DU DECOUPAGE :         
+
+ Nbre de cellule suivant x :           4
+ Nbre de cellule suivant y :           4
+ Nbre de cellule suivant z :           4
+
+ Le cas choisit :           1           1           2
+ Nombre de cellules max echg  par proc :           2         112
+ Taux d'equilibrage :           2   1.0000000000000000     
+ valeur            2  0.92857142857142860     
+ Nbre Min/Max de cel. locales. :          32          32
+ Nbre Min/Max de cel. fantomes. :         112         112
+ locmin/fantomax :           2  0.28571428571428570     
+ Taille des decoupages
+ Decoupage           0 :           4           4           2
+ Decoupage           1 :           4           4           2
+ Decoupage           2 :           4           2         113
+ Decoupage           3 :           4           2           0
+ Decoupage          -2 :          33           4           4
+ Decoupage          -1 :           0           4           4
+ Decoupage           0 :           4           4           2
+ Decoupage           1 :           4           4           2
+ ----------------------------------------------
+volume= 0.23278953D-19 cm3  0.23278953D+05 Ang3
+ config type of  .cin file :            5
+ types
+ XPR
+ num_at_glob
+ PRESENT imglob        2000
+ PRESENT imglob        2000
+ natperc im/noxyz          76          31
+ ltabvois F
+
+ -------- boite de simulation ------
+ nombre d atomes =        2000
+vecteur  1      28.553180       0.000000       0.000000
+vecteur  2       0.000000      28.553180       0.000000
+vecteur  3       0.000000       0.000000      28.553180
+        2000  atomes de type           1
+
+  -------------------------------------------------------------------
+              2nd step of potential initialization , dependancy on box size
+ calpoeam ktorho and the inverse:    8.5222281072576088E-003   117.34020580232894     
+ rang rangspace            1           1  nbr procs voisins            1
+ rang rangspace            0           0  nbr procs voisins            1
+ rvois must NOT be set in initialization of atcf when ltabvois =False
+ rvois must NOT be set in initialization of atcf when ltabvois =False

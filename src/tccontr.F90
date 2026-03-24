@@ -4,7 +4,7 @@ module tccontr
   USE atomconfig,only:atom_config_d,atom_config_e
   use cellconfig,only: cell_config,caltabtC
   use boxconfig,only:box_config,periodbox
-  use gen_com_m,only:lperiod,tfcou,epcou,couxyz
+  use gen_com_m,only:uwrt,lwrt,lperiod,tfcou,epcou,couxyz
   USE calctemp_mod,only: calctemp
   use notperiod_mod,only:notperiod
 

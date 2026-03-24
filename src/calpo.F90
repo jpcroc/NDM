@@ -185,7 +185,7 @@ contains
                   poly3(3)*r2+poly3(4)*r3
              if (r > rp3c) pot(1,l,k) = -dip(l)/r6
 
-             !               write (6,*) k,r,pot(1,l,k) 
+             !               write (uwrt,*) k,r,pot(1,l,k) 
           end do
           ! ++++++++++++ Fin du potentiel UO2 +++++++++++++
        case default
@@ -194,7 +194,7 @@ contains
           ! +++++++++++ 1. POTENTIEL DE BUCKINGHAM +++++++++++++
 
           pau(:npair) = a_factor(:npair)          
-          !       write(6,*)'L, Aij, ROij, Cij',l,pau(l),
+          !       write(uwrt,*)'L, Aij, ROij, Cij',l,pau(l),
           !    &            ro(l),dip(l)
 
           ! exponential term
@@ -243,13 +243,13 @@ contains
                 do l=1,npair
                    if((typ_pot_pair(l)==8).and.(lue_paire(l).eqv..true.)) then
                       pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6
-                      !                      write(6,*)'BMH',r,l,pau(l)*exp((-r)/ro(l))
-                      !                      write(6,*)'DIP',r,l, -dip(l)/r6
+                      !                      write(uwrt,*)'BMH',r,l,pau(l)*exp((-r)/ro(l))
+                      !                      write(uwrt,*)'DIP',r,l, -dip(l)/r6
                       pot(1,l,k) =  pot(1,l,k)- dmorse(l)*((1.-exp(-1.*amorse(l)*(r-remorse(l))))**2 -1.)
-                      !                      write(6,*)'MORSE',r,l,- dmorse(l)*((1.-exp(-1.*amorse(l)*(r-remorse(l))))**2 -1.)
+                      !                      write(uwrt,*)'MORSE',r,l,- dmorse(l)*((1.-exp(-1.*amorse(l)*(r-remorse(l))))**2 -1.)
                       pot(1,l,k) =  pot(1,l,k) -afd(l)/(1+exp(bfd(l)*(r-r0fd(l))))
-                      !                      write(6,*)'FD',r,l, -afd(l)/(1+exp(bfd(l)*(r-r0fd(l))))
-                      !                      write(6,*)
+                      !                      write(uwrt,*)'FD',r,l, -afd(l)/(1+exp(bfd(l)*(r-r0fd(l))))
+                      !                      write(uwrt,*)
                       pot(1,l,k) =  pot(1,l,k) -aig(l)*exp(-big(l)*((r-r0ig(l))**2))
                    end if
                 end do
@@ -263,7 +263,7 @@ contains
        if (lprtpot.EQV..true.) then
           do l=1,npair
              if (typ_pot_pair(l)==ipotentiel)then
-                !             write(6,*)'l,k,r,pot(1,l,k)'
+                !             write(uwrt,*)'l,k,r,pot(1,l,k)'
                 do k=1,ngrid
                    r=float(k)*csive*1.0D8
                    lw=360+l
@@ -282,7 +282,7 @@ contains
        case(1)
           ! Calcul du premier maximum local
 
-          if (rang==0) write(6,*)'calcul du max loc du pot VBEEST'
+          if (rang==0) write(uwrt,*)'calcul du max loc du pot VBEEST'
           irrep(:npair)=0
           l=0
           do i1=1,ntyp
@@ -290,10 +290,10 @@ contains
                 l=ipo(i1,i2)
                 if (lue_paire(l)) then
                    if(irrep(l)==20) cycle
-                   !           write(6,*)'entre maxVBEEST'
+                   !           write(uwrt,*)'entre maxVBEEST'
                    call maxVBEEST(rrep,csive,l,auxe,alpha,ngrid,ntyp, &
                         npair,pau,dip,ro,zz,convrep)
-                   !           write(6,*)'sortie max VBEEST'
+                   !           write(uwrt,*)'sortie max VBEEST'
                    irrep(l)=convrep
                    r0rep(l)=rrep
                    call potVBEEST(potV0,rrep,l,auxe,alpha,ngrid, &
@@ -333,7 +333,7 @@ contains
        if (lprtpot.EQV..true.) then
           do l=1,npair
              if (typ_pot_pair(l)==ipotentiel)then
-                !             write(6,*)'l,k,r,pot(1,l,k)'
+                !             write(uwrt,*)'l,k,r,pot(1,l,k)'
                 do k=1,ngrid
                    r=float(k)*csive*1.0D8
                    lw=350+l
@@ -353,10 +353,10 @@ contains
        call coulombbuild(pot,ipotentiel,iewald,ngrp1)
 !!$       do l=1,npair
 !!$          if (typ_pot_pair(l)==ipotentiel)then
-!!$             write(6,*)'l,k,r,pot(1,l,k)'
+!!$             write(uwrt,*)'l,k,r,pot(1,l,k)'
 !!$             do k=10,ngrid,10
 !!$                r=float(k)*csive*1.0D8
-!!$                write(6,'(2I6,3D17.6)')l,k,r,pot(1,l,k),pot(2,l,k)
+!!$                write(uwrt,'(2I6,3D17.6)')l,k,r,pot(1,l,k),pot(2,l,k)
 !!$             enddo
 !!$          end if
 !!$       end do
@@ -364,10 +364,10 @@ contains
 
 !!$          do l=1,npair
 !!$             if (typ_pot_pair(l)==ipotentiel)then
-!!$                write(6,*)'l,k,r,pot(1,l,k)'
+!!$                write(uwrt,*)'l,k,r,pot(1,l,k)'
 !!$                do k=10,ngrid,10
 !!$                   r=float(k)*csive*1.0D8
-!!$                   write(6,'(2I6,3D17.6)')l,k,r,pot(1,l,k),pot(2,l,k)
+!!$                   write(uwrt,'(2I6,3D17.6)')l,k,r,pot(1,l,k),pot(2,l,k)
 !!$                enddo
 !!$             end if
 !!$          enddo
@@ -420,7 +420,7 @@ contains
     case(7) ! potentiel de paire tabulé! SELECT LIGNE 90
        ! calculer pot par le spline de  pot_pair_tab
        ! puis resplinner
-       !      write(6,*)'csive',csive
+       !      write(uwrt,*)'csive',csive
        loopk:     do k=1,ngrid
           r= float(k)*csive
           kxsp(k) = r
@@ -428,7 +428,7 @@ contains
 
              if (typ_pot_pair(l)==ipotentiel)then
                 lpt=ipo_2_pair_tab(l)
-                !                write(6,*)'l',l,k, r,pot_pair_tab(ngr,0,lpt)
+                !                write(uwrt,*)'l',l,k, r,pot_pair_tab(ngr,0,lpt)
                 if (r.gt.pot_pair_tab(ngr,0,lpt)) then
                    if (rang==0) write(uwrt,*)'pot tab pair trop court',r,k,pot_pair_tab(ngr,0,lpt),l,lpt
                    call arret_ndm
@@ -440,11 +440,11 @@ contains
                 skp=r*ngr/pot_pair_tab(ngr,0,lpt)
                 kp=skp
                 drkp = (skp-kp)/(ngr/pot_pair_tab(ngr,0,lpt))
-                !              write(6,*)k,r,kp,l              
+                !              write(uwrt,*)k,r,kp,l              
                 !              pot(1,l,k) = pot_pair_tab(kp,1,lpt)+ r*(drkp*(pot_pair_tab(kp,2,lpt)+drkp*(pot_pair_tab(kp,3,lpt) +drkp*(pot_pair_tab(kp,4,lpt)))))
                 pot(1,l,k) = pot_pair_tab(kp,1,lpt)+ drkp*(pot_pair_tab(kp,2,lpt)+drkp*(pot_pair_tab(kp,3,lpt) &
                      & +drkp*(pot_pair_tab(kp,4,lpt))))
-                !                           write(6,*)r,pot(1,l,k)              
+                !                           write(uwrt,*)r,pot(1,l,k)              
 
              end if
           end do
@@ -470,10 +470,10 @@ contains
                 l=ipo(i1,i2)
                 if (lue_paire(l)) then
                    if(irrep(l)==20) cycle
-                   !           write(6,*)'entre maxVBEEST'
+                   !           write(uwrt,*)'entre maxVBEEST'
                    call maxVBEEST(rrep,csive,l,auxe,alpha,ngrid,ntyp, &
                         npair,pau,dip,ro,zz,convrep)
-                   !           write(6,*)'sortie max VBEEST'
+                   !           write(uwrt,*)'sortie max VBEEST'
                    irrep(l)=convrep
                    r0rep(l)=rrep
                    call potVBEEST(potV0,rrep,l,auxe,alpha,ngrid, &
@@ -516,7 +516,7 @@ contains
           pot(2,l,1:ngrid) = bsppart(:ngrid)
           pot(3,l,1:ngrid) = csppart(:ngrid)
           pot(4,l,1:ngrid) = dsppart(:ngrid)
-!          write(6,*)pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
+!          write(uwrt,*)pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
        end do
 
 
@@ -562,7 +562,7 @@ contains
           pot(2,l,1:ngrid) = bsppart(:ngrid)
           pot(3,l,1:ngrid) = csppart(:ngrid)
           pot(4,l,1:ngrid) = dsppart(:ngrid)
-          !          write(6,*)pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
+          !          write(uwrt,*)pot(1,l,k),pot(2,l,k),pot(3,l,k),pot(4,l,k)
        end do
 
 
@@ -597,8 +597,8 @@ contains
 !!$       do l = 1, npair
 !!$          if (typ_pot_pair(l)==ipotentiel)then
 !!$             potpart(1:ngrid) = pot(1,l,1:ngrid)
-!!$             !           write(6,*)'uuuuuuu'
-!!$             !           write(6,*)potpart
+!!$             !           write(uwrt,*)'uuuuuuu'
+!!$             !           write(uwrt,*)potpart
 !!$             do k=1,ngrid
 !!$                lw=600+l
 !!$                write(lw,*)kxsp(k),pot(:,l,k)
@@ -625,7 +625,7 @@ contains
     if (lprtpot.EQV..true.) then
        do l=1,npair
           if (typ_pot_pair(l)==ipotentiel)then
-             !             write(6,*)'l,k,r,pot(1,l,k)'
+             !             write(uwrt,*)'l,k,r,pot(1,l,k)'
              do k=1,ngrid
                 r=float(k)*csive*1.0D8
                 lw=320+l
@@ -728,15 +728,15 @@ contains
              l=ipo(i,j)
              if (typ_pot_pair(l)==ipotentiel)then
                 pot(1,l,k) = pot(1,l,k)+auxe*zz(l)*damp/r
- !               write(6,*)pot(1,l,k)
+ !               write(uwrt,*)pot(1,l,k)
                 if (iewald==3) then
                    aRc=alpha*RcWolf
                    dampRc=derfc(aRc)
                    term2=dampRc/RcWolf
                    term3=(dampRc/(RcWolf**2))*(r-RcWolf)
                    term4=(2*alpha/sqrt(pi))*(exp(-(alpha*RcWolf)**2)/RcWolf)*(r-RcWolf)
-!                   write(6,*)term2*erg2ev,term3*erg2ev,term4*erg2ev
-!                   write(6,*)l,r,zz(l),pot(1,l,k),auxe*zz(l)*(term3+term4-term2),auxe*zz(l)*damp/r
+!                   write(uwrt,*)term2*erg2ev,term3*erg2ev,term4*erg2ev
+!                   write(uwrt,*)l,r,zz(l),pot(1,l,k),auxe*zz(l)*(term3+term4-term2),auxe*zz(l)*damp/r
                    pot(1,l,k) = pot(1,l,k)+auxe*zz(l)*(term3+term4-term2)
 
                 end if

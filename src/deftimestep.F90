@@ -71,8 +71,11 @@ subroutine deftimestep(atcf,box)
      end if
   end do
 #ifdef PARA
+!  write(uwrt,*)'imax',myidsp,imaxT
   call comm_space%barrier
+!  write(uwrt,*)'VmaxT',myidsp,vmax2T
     call comm_space%barrier
+!    write(uwrt,*)'natgmaxT',myidsp,natgmaxt
     call comm_space%barrier
   
 
@@ -83,6 +86,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
    call comm_space%sum(natgmaxt)
    call comm_space%sum(ityp_maxt)
    do iproc=0,nprocspace-1
+!      write(uwrt,*)'IPROC',iproc,vmax2t(iproc),natgmaxt(iproc)
       if (vmax2T(iproc).gt.vmaxt) then
          vmax2=vmax2T(iproc)
          iprocm=iproc
@@ -93,6 +97,7 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
    end do
      !  ityp_max=int(max_glob(3))
      
+!   write(uwrt,*)'vmax2',vmax2,iprocm,natgmax
      
      tmaxv = 1./3./bk*cm(ityp_max)*vmax2
      !tmaxv=0
@@ -150,8 +155,11 @@ endif
   ! -> tseuil a diminuer pour eviter les derives en energies et temperature
   tseuil = depmaxts/(1.0D0*vmax)
   tv1=tstep*vmax !variable servant pour imposer une hysteresis
+  !      write(uwrt,*)'tseuil ',tseuil
   lts = log10(tseuil)
+  !      write(uwrt,*)'lts ',lts
   expos = 1-int(lts)
+  !      write(uwrt,*)'expos ',expos
 
 #ifdef NEC
   ! NEC
@@ -174,6 +182,7 @@ endif
      write (uwrt, *) rang,'sthing wrong deftimestep 1.0'
      call arret_ndm
   endif
+  !      write(uwrt,*)'tifac2 ',tifac2
   oldtstep = tstep
   tstep = tifac2
 
@@ -237,7 +246,7 @@ endif
         end if
      else                                       ! cad si tstep >= 2.10-15s
         tstep = oldtstep
-!        if (rang==0) write (6, *) 'tstep maintenu',tstep
+!        if (rang==0) write (uwrt, *) 'tstep maintenu',tstep
      endif
   end if
 
@@ -260,7 +269,7 @@ endif
            
         else                                       ! cad si tstep >= 2.10-15s
            tstep = oldtstep
-!           if (rang==0) write (6, *) 'tstep maintenu',tstep
+!           if (rang==0) write (uwrt, *) 'tstep maintenu',tstep
         endif
      end if
   end select
@@ -273,7 +282,7 @@ endif
         write(uwrt,*)'chgt etstep',etstep,necycle
      end if
   end if
-  !     write(6,*)'sortie deftimestep'
+  !     write(uwrt,*)'sortie deftimestep'
   return
 end subroutine deftimestep
 end module deftimestep_mod

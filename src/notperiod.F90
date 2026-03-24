@@ -9,7 +9,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:low_limit,zero
+    USE gen_com_m, only:uwrt,lwrt,low_limit,zero
 
     !       version du 09 decembre 2003
 

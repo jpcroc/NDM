@@ -7,7 +7,7 @@ module mod_para
 
 #endif
   use T_kind_param_m, ONLY:  double 
-  use gen_com_m ,only:l2t,rang
+  use gen_com_m ,only:uwrt,lwrt,l2t,rang
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e,atom_config_arps
   USE cellconfig,only:cell_config
   USE boxconfig, only:box_config
@@ -71,26 +71,26 @@ contains
 
     atmp=> atcf
     celmp=>cellcf
-!    write(6,*)'IN MAJ1', rang
+!    write(uwrt,*)'IN MAJ1', rang
     call transfert_atomes_fantomes(psc)
     !The two commented routines below work with Irecv and Isend. I suspect they are creating bugs. Idem below. I replace them with blocking alternatives transfert_*
 !    call envoi_atomes_fantomes(psc) ! On envoit les atomes qui n'appartiennent plus au processeur courant (qui sont passés  dans des cellules fantomes) caltabt les a mis dans ces cellules fantomes alors qu'ils étaient locaux avant
-!    write(6,*)'IN MAJ2', rang
+!    write(uwrt,*)'IN MAJ2', rang
 !    call reception_nouveaux_atomes(psc) ! On recoit les nouveaux atomes locaux (qui viennent des fantomes des procs voisins)
-!        write(6,*)'IN MAJ3', rang
+!        write(uwrt,*)'IN MAJ3', rang
         call elimine_atomes_fantomes(psc) ! On retire les atomes qui ne sont plus locaux (qui ont été envoyés par envoi_atomes_fantomes)
-!        write(6,*)'IN MAJ4', rang
+!        write(uwrt,*)'IN MAJ4', rang
         ne=4
 !        call finalisation_envoi_atomes(ne,psc)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
-!        write(6,*)'IN MAJ5', rang
+!        write(uwrt,*)'IN MAJ5', rang
     ! En ce point les atomes du proc local sont à jours
 !        call envoi_atomes_frontieres(psc)     ! On envoit les atomes frontieres aux processeurs voisins
- !           write(6,*)'IN MAJ6', rang
+ !           write(uwrt,*)'IN MAJ6', rang
 !            call reception_atomes_fantomes (psc)    ! On receptionne les nouveaux atomes fantomes
-   !             write(6,*)'IN MAJ7', rang
+   !             write(uwrt,*)'IN MAJ7', rang
         call transfert_atomes_frontieres(psc)
 !                call finalisation_envoi_atomes(ne,psc)     ! Finalisation de l'envoi des atomes pour liberer les buffers d'envoi
-  !              write(6,*)'IN MAJ8', rang
+  !              write(uwrt,*)'IN MAJ8', rang
 
   end subroutine maj_atomes_frt_ftm
 
@@ -151,7 +151,7 @@ contains
           send_ids, send_val, recv_ids, recv_val,nproc_voisin)
   !   write(unw,*)'pass1.3 ',nproc_voisin; flush(unw)
   end do
-!  write(6,*)'Pcall1',rang
+!  write(uwrt,*)'Pcall1',rang
   !====================================================
   ! Pass 2: neighbors with HIGHER ranks
   !====================================================
@@ -165,7 +165,7 @@ contains
           send_ids, send_val, recv_ids, recv_val,nproc_voisin)
 !     write(unw,*)'pass2.3 ',nproc_voisin; flush(unw)
   end do
- !    write(6,*)'Pcall2',rang
+ !    write(uwrt,*)'Pcall2',rang
 end subroutine maj_tabdensity_ftm
 
 subroutine exchange_one_neighbor_sendrecv_ordered( &
@@ -254,7 +254,7 @@ subroutine exchange_one_neighbor_sendrecv_ordered( &
      end do
 
      if (ind_loc < 0) then
-        write(6,*) myidsp, 'Error: ghost atom not found', recv_ids(i)
+        write(uwrt,*) myidsp, 'Error: ghost atom not found', recv_ids(i)
         call MPI_ABORT(MPI_COMM_space, 1, ierr)
      end if
 
@@ -455,11 +455,11 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
 
              enddo  ! fin de boucle sur les atomes
        enddo    ! fin de boucle sur les cellules fantomes
-       !       write(6,*)'nouveaux ATOMOUTP',rang,myidsp, im,send_nb_val(nproc_voisin),procv
+       !       write(uwrt,*)'nouveaux ATOMOUTP',rang,myidsp, im,send_nb_val(nproc_voisin),procv
 
 
        if (send_nb_val.ne.nb_at_send) then
-          write(6,*)'rang send_nb_val.ne.nb_at_send',myidsp,nproc_voisin, procv,send_nb_val,nb_at_send
+          write(uwrt,*)'rang send_nb_val.ne.nb_at_send',myidsp,nproc_voisin, procv,send_nb_val,nb_at_send
           call arret_ndm(.true.)
        end if
 
@@ -793,15 +793,15 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
              enddo  ! fin de boucle sur les atomes
           endif
        enddo    ! fin de boucle sur les cellules fantomes
-       !       write(6,*)'nouveaux ATOMOUTP',rang,myidsp, im,send_nb_val(nproc_voisin),procv
+       !       write(uwrt,*)'nouveaux ATOMOUTP',rang,myidsp, im,send_nb_val(nproc_voisin),procv
 
 
        if (send_nb_val.ne.nb_at_send) then
-          write(6,*)'rang send_nb_val.ne.nb_at_send',myidsp,nproc_voisin, procv,send_nb_val,nb_at_send
+          write(uwrt,*)'rang send_nb_val.ne.nb_at_send',myidsp,nproc_voisin, procv,send_nb_val,nb_at_send
           call arret_ndm(.true.)
        end if
 
-!       write(6,*)'NBATSEND',rang,nproc_voisin,procv, nb_at_send
+!       write(uwrt,*)'NBATSEND',rang,nproc_voisin,procv, nb_at_send
 
        !--------------------------------------------------
        ! Ordered blocking communication (deadlock-safe)
@@ -836,7 +836,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
 
           call MPI_RECV(recv_nb_val, 1, MPI_INTEGER, procv, 3001, MPI_COMM_space, status, ierr)
           if (recv_nb_val.gt.0) then
-!          write(6,*)'RECVnbval',rang,nproc_voisin,procv, recv_nb_val
+!          write(uwrt,*)'RECVnbval',rang,nproc_voisin,procv, recv_nb_val
              allocate(recv_buff_int(nb_var_int,recv_nb_val))
              allocate(recv_buff_dbl(nb_var_dbl,recv_nb_val))
              allocate(recv_buff_lgc(nb_var_lgc,recv_nb_val))
@@ -987,7 +987,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
     integer :: procv,cellf,n_at,i_at
 
     ! Premier passage a vide pour allouer les buffers au plus juste
-    !    write(6,*)'envoi_atomes_fantomes',rang,nbr_proc_voisin
+    !    write(uwrt,*)'envoi_atomes_fantomes',rang,nbr_proc_voisin
     nb_at_max=0
     ! Boucle sur les processeurs voisins
     do nproc_voisin=1,psc%nbr_proc_voisin
@@ -1050,7 +1050,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
 !!$     nb_var_dbl = nb_var_dbl+3
 !!$  end if
 
-    !    write(6,*)'nb_var_dbl1',nb_var_dbl
+    !    write(uwrt,*)'nb_var_dbl1',nb_var_dbl
     allocate(send_nb_val(psc%nbr_proc_voisin))
     allocate(send_buff_int(nb_var_int,nb_at_max,psc%nbr_proc_voisin))
     allocate(send_buff_lgc(nb_var_lgc,nb_at_max,psc%nbr_proc_voisin))
@@ -1168,7 +1168,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
              enddo  ! fin de boucle sur les atomes
           endif
        enddo    ! fin de boucle sur les cellules fantomes
-       !       write(6,*)'nouveaux ATOMOUTP',rang,myidsp, im,send_nb_val(nproc_voisin),procv
+       !       write(uwrt,*)'nouveaux ATOMOUTP',rang,myidsp, im,send_nb_val(nproc_voisin),procv
 
        ! On envoit les buffers vers le processeur
        call MPI_ISSEND(send_nb_val(nproc_voisin),      1,   MPI_INTEGER,        &
@@ -1215,8 +1215,8 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
        call MPI_WAIT(recv_rqst(ind_recv,4), status, ierr)
 
        ! recopie des infos dans les tableaux locaux
-       !       write(6,*)'nouveaux ATOMINTP',rang,myidsp, im,recv_nb_val(ind_recv),proc_source
-       !       write(6,*)'indice nbv',ind_recv,recv_nb_val(ind_recv)
+       !       write(uwrt,*)'nouveaux ATOMINTP',rang,myidsp, im,recv_nb_val(ind_recv),proc_source
+       !       write(uwrt,*)'indice nbv',ind_recv,recv_nb_val(ind_recv)
        do i_at = 1, recv_nb_val(ind_recv)
 
 
@@ -1443,7 +1443,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
 
     ! On verifie qu'il n'y a plus d'atomes a l'exterieur du domaine local
     do koo=1,celmp%noxyz
-       if (celmp%proc_cell(koo).ne.myidsp .and. celmp%nato(koo)>0) write(6,*)'ERREUR !!!',&
+       if (celmp%proc_cell(koo).ne.myidsp .and. celmp%nato(koo)>0) write(uwrt,*)'ERREUR !!!',&
             myidsp,'possede encore',celmp%nato(koo),'at. dans la cellule',koo
     enddo
 
@@ -1507,7 +1507,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
        if (atmp%lsigat)        nb_var_dbl=nb_var_dbl+9 !eat
        if (atmp%llangevin)        nb_var_dbl=nb_var_dbl+3 !eat
        if (atmp%lax)        nb_var_dbl=nb_var_dbl+3 !eat
-       !       write(6,*)'FLAGS', atmp%lprteat,atmp%lsigat,atmp%llangevin,atmp%lax
+       !       write(uwrt,*)'FLAGS', atmp%lprteat,atmp%lsigat,atmp%llangevin,atmp%lax
     end select
     select type (atmp)
     class is (atom_config_arps)
@@ -1689,7 +1689,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
        call MPI_WAIT(recv_rqst(ind_recv,2), status, ierr)
        call MPI_WAIT(recv_rqst(ind_recv,3), status, ierr)
        call MPI_WAIT(recv_rqst(ind_recv,4), status, ierr)
-       !       write(6,*)'indice nbv',ind_recv,recv_nb_val(ind_recv)
+       !       write(uwrt,*)'indice nbv',ind_recv,recv_nb_val(ind_recv)
        ! recopie des infos dans les tableaux locaux au niveau des atomes fantomes
        do i_at = 1, recv_nb_val(ind_recv)
 
@@ -1914,10 +1914,10 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
             MPI_COMM_space, recv_rqst(nproc_voisin,3), ierr)
     enddo
 
-    !    write(6,*)'psc%nbr_proc_voisin',rang,psc%nbr_proc_voisin
-    !    write(6,*)'proc_voisin',rang,proc_voisin(1:psc%nbr_proc_voisin)
-    !    write(6,*)'nbr_cell_frontiere',rang,nbr_cell_frontiere(1)
-    !    write(6,*)'cell_frontiere',rang,cell_frontiere(1,1)
+    !    write(uwrt,*)'psc%nbr_proc_voisin',rang,psc%nbr_proc_voisin
+    !    write(uwrt,*)'proc_voisin',rang,proc_voisin(1:psc%nbr_proc_voisin)
+    !    write(uwrt,*)'nbr_cell_frontiere',rang,nbr_cell_frontiere(1)
+    !    write(uwrt,*)'cell_frontiere',rang,cell_frontiere(1,1)
 
     ! On boucle sur les processeurs voisins
     do nproc_voisin = 1, psc%nbr_proc_voisin
@@ -2283,7 +2283,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
     end select
 
 
-    !    write(6,*)'nb_var_dbl2',nb_var_dbl
+    !    write(uwrt,*)'nb_var_dbl2',nb_var_dbl
     allocate(send_nb_val(psc%nbr_proc_voisin))
     allocate(send_buff_int(nb_var_int,nb_at_max,psc%nbr_proc_voisin))
     if(nb_var_lgc.gt.0)    allocate(send_buff_lgc(nb_var_lgc,nb_at_max,psc%nbr_proc_voisin))
@@ -2431,15 +2431,15 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
              end select
 
              if (nvi.ne.nb_var_int) then
-                write(6,*)'pb val int part',rang,nvi,nb_var_int
+                write(uwrt,*)'pb val int part',rang,nvi,nb_var_int
                 call arret_ndm(.true.)
              end if
              if (nvl.ne.nb_var_lgc) then
-                write(6,*)'pb val log part',rang,nvl,nb_var_lgc
+                write(uwrt,*)'pb val log part',rang,nvl,nb_var_lgc
                 call arret_ndm(.true.)
              end if
              if (nvr.ne.nb_var_dbl) then
-                write(6,*)'pb val real part',rang,nvr,nb_var_dbl
+                write(uwrt,*)'pb val real part',rang,nvr,nb_var_dbl
                 call arret_ndm(.true.)
              end if
 
@@ -2579,7 +2579,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
        call MPI_WAIT(recv_rqst(ind_recv,2), status, ierr)
        if(nb_var_dbl.gt.0)        call MPI_WAIT(recv_rqst(ind_recv,3), status, ierr)
        if(nb_var_lgc.gt.0)        call MPI_WAIT(recv_rqst(ind_recv,4), status, ierr)
-       !       write(6,*)'indice nbv',ind_recv,recv_nb_val(ind_recv)
+       !       write(uwrt,*)'indice nbv',ind_recv,recv_nb_val(ind_recv)
        ! recopie des infos dans les tableaux locaux au niveau des atomes fantomes
        loopfant:       do i_at = 1, recv_nb_val(ind_recv)
 
@@ -2589,7 +2589,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
           do iloc=atmp%im+1,atmp%imm
              natgt=recv_buff_int(1,i_at,ind_recv)
              if (atmp%num_at_glob(iloc)==recv_buff_int(1,i_at,ind_recv)) then
-                !                if (natgt==1) write(6,*)'RANG iloc TROUVE', rang,natgt,iloc
+                !                if (natgt==1) write(uwrt,*)'RANG iloc TROUVE', rang,natgt,iloc
                 nvi=1
                 if(scan('i',caracT).ne.0) then
                    nvi=nvi+1
@@ -2701,7 +2701,7 @@ end subroutine exchange_one_neighbor_sendrecv_ordered
 
              end if
           end do
-          write(6,*)'RANG iloc non trouvé', natgt
+          write(uwrt,*)'RANG iloc non trouvé', natgt
        end do loopfant
 
     end do
