@@ -3,7 +3,7 @@ module arps_mod
   USE arret_ndm_mod,only:arret_ndm
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
-  USE boxconfig,only:box_config,periodbox,box_config_lpr
+  USE boxconfig,only:box_config,periodbox
   USE atomconfig,only : atom_config_arps
   USE cellconfig, only:cell_config,caltabtc,cell_config_arps
   use Tpara,only:para_space_config
@@ -11,8 +11,7 @@ module arps_mod
   USE calfo2ccel_mod,only:calfo2ccel,sig2p
   USE calfoeamcel_mod,only:calfoeamcel
   USE calfoew_mod,only:calfozz
-  USE gen_com_m, only:uwrt,lwrt,potist,rang,sig,lspaceNDM,itmax,itloopmax,timemax,&
-       &timeloopmax,latcomp,iteration,itesigma,timel,tstep,&
+  USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,itmax,itloopmax,timemax,timeloopmax,latcomp,iteration,itesigma,timel,tstep,&
        &lperiod,sigkine,ltpcel,sigtot,potis2,bk,erg2ev,itetemp,ltberendsen,tautcon,text,lspacendm,dmtype,unitP,llangevin,pi,&
        &iterasmol,itetimestep
   USE deftimestep_mod,only: deftimestep  
@@ -63,7 +62,7 @@ contains
     real(double), dimension(ntyp) :: aux
     real(double)::potisrep0,fvp,m,vn,xpar,u1,u2,u3,fvp2
     !    real(double)::tabtat(500,ntyp+1)
-    if (rang==0) write (uwrt, *) '***** FIRST ITERATION  ARPS****',itloopmax,timeloopmax,itesigma
+    if (rang==0) write (6, *) '***** FIRST ITERATION  ARPS****',itloopmax,timeloopmax,itesigma
     ! Appel de la routine generale des forces
 
     imm =atdml%imm
@@ -80,7 +79,7 @@ contains
     case(0,1,3,4,5,6,7,8,9)
 
        if ((iewald.gt.0).and.(iewald.ne.3))then
-          write(uwrt,*)'ewald not coded with arps stop'
+          write(6,*)'ewald not coded with arps stop'
           call arret_ndm
        end if
        atdml%fp=0
@@ -98,7 +97,7 @@ contains
        atdml%fpr=0
        potist=0
        if (ipotentiel==16) then
-          write(uwrt,*)'check algo ipotentiel=16, charge effects'
+          write(6,*)'check algo ipotentiel=16, charge effects'
           call arret_ndm
        end if
        tabdensity(:)=0
@@ -231,7 +230,7 @@ contains
           select case (ipotentiel)
           case(0,1,3,4,5,6,7,8,9)
              if(ltpcel) then
-                write(uwrt,*)'LTPCEL pas programme pour pressions dmtype=41 et pot pair faire a l image de sigcalfo'
+                write(6,*)'LTPCEL pas programme pour pressions dmtype=41 et pot pair faire a l image de sigcalfo'
              end if
              atdml%fp=0 ; potis1=0;
              call calfo2ccel(atdml,celndm%cell_config,boxndm)
@@ -417,11 +416,11 @@ contains
                   cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
              if (lTPcel.EQV..true.) then
                 celndm%sigc(1:3,1,atdml%ielat(ilocal)) = celndm%sigc(1:3,1,atdml%ielat(ilocal)) + &
-                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*celndm%noxyzact/boxndm%volu
+                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*celndm%noxyz/boxndm%volu
                 celndm%sigc(1:3,2,atdml%ielat(ilocal)) = celndm%sigc(1:3,2,atdml%ielat(ilocal)) + &
-                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*celndm%noxyzact/boxndm%volu
+                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*celndm%noxyz/boxndm%volu
                 celndm%sigc(1:3,3,atdml%ielat(ilocal)) = celndm%sigc(1:3,3,atdml%ielat(ilocal)) + &
-                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*celndm%noxyzact/boxndm%volu
+                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*celndm%noxyz/boxndm%volu
              end if
           end do
           sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu
@@ -471,7 +470,7 @@ contains
        if (mod(iteration,itetemp)==0) then
           kinps=kinarps(atdml)
           earps=potist+kinps
-          if (rang==0) write(uwrt,'(2A,I7,3E15.6)')'EARPS ',chr,iteration,timel, earps*erg2ev,kinps*erg2ev
+          if (rang==0) write(6,'(2A,I7,3E15.6)')'EARPS ',chr,iteration,timel, earps*erg2ev,kinps*erg2ev
        end if
     end if
 
@@ -537,7 +536,7 @@ contains
   !----------------------------------------------------------------------
   SUBROUTINE calfoglue_arps_1(atcf,celcf,boxcf)
     USE T_kind_param_m
-    USE gen_com_m, only:uwrt,lwrt,angst,low_limit,zero,pi,rang
+    USE gen_com_m, ONLY:angst,low_limit,zero,pi,rang
     !  USE calfocommon
 
     !  USE cellconfig, only : cell_config
@@ -556,7 +555,7 @@ contains
 
     type(atom_config_arps),intent(inout)::atcf
     type(cell_config_arps),intent(in)::celcf
-    class(box_config),intent(in)::boxcf
+    type(box_config),intent(in)::boxcf
 
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
@@ -654,8 +653,24 @@ contains
              tabdensity(i)=tabdensity(i)+rhoj
              rhoi = eamrho(1,iti,k) + drk*( eamrho(2,iti,k) + drk*( eamrho(3,iti,k) + drk*eamrho(4,iti,k) ) )  !rho de i sur j
              tabdensity(j)=tabdensity(j)+rhoi
+!!$             write(100,'(2I3,3G17.8)')i,j,r,tabdensity(i),tabdensity(j)
+!!$             write(100,'(2I3,4G17.8)')i,j,eamrho(1,iti,k) , eamrho(2,iti,k),eamrho(3,iti,k),eamrho(4,iti,k)
+!!$             write(100,'(2I3,4G17.8)')i,j,eamrho(1,itj,k) , eamrho(2,itj,k),eamrho(3,itj,k),eamrho(4,itj,k)
+             !           nvi=nvi+1
+             !           dxpij(1:3,nvi)=dxp(1:3)
+             !           jvi(nvi)=j
+             !           rij(nvi)=r            
+
+             !terme de repulsion 
              l = ipo(iti,itj)
              Erep = eamrep(1,l,k) + drk*( eamrep(2,l,k) + drk*( eamrep(3,l,k) + drk*eamrep(4,l,k) ) )
+!!$             if(lprteat.EQV..true.)then
+!!$                select type (atcf)
+!!$                class is (atom_config_e)
+!!$                   atcf%eat(i)=atcf%eat(i)+Erep/2.d0
+!!$                   if (j.le.atcf%im) atcf%eat(j)=atcf%eat(j)+Erep/2.d0
+!!$                end select
+!!$             end if
              dErep = eamrep(2,l,k) + drk*( 2.0*eamrep(3,l,k) + 3.0*drk*eamrep(4,l,k) )
 
              if (atcf%num_at_glob(i).lt.atcf%num_at_glob(j)) then
@@ -670,6 +685,14 @@ contains
                    sig2p(1:3,1) = sig2p(1:3,1)-dErep*gradij(1:3)*dxp(1)/boxcf%volu
                    sig2p(1:3,2) = sig2p(1:3,2)-dErep*gradij(1:3)*dxp(2)/boxcf%volu
                    sig2p(1:3,3) = sig2p(1:3,3)-dErep*gradij(1:3)*dxp(3)/boxcf%volu
+!!$                   if (lTPcel.EQV..true.) then
+!!$                      sigc(1:3,1,koo) =sigc(1:3,1,koo) -0.5*dErep*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
+!!$                      sigc(1:3,2,koo) =sigc(1:3,2,koo) -0.5*dErep*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
+!!$                      sigc(1:3,3,koo) =sigc(1:3,3,koo) -0.5*dErep*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
+!!$                      sigc(1:3,1,ko1) =sigc(1:3,1,ko1) -0.5*dErep*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
+!!$                      sigc(1:3,2,ko1) =sigc(1:3,2,ko1) -0.5*dErep*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
+!!$                      sigc(1:3,3,ko1) =sigc(1:3,3,ko1) -0.5*dErep*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
+!!$                   end if
 !!$
                 endif
              end if
@@ -712,7 +735,7 @@ contains
 
   SUBROUTINE calfoglue_arps_2(atcf,celcf,boxcf,psc)
     USE T_kind_param_m
-    USE gen_com_m, only:uwrt,lwrt,angst,low_limit,zero,pi
+    USE gen_com_m, ONLY:angst,low_limit,zero,pi
     !  USE calfocommon
     !  use vect_dist_mod,only:vect_dist
     !  USE atomconfig,only : atom_config,atom_config_d,atom_config_e
@@ -775,9 +798,9 @@ contains
        !       write(6,*)i,iti,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
        !       write(110,'(2I8,3G17.8)')i,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
        if(k.gt.ngrid) then
-          write(uwrt,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
-          write(uwrt,*)'densityi',k,ngrid,densityi
-          call arret_ndm(.true.)
+          write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
+          write(6,*)'densityi',k,ngrid,densityi
+          call arret_ndm
        end if
        drk=atcf%rho(i)-(rhomin(iti)+k*ktorho(iti))
        Eembi = eamglue(1,iti,k) + drk*( eamglue(2,iti,k) + drk*( eamglue(3,iti,k) + drk*eamglue(4,iti,k) ) )
@@ -798,7 +821,7 @@ contains
 #ifdef PARA
 
     if (nprocspace.gt.1) then
-       call maj_tabdensity_ftm(tabdensity,atcf%imm,atcf%num_at_glob,psc,atcf%im)
+       call maj_tabdensity_ftm(tabdensity,atcf%imm,celcf%nato,atcf%num_at_glob,psc,atcf%im)
     end if
 
     !    write(3000+i,*)it
@@ -872,6 +895,14 @@ contains
                    sigem(1:3,2) = sigem(1:3,2) - Femb*gradij(1:3)*dxp(2)/boxcf%volu
                    sigem(1:3,3) = sigem(1:3,3) - Femb*gradij(1:3)*dxp(3)/boxcf%volu
 !!$                   if (lTPcel.EQV..true.) then
+!!$                      sigc(1:3,1,koo) =sigc(1:3,1,koo) - 0.5*Femb*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
+!!$                      sigc(1:3,2,koo) =sigc(1:3,2,koo) - 0.5*Femb*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
+!!$                      sigc(1:3,3,koo) =sigc(1:3,3,koo) - 0.5*Femb*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
+!!$                      sigc(1:3,1,ko1) =sigc(1:3,1,ko1) - 0.5*Femb*gradij(1:3)*dxp(1)*celcf%noxyz/boxcf%volu
+!!$                      sigc(1:3,2,ko1) =sigc(1:3,2,ko1) - 0.5*Femb*gradij(1:3)*dxp(2)*celcf%noxyz/boxcf%volu
+!!$                      sigc(1:3,3,ko1) =sigc(1:3,3,ko1) - 0.5*Femb*gradij(1:3)*dxp(3)*celcf%noxyz/boxcf%volu
+!!$                   end if
+!!$
                 endif
              end if
 
@@ -987,9 +1018,9 @@ contains
     nmovm=(nmovm*(icall-1)+nmov)/icall
     if (itetemp>0) then
        if ((mod(iteration,itetemp)==0).and.(rang==0)) then
-          write(uwrt,'(A,I6,E15.6, 3I9)')'NMOV ',iteration, timel, nmov
-          write(uwrt,'(A,I6,E15.6, 3G15.5)')'NMOVM ',iteration, timel, nmovm
-          if (lpartarps) write(uwrt,*)'PARTARPS natvv nattot',natvv,atcf%im_glob
+          write(6,'(A,I6,E15.6, 3I9)')'NMOV ',iteration, timel, nmov
+          write(6,'(A,I6,E15.6, 3G15.5)')'NMOVM ',iteration, timel, nmovm
+          if (lpartarps) write(6,*)'PARTARPS natvv nattot',natvv,atcf%im_glob
        end if
     end if
 
@@ -1078,7 +1109,7 @@ contains
              atcf%xp(:,i) = atcf%xp(:,i) + tstep*atcf%vp(:,i)
 !             fact=1
              write(6,*)'POOOOO'
-             call arret_ndm(.true.)
+             call arret_ndm
           end if
        end if
 !       write(6,*)'xpar2',xpar,xs(iti),fact
@@ -1099,7 +1130,6 @@ contains
     celcf%nmov=0
 
     do ko=1,celcf%noxyz
-       if ((celcf%nato(ko)==0).or.(celcf%isghost(ko))) cycle
 #ifdef PARA
        if ( celcf%proc_cell(ko).ne.myidsp ) cycle
 #endif

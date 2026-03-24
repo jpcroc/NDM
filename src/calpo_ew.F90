@@ -1,6 +1,6 @@
 module calpo_ew_mod
   USE moduli_mod,only: moduli
-  USE gen_com_m, ONLY:pi,zero
+  USE gen_com_m, only:uwrt,lwrt,pi,zero
   USE var_pot, ONLY:alpha,auxe,iewald,kpme,kpmex,kpmey,kpmez,ncoucx,ncoucy,ncoucz,nf1,&
        &nf2,nf3,nff,nfft1,nfft2,nfft3,npoint,ntable,pterm,volterm,table,q,&
        &nvecttot,tabf3,tabv3

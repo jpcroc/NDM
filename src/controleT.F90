@@ -3,7 +3,7 @@ module controleT_mod
   USE deftimestep_mod,only: deftimestep
   USE atomconfig,only:atom_config,atom_config_d
   USE cellconfig, only:cell_config
-  USE boxconfig,only:box_config
+  USE boxconfig,only:box_config,box_config_lpr
   USE analyseT_mod,only: analyseT
 #ifdef PARA
   USE Tpara,only:COMM_space,nprocspace,myidsp
@@ -23,7 +23,8 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,tempstopcel,lpkbar,angst,leev,iteration,&
+    USE gen_com_m, only:uwrt,lwrt,dmtype,unitP,unitE, timel,tempstop, sigtot,potist,maxtcel,&
+         &tempstopcel,lpkbar,angst,leev,iteration,&
          &itetemp,fsumstop,fpstop,itetimestep,sigstop,temp,timemax,cunitE,cunitP,erg2eV, lspaceNDM,latcomp,rang,itesigma,&
          &itetemp2,ihbox0,tfcou,thsig,iteprtsigma
 
@@ -48,7 +49,7 @@ contains
     if (present(lreturn))lreturn=.false.
     
     if (timel>=timemax) then
-       if (rang==0) write (6, *) '*******max time reached **** ',timel,timemax
+       if (rang==0) write (uwrt, *) '*******max time reached **** ',timel,timemax
        if (present(lreturn)) then
                              it1=itetemp;it2=itesigma;it3=itetemp2
                    itetemp=1;itesigma=1;itetemp2=1
@@ -90,7 +91,7 @@ contains
     if (itetemp>0) then
           if (mod(iteration,itetemp)==0) then
           if (temp<=tempstop) then
-             if (rang==0)  write (6, *) 'temperature < tempstop '
+             if (rang==0)  write (uwrt, *) 'temperature < tempstop '
              if (present(lreturn)) then
                                    it1=itetemp;it2=itesigma;it3=itetemp2
                    itetemp=1;itesigma=1;itetemp2=1
@@ -111,7 +112,7 @@ contains
           endif
           if (tempstopcel.gt.0) then
              if (maxtcel<=tempstopcel) then
-                write (6, *) 'temperature dans toutes les cels < tempstopcel '
+                write (uwrt, *) 'temperature dans toutes les cels < tempstopcel '
                 if (present(lreturn)) then
                                       it1=itetemp;it2=itesigma;it3=itetemp2
                    itetemp=1;itesigma=1;itetemp2=1
@@ -156,9 +157,9 @@ contains
 #endif
 
           fpn=fpSmax*erg2eV/angst
-          if (myidsp==0)      write(6,'("TR: force max, energy",i6,3E25.15)') iteration,fpn, potist*erg2eV
-!          if ( myidsp==0)     write (6, *) 'energie ',potist*erg2eV
-          if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar', 1d-9*thsig
+          if (myidsp==0)      write(uwrt,'("TR: force max, energy",i6,3E25.15)') iteration,fpn, potist*erg2eV
+!          if ( myidsp==0)     write (uwrt, *) 'energie ',potist*erg2eV
+          if((myidsp==0).and.(sigstop.ge.0))write(uwrt,*)'sigma max kbar', 1d-9*thsig
 !!$                 write (unitgc, *)
 !!$       write (unitgc, *) '************ STRESS in ', cunitP
 !!$       do ic = 1, 3
@@ -233,9 +234,9 @@ contains
 
 
           fpn=fpsmax*erg2eV/angst
-          !          if (myidsp==0)      write(6,*)
-          if (myidsp==0)      write(6,*)'TR:  sqrt ( sum_f F_i^2 ):  cgs  ev/Ang ', iteration,fpn, potist*erg2eV
-          if((myidsp==0).and.(sigstop.ge.0))write(6,*)'sigma max kbar',1d-9*thsig
+          !          if (myidsp==0)      write(uwrt,*)
+          if (myidsp==0)      write(uwrt,*)'TR:  sqrt ( sum_f F_i^2 ):  cgs  ev/Ang ', iteration,fpn, potist*erg2eV
+          if((myidsp==0).and.(sigstop.ge.0))write(uwrt,*)'sigma max kbar',1d-9*thsig
           if (fpn.le.fsumstop) then
              select case(dmtype)
              case(22,24)
@@ -281,7 +282,7 @@ contains
              end select
           end if
        end if
-       !     if (rang==0) write (6, '(I10,A,D21.12,A)') it,  '*Epot = ', potist*unitE, cunitE
+       !     if (rang==0) write (uwrt, '(I10,A,D21.12,A)') it,  '*Epot = ', potist*unitE, cunitE
 123    continue
        
     case(3,30) ! Gradient conjugue sur coordonnee cartesiennes (3) ou reduites (30)
@@ -289,9 +290,9 @@ contains
 
        if (iteration==1) then
           if (lEev.EQV..true.) then
-             if (myidsp==0) write(6,*)'Resultats en eV, Ang'
+             if (myidsp==0) write(uwrt,*)'Resultats en eV, Ang'
           else
-             if (myidsp==0) write(6,*)'Resultats en cgs'
+             if (myidsp==0) write(uwrt,*)'Resultats en cgs'
           end if
           if (myidsp==0)      write(*,'(70("="))')
           if (myidsp==0)      write(*,'("CG:     ","iter",10(" "),"epsi",14(" "),"Fmax",14(" "), "Energy")')
@@ -319,8 +320,8 @@ contains
              if (myidsp==0) write(*,'("GC: ",i6,3E20.10)') iteration,forctot, formax, potist*erg2eV
              if (fpstop>0) then
                 if (formax.le.fpstop) then
-                   if (myidsp==0) write(6,*)'force par atome  max  ev/Ang ', formax
-                   if (myidsp==0) write (6, *) 'energie ', potist*erg2eV
+                   if (myidsp==0) write(uwrt,*)'force par atome  max  ev/Ang ', formax
+                   if (myidsp==0) write (uwrt, *) 'energie ', potist*erg2eV
                    if (present(lreturn)) then
                                          it1=itetemp;it2=itesigma;it3=itetemp2
                    itetemp=1;itesigma=1;itetemp2=1
@@ -341,8 +342,8 @@ contains
              end if
              if (fsumstop>0) then
                 if (forctot.le.fsumstop) then
-                   if (myidsp==0) write(6,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
-                   if (myidsp==0) write(6, *) 'energie ', potist*erg2eV
+                   if (myidsp==0) write(uwrt,*)'  sqrt ( sum_f F_i^2 ):   ev/Ang ', forctot
+                   if (myidsp==0) write(uwrt, *) 'energie ', potist*erg2eV
                    if (present(lreturn)) then
                                          it1=itetemp;it2=itesigma;it3=itetemp2
                    itetemp=1;itesigma=1;itetemp2=1
@@ -367,8 +368,8 @@ contains
              if (myidsp==0) write(*,'("GC: ",i6,3E20.10)') iteration,forctot, formax, potist
              if (fpstop>0) then
                 if (formax.le.fpstop) then
-                   if (myidsp==0) write(6,*)'force par atome  max cgs ',formax
-                   if (myidsp==0) write (6, *) 'energie ', potist
+                   if (myidsp==0) write(uwrt,*)'force par atome  max cgs ',formax
+                   if (myidsp==0) write (uwrt, *) 'energie ', potist
                    if (present(lreturn)) then
                                          it1=itetemp;it2=itesigma;it3=itetemp2
                    itetemp=1;itesigma=1;itetemp2=1
@@ -392,8 +393,8 @@ contains
 
              if (fsumstop>0) then
                 if (forctot.le.fsumstop) then
-                   if (myidsp==0) write(6,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
-                   if (myidsp==0) write (6, *) 'energie ', potist
+                   if (myidsp==0) write(uwrt,*)'  sqrt ( sum_f F_i^2 ):  cgs  ', forctot
+                   if (myidsp==0) write (uwrt, *) 'energie ', potist
                    if (present(lreturn)) then
                                          it1=itetemp;it2=itesigma;it3=itetemp2
                    itetemp=1;itesigma=1;itetemp2=1

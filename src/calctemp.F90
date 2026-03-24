@@ -2,7 +2,7 @@ module calctemp_mod
    USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE var_pot, ONLY:ntyp,cm
-  USE gen_com_m, ONLY:erg2ev,tempEP,bk,l2t,lspaceNDM,rang
+  USE gen_com_m, only:uwrt,lwrt,erg2ev,tempEP,bk,l2t,lspaceNDM,rang
   USE elec_cell, ONLY: ecell,i2T,nex,ney,nez,nox_2_nex
   USE eloss, ONLY : tcelec,ecelec
   USE atomconfig,only: atom_config_d
@@ -45,8 +45,8 @@ contains
     nat=0
     if (latc) then
        if(cellcf%icaltabt.ne.atcf%icaltabt) then
-          write (6,*)'incoherence dans icaltabt calctemp'
-          write(6,*)'cell atcf', cellcf%icaltabt,atcf%icaltabt
+          write (uwrt,*)'incoherence dans icaltabt calctemp'
+          write(uwrt,*)'cell atcf', cellcf%icaltabt,atcf%icaltabt
           call arret_ndm(.true.)
        end if
 
@@ -129,7 +129,7 @@ contains
        end if
 
        if (nat.ne.atcf%im) then
-          write(6,*)'NAT NE atcf%im STOP',nat,atcf%im
+          write(uwrt,*)'NAT NE atcf%im STOP',nat,atcf%im
           call arret_ndm(.true.)
        end if
        temp = sumtat2/float(atcf%im)
@@ -138,8 +138,8 @@ contains
     else  !LATC/LATCOMP=.false.
 
        if(cellcf%icaltabt.ne.atcf%icaltabt) then
-          write (6,*)'incoherence dans icaltabt calctemp'
-          write(6,*)'cell atcf', cellcf%icaltabt,atcf%icaltabt
+          write (uwrt,*)'incoherence dans icaltabt calctemp'
+          write(uwrt,*)'cell atcf', cellcf%icaltabt,atcf%icaltabt
           call arret_ndm(.true.)
        end if
 
@@ -248,7 +248,7 @@ contains
           !deallocate(tempc_tot)
        else
           if (nat.ne.atcf%im) then
-             write(6,*)'NAT NE atcf%im STOP'
+             write(uwrt,*)'NAT NE atcf%im STOP'
              call arret_ndm(.true.)
           end if
           temp = sumtat2/float(atcf%im)
@@ -257,7 +257,7 @@ contains
 
 #else
        if (nat.ne.atcf%im) then
-          write(6,*)'NAT NE atcf%im STOP'
+          write(uwrt,*)'NAT NE atcf%im STOP'
           call arret_ndm(.true.)
        end if
        temp = sumtat2/float(atcf%im)

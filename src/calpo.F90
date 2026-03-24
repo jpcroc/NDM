@@ -8,7 +8,7 @@ module calpo_mod
 
   USE potrep_mod,only: potrep
   USE calerf_mod,only: calerf
-  USE gen_com_m, ONLY:ecgs,half,one,precexp,rang,pi,erg2eV
+  USE gen_com_m, only:uwrt,lwrt,ecgs,half,one,precexp,rang,pi,erg2eV
   USE var_pot, ONLY:bspg,ngrid,catom,csive,csive_g,cspg,dip,dspg,gd,gm2,gm3,gm4,gm5,gr,gz,ipotentiel,ipotrep,&
        &npair,lprtpot,lu_roff_pair,ngr,ntyp,pot_d,roff1,roff2,rue_pair,sigmawat,ro,lue_paire,ipo,pot,rawat,qwat,&
        &ipo_2_pair_tab,zz,ipo,capdij,caphij,capwij,gm1,ietaij,lambda,rbp5,rp3c,rp5p3,xsi,poly5,poly3,r8p,pwat,&
@@ -149,15 +149,15 @@ contains
           pau(:npair) = a_factor(:npair)          ! erg
           ! exponential term
           if (rang==0) then
-             write (6,*)
-             write (6,*)
-             write (6,*)
-             write (6,*)
-             write(6,*)'ATTENTION!!! UO2 === Oxygène = TYPE 2!!!!'
-             write (6,*)
-             write (6,*)
-             write (6,*)
-             write (6,*)
+             write (uwrt,*)
+             write (uwrt,*)
+             write (uwrt,*)
+             write (uwrt,*)
+             write(uwrt,*)'ATTENTION!!! UO2 === Oxygène = TYPE 2!!!!'
+             write (uwrt,*)
+             write (uwrt,*)
+             write (uwrt,*)
+             write (uwrt,*)
           endif
 
           do k = 1, ngrid
@@ -373,7 +373,7 @@ contains
 !!$          enddo
 
     case(2)  !test départ sur analytique de paires  ! SELECT FORMULES ANALYTIQUES LIgne 90 (pas 0 1 3 4 5 8 9)
-       if (rang==0) write (6, *) '----------- POTENTIEL WATANABE --------------'
+       if (rang==0) write (uwrt, *) '----------- POTENTIEL WATANABE --------------'
 
        ! -----Terme a 2 corps de base
        do l=1,npair
@@ -430,7 +430,7 @@ contains
                 lpt=ipo_2_pair_tab(l)
                 !                write(6,*)'l',l,k, r,pot_pair_tab(ngr,0,lpt)
                 if (r.gt.pot_pair_tab(ngr,0,lpt)) then
-                   if (rang==0) write(6,*)'pot tab pair trop court',r,k,pot_pair_tab(ngr,0,lpt),l,lpt
+                   if (rang==0) write(uwrt,*)'pot tab pair trop court',r,k,pot_pair_tab(ngr,0,lpt),l,lpt
                    call arret_ndm
                 end if
                 !              if (r.lt.pot_pair_tab(1,0,lpt)) cycle loopk
@@ -462,7 +462,7 @@ contains
        case(1)
           ! Calcul du premier maximum local
 
-          if (rang==0) write(6,*)'calcul du max loc du pot VBEEST'
+          if (rang==0) write(uwrt,*)'calcul du max loc du pot VBEEST'
           irrep(:npair)=0
           l=0
           do i1=1,ntyp
@@ -567,7 +567,7 @@ contains
 
 
     case default
-       write (6, *) rang,'Bienvenue dans le cote obscur de la force : pas de potentiel ?'
+       write (uwrt, *) rang,'Bienvenue dans le cote obscur de la force : pas de potentiel ?'
        call arret_ndm
     end select
 

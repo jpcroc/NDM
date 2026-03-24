@@ -6,7 +6,7 @@ module dmloop_mod
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
   USE trempe_mod,only: trempe
-  USE gen_com_m, ONLY:itesauvforce,itesauvposition,lfire,tstep
+  USE gen_com_m, only:uwrt,lwrt,itesauvforce,itesauvposition,lfire,tstep
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only:cell_config,caltabtC
   USE boxconfig,only:box_config
@@ -15,7 +15,7 @@ module dmloop_mod
   USE calfoberend_mod,only:calfoberend
   USE parautils,only:driver_caltabt_para
 
-  USE gen_com_m,only: dmtype,iteration,itesauv, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
+  USE gen_com_m,only:uwrt,lwrt, dmtype,iteration,itesauv, potist,rang,sig,l2t,sigkine,sigtot,itesigma,ltberendsen,itab, &
        & itetabvois,lperiod,lspaceNDM,itloopmax,timel,timeloopmax,lpcube
   use var_pot, only: cm
    use Tpara,only:nprocspace,para_space_config,comm_space
@@ -58,7 +58,7 @@ contains
     logical:: lreturn
 
 
-    if (rang==0) write (6, *) '***** FIRST ITERATION  ***',itloopmax,timeloopmax
+    if (rang==0) write (uwrt, *) '***** FIRST ITERATION  ***',itloopmax,timeloopmax
     ! Initialization
     IF (dmtype.EQ.23) THEN
        CALL init_trempe_fire(tstep, fire_nstep, fire_alph)
@@ -138,7 +138,7 @@ contains
              call trempe_fire (atdml,tstep, fire_nstep, fire_alph)
           end select
        case default
-          write (6, *) 'ne sait pas quoi faire stop'
+          write (uwrt, *) 'ne sait pas quoi faire stop'
           call arret_ndm
        end select
        if (atdml%ltabvois.and.mod(iteration,itetabvois)==0) then

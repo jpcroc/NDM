@@ -6,7 +6,7 @@ module calcangle_mod
   use atomconfig,only: atom_config
   use boxconfig,only:box_config
   USE cellconfig,only:cell_config
-  USE gen_com_m, ONLY:lperiod,rang,iteration,pi,timel,lspacendm
+  USE gen_com_m, only:uwrt,lwrt,lperiod,rang,iteration,pi,timel,lspacendm
   use vect_dist_mod,only:vect_dist
 #ifdef PARA
     USE mpi
@@ -82,7 +82,7 @@ contains
     allocate(fdatemp(ntyp,ntyp,ntyp,adfc%contmax))
     fdatemp=0
     !repartition des atomes entre les petites cel.
-    !  if (rang==0) write(6,*) 'PARA-T entree calcangle'
+    !  if (rang==0) write(uwrt,*) 'PARA-T entree calcangle'
     rc2=adfc%rcangle
     rc22=rc2**2
     adfc%nfda=adfc%nfda+1
@@ -166,12 +166,12 @@ contains
 
     lutriplet = 13
     if (rang==0) then
-       write (6, *)
-       write(6,*) '-----------------------------------------'
-       write (6, *) '------- Calcul des Distributions angulaires --------'
-       write(6,*)
+       write (uwrt, *)
+       write(uwrt,*) '-----------------------------------------'
+       write (uwrt, *) '------- Calcul des Distributions angulaires --------'
+       write(uwrt,*)
 
-       write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', iteration, '  time = ', timel
+       write (uwrt, '(A,I5,A,D10.3)') '*  ITERATION  = ', iteration, '  time = ', timel
     end if
 
     ! On calcule maintenant la distribution angulaire moyennee
@@ -219,7 +219,7 @@ contains
                 if(angle(i2,i1,i3).gt.0.1) then
                    if (rang==0) open(lutriplet, file = ftripletangle, status = 'unknown')
                    angle(i2,i1,i3)=angle(i2,i1,i3)/intfda(i2,i1,i3)
-                   if(rang.eq.0) write(6,'("Angle moyen du triplet",1X,A8,"=",1x,f7.3)')& 
+                   if(rang.eq.0) write(uwrt,'("Angle moyen du triplet",1X,A8,"=",1x,f7.3)')& 
                         ftrip,angle(i2,i1,i3)*180/pi
                    do m1=int(adfc%thetamin*invincre),adfc%contmax
                       m2 = m1+1
@@ -237,8 +237,8 @@ contains
 
        if(rang==0)         close(lutriplet)
        if(rang==0) then
-          write(6,*)'--------------------------------------'
-          write(6,*) '--------------------------------------'
+          write(uwrt,*)'--------------------------------------'
+          write(uwrt,*) '--------------------------------------'
        end if
     else
        if (rang==0) then
@@ -254,7 +254,7 @@ contains
           if (iteration<=99999999.and.iteration>9999999) write(32, 800) iteration
           if (iteration<=999999999.and.iteration>99999999) write(32, 900) iteration
           if  (iteration>999999999) then
-             write (6, *) 'probleme de format dans calcangle.f90'
+             write (uwrt, *) 'probleme de format dans calcangle.f90'
              call arret_ndm
           endif
           rewind 32
@@ -264,8 +264,8 @@ contains
           lusauvfda=31
        end if
        if (rang==0) then
-          write(6,*) ' sauvegarde fda it=',iteration
-          write(6,*)
+          write(uwrt,*) ' sauvegarde fda it=',iteration
+          write(uwrt,*)
        end if
        do i3=1,ntyp
           if(adfc%nad(i3)==0) cycle
@@ -306,7 +306,7 @@ contains
                 angle(i2,i1,i3)=angle(i2,i1,i3)/intfda(i2,i1,i3)
 
                 if(rang==0) then
-                   write(6,'("Angle instantane moyen du triplet",1x,A8,"=",1x,f7.3)')&
+                   write(uwrt,'("Angle instantane moyen du triplet",1x,A8,"=",1x,f7.3)')&
                         ftrip,angle(i2,i1,i3)*180/pi
                 endif
              enddo
@@ -323,8 +323,8 @@ contains
 900    format(i9)
 1000   format(a6)
        if (rang==0)then
-          write(6,*)'--------------------------------------'
-          write(6,*) '--------------------------------------'
+          write(uwrt,*)'--------------------------------------'
+          write(uwrt,*) '--------------------------------------'
           close(lusauvfda)
           close(32,status='DELETE')
        endif

@@ -1,5 +1,5 @@
 module Tpara
-  
+  USE gen_com_m, only:uwrt,lwrt  
   use T_kind_param_m
 #ifdef PARA
   use mpi
@@ -81,6 +81,7 @@ module Tpara
      procedure :: and => mpic_and_l
      ! broadcast
      generic :: bcast  => mpic_bcast_dp
+!     generic :: bcast  => mpic_bcast_char
      generic :: bcast  => mpic_bcast_l
      generic :: bcast  => mpic_bcast_i
      generic :: bcast  => mpic_bcast_cdp
@@ -89,6 +90,7 @@ module Tpara
 !!$    generic :: average  => mpic_av_cdp
 !!$    procedure :: mpic_av_dp,mpic_av_cdp,mpic_av_i
      procedure :: mpic_bcast_dp,mpic_bcast_l
+!     procedure:: bcast_char
      procedure:: mpic_bcast_i
      procedure :: mpic_bcast_cdp
      generic :: build=>build_i,build_dp,build_cdp,build_l
@@ -178,7 +180,7 @@ contains
        call MPI_PROBE(sourcein, tag, mpic%comm,statut,ierror)
        sourceout=statut(MPI_SOURCE)
        if (sourceout.ne.sourcein) then
-          write(6,*) 'error in mpic_probe sourceout<> sourcein',sourceout,sourcein
+          write(uwrt,*) 'error in mpic_probe sourceout<> sourcein',sourceout,sourcein
        endif
     else
        call MPI_PROBE(MPI_ANY_SOURCE, tag, mpic%comm,statut,ierror)
@@ -187,7 +189,7 @@ contains
 
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in mpic_probe'
+       write(uwrt,*) 'error in mpic_probe'
     endif
 
   end subroutine mpic_probe
@@ -236,7 +238,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_ALLREDUCE'
+       write(uwrt,*) 'error in MPI_ALLREDUCE'
     endif
 
   end subroutine mpic_sum_dp
@@ -271,7 +273,7 @@ contains
 #endif
 
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_ALLREDUCE'
+       write(uwrt,*) 'error in MPI_ALLREDUCE'
     endif
 
   end subroutine mpic_sum_cdp
@@ -306,7 +308,7 @@ contains
 #endif
 
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_ALLREDUCE'
+       write(uwrt,*) 'error in MPI_ALLREDUCE'
     endif
 
   end subroutine mpic_sum_i
@@ -340,7 +342,7 @@ contains
     array=array_glob
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_ALLREDUCE'
+       write(uwrt,*) 'error in MPI_ALLREDUCE'
     endif
 
   end subroutine mpic_maxloc_dp
@@ -372,7 +374,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_ALLREDUCE'
+       write(uwrt,*) 'error in MPI_ALLREDUCE'
     endif
 
   end subroutine mpic_max_dp
@@ -403,7 +405,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_ALLREDUCE'
+       write(uwrt,*) 'error in MPI_ALLREDUCE'
     endif
   end subroutine mpic_max_i
 
@@ -433,7 +435,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_ALLREDUCE'
+       write(uwrt,*) 'error in MPI_ALLREDUCE'
     endif
 
   end subroutine mpic_min_dp
@@ -463,7 +465,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_ALLREDUCE'
+       write(uwrt,*) 'error in MPI_ALLREDUCE'
     endif
 
   end subroutine mpic_min_i
@@ -495,11 +497,36 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_ALLREDUCE'
+       write(uwrt,*) 'error in MPI_ALLREDUCE'
     endif
 
   end subroutine mpic_and_l
 
+subroutine mpic_bcast_char(mpic, rank, array)
+    implicit none
+    class(mpi_communicator), intent(in) :: mpic
+    integer, intent(in)                  :: rank
+    character(len=*), intent(inout)      :: array(..)
+    !=====
+    integer :: nsize
+    integer :: ierror = 0
+    integer :: len_array
+    !=====
+    if (mpic%nproc == 1) return
+
+    ! Get the size of the array (number of elements)
+    nsize = SIZE(array)
+    ! Get the length of each character element
+    len_array = LEN(array)
+
+#if defined(PARA)
+    ! Broadcast the character array
+    call MPI_BCAST(array, nsize * len_array, MPI_CHARACTER, rank, mpic%comm, ierror)
+#endif
+    if (ierror /= 0) then
+       write(uwrt,*) 'error in MPI_BCAST for character array'
+    endif
+end subroutine mpic_bcast_char
 
   !=========================================================================
   subroutine mpic_bcast_dp(mpic,rank,array)
@@ -511,7 +538,7 @@ contains
     integer :: nsize
     integer :: ierror=0
     !=====
-    !  write(6,*)'INBCAST', mpic%nproc
+    !  write(uwrt,*)'INBCAST', mpic%nproc
     if( mpic%nproc == 1 ) return
 
     nsize = SIZE(array)
@@ -519,7 +546,7 @@ contains
     call MPI_BCAST(array,nsize,MPI_DOUBLE_PRECISION,rank,mpic%comm,ierror)
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_BCAST'
+       write(uwrt,*) 'error in MPI_BCAST'
     endif
 
   end subroutine mpic_bcast_dp
@@ -543,7 +570,7 @@ contains
     call MPI_BCAST(array,nsize,MPI_INTEGER,rank,mpic%comm,ierror)
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_BCAST I'
+       write(uwrt,*) 'error in MPI_BCAST I'
     endif
 
   end subroutine mpic_bcast_i
@@ -566,7 +593,7 @@ contains
     call MPI_BCAST(array,nsize,MPI_LOGICAL,rank,mpic%comm,ierror)
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_BCAST L'
+       write(uwrt,*) 'error in MPI_BCAST L'
     endif
 
   end subroutine mpic_bcast_l
@@ -591,7 +618,7 @@ contains
     call MPI_BCAST(array,nsize,MPI_DOUBLE_COMPLEX,rank,mpic%comm,ierror)
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_BCAST'
+       write(uwrt,*) 'error in MPI_BCAST'
     endif
 
   end subroutine mpic_bcast_cdp
@@ -717,7 +744,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_SEND_DP'
+       write(uwrt,*) 'error in MPI_SEND_DP'
     endif
 
   end subroutine mpic_send_dp
@@ -746,7 +773,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_SEND_DP'
+       write(uwrt,*) 'error in MPI_SEND_DP'
     endif
 
   end subroutine mpic_send_char
@@ -775,7 +802,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_SEND_DP'
+       write(uwrt,*) 'error in MPI_SEND_DP'
     endif
 
   end subroutine mpic_recv_char
@@ -803,7 +830,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_SEND_DP'
+       write(uwrt,*) 'error in MPI_SEND_DP'
     endif
 
   end subroutine mpic_send_l
@@ -833,7 +860,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_SEND_CDP'
+       write(uwrt,*) 'error in MPI_SEND_CDP'
     endif
 
   end subroutine mpic_send_cdp
@@ -861,7 +888,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_SEND_I'
+       write(uwrt,*) 'error in MPI_SEND_I'
     endif
 
   end subroutine mpic_send_i
@@ -890,7 +917,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_RECV_DP'
+       write(uwrt,*) 'error in MPI_RECV_DP'
     endif
 
   end subroutine mpic_recv_dp
@@ -917,7 +944,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_RECV_DP'
+       write(uwrt,*) 'error in MPI_RECV_DP'
     endif
 
   end subroutine mpic_recv_l
@@ -946,7 +973,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_RECV_CDP'
+       write(uwrt,*) 'error in MPI_RECV_CDP'
     endif
 
   end subroutine mpic_recv_cdp
@@ -972,7 +999,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_RECV_I'
+       write(uwrt,*) 'error in MPI_RECV_I'
     endif
 
   end subroutine mpic_recv_i
@@ -1219,7 +1246,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_ALLREDUCE'
+       write(uwrt,*) 'error in MPI_ALLREDUCE'
     endif
 
   end subroutine mpic_maxval_dp
@@ -1251,7 +1278,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_ALLREDUCE'
+       write(uwrt,*) 'error in MPI_ALLREDUCE'
     endif
   end subroutine mpic_maxval_i
 
@@ -1282,7 +1309,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_ALLREDUCE'
+       write(uwrt,*) 'error in MPI_ALLREDUCE'
     endif
 
   end subroutine mpic_minval_dp
@@ -1313,7 +1340,7 @@ contains
     end if
 #endif
     if( ierror /= 0 ) then
-       write(6,*) 'error in MPI_ALLREDUCE'
+       write(uwrt,*) 'error in MPI_ALLREDUCE'
     endif
 
   end subroutine mpic_minval_i

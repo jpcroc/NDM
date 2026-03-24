@@ -9,7 +9,7 @@ contains
   ! **********************************************************
   subroutine calfo2ctabvois(atcf,celcf,boxcf)
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:pi
+    USE gen_com_m, only:uwrt,lwrt,pi
     USE var_pot, ONLY:alpha,csive,ipo,rue_pair,ipo,pot,potis1
     use vect_dist_mod,only:vect_dist
     USE jqmod
@@ -123,9 +123,7 @@ contains
 
  end do
 
-    !        do i=1,im,100
-    !           write(6,*)i,fp(1,i),fp(2,i),fp(3,i)
-    !        end do
+    !        
 
 
 !    call cryst_to_cart (imm, xp, at, 1)     !cryst vers cart

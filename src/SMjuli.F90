@@ -1,7 +1,7 @@
 module SMjuli
    USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
-  USE gen_com_m, ONLY: ev2erg,A2cm
+  USE gen_com_m, only:uwrt,lwrt, ev2erg,A2cm
   USE var_pot, ONLY: lue_typ,npotentiel
   USE alloc_typ_mod,only: alloc_typ
   implicit none
@@ -67,14 +67,14 @@ ipotentiel,typ_pot_pair)
 
     !  lupotin = 95
     !  open(unit=lupotin, file=fnampotin, status='old')
-!    write(6,*)
-!  write(6,*)'LECTURE JULI'
+!    write(uwrt,*)
+!  write(uwrt,*)'LECTURE JULI'
     iewald=0; l3c=.false.; r3cm=0.
 
     !  read(lupotin,*)ntyp
     if (npotentiel.gt.1) then
        if (ntyp.ne.2)then
-          write(6,*)'JuLi ZrC seulement pour ntyp=2'
+          write(uwrt,*)'JuLi ZrC seulement pour ntyp=2'
           call arret_ndm
        end if
     end if
@@ -137,17 +137,17 @@ ipotentiel,typ_pot_pair)
     !  read(lupotin,*) rue
     rue=7.0*1.0d-8
     rumax=max(rue,rumax)
-    write(6,*) 'Types d_atomes :'
+    write(uwrt,*) 'Types d_atomes :'
     if (npotentiel.gt.1) then
        if(lue_typ(1).EQV..true.)then
           if (ty(1).ne.'Zr')then 
-             write(6,*)'JuLi ZrC seulement pour Zr=1'
+             write(uwrt,*)'JuLi ZrC seulement pour Zr=1'
              call arret_ndm
           end if
        end if
        if(lue_typ(2).EQV..true.)then
           if (ty(2).ne.'C')then 
-             write(6,*)'JuLi ZrC seulement pour C=2'
+             write(uwrt,*)'JuLi ZrC seulement pour C=2'
           call arret_ndm
        end if
        end if
@@ -161,15 +161,15 @@ ipotentiel,typ_pot_pair)
     roff1=roff1*1.0d-8 ; roff2=roff2*1.0d-8
 
     do i = 1, ntyp
-       write(6,*) i
+       write(uwrt,*) i
        !     read (lupotin,*) cm(i),catom(i),ty(i)
        if (rang/=0) cycle
-       write (6,*)'type i, cm(i),catom(i),ty(i)'
-       write (6, '(I4,2F9.3,A5)') i, cm(i),catom(i),ty(i)
+       write (uwrt,*)'type i, cm(i),catom(i),ty(i)'
+       write (uwrt, '(I4,2F9.3,A5)') i, cm(i),catom(i),ty(i)
     end do
-    write(6,*) '****potentiel de Ju Li pour ZrC ****'
-    write(6,*) '****Zr=1 C =2 ****'
-    write(6,*)
+    write(uwrt,*) '****potentiel de Ju Li pour ZrC ****'
+    write(uwrt,*) '****Zr=1 C =2 ****'
+    write(uwrt,*)
     cm(:ntyp) = cm(:ntyp)*umass
     close(lupotin)
     return
@@ -207,11 +207,11 @@ ipotentiel,typ_pot_pair)
        end if
     end IF
     IF (present(drho)) then
-       write(6,*) 'pas programm�!'
+       write(uwrt,*) 'pas programm�!'
        call arret_ndm
     end IF
     IF (present(ddrho))then
-       write(6,*) 'pas programm�!'
+       write(uwrt,*) 'pas programm�!'
        call arret_ndm
     end IF
 
@@ -261,7 +261,7 @@ ipotentiel,typ_pot_pair)
              
              aux1=abs(rep%K/(r-rep%rc))
              if(aux1.le.50.0)then
-!                write(6,*)r-rep%rc,aux1
+!                write(uwrt,*)r-rep%rc,aux1
                 Erep=exp(rep%A*(rep%B-r)+rep%K/(r-rep%rc))*ev2erg
              else
                 Erep=0.0
@@ -270,11 +270,11 @@ ipotentiel,typ_pot_pair)
 
        end IF
     IF (present(dErep))  then
-       write(6,*) 'pas programm�!'
+       write(uwrt,*) 'pas programm�!'
        call arret_ndm
     end IF
     IF (present(ddErep)) then
-       write(6,*) 'pas programm�!'
+       write(uwrt,*) 'pas programm�!'
        call arret_ndm
     end IF
     RETURN

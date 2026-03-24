@@ -1,6 +1,6 @@
 module deftimestep_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY:bk,depmaxts,dmtype,iko,iteration,itetimestep,lcasca,lperiod,oldtstep,&
+  USE gen_com_m, only:uwrt,lwrt,bk,depmaxts,dmtype,iko,iteration,itetimestep,lcasca,lperiod,oldtstep,&
        &rang,timel,tsmin,tstep,two,usdh,vmax,l2T,lspaceNDM,erg2ev
   use atomconfig, only : atom_config_d,atom_config_e
   USE boxconfig,only:box_config,periodbox
@@ -71,11 +71,8 @@ subroutine deftimestep(atcf,box)
      end if
   end do
 #ifdef PARA
-!  write(6,*)'imax',myidsp,imaxT
   call comm_space%barrier
-!  write(6,*)'VmaxT',myidsp,vmax2T
     call comm_space%barrier
-!    write(6,*)'natgmaxT',myidsp,natgmaxt
     call comm_space%barrier
   
 
@@ -86,7 +83,6 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
    call comm_space%sum(natgmaxt)
    call comm_space%sum(ityp_maxt)
    do iproc=0,nprocspace-1
-!      write(6,*)'IPROC',iproc,vmax2t(iproc),natgmaxt(iproc)
       if (vmax2T(iproc).gt.vmaxt) then
          vmax2=vmax2T(iproc)
          iprocm=iproc
@@ -97,7 +93,6 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
    end do
      !  ityp_max=int(max_glob(3))
      
-!   write(6,*)'vmax2',vmax2,iprocm,natgmax
      
      tmaxv = 1./3./bk*cm(ityp_max)*vmax2
      !tmaxv=0
@@ -125,9 +120,9 @@ if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
 
   if (itetimestep.ne.1) then
      if (rang==iprocm) then
-        write (6, '(A,I5,A,D14.5)') '*****  ITERATION  = ', iteration, '  time = ', &
+        write (uwrt, '(A,I5,A,D14.5)') '*****  ITERATION  = ', iteration, '  time = ', &
              timel
-        write (6, '(A,I8,I10,3G15.9)') 'Vitesse maximale sur I=', iteration, natgmax, vmax, tmaxv,ecmax
+        write (uwrt, '(A,I8,I10,3G15.9)') 'Vitesse maximale sur I=', iteration, natgmax, vmax, tmaxv,ecmax
      endif                                      ! fin rang=0
   end if
   if (vmax==0)return
@@ -146,7 +141,7 @@ ikoloc=iko
      tmod = 1./3./bk*cm(atcf%ityp(ikoloc))*vpmod2(ikoloc)
      vpmod = sqrt(vpmod2(ikoloc))
      ecmod= cm(atcf%ityp(ikoloc))*vpmod2(ikoloc)*0.5*erg2ev
-     write (6,'(A,I8,I10,3G15.9)' ) 'Vitesse du projectile =', iteration, iko, vpmod, &
+     write (uwrt,'(A,I8,I10,3G15.9)' ) 'Vitesse du projectile =', iteration, iko, vpmod, &
           tmod,ecmod
   endif
 endif	
@@ -155,11 +150,8 @@ endif
   ! -> tseuil a diminuer pour eviter les derives en energies et temperature
   tseuil = depmaxts/(1.0D0*vmax)
   tv1=tstep*vmax !variable servant pour imposer une hysteresis
-  !      write(6,*)'tseuil ',tseuil
   lts = log10(tseuil)
-  !      write(6,*)'lts ',lts
   expos = 1-int(lts)
-  !      write(6,*)'expos ',expos
 
 #ifdef NEC
   ! NEC
@@ -170,7 +162,7 @@ endif
 #endif
 
   if (tifac1<1.0) then
-     write (6, *) rang,'sthing wrong deftimestep 1.0'
+     write (uwrt, *) rang,'sthing wrong deftimestep 1.0'
      call arret_ndm
   else if (tifac1<2.0) then
      tifac2 = float(1)
@@ -179,10 +171,9 @@ endif
   else if (tifac1<=10.0) then
      tifac2 = float(5)
   else
-     write (6, *) rang,'sthing wrong deftimestep 1.0'
+     write (uwrt, *) rang,'sthing wrong deftimestep 1.0'
      call arret_ndm
   endif
-  !      write(6,*)'tifac2 ',tifac2
   oldtstep = tstep
   tstep = tifac2
 
@@ -199,9 +190,9 @@ endif
           tv1.gt.depmaxts2))) then
         if (tstep/=oldtstep) then
            if (rang==0) then
-              write (6, *) '*_*_*_*_ changement de pas en temps *_*_*_'
-              write (6, *) ' iteration ', iteration, 'ancien pas en temps', oldtstep
-              write (6, *) 'nouveau tstep ', tstep
+              write (uwrt, *) '*_*_*_*_ changement de pas en temps *_*_*_'
+              write (uwrt, *) ' iteration ', iteration, 'ancien pas en temps', oldtstep
+              write (uwrt, *) 'nouveau tstep ', tstep
            endif 
 !           if(llangevin.eqv..true.) then 
 !              gamlg=gamlang/tstep
@@ -210,7 +201,7 @@ endif
 
      else                                       ! cad si tstep >= 2.10-15s
         tstep = oldtstep
-        !if (rang==0) write (6, *) 'tstep maintenu',tstep
+        !if (rang==0) write (uwrt, *) 'tstep maintenu',tstep
      endif
 
   end if
@@ -224,9 +215,9 @@ endif
           tv1.gt.depmaxts2)) then
         if (tstep/=oldtstep) then
            if (rang==0) then
-              write (6, *) '*_*_*_*_ changement de pas en temps *_*_*_'
-              write (6, *) ' iteration ', iteration, 'ancien pas en temps', oldtstep
-              write (6, *) 'nouveau tstep ', tstep
+              write (uwrt, *) '*_*_*_*_ changement de pas en temps *_*_*_'
+              write (uwrt, *) ' iteration ', iteration, 'ancien pas en temps', oldtstep
+              write (uwrt, *) 'nouveau tstep ', tstep
            endif                                ! rang=0
            usdh = 1/(two*tstep)
            if (iteration==0) then
@@ -257,9 +248,9 @@ endif
           tv1.gt.depmaxts2)) then
         if (tstep.ne.oldtstep) then
            if (rang==0) then
-              write (6, *) '*_*_*_*_ changement de pas en temps *_*_*_'
-              write (6, *) ' iteration ', iteration, 'ancien pas en temps', oldtstep
-              write (6, *) 'nouveau tstep ', tstep
+              write (uwrt, *) '*_*_*_*_ changement de pas en temps *_*_*_'
+              write (uwrt, *) ' iteration ', iteration, 'ancien pas en temps', oldtstep
+              write (uwrt, *) 'nouveau tstep ', tstep
            endif                                ! rang=0
            usdh = 1/(two*tstep)
            if (iteration==0) then
@@ -279,7 +270,7 @@ endif
      if (etstep.gt.6d-17)then
         etstep=2d-16
         necycle=int(tstep/etstep)
-        write(6,*)'chgt etstep',etstep,necycle
+        write(uwrt,*)'chgt etstep',etstep,necycle
      end if
   end if
   !     write(6,*)'sortie deftimestep'

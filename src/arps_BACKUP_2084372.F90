@@ -155,7 +155,7 @@ contains
        !       select case (ipotentiel)
        !       case(0,1,3,4,5,6,7,8,9)
        call maj_atomes_frt_ftm(atdml,celndm%cell_config,boxndm,psc)
-       !       write(6,*)'rang nat ',rang, iteration, atdml%im,atdml%imf
+       !       write(uwrt,*)'rang nat ',rang, iteration, atdml%im,atdml%imf
        !       end select
     end if
 #endif
@@ -186,23 +186,23 @@ contains
 !!$                m=cm(iti)
 !!$                vn=norm2(atdml%vp(:,i))
 !!$                xpar=vn*m-vmin(iti)*m
-!!$!                write(6,*)'xpar',xpar,xs(iti)
+!!$!                write(uwrt,*)'xpar',xpar,xs(iti)
 !!$                if (xpar.le.0)  then
 !!$                   fvp=0
 !!$                else if ((xpar.lt.xs(iti)).and.(xpar.gt.0)) then
 !!$                   fvp=pol(xpar,aspl(iti),bspl(iti))/vn
 !!$                else
 !!$                   fvp=1
-!!$!                   write(6,*)'POOOOO'
+!!$!                   write(uwrt,*)'POOOOO'
 !!$!                   call arret_ndm
 !!$                end if
 !!$             end if
-!!$             write(6,*)'factg', i, fvp,fvp2
+!!$             write(uwrt,*)'factg', i, fvp,fvp2
              do ic=1,3
-                !  write(6,*)'ct',cm(ityp(1)),tstep
-!!$                write(6,*)'1-rga', fvp*gamlt(atdml%ityp(i))*tstep/2
-!!$             write(6,*)'2',atdml%fpr(ic,i)*tstep/(cm(atdml%ityp(i))*2)
-!!$             write(6,*)'3',atdml%Glangv(ic,i)*sqrt(cm(atdml%ityp(i))*bk*text*gamlt(atdml%ityp(i))*tstep*0.5)/cm(atdml%ityp(i))
+                !  write(uwrt,*)'ct',cm(ityp(1)),tstep
+!!$                write(uwrt,*)'1-rga', fvp*gamlt(atdml%ityp(i))*tstep/2
+!!$             write(uwrt,*)'2',atdml%fpr(ic,i)*tstep/(cm(atdml%ityp(i))*2)
+!!$             write(uwrt,*)'3',atdml%Glangv(ic,i)*sqrt(cm(atdml%ityp(i))*bk*text*gamlt(atdml%ityp(i))*tstep*0.5)/cm(atdml%ityp(i))
              
                 atdml%vp(ic,i) = atdml%vp(ic,i)*(1 -fvp*gamlt(atdml%ityp(i))*tstep/2) &
                      & + atdml%fpr(ic,i)*tstep/(cm(atdml%ityp(i))*2)&
@@ -346,7 +346,7 @@ contains
              potist=potiseam
              atdml%fpr=atdml%fp
              sig=sigcalfo
-!!$          write(6,*)'SIG',test_sigma,Sig(1,1)*unitP,Sig2p(1,1)*unitP,Sigem(1,1)*unitP
+!!$          write(uwrt,*)'SIG',test_sigma,Sig(1,1)*unitP,Sig2p(1,1)*unitP,Sigem(1,1)*unitP
           end select
        end select
        if (lTberendsen) then
@@ -354,14 +354,14 @@ contains
             real(double)::tempm1,gamb,fact
             tempm1=tempinstT(atdml)
 
-            !      write(6,*)'jy suis'
+            !      write(uwrt,*)'jy suis'
             gamb=1./(2.*tauTcon)
-            !      write(6,*)gamb,text,tempm1
+            !      write(uwrt,*)gamb,text,tempm1
 
             do i=1,atdml%im
                fact=cm(atdml%ityp(i))*gamb*(Text/tempm1-1.0)
                do ic=1,3
-                  !            write(6,*)fp(ic,i),fact*vp(ic,i)
+                  !            write(uwrt,*)fp(ic,i),fact*vp(ic,i)
                   atdml%fpr(ic,i)=atdml%fpr(ic,i)+fact*atdml%vp(ic,i)
                end do
 
@@ -377,10 +377,10 @@ contains
 !             atdml%Glangv(ic,i)=sqrt(-2.*log(u1))*cos(2.*pi*u2)   
              call calcfvp(fvp,atdml%ityp(i),atdml%vp(:,i),atdml%mov(i))
              do ic=1,3
-                !  write(6,*)'ct',cm(ityp(1)),tstep
-!!$                write(6,*)'II-rga', fvp*gamlt(atdml%ityp(i))*tstep/2
-!!$             write(6,*)'2',atdml%fpr(ic,i)*tstep/(cm(atdml%ityp(i))*2)
-!!$             write(6,*)'3',atdml%Glangv(ic,i)*sqrt(cm(atdml%ityp(i))*bk*text*gamlt(atdml%ityp(i))*tstep*0.5)/cm(atdml%ityp(i))
+                !  write(uwrt,*)'ct',cm(ityp(1)),tstep
+!!$                write(uwrt,*)'II-rga', fvp*gamlt(atdml%ityp(i))*tstep/2
+!!$             write(uwrt,*)'2',atdml%fpr(ic,i)*tstep/(cm(atdml%ityp(i))*2)
+!!$             write(uwrt,*)'3',atdml%Glangv(ic,i)*sqrt(cm(atdml%ityp(i))*bk*text*gamlt(atdml%ityp(i))*tstep*0.5)/cm(atdml%ityp(i))
 
                 atdml%vp(ic,i) = atdml%vp(ic,i)*(1 -fvp*gamlt(atdml%ityp(i))*tstep/2) &
                      & + atdml%fpr(ic,i)*tstep/(cm(atdml%ityp(i))*2)&
@@ -451,7 +451,7 @@ contains
   end subroutine dmloop_arps
 
   subroutine analysearps (atdml,celndm,boxndm,psc,chr)
-    !    use gen_com_m,only:iterasmol
+    !    use gen_com_m,only:uwrt,lwrt,iterasmol
     USE rasmolT_mod,only: rasmolT
     type(para_space_config)::psc
     class(box_config)::boxndm
@@ -532,7 +532,7 @@ contains
 #endif
     sigtot = sigkine+sig
 
-    !    write(6,'(A,4G17.8)')'KINKIN ',kin1*erg2ev,kin2*erg2ev,kin3*erg2ev,kinarps*erg2ev
+    !    write(uwrt,'(A,4G17.8)')'KINKIN ',kin1*erg2ev,kin2*erg2ev,kin3*erg2ev,kinarps*erg2ev
   end function kinarps
   !----------------------------------------------------------------------
   SUBROUTINE calfoglue_arps_1(atcf,celcf,boxcf)
@@ -608,7 +608,7 @@ contains
           ! pour chaque atome ds la cel. voisine
           loop1at2: do i2 = 1, celcf%nato(ko1)
              j = celcf%atincel(i2,ko1)
-             !             write(6,*)i,koo,i1, celcf%ncelvois(koo),i2,j
+             !             write(uwrt,*)i,koo,i1, celcf%ncelvois(koo),i2,j
              if (typ_pot_pair(ipo(atcf%ityp(i),atcf%ityp(j))).ne.ipotentiel) cycle
 
              itj=atcf%ityp(j)
@@ -772,11 +772,16 @@ contains
        if (typ_and_pot(atcf%ityp(i),ipotentiel).eqv..false.)cycle
        iti=atcf%ityp(i)
        k=Int((atcf%rho(i)-rhomin(iti))*inv_ktorho(iti))
-       !       write(6,*)i,iti,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
+       !       write(uwrt,*)i,iti,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
        !       write(110,'(2I8,3G17.8)')i,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
        if(k.gt.ngrid) then
+<<<<<<< HEAD
+          write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
+          write(6,*)'densityi',k,ngrid,densityi
+=======
           write(uwrt,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
           write(uwrt,*)'densityi',k,ngrid,densityi
+>>>>>>> babar
           call arret_ndm(.true.)
        end if
        drk=atcf%rho(i)-(rhomin(iti)+k*ktorho(iti))
@@ -803,7 +808,7 @@ contains
 
     !    write(3000+i,*)it
     !    do i=1,im
-    !       write(6,*)i,num_at_glob(i),tabdensity(i)
+    !       write(uwrt,*)i,num_at_glob(i),tabdensity(i)
     !    end do
 #endif
 
@@ -897,10 +902,10 @@ contains
     end if
 #endif
     !    if (test_sigma)sig=sig+sig2p+sigem
-!!$    if (rang==0)    write(6,*)
-!!$    if (rang==0)    write(6,*)sig2p
-!!$    if (rang==0)    write(6,*)
-!!$    if (rang==0)    write(6,*)sigem
+!!$    if (rang==0)    write(uwrt,*)
+!!$    if (rang==0)    write(uwrt,*)sig2p
+!!$    if (rang==0)    write(uwrt,*)
+!!$    if (rang==0)    write(uwrt,*)sigem
     !   potiseam=potisglue+potisrep
 
     return
@@ -940,12 +945,12 @@ contains
        lok=.false.
        koo=atcf%ielat(i)
        koxc(:)=celcf%koxyz(koo)
-       !       write(6,*)koxc,noxyzkmin,noxyzkmax
+       !       write(uwrt,*)koxc,noxyzkmin,noxyzkmax
        if (lpartarps) then 
           do ic=1,3
              if ((koxc(ic).ge.noxyzkmin(ic)).and.(koxc(ic).le.noxyzkmax(ic))) lok(ic)=.true.
           end do
-          !      write(6,*)lok
+          !      write(uwrt,*)lok
        end if
           
        if(lok(1).and.lok(2).and.lok(3)) then
@@ -1055,7 +1060,7 @@ contains
     type(atom_config_arps)::atcf
     integer::i,iti
     real(double)::vn,m,xpar,fact
-    !    write(6,*)'in xpupdate'
+    !    write(uwrt,*)'in xpupdate'
     do i=1,atcf%im
           iti=atcf%ityp(i)
           m=cm(iti)
@@ -1067,7 +1072,7 @@ contains
           fact=1
        else
           
-!          write(6,*)'xpar2',xpar,xs(iti)
+!          write(uwrt,*)'xpar2',xpar,xs(iti)
           if (xpar.le.0)  then
              !xp unchanged
                 fact=0
@@ -1077,12 +1082,16 @@ contains
           else
              atcf%xp(:,i) = atcf%xp(:,i) + tstep*atcf%vp(:,i)
 !             fact=1
+<<<<<<< HEAD
              write(6,*)'POOOOO'
+=======
+             write(uwrt,*)'POOOOO'
+>>>>>>> babar
              call arret_ndm(.true.)
           end if
        end if
-!       write(6,*)'xpar2',xpar,xs(iti),fact
-       !       write(6,*)vn,fact
+!       write(uwrt,*)'xpar2',xpar,xs(iti),fact
+       !       write(uwrt,*)vn,fact
 
     end do
   end subroutine xpupdate

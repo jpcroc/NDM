@@ -1,5 +1,6 @@
 module Mat_utils_mod
-   USE T_kind_param_m, ONLY:  double
+  USE gen_com_m, only:uwrt,lwrt
+  USE T_kind_param_m, ONLY:  double
    USE arret_ndm_mod,only:arret_ndm
    implicit none
 
@@ -223,7 +224,7 @@ END FUNCTION matdet
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY: ati
+    USE gen_com_m, only:uwrt,lwrt, ati
     ! *********************************************************************
     implicit none
     real(double), dimension(3,3) :: at
@@ -380,7 +381,7 @@ END FUNCTION matdet
           z(ip) = 0.
        enddo
     enddo
-    write(6,*) 'too many iterations in jacobi'
+    write(uwrt,*) 'too many iterations in jacobi'
     return
   end subroutine jacobi
 

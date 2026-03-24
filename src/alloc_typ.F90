@@ -12,7 +12,7 @@ contains
   subroutine alloc_typ
 
 
-    USE gen_com_m, ONLY: llangevin,gamlg
+    USE gen_com_m, only:uwrt,lwrt, llangevin,gamlg
     implicit none
     integer::i,j,k ,ic
     integer,save ::ncall=0

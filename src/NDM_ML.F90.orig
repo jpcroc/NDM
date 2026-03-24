@@ -187,7 +187,11 @@ contains
        
     else
        if (atcf%im.ne.cn2m%im) then
+<<<<<<< HEAD
+          write(6,*)'actf%im.ne.cn2m%im'
+=======
           write(uwrt,*)'actf%im.ne.cn2m%im'
+>>>>>>> babar
           call arret_ndm(.true.)
        else
           im=atcf%im

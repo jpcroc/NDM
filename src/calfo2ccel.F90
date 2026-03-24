@@ -14,7 +14,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m , ONLY:pi,rang,dmtype
+    USE gen_com_m , only:uwrt,lwrt,pi,rang,dmtype
     USE jqmod
 #ifdef PARA
     USE Tpara,only:COMM_space,nprocspace

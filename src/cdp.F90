@@ -1,7 +1,7 @@
 module cdp_mod
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY: iseed_glob=>iseed,rang,dmtype,itmax,lspacendm,iteration,lperiod,itloopmax,ivisu,&
+  USE gen_com_m, only:uwrt,lwrt, iseed_glob=>iseed,rang,dmtype,itmax,lspacendm,iteration,lperiod,itloopmax,ivisu,&
        &timel,timeloopmax,timemax,lrestart,fnam,lenfnam,text
   USE arret_ndm_mod,only: arret_ndm
   USE var_pot,only:ntyp
@@ -90,11 +90,11 @@ contains
     read (73, nml=inputcdp)
     timecdp=timecdp*1d-15
     if ((timecdp.le.0).and.(itecdp.lt.0)) then
-       if (rang==0) write(6,*)'itecdp ET timecdp <0 stop'
+       if (rang==0) write(uwrt,*)'itecdp ET timecdp <0 stop'
        call arret_ndm
     end if
     if ((timecdp.gt.0).and.(itecdp.gt.0)) then
-       if (rang==0) write(6,*)'itecdp ET timecdp >0 stop'
+       if (rang==0) write(uwrt,*)'itecdp ET timecdp >0 stop'
        call arret_ndm
     end if
     if (timecdp.gt.0)then
@@ -103,36 +103,36 @@ contains
        ltimec=.false.
     end if
     if (rang==0) then
-       write(6,*)
-       write(6,*)'POINT DEFECT CREATION'
+       write(uwrt,*)
+       write(uwrt,*)'POINT DEFECT CREATION'
        if (ltimec) then
-          write(6,*)'TIMECDP',timecdp
+          write(uwrt,*)'TIMECDP',timecdp
        else
-          write(6,*)'ITECDP',itecdp
+          write(uwrt,*)'ITECDP',itecdp
        end if
-       write(6,*)
+       write(uwrt,*)
     end if
     if (lrestart) then
        itprep=1
-       if (rang==0) write(6,*)'LRESTART et CREADP==> itprep put to 1 (just one step)'
+       if (rang==0) write(uwrt,*)'LRESTART et CREADP==> itprep put to 1 (just one step)'
     end if
 
     if (nfp.gt.0) then
-       if (rang==0) write(6,*)'NFP VAC INT for all types'
+       if (rang==0) write(uwrt,*)'NFP VAC INT for all types'
        nvac=nfp
        nbint=nvac
     end if
     dminins=dminins*1d-8
     if(all(nvac==-1).and.all(nbint==-1)) then
-       if (rang==0)write(6,*)'what defects ?'
+       if (rang==0)write(uwrt,*)'what defects ?'
        call arret_ndm
     end if
     if((itecdp==-1).and.(timecdp==-1.)) then
-       if (rang==0)write(6,*)'when defects ?'
+       if (rang==0)write(uwrt,*)'when defects ?'
        call arret_ndm
     end if
     if((typint.lt.0).or.(typint.GT.1)) then
-       write(6,*)'mauvaise introduction des interstitiels stop'
+       write(uwrt,*)'mauvaise introduction des interstitiels stop'
        call arret_ndm
     end if
 
@@ -152,7 +152,7 @@ contains
     ! call    random_seed (put=iseedt)
     if (nas.gt.0) then
        if(((typas1.le.0).or.(typas2.le.0)).or.((typas1.gt.ntyp).or.(typas2.gt.ntyp))) then
-          if (rang==0) write(6,*)'wrong type of antisites',nas, typas1,typas2
+          if (rang==0) write(uwrt,*)'wrong type of antisites',nas, typas1,typas2
           call arret_ndm
        end if
        allocate(natproc1(0:nprocspace-1));          allocate(natproc2(0:nprocspace-1));
@@ -211,7 +211,7 @@ contains
        if (iseed.le.0) then
           call system_clock (iseed) 
        end if
-       write(6,*)'rang iseed CREADP',rang,iseed
+       write(uwrt,*)'rang iseed CREADP',rang,iseed
        iseedt(1)=iseed
        call random_seed (iseedt(1))
     end if
@@ -249,14 +249,14 @@ contains
        itloopmax=itecdp*(1+int(float(iteration)/float(itecdp)))
     end if
 
-    if (rang==0)write(6,*)'ITER',iteration,itecdp,itloopmax
+    if (rang==0)write(uwrt,*)'ITER',iteration,itecdp,itloopmax
     
     if (ltimec) then
        itloopmax=100000000
     else
        timeloopmax=1d9
     end if
-    if (rang==0) write(6,*)'timeloopmax itloopmax restart',timeloopmax,itloopmax,lrestart
+    if (rang==0) write(uwrt,*)'timeloopmax itloopmax restart',timeloopmax,itloopmax,lrestart
     nvactot=sum(nvac(1:ntyp)); ninttot=sum(nbint(1:ntyp))
     allocate(atomint%iatpos(ninttot))
     allocate(atomint%ityp(ninttot))
@@ -314,11 +314,11 @@ contains
              itloopmax=min(iteration+itecdp-1,itmax)
           end if
           if (myidsp==0) then
-             write(6,*)'****************************************'
-             write(6,*)'POINT DEFECT CREATION '!,iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
-             write(6,*)'iteration,timel, itloopmax,timeloopmax,nvactot, ninttot nas'
-             write(6,'(I11,G20.8,I11,G20.8,3I7)')iteration,timel, itloopmax,timeloopmax,nvactot, ninttot,nas
-             write(6,*)'****************************************'
+             write(uwrt,*)'****************************************'
+             write(uwrt,*)'POINT DEFECT CREATION '!,iteration,timel, itloopmax,timeloopmax,nvactot, ninttot
+             write(uwrt,*)'iteration,timel, itloopmax,timeloopmax,nvactot, ninttot nas'
+             write(uwrt,'(I11,G20.8,I11,G20.8,3I7)')iteration,timel, itloopmax,timeloopmax,nvactot, ninttot,nas
+             write(uwrt,*)'****************************************'
           end if
           natgm=maxval(atdml%num_at_glob(1:atdml%im))
           !#ifdef PARA
@@ -333,8 +333,6 @@ contains
              nasloc1(:)=0;nasloc2(:)=0
              natproc1(myidsp)=count(atdml%ityp(1:atdml%im)==typas1)
              natproc2(myidsp)=count(atdml%ityp(1:atdml%im)==typas2)
-!             write(6,*)'NBAT',myidsp, typas1,natproc1(myidsp)
-!             write(6,*)'NBAT',myidsp, typas2,natproc2(myidsp)
              call comm_space%sum(natproc1)
              call comm_space%sum(natproc2)
              do ip=1,nprocspace-1
@@ -351,7 +349,7 @@ contains
 11                 continue
                    ntry=ntry+1
                    if (ntry==1000) then
-                      write(6,*)'AS NTRY exceeded'
+                      write(uwrt,*)'AS NTRY exceeded'
                       call arret_ndm(.true.)
                    end if
                    call random_number(z1)
@@ -374,7 +372,7 @@ contains
 22                 continue
                    ntry=ntry+1
                    if (ntry==1000) then
-                      write(6,*)'AS NTRY exceeded'
+                      write(uwrt,*)'AS NTRY exceeded'
                       call arret_ndm(.true.)
                    end if
                    call random_number(z1)
@@ -393,7 +391,7 @@ contains
                    nasloc2(procas2(ias))=nasloc2(procas2(ias))+1
 
                 end do
-!                write(6,*)'NASLOC',nasloc1,nasloc2
+
              end if
 
              call comm_space%bcast(0,procas1)
@@ -429,7 +427,7 @@ contains
                 end if
              end do
              if (ias1loc.ne.nasloc1(myidsp)) then
-                write(6,*)'rg ias1loc nasloc1(myidsp)',myidsp, ias1loc,nasloc1(myidsp)
+                write(uwrt,*)'rg ias1loc nasloc1(myidsp)',myidsp, ias1loc,nasloc1(myidsp)
                 call arret_ndm(.true.)
              end if
              do ias=1,nas
@@ -452,7 +450,7 @@ contains
                 end if
              end do
              if (ias2loc.ne.nasloc2(myidsp)) then
-                write(6,*)'pg as2 rg',myidsp, ias2loc,nasloc2(myidsp)
+                write(uwrt,*)'pg as2 rg',myidsp, ias2loc,nasloc2(myidsp)
                 call arret_ndm(.true.)
              end if
 !             write(myidsp+450,*) iteration
@@ -464,15 +462,6 @@ contains
 !                write(myidsp+450,*) typas2, i, indlocas2(i), atdml%num_at_glob(indlocas2(i)), atdml%ityp(indlocas2(i))
                 atdml%ityp(indlocas2(i))=typas1
              end do
-!             write(myidsp+450,*)
-!             if (myidsp==0) then
-!                do ip=0,nprocspace-1
-!                   write(6,'(I5,A,I3,A,I4,A,I3)')nasloc1(ip),' atoms of type', typas1,'in proc ',ip ,' changed to type' ,typas2
-!                end do
-!                do ip=0,nprocspace-1
-!                   write(6,'(I5,A,I3,A,I4,A,I3)')nasloc2(ip),' atoms of type', typas2,'in proc ',ip ,' changed to type', typas1
-!                end do
-!             end if
           end if
 
           
@@ -495,7 +484,7 @@ contains
                    call comm_space%sum(natyp)
                 end if
                 if (natyp.lt.(nvac(iti))) then
-                   write(6,*)'impossible to delete that many atoms of type ',iti,nvac(iti),natyp
+                   write(uwrt,*)'impossible to delete that many atoms of type ',iti,nvac(iti),natyp
                    call arret_ndm
                 end if
                 if (allocated (iatvac)) deallocate(iatvac)
@@ -503,7 +492,6 @@ contains
                 iatvac(:)=0
                 do ivac=1,nvac(iti)
                    
-!                write(6,*)'TTTYYYYYPPPP',rang,iti
                    natyp=0
                    nb_at_typ(:)=0
 
@@ -529,7 +517,6 @@ contains
 1                     continue
                       ntry=ntry+1
                       if (ntry==1000) then
-                         write(6,*)'VAC NTRY exceeded'
                          call arret_ndm(.true.)
                       end if
                       call random_number(z1)
@@ -611,7 +598,7 @@ contains
              if (myidsp==0) then
                 if (any(nvacproc(:).ne.nvacproc2(:))) then
                    do ip=0,nprocspace -1
-                      write(6,*)'Pb nvacproc ', nvacproc(ip),nvacproc2(ip)
+                      write(uwrt,*)'Pb nvacproc ', nvacproc(ip),nvacproc2(ip)
                    end do
                    call arret_ndm(.true.)
                 end if
@@ -784,7 +771,7 @@ contains
              end do lti
 
              if (iinttot.ne.ninttot) then
-                write(6,*)'pb nombre de int',iinttot,ninttot
+                write(uwrt,*)'pb nombre de int',iinttot,ninttot
                 call arret_ndm(.true.)
              end if
              if (myidsp==0) then
@@ -802,7 +789,7 @@ contains
           imt=atdml%im
           if (lspacendm)call comm_space%sum(imt)
           if(imt.ne.atdml%im_glob) then
-             write(6,*)'imt <> %im_glob',imt,atdml%im_glob
+             write(uwrt,*)'imt <> %im_glob',imt,atdml%im_glob
              call arret_ndm
           end if
           !#endif
@@ -823,7 +810,7 @@ contains
           case(32,33,34)
              call NGC (atdml,celndm,boxndm,psc)
           case default
-             write(6,*)'WTFCDP1'
+             write(uwrt,*)'WTFCDP1'
              call arret_ndm
           end select
        class is (atom_config_d)
@@ -834,13 +821,13 @@ contains
           case(4,8,1,21,22,23,24,88)
              call dmloop_pilot(atdml,celndm,boxndm,psc,linit=.false.)
           case default
-             write(6,*)'WTFCDP2'
+             write(uwrt,*)'WTFCDP2'
              call arret_ndm
           end select
        end select
        if (rang==0) then
-          write(6,*)'POST itmax,timemax,itecdp,timecdp,iteration,timel'
-          write(6,*)itmax,timemax,itecdp,timecdp,iteration,timel
+          write(uwrt,*)'POST itmax,timemax,itecdp,timecdp,iteration,timel'
+          write(uwrt,*)itmax,timemax,itecdp,timecdp,iteration,timel
        end if
        lcrea0=.true.
     end do

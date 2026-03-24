@@ -1,4 +1,5 @@
 module boxconfig
+  USE gen_com_m, only:uwrt,lwrt
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m
   use recips_mod,only:recips,calcvol
@@ -24,10 +25,17 @@ module boxconfig
   end type box_config
 
   type, extends (box_config):: box_config_lpr ! type dynamique des configurations atomiques(+vp/+xpp). vp et xpp seront toujours allouées
-     real(double), dimension(3,3)  :: h, hDot
+     real(double), dimension(3,3)  :: h, hDot,h0
+     real(double), dimension(3,3) ::trh0,invh0,invtrh0,epsi, tension
      real(double), dimension(3,3)  :: trh, invh, invtrh, Gmat, invGmat, Gdot
+     real(double) ::volu0, invVolu0,ucell,tempcell,ecellpr
+     REAL(double), dimension(:), allocatable :: zHoover   ! Viscosite 
      real(double) :: invVolu,wbox
-     
+     REAL(double), dimension(:), allocatable :: wHoover   ! Poids associé au thermostat de Hoover
+     REAL(double), dimension(:), allocatable :: zOld, zNew, zDot !  Viscosité et dérivée
+     REAL(double), dimension(:), allocatable :: KHoover
+     REAL(double) :: gNose,kcell,knose,enose,wnose,fnose,unose
+       real(double)::ppot,htot
    contains
   end type box_config_lpr
 
@@ -90,11 +98,11 @@ contains
     class(box_config)::box
     select type(box)
     type is (box_config)
-       write(6,*)'TYPE IS BOXCONFIG'
+       write(uwrt,*)'TYPE IS BOXCONFIG'
     type is  (box_config_lpr)
-       write(6,*)'TYPE IS BOXCONFIG_LPR'
+       write(uwrt,*)'TYPE IS BOXCONFIG_LPR'
     end select
-    write(6,*)'TYPE PRECISE ? SI NON extension'
+    write(uwrt,*)'TYPE PRECISE ? SI NON extension'
   end subroutine boxshowtype
           
           
@@ -127,21 +135,21 @@ contains
     if (chk==1) then 
        nbg=boxnew%bg(1,1)**2+boxnew%bg(1,2)**2+boxnew%bg(1,3)**2
        if (nbg==0) then
-          write(6,*) 'this is not an update as bg=0 stop'
+          write(uwrt,*) 'this is not an update as bg=0 stop'
           call arret_ndm(.true.)
        end if
     end if
     if((present(zl).eqv..false.).and.(present(at).eqv..false.)) then
-       write(6,*)'box init at ET zl indéfinis : STOP'
+       write(uwrt,*)'box init at ET zl indéfinis : STOP'
        call arret_ndm(.true.)
     end if
     if(present(zl).and.(present(at))) then
-       write(6,*)'box init at ET zl définis : STOP'
+       write(uwrt,*)'box init at ET zl définis : STOP'
        call arret_ndm(.true.)
     end if
     if (present(at)) then
        boxnew%at=at
-       !                    write(6,*)at
+       !                    write(uwrt,*)at
     else
        boxnew%at=0
        do ic = 1, 3
@@ -245,9 +253,9 @@ contains
      !-----------------------------------------------
      USE cryst_to_cart_mod,only: cryst_to_cart
      USE T_kind_param_m, ONLY:  double
-     USE gen_com_m, ONLY:lperiod,zero
+     USE gen_com_m, only:uwrt,lwrt,lperiod,zero
 
-    USE gen_com_m, ONLY:low_limit,zero
+    USE gen_com_m, only:uwrt,lwrt,low_limit,zero
 
      ! *****************************************************************
      ! Cette routine applique les conditions périodiques par décalage
@@ -275,7 +283,7 @@ contains
      integer :: i, ic
      real(double):: cpp,xpici
      !      integer,save  :: iperiod
-     !  if (rang==0) write(6,*)'PARA-T entree period'
+     !  if (rang==0) write(uwrt,*)'PARA-T entree period'
 
 
      !      iperiod=iperiod+1

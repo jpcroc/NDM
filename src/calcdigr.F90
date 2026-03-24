@@ -87,7 +87,7 @@ contains
        rdfc%im=atrdf%im
     else
        if (rdfc%im.ne.atrdf%im) then
-          write(6,*)'IM atrdf incosistent with rdfc STOP'
+          write(uwrt,*)'IM atrdf incosistent with rdfc STOP'
           call arret_ndm
        end if
     end if
@@ -95,21 +95,21 @@ contains
        rdfc%volu=boxrdf%volu
     else
        if (rdfc%volu.ne.boxrdf%volu) then
-          write(6,*)'VOLU atrdf inconistent with rdfc STOP'
+          write(uwrt,*)'VOLU atrdf inconistent with rdfc STOP'
           call arret_ndm
        end if
     end if
     
     if (rmax.gt.minval(celrdf%celsize)) then
-       write(6,*)'diminuer nox, noy, noz'
+       write(uwrt,*)'diminuer nox, noy, noz'
        call arret_ndm
     end if
-    !      write(6,*)'rmax ',rmax
+    !      write(uwrt,*)'rmax ',rmax
     rdfc%nrdf=rdfc%nrdf+1
     rmax2 = rmax**2
     incre = rmax/rdfc%nkmax
     invincre = 1/incre
-    if (rang==0) write(6,*) 'nkmax incre',rdfc%nkmax,incre
+    if (rang==0) write(uwrt,*) 'nkmax incre',rdfc%nkmax,incre
     do i = 1, atrdf%im
        koo = atrdf%ielat(i)
        do i1 = 0, celrdf%ncelvmax
@@ -125,7 +125,7 @@ contains
 
              m=k+1
              digrtemp(atrdf%ityp(i),atrdf%ityp(j),m)= digrtemp(atrdf%ityp(i),atrdf%ityp(j),m)+1
-             !                 write(6,*)' digr ', digr(ityp(i),ityp(j),m)
+             !                 write(uwrt,*)' digr ', digr(ityp(i),ityp(j),m)
           end do
        end do
    end do
@@ -154,7 +154,7 @@ contains
        enddo
     enddo
 
-    !  if (rang==0) write(6,*) 'PARA-T sortie calcdigr'
+    !  if (rang==0) write(uwrt,*) 'PARA-T sortie calcdigr'
 
     return
   end subroutine calcdigr
@@ -188,16 +188,16 @@ contains
     lucoord = 11
     !  rmax=minval(celsize)
     rmax=rcrdf*1.0d-8
-    !       write(6,*)'rmax ',rmax
+    !       write(uwrt,*)'rmax ',rmax
     incre = rmax/rdfc%nkmax
     invincre = 1/incre
     if(rang==0) then
-       write(6,*)
-       write(6,*)'------------------------------------------'
-       write(6,*)'--------Calcul des Fonctions de correlation---------'
-       write(6,*)'nrdf ',rdfc%nrdf
+       write(uwrt,*)
+       write(uwrt,*)'------------------------------------------'
+       write(uwrt,*)'--------Calcul des Fonctions de correlation---------'
+       write(uwrt,*)'nrdf ',rdfc%nrdf
 
-       write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', iteration, '  time = ', timel
+       write (uwrt, '(A,I5,A,D10.3)') '*  ITERATION  = ', iteration, '  time = ', timel
     end if
 
     if(.not.rdfc%linstantrdf) then
@@ -219,7 +219,7 @@ contains
              if(rang==0)               open(lucoord, file = fpairecoord, status = 'unknown')
 
              do m1=1,rdfc%nkmax
-                !                  write(6,*)i1,i2,n,digr(i1,i2,n)
+                !                  write(uwrt,*)i1,i2,n,digr(i1,i2,n)
                 m = m1+1
 
                 do k = 1, m1
@@ -286,7 +286,7 @@ contains
           if (iteration<=99999999.and.iteration>9999999) write(33, 800) iteration
           if (iteration<=999999999.and.iteration>99999999) write(33, 900) iteration
           if  (iteration>999999999) then
-             write (6, *) 'probleme de format dans calccoordo.f90'
+             write (uwrt, *) 'probleme de format dans calccoordo.f90'
              call arret_ndm
           endif
           rewind 33
@@ -295,8 +295,8 @@ contains
 
           lusauvrdf=34
 
-          write(6,*) ' sauvegarde RDF partielle iteration=',iteration
-          write(6,*)
+          write(uwrt,*) ' sauvegarde RDF partielle iteration=',iteration
+          write(uwrt,*)
        end if
        do i1=1,ntyp
           if(rdfc%nad(i1)==0) cycle
@@ -350,8 +350,8 @@ contains
        !------------------------------------------------
        ! RDF totale instantanee
        !------------------------------------------------
-       if(rang==0)            write(6,*) ' sauvegarde RDF totale it=',iteration
-       if(rang==0)            write(6,*)
+       if(rang==0)            write(uwrt,*) ' sauvegarde RDF totale it=',iteration
+       if(rang==0)            write(uwrt,*)
        if(rang==0)            open(35,file='rdftot.'//charsauvrfdc,status='unknown')
        do m1=1,rdfc%nkmax
           m = m1
@@ -370,8 +370,8 @@ contains
 800 format(i8)
 900 format(i9)
 1000 format(a6)
-    if(rang==0)        write(6,*)'--------------------------------------'
-    if(rang==0)        write(6,*) '--------------------------------------'
+    if(rang==0)        write(uwrt,*)'--------------------------------------'
+    if(rang==0)        write(uwrt,*) '--------------------------------------'
 !!!  if(rang==0)        close(lusauvrdf)
     if(rang==0)        close(33,status='DELETE')
 

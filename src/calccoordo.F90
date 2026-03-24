@@ -1,6 +1,6 @@
 module calccoordo_mod
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY: rang,iteration,timel,lperiod
+  USE gen_com_m, only:uwrt,lwrt, rang,iteration,timel,lperiod
   use atomconfig,only: atom_config
   use boxconfig,only:box_config
   USE cellconfig,only:cell_config
@@ -52,9 +52,9 @@ contains
     end do
  !
 
-  !      write(6,*)'entree calcoordo'
-  write (6, *)
-  write (6, *) '--------- Coordinations ----------------'
+  !      write(uwrt,*)'entree calcoordo'
+  write (uwrt, *)
+  write (uwrt, *) '--------- Coordinations ----------------'
   dnco(:ntyp,:ntyp) = 0
 
 
@@ -91,16 +91,16 @@ contains
      where (na(:ntyp)/=0) dnco(i1,:ntyp) = dnco(i1,:ntyp)/na(i1)
   enddo
   if (rang==0) then
-     write (6, '(A,I5,A,D10.3)') '*  ITERATION  = ', iteration, '  time = ', timel
-     write (6, *) 'nombre de coor autour de :'
+     write (uwrt, '(A,I5,A,D10.3)') '*  ITERATION  = ', iteration, '  time = ', timel
+     write (uwrt, *) 'nombre de coor autour de :'
      do i1 = 1, ntyp
         if (na(i1)==0) cycle
-        write (6, *) i1, (dnco(i1,j),j=1,ntyp)
+        write (uwrt, *) i1, (dnco(i1,j),j=1,ntyp)
         !   28 FORMAT (31H Nombre de coor autour de ITYP=,I2,2X,7(F5.2,1X))
      end do
      do i1 = 1, ntyp
         if (na(i1)==0) cycle
-        write (6, *) 'rayon autour des type ', i1, ' = ', rccoordo(i1)*1D+8
+        write (uwrt, *) 'rayon autour des type ', i1, ' = ', rccoordo(i1)*1D+8
      end do
   endif
 

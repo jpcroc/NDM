@@ -1,6 +1,6 @@
 module sic
     USE extension_mod,only: Pextension    
-
+  USE gen_com_m, only:uwrt,lwrt
 
 contains
 
@@ -67,7 +67,7 @@ contains
        if (plottyp(i).ge.20) nvhomo=nvhomo+1
 !       write(6,*)i,nvi(i),(ityp(ivois(j,i)),j=1,nvi(i)),plottyp(i)
     end do
-    if(nvhomo.gt.0)write(6,*)'Nb d''atomes avec liaison homopolaire = ', nvhomo
+    if(nvhomo.gt.0)write(uwrt,*)'Nb d''atomes avec liaison homopolaire = ', nvhomo
     write(luxlf,*)'ATOMS',ncall
     do i=1,im
        xp1 = xp(1,i)*1D+08

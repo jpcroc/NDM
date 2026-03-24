@@ -2,7 +2,7 @@ module atomconfig
    USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m,only:double,long
   USE Mat_utils_mod,only: fillbuffer3D,fillbuffer1D,fillbuffer9D
-  use gen_com_m,only:rang,lspacendm
+  use gen_com_m,only:uwrt,lwrt,rang,lspacendm
 #ifdef PARA
   use mpi
   USE Tpara,only:NDM_MPI_REAL_DOUBLE,ierr,mpi_communicator,endmpi,nprocspace
@@ -79,14 +79,14 @@ module atomconfig
   
   type, extends (atom_config_d):: atom_config_e ! type étendu des configurations atomiques avec quantités optionelles Ces quantités seront allouées en fonction dss logical
      real(double),allocatable ::xpp(:,:)
-     logical ::lxpp
-     logical::lprteat
+     logical ::lxpp=.false.
+     logical::lprteat=.false.
      real(double),allocatable ::eat(:)
-     logical::lsigat
+     logical::lsigat=.false.
      real(double),allocatable ::sigat(:,:,:)
-     logical::lLangevin
+     logical::lLangevin=.false.
      real(double),allocatable ::Glangv(:,:)
-     logical::lax
+     logical::lax=.false.
      real(double),allocatable ::ax(:,:)
    contains
      procedure, pass::copy_atom=>copy_atom_e
@@ -113,27 +113,27 @@ contains
     class(atom_config),intent(in)::atcf
     character(len=*),optional::mess
     if (present(mess)) then
-       write(6,*)'atomfigPRINT ',mess
+       write(uwrt,*)'atomfigPRINT ',mess
     else
-       write(6,*)'atomfigPRINT'
+       write(uwrt,*)'atomfigPRINT'
     end if
-    write(6,*)'im imm im_glob imm_glob',atcf%im,atcf%imm,atcf%im_glob,atcf%imm_glob
+    write(uwrt,*)'im imm im_glob imm_glob',atcf%im,atcf%imm,atcf%im_glob,atcf%imm_glob
     select type (atcf)
     type is (atom_config)
-       write(6,*)'atomfig'
+       write(uwrt,*)'atomfig'
     type is (atom_config_d)
-       write(6,*)'atomfigD'
+       write(uwrt,*)'atomfigD'
     class is (atom_config_e)
-       write(6,*)'atomfigE'
+       write(uwrt,*)'atomfigE'
     type is (atom_config_arps)
-       write(6,*)'atomfigARPS'
+       write(uwrt,*)'atomfigARPS'
     end select
     select type (atcf)
     class is (atom_config_e)
-       write(6,*)'FLAGSFF xpp eat sigat langevin ax'
-       write(6,*)'FLAGSFF', atcf%lxpp,atcf%lprteat,atcf%lsigat,atcf%llangevin,atcf%lax
+       write(uwrt,*)'FLAGSFF xpp eat sigat langevin ax'
+       write(uwrt,*)'FLAGSFF', atcf%lxpp,atcf%lprteat,atcf%lsigat,atcf%llangevin,atcf%lax
     end select
-    write(6,*)'TYPE PRECISE ? SI NON extension'
+    write(uwrt,*)'TYPE PRECISE ? SI NON extension'
 
   end subroutine print_type
 
@@ -160,17 +160,17 @@ contains
 
     if (ltbv) then
        if(.not.(present(rvois)))then
-          write(6,*)'rvois must be set in initialization of atcf when ltabvois =True'
+          write(uwrt,*)'rvois must be set in initialization of atcf when ltabvois =True'
           call arret_ndm(.true.)
        end if
        if (rv==0) then 
-          write(6,*)'rvois must be set to non zero in initialization of atcf when ltabvois =True'
+          write(uwrt,*)'rvois must be set to non zero in initialization of atcf when ltabvois =True'
           call arret_ndm(.true.)
        end if
     else
        if(present(rvois)) then
           if (rvois.ne.0)then
-             write(6,*)'rvois must NOT be set in initialization of atcf when ltabvois =False'
+             write(uwrt,*)'rvois must NOT be set in initialization of atcf when ltabvois =False'
              call arret_ndm(.true.)
           end if
        end if
@@ -180,13 +180,12 @@ contains
 
     atconf%im=imin
     if (present(im_glob))then
- !      write(6,*)'PRESENT imglob',im_glob
+       write(uwrt,*)'PRESENT imglob',im_glob
        atconf%im_glob=im_glob
 !    else
 !       atconf%im_glob=0
     end if
     if (present(imm_glob))then
-!       write(6,*)'PRESENT imMglob',imm_glob
        atconf%imm_glob=imm_glob
 !    else
 !       atconf%imm_glob=0
@@ -338,8 +337,8 @@ contains
           imm_min=j-atcible%imm
           call atcible%extend(imm_min)
        else
-          write(6,*)'PB COPY', rang,j,atcible%imm,i,atsource%imm
-          write(6,*)'copy of an atom element is not possible , target size too small' ,rang
+          write(uwrt,*)'PB COPY', rang,j,atcible%imm,i,atsource%imm
+          write(uwrt,*)'copy of an atom element is not possible , target size too small' ,rang
           call arret_ndm(.true.)
        end if
     end if
@@ -548,15 +547,15 @@ contains
     allocate(ibuffer(sizeI));     allocate(Lbuffer(sizeL));     allocate(Rbuffer(sizeR)); 
     call mpic%recv (cst,rgem,112)
     if (cst(1).ne.sizeI) then
-       write(6,*)'erreur CST1A ',sizeI,cst(1)
+       write(uwrt,*)'erreur CST1A ',sizeI,cst(1)
        call arret_ndm(.true.)
     end if
     if (cst(2).ne.sizel) then
-       write(6,*)'erreur CST2A ',sizel,cst(2)
+       write(uwrt,*)'erreur CST2A ',sizel,cst(2)
        call arret_ndm(.true.)
     end if
     if (cst(3).ne.sizeR) then
-       write(6,*)'erreur CST3A ',sizer,cst(3)
+       write(uwrt,*)'erreur CST3A ',sizer,cst(3)
        call arret_ndm(.true.)
    end if
    
@@ -565,9 +564,9 @@ contains
     if (cst(3).ne.0)call mpic%recv(Rbuffer,rgem,316)
 
     call addatim (atcf,sizeI,sizel,sizer,ibuffer,lbuffer,rbuffer,csi,csl,csr,carac,iposf,rposf,lposf,atcf%imm)
-    write(6,*)'PATa',    atcf%proc_at(atcf%im)
+    write(uwrt,*)'PATa',    atcf%proc_at(atcf%im)
     atcf%proc_at(atcf%im)=mypp
-    write(6,*)'PATb',    atcf%proc_at(atcf%im)
+    write(uwrt,*)'PATb',    atcf%proc_at(atcf%im)
     return
 
 #endif
@@ -600,7 +599,7 @@ contains
     else
        carac=caracT
     end if
-   write(6,*)'IAT',rang,iat
+   write(uwrt,*)'IAT',rang,iat
     nvi=0
     sizeI=0
     Iposf(:)=0
@@ -715,15 +714,15 @@ contains
     allocate(ibuffer(sizeI));     allocate(Lbuffer(sizeL));     allocate(Rbuffer(sizeR)); 
     call mpic%recv (cst,rgem,112)
     if (cst(1).ne.sizeI) then
-       write(6,*)'erreur CST1 ',sizeI,cst(1)
+       write(uwrt,*)'erreur CST1 ',sizeI,cst(1)
        call arret_ndm(.true.)
     end if
     if (cst(2).ne.sizel) then
-       write(6,*)'erreur CST2 ',sizel,cst(2)
+       write(uwrt,*)'erreur CST2 ',sizel,cst(2)
        call arret_ndm(.true.)
     end if
     if (cst(3).ne.sizeR) then
-       write(6,*)'erreur CST3 ',sizer,cst(3)
+       write(uwrt,*)'erreur CST3 ',sizer,cst(3)
        call arret_ndm(.true.)
    end if
    
@@ -888,7 +887,7 @@ contains
           if (atcible%nvois.lt.atsource%nvois)lstop=.true.
        end if
        if (lstop)then
-          write(6,*)'(atcible%im < atsource%im  ou size(atcible%indi)<size(atsource%indi) )et lrescl = false ; pas possible'
+          write(uwrt,*)'(atcible%im < atsource%im  ou size(atcible%indi)<size(atsource%indi) )et lrescl = false ; pas possible'
           call arret_ndm(.true.)
        end if
     end if
@@ -911,8 +910,6 @@ contains
        class is (atom_config_d)
        select type (atcible)
        class is (atom_config_d)
-!          write(6,*)'cible',atcible%imm,atcible%im,size(atcible%vp)
-!          write(6,*)'source',atsource%imm,atsource%im,size(atsource%vp)
           atcible%vp(:,1:atsource%imm)=atsource%vp(:,1:atsource%imm)
        end select
     end select
@@ -1049,7 +1046,7 @@ contains
        if (imm_in.ge.imn) then
           immn=imm_in
        else
-          write(6,*)'imm_in< imn ; stop'
+          write(uwrt,*)'imm_in< imn ; stop'
           call arret_ndm(.true.)
        end if
     else
@@ -1084,7 +1081,7 @@ contains
     real(double)::rvois
 
     if (present(lrescl))lrescale=lrescl
-!    write(6,*)'FAB lrescale',lrescale
+
     if (lrescale) then
        call atcible%dealloc 
        if (atsource%ltabvois)then
@@ -1099,7 +1096,7 @@ contains
        else
           immtrf=imtrf
        end if
-!       write(6,*)'FAB',imtrf
+
        call atsource%Eegal(atcible)
        call atcible%init(imtrf,immtrf,atsource%ltabvois,nvois,rvois)
     end if
@@ -1114,7 +1111,7 @@ contains
        end if
     end do
     if (i2.ne.imtrf) then
-       write(6,*)'WTF ?'
+       write(uwrt,*)'WTF ?'
        call arret_ndm(.true.)
     end if
        atcible%im_glob=atcible%im
@@ -1161,7 +1158,7 @@ contains
     immtrf=atsource%im
     imtrf=COUNT(atsource%lgul(1:atsource%im))
     !    call atsource%Eegal(atcible)
-    write(6,*)'SORT',imtrf,immtrf
+    write(uwrt,*)'SORT',imtrf,immtrf
     call atcible%init(imtrf,immtrf,atsource%ltabvois,nvois,rvois)
     call atcible%zero
     i2=0;i3=atcible%im
@@ -1177,11 +1174,11 @@ contains
        end if
     end do
     if (i2.ne.imtrf) then
-       write(6,*)'SORT WTF2 ?'
+       write(uwrt,*)'SORT WTF2 ?'
        call arret_ndm(.true.)
     end if
     if (i3.ne.immtrf) then
-       write(6,*)'SORT WTF3 ?'
+       write(uwrt,*)'SORT WTF3 ?'
        call arret_ndm(.true.)
     end if
 
@@ -1230,7 +1227,7 @@ contains
           if (atcible%imm.lt.immnew)   call atcible%extend(immnew)
        else
           if (atcible%imm.lt.imnew)  then
-             write(6,*)'addition de atsource a atcible pas possible'
+             write(uwrt,*)'addition de atsource a atcible pas possible'
              call arret_ndm(.true.)
           end if
        end if
@@ -1284,7 +1281,7 @@ contains
     else
        imp=atin%im
     end if
-!    write(6,*)'AAAAA',rang,atin%im,atin%imf
+
 #else
     imp=atin%im
 #endif
@@ -1703,18 +1700,18 @@ contains
           end if
        end do
        if (imtot.ne.atcfcomp%im) then
-          write(6,*)'atomes perdus 1?',idloc, imtot,atcfcomp%im,div%mpi_orig%rank
+          write(uwrt,*)'atomes perdus 1?',idloc, imtot,atcfcomp%im,div%mpi_orig%rank
           call arret_ndm(.true.)
        end if
 
        if (all(atcfcomp%num_at_glob(1:atcfcomp%im)==0)) then  ! This is anew atcfcomp with undefined atcfcomp :inag points to -1 to show that
           inag(1:natgM)=-1
        else if (any(atcfcomp%num_at_glob(1:atcfcomp%im)==0)) then !This is bulsshit (neither new nor pre-existing) smells like inconsistency
-          write(6,*)'VERS MASTER au moins un NAG nul'
+          write(uwrt,*)'VERS MASTER au moins un NAG nul'
           call arret_ndm(.true.)
        else ! This a return to an existing atcfcomp which has its own num_at_glob numbering
           do icomp=1,atcfcomp%im
-             !          write(6,*)'atcfcomp',icomp,atcfcomp%num_at_glob(icomp)
+             !          write(uwrt,*)'atcfcomp',icomp,atcfcomp%num_at_glob(icomp)
              inag(atcfcomp%num_at_glob(icomp))=icomp
           end do
        end if
@@ -1747,7 +1744,7 @@ contains
                 end if
 !                write(6,*)'L2M',iproc,iloc,nag(iloc)
                 if (nag(iloc).ne.atcfcomp%num_at_glob(icomp))then
-                   write(6,*)'erreur NATG',iloc,icomp,nag(iloc),atcfcomp%num_at_glob(icomp)
+                   write(uwrt,*)'erreur NATG',iloc,icomp,nag(iloc),atcfcomp%num_at_glob(icomp)
                    call arret_ndm(.true.)
                 end if
                 if(scan('e',carac).ne.0)   atcfcomp%ielat(icomp)=atcfloc%ielat(iloc)
@@ -1814,15 +1811,15 @@ contains
 
              call buffersizes (atcfloc,sizeI,sizeR,sizel,IposF,Rposf,Lposf,carac,imrecv)
              if (cst(1).ne.sizeI) then
-                write(6,*)'erreur CST1B ',sizeI,cst(1)
+                write(uwrt,*)'erreur CST1B ',sizeI,cst(1)
                 call arret_ndm(.true.)
              end if
              if (cst(2).ne.sizel) then
-                write(6,*)'erreur CST2B ',sizel,cst(2)
+                write(uwrt,*)'erreur CST2B ',sizel,cst(2)
                 call arret_ndm(.true.)
              end if
              if (cst(3).ne.sizeR) then
-                write(6,*)'erreur CST3B ',sizer,cst(3)
+                write(uwrt,*)'erreur CST3B ',sizer,cst(3)
                 call arret_ndm(.true.)
              end if
              allocate(Rbuffer(sizeR));allocate(ibuffer(sizeI));allocate(lbuffer(sizeL))
@@ -1838,7 +1835,7 @@ contains
                    icomp=inag(nag(iloc))
                 end if
                 if (nag(iloc).ne.atcfcomp%num_at_glob(icomp))then
-                   write(6,*)'erreur NATG2',iloc,icomp,nag(iloc),atcfcomp%num_at_glob(icomp)
+                   write(uwrt,*)'erreur NATG2',iloc,icomp,nag(iloc),atcfcomp%num_at_glob(icomp)
                    call MPI_finalize(ierr)
                    call arret_ndm(.true.)
                 end if
@@ -1856,7 +1853,7 @@ contains
 
 
        if (imtot.ne.atcfcomp%im) then
-          write(6,*)'atomes perdus 3?',idloc, imtot,atcfcomp%im,div%mpi_orig%rank
+          write(uwrt,*)'atomes perdus 3?',idloc, imtot,atcfcomp%im,div%mpi_orig%rank
           call MPI_finalize(ierr)
           call arret_ndm(.true.)
        end if
@@ -2012,19 +2009,19 @@ contains
        call mpic%recv (cst,idmaster,212)
        call buffersizes (atcfloc,sizeI,sizeR,sizel,IposF,Rposf,Lposf,carac,atcfloc%im) ! pas de ns car on reçoit tous les atomes de atloc
        if (atcfloc%im.ne.imrecv) then
-          write(6,*)'ERREUR M2L', atcfloc%im,imrecv
+          write(uwrt,*)'ERREUR M2L', atcfloc%im,imrecv
           call arret_ndm(.true.)
        end if
        if (cst(1).ne.sizeI) then
-          write(6,*)'erreur CST1B ',sizeI,cst(1)
+          write(uwrt,*)'erreur CST1B ',sizeI,cst(1)
           call arret_ndm(.true.)
        end if
        if (cst(2).ne.sizel) then
-          write(6,*)'erreur CST2B ',sizel,cst(2)
+          write(uwrt,*)'erreur CST2B ',sizel,cst(2)
           call arret_ndm(.true.)
        end if
        if (cst(3).ne.sizeR) then
-          write(6,*)'erreur CST3B ',sizer,cst(3)
+          write(uwrt,*)'erreur CST3B ',sizer,cst(3)
           call arret_ndm(.true.)
        end if
        
@@ -2325,7 +2322,7 @@ contains
 
        if(scan('w',carac).ne.0) then
           if (any(mask(1:atcf%im).eqv..false.))then
-             write(6,*)'trf latbavois et conf incomplète stop'
+             write(uwrt,*)'trf latbavois et conf incomplète stop'
              call arret_ndm(.true.)
           end if
           ivi=ivi+1
@@ -2475,17 +2472,17 @@ contains
     end select
 
     if (csi.ne.sizeI) then
-       write(6,*)'erreur CSI 2',sizeI,csi
+       write(uwrt,*)'erreur CSI 2',sizeI,csi
 !       call endmpi
        call arret_ndm(.true.)
     end if
     if (csr.ne.sizer) then
-       write(6,*)'erreur CSR ',sizeR,csr
+       write(uwrt,*)'erreur CSR ',sizeR,csr
 !       call endmpi
        call arret_ndm(.true.)
     end if
     if (csl.ne.sizel) then
-       write(6,*)'erreur CSL ',sizel,csl
+       write(uwrt,*)'erreur CSL ',sizel,csl
 !       call endmpi
        call arret_ndm(.true.)
     end if
@@ -2661,17 +2658,17 @@ contains
      end select
 
     if (csi.ne.sizeI) then
-       write(6,*)'erreur CSI 1 ',sizeI,csi
+       write(uwrt,*)'erreur CSI 1 ',sizeI,csi
 !       call endmpi
        call arret_ndm(.true.)
     end if
     if (csr.ne.sizer) then
-       write(6,*)'erreur CSR ',sizeR,csr
+       write(uwrt,*)'erreur CSR ',sizeR,csr
 !       call endmpi
        call arret_ndm(.true.)
     end if
     if (csl.ne.sizel) then
-       write(6,*)'erreur CSL ',sizel,csl
+       write(uwrt,*)'erreur CSL ',sizel,csl
 !       call endmpi
        call arret_ndm(.true.)
     end if
@@ -2889,17 +2886,17 @@ contains
      end select
 
     if (csi.ne.sizeI) then
-       write(6,*)'erreur CSI 1 ',sizeI,csi
+       write(uwrt,*)'erreur CSI 1 ',sizeI,csi
 !       call endmpi
        call arret_ndm(.true.)
     end if
     if (csr.ne.sizer) then
-       write(6,*)'erreur CSR ',sizeR,csr
+       write(uwrt,*)'erreur CSR ',sizeR,csr
 !       call endmpi
        call arret_ndm(.true.)
     end if
     if (csl.ne.sizel) then
-       write(6,*)'erreur CSL ',sizel,csl
+       write(uwrt,*)'erreur CSL ',sizel,csl
 !       call endmpi
        call arret_ndm(.true.)
     end if
@@ -3119,17 +3116,17 @@ contains
     end select
 
     if (csi.ne.sizeI) then
-       write(6,*)'erreur CSIC 1 ',sizeI,csi
+       write(uwrt,*)'erreur CSIC 1 ',sizeI,csi
 !       call endmpi
        call arret_ndm(.true.)
     end if
     if (csr.ne.sizer) then
-       write(6,*)'erreur CSRC ',sizeR,csr
+       write(uwrt,*)'erreur CSRC ',sizeR,csr
 !       call endmpi
        call arret_ndm(.true.)
     end if
     if (csl.ne.sizel) then
-       write(6,*)'erreur CSLC ',sizel,csl
+       write(uwrt,*)'erreur CSLC ',sizel,csl
 !       call endmpi
        call arret_ndm(.true.)
     end if
@@ -3140,8 +3137,8 @@ contains
     class(atom_config)::atconf
     character(*)::message
     if (atconf%lglock) then
-       write(6,*)' lgul is already used correct code',rang
-       write(6,*) message
+       write(uwrt,*)' lgul is already used correct code',rang
+       write(uwrt,*) message
        call arret_ndm(.true.)
     end if
   end subroutine lgcheck

@@ -16,14 +16,14 @@ module decoupage_mod
 
 
 
-    USE gen_com_m, ONLY:imm_glob,rang,ldecoup
+    USE gen_com_m, only:uwrt,lwrt,imm_glob,rang,ldecoup
     
   implicit none
   logical::lverb=.true.
 contains
   subroutine decoupage(nbr_cpuIN,ncore,celdec,atdec,lverbose,psc,atcomp,boxrep)
 
-    USE gen_com_m, ONLY:imm_glob,rang,ldecoup
+    USE gen_com_m, only:uwrt,lwrt,imm_glob,rang,ldecoup
 
     use read_val,only:ltabvois
     type(para_space_config)::psc
@@ -76,26 +76,20 @@ contains
        nbr_cpumin=nbr_cpuin
     end if
     if (present(atdec))then
-       !    write(6,*)'OHLALA1',imm_glob
-       !    write(6,*)'OHLALA2',atdec%imm_glob
-       !    if (imm_glob.ne.atdec%imm_glob) then
-       !       write(6,*)'OHLALA',imm_glob,atdec%imm_glob
-       !       call arret_ndm
-       !    end if
     end if
 
 #else
     if (ldecoup) then
        nbr_cpumin=2
     else
-       write(6,*)'WTF decoup'
+       write(uwrt,*)'WTF decoup'
        call arret_ndm
     end if
 #endif
 
     if (ldecoup) then
-       write(6,*)'DECOUP TEST from 2 to ', nbr_cpuIN,' with ',ncore ,' per node'
-       write(6,*)'results are in decoup_out, grep MEILLEUR'
+       write(uwrt,*)'DECOUP TEST from 2 to ', nbr_cpuIN,' with ',ncore ,' per node'
+       write(uwrt,*)'results are in decoup_out, grep MEILLEUR'
        iudecoup=1023
        open (unit=1023,file='decoup_out')    
     else
@@ -112,7 +106,7 @@ contains
           nb_sol = 0
 
           if ((rang==0).and.(lverb)) then
-             write(6,*)'sur ',nbr_cpu,' cpus',ncore
+             write(uwrt,*)'sur ',nbr_cpu,' cpus',ncore
              write(iudecoup,*)
              write(iudecoup,*)
              write(iudecoup,*)'-----------------------------------------------------------'
@@ -402,11 +396,9 @@ contains
                       endif
                    end do
                    call comm_space%sum(natloc)
-                   !             if (rang==0) write(6,*)'natloc',natloc
+
                    natlocm=maxval(natloc)
-                   !             write(6,*)'IMLOC1 ',natlocm
                    natlocm=int(natlocm*float(cellules_max)/cellules_int)
-                   !             write(6,*)'IMLOC2 ',natlocm,imm_glob
                    imm_loc=min( imm_glob, int(1.2 * natlocm))
                    imm = imm_loc
                 else
@@ -423,8 +415,6 @@ contains
                 call atdec%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob,imm_glob=imm_glob)
              end if
              !       imm_loc1 = min( imm_glob, int(1.2 * imm_glob * cellules_max / noxyz) )
-             !       if (rang==0) write(6,*)'loc1 ',imm_glob ,cellules_max , noxyz
-             !       if (rang==0) write(6,*)'IMM std nouv ',imm_loc1,imm
              ! Initialisation des donnees geometriques qui serviront pour le reste du code :
           end if
 #endif
@@ -503,11 +493,8 @@ contains
                       endif
                    end do
                    call comm_space%sum(natloc)
-                   !             if (rang==0) write(6,*)'natloc',natloc
                    natlocm=maxval(natloc)
-                   !             write(6,*)'IMLOC1 ',natlocm
                    natlocm=int(natlocm*float(cellules_max)/cellules_int)
-                   !             write(6,*)'IMLOC2 ',natlocm,imm_glob
                    imm_loc=min( imm_glob, int(1.2 * natlocm))
                    imm = imm_loc
                 else
@@ -524,8 +511,6 @@ contains
                 call atdec%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob,imm_glob=imm_glob)
              end if
              !       imm_loc1 = min( imm_glob, int(1.2 * imm_glob * cellules_max / noxyz) )
-             !       if (rang==0) write(6,*)'loc1 ',imm_glob ,cellules_max , noxyz
-             !       if (rang==0) write(6,*)'IMM std nouv ',imm_loc1,imm
              ! Initialisation des donnees geometriques qui serviront pour le reste du code :
           end if
 #endif
@@ -547,7 +532,7 @@ contains
 
 
   subroutine constrandrepart(atrgin,atcf,celcf,boxcf,lat,psc)
-    USE gen_com_m, ONLY:imm_glob,rang,ldecoup
+    USE gen_com_m, only:uwrt,lwrt,imm_glob,rang,ldecoup
     logical:: ltabvois=.false.
     type(para_space_config)::psc
     class(box_config)::boxcf
@@ -603,14 +588,13 @@ contains
        end do
     end do
     call comm_space%sum(natloc)
-    !             if (rang==0) write(6,*)'natloc',natloc
     natlocm=maxval(natloc)
     natlocm=int(natlocm*float(cellules_max)/cellules_int)
     imm_loc=min( imm_glob, int(1.2 * natlocm))
     imm = imm_loc
     
     call atcf%dealloc
-    call atcf%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob,imm_glob=imm_glob)
+    call atcf%init(im0,imm,ltabvois,nvois0,rvois,im_glob=im_glob,imm_glob=imm_glob) ! INITILISATION DE LA CONF C'EST la !!!!!!
 
 !REPARTITION
     i=0;im=0;ig=0
@@ -626,7 +610,6 @@ contains
                 call cryst_to_cart (1, xpcur, boxcf%at, 1)
                 call coord_to_cell(xpcur(:,1),numcell,boxcf,celcf%nox(1),celcf%nox(2),celcf%nox(3))
                 numproc=celcf%proc_cell(numcell)
-!                write(6,*)'np ',i,numproc,MYIDSP
                 if (numproc == myidsp) then
                    i=i+1
                    im=im+1
@@ -649,7 +632,7 @@ contains
 
 #ifdef DKIO
   subroutine constrandrepart_dkio(atrin,vpin,atcf,celcf,boxcf,tags,psc)
-    USE gen_com_m, ONLY:imm_glob,rang,ldecoup,lvpread
+    USE gen_com_m, only:uwrt,lwrt,imm_glob,rang,ldecoup,lvpread
     use dk_structure_io, only: TAG_LENGTH
     USE atomconfig,only: atom_config,atom_config_d
     logical:: ltabvois=.false.
@@ -701,7 +684,6 @@ contains
        endif
     end do
     call comm_space%sum(natloc)
-    !             if (rang==0) write(6,*)'natloc',natloc
     natlocm=maxval(natloc)
     natlocm=int(natlocm*float(cellules_max)/cellules_int)
     imm_loc=min( imm_glob, int(1.2 * natlocm))
@@ -715,7 +697,7 @@ contains
     if (lvpread) then
        select type (atcf)
        type is(atom_config)
-          if (rang==0) write(6,*)'no velocity in atom-config and import asked with velocities stop'
+          if (rang==0) write(uwrt,*)'no velocity in atom-config and import asked with velocities stop'
           call arret_ndm
        class is (atom_config_d)
           do icell = 1, im_glob
@@ -766,7 +748,7 @@ contains
     !> soit par correspondance avec ty, qui est la plupart du temps lu dans le fichier .potin
     use dk_structure_io, only: TAG_LENGTH
     use var_pot, only: ntyp,ty
-    use gen_com_m, only: igen
+    use gen_com_m, only:uwrt,lwrt, igen
     character(len=TAG_LENGTH), intent(in) :: tag
     integer, intent(in) :: num
     integer :: i
@@ -786,7 +768,7 @@ contains
 
     if (get_ityp == -1) then
        if (rang==0) then
-          write (6, *) 'Error: no match found between the atom number:', num, 'with tag:', tag, 'read from the input position &
+          write (uwrt, *) 'Error: no match found between the atom number:', num, 'with tag:', tag, 'read from the input position &
 &file and the atom types stored in ty:', ty
        end if
        call arret_ndm

@@ -1,5 +1,5 @@
 module coord_to_cell_mod
-  USE gen_com_m, ONLY: low_limit,zero,lperiod
+  USE gen_com_m, only:uwrt,lwrt, low_limit,zero,lperiod
   use cryst_to_cart_mod,only:cryst_to_cart
   use boxconfig,only: box_config
   use notperiod_mod,only:notperiod

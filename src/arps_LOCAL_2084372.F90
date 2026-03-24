@@ -3,7 +3,7 @@ module arps_mod
   USE arret_ndm_mod,only:arret_ndm
   USE analyseT_mod,only: analyseT
   USE controleT_mod,only: controleT
-  USE boxconfig,only:box_config,periodbox,box_config_lpr
+  USE boxconfig,only:box_config,periodbox
   USE atomconfig,only : atom_config_arps
   USE cellconfig, only:cell_config,caltabtc,cell_config_arps
   use Tpara,only:para_space_config
@@ -11,8 +11,7 @@ module arps_mod
   USE calfo2ccel_mod,only:calfo2ccel,sig2p
   USE calfoeamcel_mod,only:calfoeamcel
   USE calfoew_mod,only:calfozz
-  USE gen_com_m, only:uwrt,lwrt,potist,rang,sig,lspaceNDM,itmax,itloopmax,timemax,&
-       &timeloopmax,latcomp,iteration,itesigma,timel,tstep,&
+  USE gen_com_m, ONLY:potist,rang,sig,lspaceNDM,itmax,itloopmax,timemax,timeloopmax,latcomp,iteration,itesigma,timel,tstep,&
        &lperiod,sigkine,ltpcel,sigtot,potis2,bk,erg2ev,itetemp,ltberendsen,tautcon,text,lspacendm,dmtype,unitP,llangevin,pi,&
        &iterasmol,itetimestep
   USE deftimestep_mod,only: deftimestep  
@@ -63,7 +62,7 @@ contains
     real(double), dimension(ntyp) :: aux
     real(double)::potisrep0,fvp,m,vn,xpar,u1,u2,u3,fvp2
     !    real(double)::tabtat(500,ntyp+1)
-    if (rang==0) write (uwrt, *) '***** FIRST ITERATION  ARPS****',itloopmax,timeloopmax,itesigma
+    if (rang==0) write (6, *) '***** FIRST ITERATION  ARPS****',itloopmax,timeloopmax,itesigma
     ! Appel de la routine generale des forces
 
     imm =atdml%imm
@@ -80,7 +79,7 @@ contains
     case(0,1,3,4,5,6,7,8,9)
 
        if ((iewald.gt.0).and.(iewald.ne.3))then
-          write(uwrt,*)'ewald not coded with arps stop'
+          write(6,*)'ewald not coded with arps stop'
           call arret_ndm
        end if
        atdml%fp=0
@@ -98,7 +97,7 @@ contains
        atdml%fpr=0
        potist=0
        if (ipotentiel==16) then
-          write(uwrt,*)'check algo ipotentiel=16, charge effects'
+          write(6,*)'check algo ipotentiel=16, charge effects'
           call arret_ndm
        end if
        tabdensity(:)=0
@@ -231,7 +230,7 @@ contains
           select case (ipotentiel)
           case(0,1,3,4,5,6,7,8,9)
              if(ltpcel) then
-                write(uwrt,*)'LTPCEL pas programme pour pressions dmtype=41 et pot pair faire a l image de sigcalfo'
+                write(6,*)'LTPCEL pas programme pour pressions dmtype=41 et pot pair faire a l image de sigcalfo'
              end if
              atdml%fp=0 ; potis1=0;
              call calfo2ccel(atdml,celndm%cell_config,boxndm)
@@ -471,7 +470,7 @@ contains
        if (mod(iteration,itetemp)==0) then
           kinps=kinarps(atdml)
           earps=potist+kinps
-          if (rang==0) write(uwrt,'(2A,I7,3E15.6)')'EARPS ',chr,iteration,timel, earps*erg2ev,kinps*erg2ev
+          if (rang==0) write(6,'(2A,I7,3E15.6)')'EARPS ',chr,iteration,timel, earps*erg2ev,kinps*erg2ev
        end if
     end if
 
@@ -537,7 +536,7 @@ contains
   !----------------------------------------------------------------------
   SUBROUTINE calfoglue_arps_1(atcf,celcf,boxcf)
     USE T_kind_param_m
-    USE gen_com_m, only:uwrt,lwrt,angst,low_limit,zero,pi,rang
+    USE gen_com_m, ONLY:angst,low_limit,zero,pi,rang
     !  USE calfocommon
 
     !  USE cellconfig, only : cell_config
@@ -556,7 +555,7 @@ contains
 
     type(atom_config_arps),intent(inout)::atcf
     type(cell_config_arps),intent(in)::celcf
-    class(box_config),intent(in)::boxcf
+    type(box_config),intent(in)::boxcf
 
     !-----------------------------------------------
     !   D u m m y   A r g u m e n t s
@@ -712,7 +711,7 @@ contains
 
   SUBROUTINE calfoglue_arps_2(atcf,celcf,boxcf,psc)
     USE T_kind_param_m
-    USE gen_com_m, only:uwrt,lwrt,angst,low_limit,zero,pi
+    USE gen_com_m, ONLY:angst,low_limit,zero,pi
     !  USE calfocommon
     !  use vect_dist_mod,only:vect_dist
     !  USE atomconfig,only : atom_config,atom_config_d,atom_config_e
@@ -775,8 +774,8 @@ contains
        !       write(6,*)i,iti,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
        !       write(110,'(2I8,3G17.8)')i,k,tabdensity(i),rhomin(iti),inv_ktorho(iti)
        if(k.gt.ngrid) then
-          write(uwrt,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
-          write(uwrt,*)'densityi',k,ngrid,densityi
+          write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
+          write(6,*)'densityi',k,ngrid,densityi
           call arret_ndm(.true.)
        end if
        drk=atcf%rho(i)-(rhomin(iti)+k*ktorho(iti))
@@ -987,9 +986,9 @@ contains
     nmovm=(nmovm*(icall-1)+nmov)/icall
     if (itetemp>0) then
        if ((mod(iteration,itetemp)==0).and.(rang==0)) then
-          write(uwrt,'(A,I6,E15.6, 3I9)')'NMOV ',iteration, timel, nmov
-          write(uwrt,'(A,I6,E15.6, 3G15.5)')'NMOVM ',iteration, timel, nmovm
-          if (lpartarps) write(uwrt,*)'PARTARPS natvv nattot',natvv,atcf%im_glob
+          write(6,'(A,I6,E15.6, 3I9)')'NMOV ',iteration, timel, nmov
+          write(6,'(A,I6,E15.6, 3G15.5)')'NMOVM ',iteration, timel, nmovm
+          if (lpartarps) write(6,*)'PARTARPS natvv nattot',natvv,atcf%im_glob
        end if
     end if
 

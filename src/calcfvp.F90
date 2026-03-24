@@ -16,14 +16,14 @@ contains
        m=cm(iti)
        vn=norm2(vp(:))
        xpar=vn*m-vmin(iti)*m
-       !                write(6,*)'xpar',xpar,xs(iti)
+       !                write(uwrt,*)'xpar',xpar,xs(iti)
        if (xpar.le.0)  then
           fvp=0
        else if ((xpar.lt.xs(iti)).and.(xpar.gt.0)) then
           fvp=pol(xpar,aspl(iti),bspl(iti))/vn
        else
           fvp=1
-          !                   write(6,*)'POOOOO'
+          !                   write(uwrt,*)'POOOOO'
           !                   call arret_ndm
        end if
     end if

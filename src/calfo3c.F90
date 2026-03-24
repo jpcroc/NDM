@@ -15,7 +15,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:ltpcel,potcp,precexp
+    USE gen_com_m, only:uwrt,lwrt,ltpcel,potcp,precexp
 
     USE var_pot, ONLY:r3cm2,ipo3c,ipo,coup3c2,ipo,coup3c2,coup3c,coup3c,gam,lamb,cangle,c3c
     implicit none

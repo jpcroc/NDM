@@ -1,6 +1,6 @@
 module bondval_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
-  USE gen_com_m, ONLY:iteration,rang,fnam,lperiod,lenfnam
+  USE gen_com_m, only:uwrt,lwrt,iteration,rang,fnam,lperiod,lenfnam
   USE var_pot, ONLY:ntyp,ty
   use atomconfig,only: atom_config
   use boxconfig,only:box_config
@@ -202,14 +202,14 @@ contains
 
              ! cas ou le symbole n a pas ete reconnu (R reste a zero)
              if ( R == 0 ) then
-                write(6,*) rang,'Atome non reconnu : i j iti itj ', atbv%num_at_glob(i) ,atbv%num_at_glob(j),iti,itj
+                write(uwrt,*) rang,'Atome non reconnu : i j iti itj ', atbv%num_at_glob(i) ,atbv%num_at_glob(j),iti,itj
              endif
 
              dis=dis*1.0d8
 
              ! calcul de la force de liaison individuelle (xx) 
              xx = exp( ( R - dis ) / 0.37 )
-             !               write(6,*)R,dis,xx
+             !               write(uwrt,*)R,dis,xx
 
 
 

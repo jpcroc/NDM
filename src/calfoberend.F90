@@ -36,8 +36,6 @@ contains
   end subroutine calfoberend
 
   subroutine dynlangevin(atdml,il)
-    USE gen_com_m, ONLY:
-    USE var_pot, ONLY:
     use atomconfig,only:atom_config_e
     class (atom_config_e)::atdml
     integer::il
@@ -69,7 +67,7 @@ contains
           end do
        end do
     case default 
-       write(6,*)'check ilangevin'
+       write(uwrt,*)'check ilangevin'
        call arret_ndm(.true.)
     end select
 

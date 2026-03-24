@@ -1,7 +1,7 @@
 module WGC_mod
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:  inv_angst, lperiod, rang,leev,sig,cunitp, &
+  USE gen_com_m, only:uwrt,lwrt,  inv_angst, lperiod, rang,leev,sig,cunitp, &
        iteration, itesauv, itesauvposition, itesauvforce, fnam,lenfnam,fnamcout,&
        inv_angst, erg2ev, angst,fpstop,fsumstop,itetabvois, iterasmol,&
        dmtype, potist,mdcg_noise,lspaceNDM,sigstop,sigext,ihbox0,unitP,lprahman
@@ -273,10 +273,10 @@ contains
 !       ft2=forctot ; fm2=formax;fs2=fsigmax
           if(lvm) then
              write(unitgc,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt ,ft2,fm2,Fs2, sigm2, ' ****', deltaV
-             write(6,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fs2, sigm2, ' ****', deltaV*erg2eV
+             write(uwrt,'(I4,5E20.11,A, 1E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fs2, sigm2, ' ****', deltaV*erg2eV
           else
              write(unitgc,'(I4,5E20.11)')ncalls, Vt ,ft2,fm2,Fs2,sigm2
-             write(6,'(I4,5E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fs2,sigm2
+             write(uwrt,'(I4,5E20.11)')ncalls, Vt*erg2eV ,ft2,fm2,Fs2,sigm2
           end if
 
        if (lvm)then

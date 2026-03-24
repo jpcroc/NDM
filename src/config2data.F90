@@ -1,5 +1,5 @@
 module config2data_mod
-  
+  USE gen_com_m, only:uwrt,lwrt  
    USE arret_ndm_mod,only:arret_ndm  
   USE T_kind_param_m, ONLY:  double
   USE Mat_utils_mod,only: Matinv,is_upper_triangular,convert_cell
@@ -91,16 +91,16 @@ contains
        elseif((IM.lt.100000000).and.(IM.gt.10000000))then
           write(63,"(I8,A)") IM,' atoms'         
        else
-          write(6,*)'add format'
+          write(uwrt,*)'add format'
           call arret_ndm (.true.)
        endif
-       write(6,*)
-       write(6,*) " a = (xhi-xlo,0,0); b = (xy,yhi-ylo,0); c = (xz,yz,zhi-zlo). "
-       write(6,'(f22.16,a,f22.16,a)')xlo,' ',xhi,' xlo xhi'
-       write(6,'(f22.16,a,f22.16,a)')ylo,' ',yhi,' ylo yhi'
-       write(6,'(f22.16,a,f22.16,a)')zlo,' ',zhi,' zlo zhi'
-       write(6,'(f22.16,a,f22.16,a,f22.16,a)')xy,' ',xz,' ',yz,' xy xz yz'
-       write(6,*)
+       write(uwrt,*)
+       write(uwrt,*) " a = (xhi-xlo,0,0); b = (xy,yhi-ylo,0); c = (xz,yz,zhi-zlo). "
+       write(uwrt,'(f22.16,a,f22.16,a)')xlo,' ',xhi,' xlo xhi'
+       write(uwrt,'(f22.16,a,f22.16,a)')ylo,' ',yhi,' ylo yhi'
+       write(uwrt,'(f22.16,a,f22.16,a)')zlo,' ',zhi,' zlo zhi'
+       write(uwrt,'(f22.16,a,f22.16,a,f22.16,a)')xy,' ',xz,' ',yz,' xy xz yz'
+       write(uwrt,*)
 
 
        write(63,"(I1,A)") ntyp, ' atom types' 

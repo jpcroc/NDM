@@ -1,6 +1,6 @@
 module ForceMatrix_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m,only:  lperiod,lenfnam,lspaceNDM,rang,erg2ev,fnam,fnamcout,imm_glob,fnam,lenfnam,iteration,&
+  USE gen_com_m,only:uwrt,lwrt,  lperiod,lenfnam,lspaceNDM,rang,erg2ev,fnam,fnamcout,imm_glob,fnam,lenfnam,iteration,&
        &lwgin
   USE atomconfig,only:atom_config
   USE cellconfig, only:cell_config, caltabtC
@@ -57,7 +57,7 @@ contains
     character*80::fnamfreqout,fnamfmout
 
 
-    write(6,*)'IN ForceMatrix',rang
+    write(uwrt,*)'IN ForceMatrix',rang
 #ifdef PARA    
     celfmloc=>cellcible
     atfmloc=>atcible
@@ -88,7 +88,7 @@ contains
     iteration=1 !(empeche le recalcul de la table des voisins dans driver_caltabt_para)
     do idecal=-ndecal,ndecal
        if (idecal==0) cycle ! pas de calcul pour décalage=0
-       write(6,*)'decal rang ideb ifin',idecal,rang,ideb,ifin
+       write(uwrt,*)'decal rang ideb ifin',idecal,rang,ideb,ifin
        do i=ideb,ifin
           do ic=1,3
              atfm%xp(ic,i)= atfm%xp(ic,i)+idecal*decal
@@ -146,7 +146,7 @@ contains
        nwork=3*im3-1
        allocate(work(nwork))
        allocate(eigval(im3))
-       write (6,*)'PRE MKL'
+       write (uwrt,*)'PRE MKL'
        call DSYEV('N','L',im3,Fmat,im3,eigval,work,nwork,info)
        two_pi=2.0d0*4.d0*datan(1.d0)
        eigval(:)=eigval(:)/two_pi
@@ -155,21 +155,21 @@ contains
           eig=eigval(i)
           if ((dabs(eig) < freqlim ).or.(eig<0))           nskip=nskip+1
        end do
-       write(6,*)'zero frequency=', freqlim
+       write(uwrt,*)'zero frequency=', freqlim
        select case(nskip)
        case(1:2)
-          write(6,*)nskip, 'non positive frequencies: STRANGE '
-          write(6,*)nskip, 'THERMO IS DUBIOUS'
+          write(uwrt,*)nskip, 'non positive frequencies: STRANGE '
+          write(uwrt,*)nskip, 'THERMO IS DUBIOUS'
        case(3)
-          write(6,*)'3 non positive frequencies OK for periodic bulk '
+          write(uwrt,*)'3 non positive frequencies OK for periodic bulk '
        case(6)
-          write(6,*)'6 non positive frequencies OK for defect '
+          write(uwrt,*)'6 non positive frequencies OK for defect '
        case(7:)
-          write(6,*)nskip, 'non positive frequencies: strange ? '
-          write(6,*)nskip, 'THERMO IS DUBIOUS'
+          write(uwrt,*)nskip, 'non positive frequencies: strange ? '
+          write(uwrt,*)nskip, 'THERMO IS DUBIOUS'
        case(4:5)
-          write(6,*)nskip, 'non positive frequencies: strange ? '
-          write(6,*)nskip, 'THERMO IS DUBIOUS'
+          write(uwrt,*)nskip, 'non positive frequencies: strange ? '
+          write(uwrt,*)nskip, 'THERMO IS DUBIOUS'
        end select
        if (lwritefreq) then
           fnamfreqout = fnam(1:lenfnam)//'.freq.dat'
@@ -190,14 +190,6 @@ contains
        call thermocalc(eigval,im3)
 
        
-!!$#else
-!!$       write(6,*)"diagonalization works with lapack or MKL"
-!!$       write(6,*)"these libraries are NOT linked by default"
-!!$       write(6,*)"link them in Makefile.ndm_your_makefile"
-!!$       write(6,*)"and recompile with make MKL=1 ndm_your_makefile"
-!!$       call arret_ndm
-!!$       
-!!$#endif
     end if
   end subroutine calcFM
 
@@ -246,14 +238,14 @@ contains
              Smin(nT)=Smin(nT)+(xp2/DTANH(xp2)-DLOG(2.0d0*DSINH(xp2)))
              Fcla(nT)=Fcla(nT)+kBT*DLOG(2.0d0*xp2 )
              Scla(nT)=Scla(nT)-(DLOG(2.d0*xp2)+1.0d0)
-!             write(6,'(I5,f12.5, 5e25.15)') jmat,temperature, Fmin(nT), Fcla(nT), Smin(nT), Scla(nT),xp2
+!             write(uwrt,'(I5,f12.5, 5e25.15)') jmat,temperature, Fmin(nT), Fcla(nT), Smin(nT), Scla(nT),xp2
                    
           end do
        end if  !jmat
     end do
     fnamthout = fnam(1:lenfnam)//'.thermo.dat'
-    write(6,*)' thermo sauved to name.thermo.dat'
-    write(6,*)' temperature, Fmin(nT), Fcla(nT), Smin(nT), Scla(nT)'
+    write(uwrt,*)' thermo sauved to name.thermo.dat'
+    write(uwrt,*)' temperature, Fmin(nT), Fcla(nT), Smin(nT), Scla(nT)'
     open(unit=123,file= fnamthout, form='formatted', status='unknown')
     do nT=1,ntemp
       temperature=nT*dtemp
@@ -267,10 +259,10 @@ contains
   subroutine init_mpi_FM
 
 #ifdef PARA
-    write(6,*)'INITMPIFM'
+    write(uwrt,*)'INITMPIFM'
     if (lparaFM) then 
        if (mod(nprocs,nparaFM).ne.0) then
-          write(6,*)'nprocs/nparaFM <>0 STOP'
+          write(uwrt,*)'nprocs/nparaFM <>0 STOP'
           call MPI_FINALIZE(ierr)
           call arret_ndm(.true.)
        end if
@@ -307,7 +299,7 @@ contains
 
 #endif
     if (rang==0) then
-       write(6,*)'nparafM,nprocspace, nprocs',nparafM,nprocspace, nprocs
+       write(uwrt,*)'nparafM,nprocspace, nprocs',nparafM,nprocspace, nprocs
     end if
   end subroutine init_mpi_FM
 

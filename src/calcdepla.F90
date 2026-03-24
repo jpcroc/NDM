@@ -1,7 +1,7 @@
 module calcdepla_mod
   USE cryst_to_cart_mod,only: cryst_to_cart
   USE var_pot, ONLY:ntyp,ty
-  USE gen_com_m, ONLY:tdepla,iteration,timel,iko,lcasca,lfilm,rang&
+  USE gen_com_m, only:uwrt,lwrt,tdepla,iteration,timel,iko,lcasca,lfilm,rang&
        &,ivisu,lspacendm,lcasca
   USE cellconfig,only:cell_config
   USE atomconfig,only:atom_config_e,atom_config
@@ -75,10 +75,10 @@ contains
     if((myidsp==0).and.(icall==1).and.(lcasca))    open(unit=lufilmpaf, file='filmpaf', status='unknown')
 
     if (rang==0) then
-       write (6, *)
-       write (6, *) '----------- Displacements TDEPLA ----------------',TDEPLA*1d8
+       write (uwrt, *)
+       write (uwrt, *) '----------- Displacements TDEPLA ----------------',TDEPLA*1d8
     end if
-    !       write(6,*)'tdepla',tdepla
+    !       write(uwrt,*)'tdepla',tdepla
     ndeplatot = 0
     ndepla(:ntyp) = 0
     if (tdep.le.0)then
@@ -116,7 +116,7 @@ contains
        end if
     end do
     if(iatdep.ne.ndeplatot) then
-       write(6,*)'PB calcdepla'
+       write(uwrt,*)'PB calcdepla'
        call arret_ndm
     end if
 
@@ -151,13 +151,13 @@ contains
 #endif
 
     if (myidsp==0) then
-       write(6,*)'TOTAL DISPLACED ATOMS',timel, iteration ,ndeplatot
+       write(uwrt,*)'TOTAL DISPLACED ATOMS',timel, iteration ,ndeplatot
        do iti=1,ntyp
           if (ndepla(iti).gt.0) then
-             write(6,*)'TYPE DISP ATOMS',iti, ndepla(iti)
+             write(uwrt,*)'TYPE DISP ATOMS',iti, ndepla(iti)
           end if
        end do
-       write(6,*)'TOTAL DISPLACEMENT ',timel, iteration,deptot*1d8
+       write(uwrt,*)'TOTAL DISPLACEMENT ',timel, iteration,deptot*1d8
     end if
 
     est_present=0

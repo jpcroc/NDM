@@ -18,7 +18,7 @@ module calfo_mod
   use var_pot, only: iewald,l3c,npotmax,potiseam,lpotentiel,cm,ipotentiel,potisglue,potisrep,potiseam,zz,potis1, npotentiel
 
   USE T_kind_param_m, ONLY:  double
-  USE gen_com_m, ONLY:potis2,potisp,erg2ev&
+  USE gen_com_m, only:uwrt,lwrt,potis2,potisp,erg2ev&
        &,potistersoff,potiszbl,potcp,potis3,zero,rang,lperiod
 
   USE force_tersoff_mod,only:force_tersoff
@@ -65,7 +65,7 @@ contains
     
 
     if(celcf%icaltabt.ne.atcf%icaltabt) then
-       write (6,*)'incoherence dans icaltabt calfo',celcf%icaltabt,atcf%icaltabt
+       write (uwrt,*)'incoherence dans icaltabt calfo',celcf%icaltabt,atcf%icaltabt
        call arret_ndm(.true.)
     end if
     
@@ -198,6 +198,7 @@ contains
 #endif  
 
     sigcf=sigcalfo;potistcf=potistcalfo
+
 
     return
   end subroutine calfo

@@ -10,7 +10,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m
-    USE gen_com_m, ONLY:rang,pi
+    USE gen_com_m, only:uwrt,lwrt,rang,pi
     USE eam
     USE eamerco
     
@@ -226,7 +226,7 @@ contains
              rhomax(iti)=maxrho*14 ; rhomin(iti)=minrho*14
           end if
        end do
-       if (rang==0)write(6,*)'rhomm',rhomin,rhomax
+       if (rang==0)write(uwrt,*)'rhomm',rhomin,rhomax
     case(16)
        minrho=0
        do iti=1,ntyp
@@ -276,7 +276,7 @@ contains
           end if
        end do
     case default
-       write (6, *) rang,'Bienvenue dans le cote obscur de la force : pas de potentiel ?'
+       write (uwrt, *) rang,'Bienvenue dans le cote obscur de la force : pas de potentiel ?'
        call arret_ndm
     end select
 

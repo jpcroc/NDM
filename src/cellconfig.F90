@@ -5,7 +5,7 @@ module cellconfig
   use boxconfig,only:box_config
   use paraconfig,only:para_config
   use Tpara,only:para_space_config,mpi_communicator,myidsp,comm_space
-  use gen_com_m,only:rang
+  use gen_com_m,only:uwrt,lwrt,rang
   implicit none
   !  integer:: incr=20 ! incrément des tailles de tableau 
 
@@ -120,7 +120,6 @@ contains
        cell%natperc=0
     end if
     cell%icaltabt=0
-    !write(6,*) 'nox', cell%nox(1)
     cell%ltpcel=ltpcel
     call dealloc_cel(cell)
     call allocatecelN(cell,lata)
@@ -138,7 +137,6 @@ contains
     logical::lata=.true.
     if (present(latomalloc))lata=latomalloc
     cell%noxyz=cell%nox(1)*cell%nox(2)*cell%nox(3)
-    !    write(6,*)'NOX',cell%nox,cell%noxyz
     cell%ncelvmax=1
     do ic=1,3
        if(cell%ismall(ic)) then
@@ -235,9 +233,6 @@ contains
           maxdecx(ic)=1          
        end if
     end do
-    !    write(6,*)'mindecx', mindecx
-    !    write(6,*)'maxdecx', maxdecx
-    !    write(6,*)'midnox', midnox
     if (cell%noxyz==1) then
        cell%ncel(1,0)=1
        cell%deltadist=0
@@ -349,8 +344,6 @@ contains
                          end if
 
                          l=l+1 ! on est dans une cellule voisine
-!!$                         write(6,*)'kx ky kz koo', kx,ky,kz,koo
-!!$                         write(6,*)'mx my mz ', mx,my,mz
                          if (cell%ismall(3)) then
                             cell%deltadist(3,l,koo) = -1*(mz-midnox(3))
                          else
@@ -391,9 +384,6 @@ contains
                          kxy = 1+(mx-1)+cell%nox(1)*((my-1)+cell%nox(2)*(mz-1))
                          !                         if (kxy==koo) cycle
                          cell%ncel(koo,l) = kxy
-                         !                        write(6,*)koo,lz,ly,lx,l,kxy
-                         !                        if ((kz==cell%nox(3)).and.(lz==1))write(6,*)koo,lz,l,kxy
-                         !                        if ((kz==1).and.(lz==-1))write(6,*)koo,lz,l,kxy
                       end do loopin
                    end do
                 end do
@@ -407,7 +397,7 @@ contains
     else
        cell%noxyzact = cell%noxyz
     end if
-    if (rang==0)write(6,*)cell%noxyzact ,' active cells among ', cell%noxyz
+    if (rang==0)write(uwrt,*)cell%noxyzact ,' active cells among ', cell%noxyz
 
 
 
@@ -420,7 +410,7 @@ contains
   subroutine caltabtC (cell,atcf,lperiod,boxcf,lextr,psc,lchktrav)
     USE notperiod_mod,only: notperiod
     USE cryst_to_cart_mod,only: cryst_to_cart
-    use gen_com_m,only:lspacendm
+    use gen_com_m,only:uwrt,lwrt,lspacendm
 #ifdef PARA
     USE Tpara,only:comm_space
 #endif
@@ -459,7 +449,6 @@ contains
        iml=atcf%im
     end if
     icaltabt=icaltabt+1
-    !       write(6,*)'caltabt',icaltabt
 
     cell%nato(1:cell%noxyz) = 0
     cell%atincel(1:cell%natperc,1:cell%noxyz) = 0
@@ -489,21 +478,15 @@ contains
        !debug       write (*,*) 'sub caltabt 1',it,xp(1,1)
        call cryst_to_cart (iml, xpnp, boxcf%bg, -1) ! cart vers cryst
        if (any(xpnp(:,1:iml).gt.1).or.any(xpnp(:,1:iml).lt.0)) then
-          write(6,*)'PLANTE',rang
+          write(uwrt,*)'PLANTE',rang
           !          write(300+RANG,*)'PLANTE'
-!          do i=1,iml
-!             if (any(xpnp(:,i).gt.1).or.any(xpnp(:,i).lt.0))  write(6,*) i,xpnp(:,i)
-!          end do
-          write(6,*)'caltabtc xpnp <0 ou >1 stop'
+          write(uwrt,*)'caltabtc xpnp <0 ou >1 stop'
           call arret_ndm(.true.)
        end if
        !debug       write (*,*) 'sub caltabt 2',it,xp(1,1)
 
-       !     if (it.gt.1000) write(6,*)'CALTABT',it
-       !       write(6,*)'caltabt icaltabt im',icaltabt,atcf%im
 
        do i = 1, iml
-          !     if  ((it.ge.1000).and.(i.lt.20)) write(6,'(I5,3G15.7)')i, xpnp(1,i),xpnp(2,i),xpnp(3,i)
           do ic=1,3
              if  (cell%ismall(ic)) then
                 kxyz(ic)=midnox(ic)-1
@@ -523,12 +506,11 @@ contains
           END IF
           if ((present(psc)).and.(lspacendm).and.lchktrav) then 
              if (cell%proc_cell(koo).ne.myidsp) then
-                !                write(6,*)'atout',i,atcf%num_at_glob(i),rang,cell%proc_cell(koo),koo
 
                 if(.not.(any(psc%cell_ftm(:)==koo))) then
-                   write(6,'(A,6I7)')'WARNING ::: attrrav:i natg ielat rangem rangf newcell',i,&
+                   write(uwrt,'(A,6I7)')'WARNING ::: attrrav:i natg ielat rangem rangf newcell',i,&
                         &atcf%num_at_glob(i),atcf%ielat(i),rang,cell%proc_cell(koo),koo
-                   write(6,'(A,6G20.7)')'WARNING ::: travelled from cell to cell ',cell%edge(atcf%ielat(i),boxcf)&
+                   write(uwrt,'(A,6G20.7)')'WARNING ::: travelled from cell to cell ',cell%edge(atcf%ielat(i),boxcf)&
                         &,cell%edge(koo,boxcf)
                    ntrav(myidsp)=ntrav(myidsp)+1
                    if (ntrav(myidsp)==1) then
@@ -1095,7 +1077,7 @@ contains
                 natem=natem+1
                 rgcib=proccib(iatem)
                 itrf=indtrav(iatem)
-                write(6,*)'em,cib,itrf',iproc,rgcib,itrf
+                write(uwrt,*)'em,cib,itrf',iproc,rgcib,itrf
                 icelj=atcf%ielat(atcf%im)
                 call atcf%s1at2p_rm(rgcib,itrf,comm_space)
                 do jjj=1,cellcf%nato(icelj)
@@ -1104,10 +1086,10 @@ contains
 
              end if
              if (myidsp==procvis(iatem)) then
-                write(6,*)'recpt,em',myidsp,iproc,atcf%im
+                write(uwrt,*)'recpt,em',myidsp,iproc,atcf%im
                 call atcf%recv1at(iproc,comm_space,myidsp)
                 atcf%proc_at(atcf%im)=myidsp
-                write(6,*)'ielat recv',myidsp, atcf%ielat(atcf%im),atcf%im
+                write(uwrt,*)'ielat recv',myidsp, atcf%ielat(atcf%im),atcf%im
                 cellcf%nato(atcf%ielat(atcf%im))= cellcf%nato(atcf%ielat(atcf%im))+1
                 nato=cellcf%nato(atcf%ielat(atcf%im))
                 cellcf%atincel(nato,atcf%ielat(atcf%im)) = atcf%im                
@@ -1120,7 +1102,7 @@ contains
     call comm_space%sum(natrecv)
     call comm_space%sum(natem)
     if (natrecv.ne.natem) then
-       write(6,*)'natrecv<>natem',rang,myidsp,natrecv,natem
+       write(uwrt,*)'natrecv<>natem',rang,myidsp,natrecv,natem
        call arret_ndm(.true.)
     end if
   end subroutine transfer_atoms

@@ -2,7 +2,7 @@
 module calcextr_mod
     USE T_kind_param_m, ONLY:  double
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY:lperiod
+  USE gen_com_m, only:uwrt,lwrt,lperiod
   use atomconfig,only: atom_config
   USE cellconfig,only:cell_config,caltabtc
   use boxconfig,only:box_config
@@ -35,7 +35,7 @@ contains
     boxextr=boxndm
     
     call atcomp%sort(atextr)
-    write(6,*)'CALCEXTR',atextr%ltabvois
+    write(uwrt,*)'CALCEXTR',atextr%ltabvois
     call caltabtc(celextr,atextr,lperiod,boxextr,lextr=.true.,lchktrav=.true.)
     if (atextr%ltabvois) call caltabi(atextr,celextr,boxndm,lextr=.true.)
 

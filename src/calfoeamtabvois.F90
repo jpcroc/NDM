@@ -1,6 +1,6 @@
 module calfoeamtabvois_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY:angst,fnemd,lcalcjq,ldemitab,&
+  USE gen_com_m, only:uwrt,lwrt,angst,fnemd,lcalcjq,ldemitab,&
        &lnemd,low_limit,lperiod,zero,pi
   USE calfocommon
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
@@ -123,8 +123,8 @@ contains
 !       k=Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti))
        k=min(ngrid,Int((tabdensity(i)-rhomin(iti))*inv_ktorho(iti)))
        if(k.gt.ngrid) then
-          write(6,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
-          write(6,*)'densityi',k,ngrid,tabdensity(i), rhomin(iti), inv_ktorho(iti), densityi
+          write(uwrt,*)k, ngrid, 'k> ngrid ; augmenter le facteur multiplicatif de rhomax dans calpo'
+          write(uwrt,*)'densityi',k,ngrid,tabdensity(i), rhomin(iti), inv_ktorho(iti), densityi
           call arret_ndm(.true.)
        end if
        drk=tabdensity(i)-(rhomin(iti)+k*ktorho(iti))

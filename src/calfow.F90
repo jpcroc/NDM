@@ -1,6 +1,6 @@
 module calfow_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY: lperiod,pi,potcp,zero
+  USE gen_com_m, only:uwrt,lwrt, lperiod,pi,potcp,zero
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
   USE cellconfig, only : cell_config
   use boxconfig,only: box_config

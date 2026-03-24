@@ -1,7 +1,7 @@
 !****************************************************************
 module caltabi_mod
   USE arret_ndm_mod,only:arret_ndm
-  USE gen_com_m, ONLY:lconstrtot,ldemitab,lperiod,rang
+  USE gen_com_m, only:uwrt,lwrt,lconstrtot,ldemitab,lperiod,rang
   use atomconfig,only: atom_config
   USE cellconfig,only:cell_config
   use boxconfig,only:box_config
@@ -58,7 +58,7 @@ contains
     ! --------------------------
 
     if(celvois%icaltabt.ne.atvois%icaltabt) then
-       write (6,*)'incoherence dans icaltabt caltabi'
+       write (uwrt,*)'incoherence dans icaltabt caltabi'
        call arret_ndm
     end if
 

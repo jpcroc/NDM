@@ -97,11 +97,6 @@ module Tersoff_mod
 !     rc	  if(dabs(dyij).gt.rpd) goto 2
             DR2IJ = DXIJ**2+DYIJ**2+DZIJ**2
 !     rpd2 rayon de coupure sur rij
-
-                                !          IF (DR2IJ.GT.RPD2) then
-                                !             write(6,*)'ceci ne doit pas arriver !',dr2ij,rpd2
-                                !             call arret_ndm
-                                !          endif
 !     
 
             DRIJ  = DSQRT(DR2IJ)
@@ -147,10 +142,6 @@ module Tersoff_mod
                if((dyik+ZLS2(2)).lt.0.0) dyik=dyik+ZL(2)
 
                DR2IK = DXIK**2+DYIK**2+DZIK**2
-                                !            IF (DR2IK.GT.RPD2) then
-                                !               write(6,*)'ceci ne doit pas arriver K!',dr2ik,rpd2
-                                !               call arret_ndm
-                                !            endif
 
 !     
                DRIK = DSQRT(DR2IK)

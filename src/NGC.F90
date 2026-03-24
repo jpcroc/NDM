@@ -12,7 +12,7 @@ module NGC_mod
        &initsteep,back2ndm,final_tconv,nextsauv,nextmol,fpstop0,betaV,betaP,beta,gcpara,lchg,set_pointers_gc,&
        & unitgc,atcgmin,atcible,fpstopsig,betaV0,betaP0,ncgtry
     USE T_kind_param_m, ONLY:  double
-    USE gen_com_m, ONLY:itetemp2,imm_glob,dmtype,rang,iteration,mdcg_noise,iterasmol,lenfnam,fnam,&
+    USE gen_com_m, only:uwrt,lwrt,itetemp2,imm_glob,dmtype,rang,iteration,mdcg_noise,iterasmol,lenfnam,fnam,&
          &angst,erg2ev,potist,lperiod,lspacendm,lprahman,dfpred,itesauv,unitP,fpstop,lcdp,fsumstop,sigstop
     USE var_pot, ONLY:ntyp
     use steepestdescent_mod, only: conjugategradient,adamrel
@@ -70,7 +70,7 @@ contains
     lchg=.true.
 
     if (rang==0 )write(unitgc,*)'IN NGC',betaguess
-!    if (rang==0 )write(6,*)'IN NGC',betaguess
+
     betaV=betaguess
     betaP=betaguess/3
     betaV0=betaguess
@@ -109,7 +109,7 @@ contains
 
        if (lprahman) then
           do irel=1,ncgtry
-             write(6,*)
+             write(uwrt,*)
              write(unitgc,*)
              write(unitgc,*)
              ityprel=1
@@ -120,7 +120,7 @@ contains
              write(unitgc,*)'loverout1',lover,irel 
              betaV=beta
              if (lover) exit
-             write(6,*)
+             write(uwrt,*)
              write(unitgc,*)
              write(unitgc,*)
              ityprel=2
@@ -144,15 +144,15 @@ contains
           if (rang==0) then
              write(unitgc,*) 'MINIMUM REACHED after ',ncalls,' force calculations'
              write(unitgc,*) '*****************ENERGY erg eV ',Potist,Potist*erg2eV
-             write(6,*) 'MINIMUM REACHED after ',ncalls,' force calculations'
-             write(6,*) '*****************ENERGY erg eV ',Potist,Potist*erg2eV
+             write(uwrt,*) 'MINIMUM REACHED after ',ncalls,' force calculations'
+             write(uwrt,*) '*****************ENERGY erg eV ',Potist,Potist*erg2eV
           end if
        else
           if (rang==0) then
              write(unitgc,*) 'MINIMUM NOT REACHED !!!!!!!!!!!!!!!!!'
              write(unitgc,*) 'ENERGY erg eV ***',Potist,Potist*erg2eV
-             write(6,*) 'MINIMUM NOT REACHED !!!!!!!!!!!!!!!!!'
-             write(6,*) 'ENERGY erg eV ***',Potist,Potist*erg2eV
+             write(uwrt,*) 'MINIMUM NOT REACHED !!!!!!!!!!!!!!!!!'
+             write(uwrt,*) 'ENERGY erg eV ***',Potist,Potist*erg2eV
           end if
        end if
 
@@ -183,14 +183,14 @@ contains
        select case (dmtype)
        case(32)
           write(unitgc,'(A,E15.8,A,2E15.8)')'******STEEPEST DESCENT*** beta init', beta, 'fpstop fsumstop ' ,fpstop,fsumstop
-          write(6,'(A,E15.8,A,2E15.8)')'******STEEPEST DESCENT*** beta init', beta, 'fpstop fsumstop ' ,fpstop,fsumstop
+          write(uwrt,'(A,E15.8,A,2E15.8)')'******STEEPEST DESCENT*** beta init', beta, 'fpstop fsumstop ' ,fpstop,fsumstop
           write(unitgc,*)' FPSTOP=', fpstop,fsumstop
              write(unitgc,'(2A)')' NCALLS      ENERGY (eV)       FORCTOT         FORMAX        ',&
                   &'   FORCESIGMA(eV/Ang)         SIGMA(kbar)   ***      energy gain eV]'
              call conjugategradient(Nvar,R,V,F,lover,lorig,betaV0) ! steepestdescent(Nvar,R,V,F,lover,betaV0)
        case(35)
           write(unitgc,'(A,E15.8,A,2E15.8)')'******ADAM RELAXATION*** beta init', beta, 'fpstop fsumstop ' ,fpstop,fsumstop
-          write(6,'(A,E15.8,A,2E15.8)')'******ADAM RELAXATION*** beta init', beta, 'fpstop fsumstop ' ,fpstop,fsumstop
+          write(uwrt,'(A,E15.8,A,2E15.8)')'******ADAM RELAXATION*** beta init', beta, 'fpstop fsumstop ' ,fpstop,fsumstop
           write(unitgc,*)' FPSTOP=', fpstop,fsumstop
              write(unitgc,'(2A)')' NCALLS      ENERGY (eV)       FORCTOT         FORMAX        ',&
                   &'   FORCESIGMA(eV/Ang)         SIGMA(kbar)   ***      energy gain eV]'
@@ -208,9 +208,9 @@ contains
              write(unitgc,*)' FPSTOP=',fpstop,fsumstop
              write(unitgc,'(2A)')' NCALLS      ENERGY (eV)       FORCTOT         FORMAX        ',&
                   &'FORCESIGMA(eV/Ang)       SIGMA(kbar)   ***      energy gain eV]'
-             write(6,'(A,E15.8,A,E12.6)')'******CONJUGATE GRADIENT *** beta init', beta
-             write(6,*)' FPSTOP=',fpstop,fsumstop
-             write(6,'(2A)')' NCALLS      ENERGY (eV)       FORCTOT         FORMAX        ',&
+             write(uwrt,'(A,E15.8,A,E12.6)')'******CONJUGATE GRADIENT *** beta init', beta
+             write(uwrt,*)' FPSTOP=',fpstop,fsumstop
+             write(uwrt,'(2A)')' NCALLS      ENERGY (eV)       FORCTOT         FORMAX        ',&
                   &'FORCESIGMA(eV/Ang)       SIGMA(kbar)   ***      energy gain eV]'
           call conjugategradient(Nvar,R,V,F,lover,lorig,betaV0)
        end select
@@ -223,9 +223,9 @@ contains
                &' SIGSTOP=>FPSTOP=',sigstop,fpstopsig
              write(unitgc,'(2A)')' NCALLS      ENERGY (eV)       FORCTOT         FORMAX        ',&
                   &'   FORCESIGMA(eV/Ang)         SIGMA(kbar)   ***      energy gain eV]'
-          write(6,'(A,E15.8,A,2E12.6)')'******STEEPEST DESCENT  VARIABLE VOLUME  *** beta init', beta,&
+          write(uwrt,'(A,E15.8,A,2E12.6)')'******STEEPEST DESCENT  VARIABLE VOLUME  *** beta init', beta,&
                &' SIGSTOP=>FPSTOP=',sigstop,fpstopsig
-             write(6,'(2A)')' NCALLS      ENERGY (eV)       FORCTOT         FORMAX        ',&
+             write(uwrt,'(2A)')' NCALLS      ENERGY (eV)       FORCTOT         FORMAX        ',&
                   &'    FORCESIGMA(eV/Ang)           SIGMA(kbar)   ***      energy gain eV]'
           !       call initsteep
           call conjugategradient(Nvar,R,V,F,lover,lorig,betaV0)
@@ -240,16 +240,16 @@ contains
           write(unitgc,*)' SIGSTOP=>FPSTOP=',sigstop, fpstopsig
              write(unitgc,'(2A)')' NCALLS      ENERGY (eV)       FORCTOT         FORMAX        ',&
                   &'FORCESIGMA(eV/Ang)       SIGMA(kbar)   ***      energy gain eV]'
-          write(6,'(A,E15.8,A,E12.6)')'******CONJUGATE GRADIENT VARIABLE VOLUME *** beta init', beta
-          write(6,*)' SIGSTOP=>FPSTOP=',sigstop, fpstopsig
-             write(6,'(2A)')' NCALLS      ENERGY (eV)       FORCTOT         FORMAX        ',&
+          write(uwrt,'(A,E15.8,A,E12.6)')'******CONJUGATE GRADIENT VARIABLE VOLUME *** beta init', beta
+          write(uwrt,*)' SIGSTOP=>FPSTOP=',sigstop, fpstopsig
+             write(uwrt,'(2A)')' NCALLS      ENERGY (eV)       FORCTOT         FORMAX        ',&
                   &'    FORCESIGMA(eV/Ang)         SIGMA(kbar)   ***      energy gain eV]'
 !                 write(unitgc,*)'SIGSTOP==FPSTOP=',fpstop
              call conjugategradient(Nvar,R,V,F,lover,lorig,betaP0)
           case(35)
              
           write(unitgc,'(A,E15.8,A,2E15.8)')'******ADAM RELAXATION*** beta init', beta, 'fpstop fsumstop ' ,fpstop,fsumstop
-          write(6,'(A,E15.8,A,2E15.8)')'******ADAM RELAXATION*** beta init', beta, 'fpstop fsumstop ' ,fpstop,fsumstop
+          write(uwrt,'(A,E15.8,A,2E15.8)')'******ADAM RELAXATION*** beta init', beta, 'fpstop fsumstop ' ,fpstop,fsumstop
           write(unitgc,*)' FPSTOP=', fpstop,fsumstop
              write(unitgc,'(2A)')' NCALLS      ENERGY (eV)       FORCTOT         FORMAX        ',&
                   &'   FORCESIGMA(eV/Ang)         SIGMA(kbar)   ***      energy gain eV]'
