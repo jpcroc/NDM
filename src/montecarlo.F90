@@ -57,7 +57,8 @@ module montecarlo_mod
      procedure, pass :: copy_config => copy_config_mc
      procedure, pass :: switch_atom => switch_atom_mc
   end type atom_config_mc
-
+  integer :: uwrtl
+  logical::lwrtdbg=.false.
   type(para_config)::parapath ! division de tous les procs en nparapath chemins calculés simultanément
   type(para_config)::paramcgc ! division de parapath en 2*espace
   type(para_space_config)::pscgc
@@ -302,6 +303,7 @@ contains
     !initialisation variables 
     !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation
     !    write(uwrt,*)'RANG UISEED',rang,iseed
+    uwrtl=rang+100
     lbiais(0)=lbiais_inser
     lbiais(1)=lbiais_retrait
     direction=idirectionmcgc
@@ -685,6 +687,9 @@ contains
 #endif
        Weff_npp(:)=0
        pot_npp(:)=0
+       if (lwrtdbg) then
+          write(uwrtl,*)'i_path',i_path ; flush(uwrtl)
+       end if
        if (lmegamaster)then
           write(uwrt,*)
           write(uwrt,*)'path ',i_path,' in direction', direction, ' to ',1-direction
@@ -735,6 +740,9 @@ contains
              !choisir l'at a retirer ou ajouter + preparation des syst N et N+1 pour etre prets pour le langevin (cad decoupage cellules + calcul forces + melange des forces - se fait dans cette sous routine)
              select case (ins_typ)
              case(0,1,3,33,44,55,11)
+                if (lwrtdbg) then
+                   write(uwrtl,*)'ajoutretrait',direction ; flush(uwrtl)
+                end if
                 call ajout_retrait(direction,ipp)
              case(2)
                 call type_switch(direction)
@@ -745,6 +753,9 @@ contains
                 call langevinLPR(direction, protocol = protocol_mcc)
              else
                 call langevin(direction, protocol = protocol_mcc,qeff=qeff,work=work)
+             end if
+             if (lwrtdbg) then
+                write(uwrtl,*)'postlangev' ; flush(uwrtl)
              end if
              ! if LPR call langevinPc
              !if (lbigmaster) write(uwrt,'(A,I2,3G15.7)')'potist', direction,Weff*erg2ev,Qeff*erg2ev,work*erg2ev
@@ -920,7 +931,10 @@ contains
           !W = +Work
           atconf_nplus1=>config_atom_nplus1(ipchemin)
           boxmcgc_p=>boxmcgcpath(ipchemin)
-          call calcul_proba_des ! calcul_proba placé étrangement. Devrait etre après l'acceptation. Mais ça marche car si acceptation alors va devenir la nouvelle conf N+1 a tester et va devenir _old_1 (ici copié en _new_1. Après acceptation : _new_1 copié en _old_1). 
+          call calcul_proba_des ! calcul_proba placé étrangement. Devrait etre après l'acceptation. Mais ça marche car si acceptation alors va devenir la nouvelle conf N+1 a tester et va devenir _old_1 (ici copié en _new_1. Après acceptation : _new_1 copié en _old_1).
+          if (lwrtdbg) then
+             write(uwrtl,*)'precpnewnp1' ; flush(uwrtl)
+          end if
           call config_atom_nplus1(ipchemin)%copy_config(config_atom_new_1, lrescl=.true.)
           box_new1=boxmcgcpath(ipchemin)
        else
@@ -928,7 +942,9 @@ contains
 
           xp_np1(:)=config_atom_old_1%xp(:,config_atom_old_1%im)
           config_atom_old_1%proba_ins= calcul_proba_ins (xp_np1)
-
+          if (lwrtdbg) then
+             write(uwrtl,*)'precpnewn' ; flush(uwrtl)
+          end if
           call config_atom_n(ipchemin)%copy_config(config_atom_new_0, lrescl=.true.)
 
           box_new0=boxmcgcpath(ipchemin)
@@ -979,7 +995,9 @@ contains
 !!!!! etape 1 pot chimique !!!!!!!!!
           call potentiel_chimique(tab_cumul, pot_moy, pot_wrmc, pot_NC, pot_SC, premier_accept, ngen, ipchemin,&
                & 1, travail_npp, xprob_i, Wpreced)
-
+          if (lwrtdbg) then
+             write(uwrtl,*)'precpnew2' ; flush(uwrtl)
+          end if
           call config_atom_new_0%copy_config(config_atom_old_0, lrescl=.true.)
           call config_atom_new_1%copy_config(config_atom_old_1, lrescl=.true.)
           box_old0=box_new0
@@ -1022,11 +1040,17 @@ contains
 
           accepta = 0
           if (dir == 0) then
+             if (lwrtdbg) then
+                write(uwrtl,*)'precpnewold1' ; flush(uwrtl)
+             end if
              call config_atom_old_1%copy_config(config_atom_nplus1(ipchemin), lrescl=.true.)
              boxmcgcpath(ipchemin)=box_old1
              call caltabtC(config_cells_nplus1(ipchemin),config_atom_nplus1(ipchemin),&
                   &lperiod,boxmcgcpath(ipchemin),lchktrav=.false.)
           else
+             if (lwrtdbg) then
+                write(uwrtl,*)'precpnewold2' ; flush(uwrtl)
+             end if
              call config_atom_old_0%copy_config(config_atom_n(ipchemin), lrescl=.true.)
              boxmcgcpath(ipchemin)=box_old0
              call caltabtC(config_cells_n(ipchemin),config_atom_n(ipchemin),&
@@ -1507,7 +1531,9 @@ contains
           if (lmaster) call atconf_Nplus1%recv(rgem,paramcgc%mpi_master)
        end if
 #endif
-
+       if (lwrtdbg) then
+          write(uwrtl,*)'precalfAJRE' ; flush(uwrtl)
+       end if
        iloc=1;lchange=.false.;ldistrib=.true.
        call calfoMCGC(iloc,lchange,ldistrib)
 
@@ -1575,9 +1601,12 @@ contains
        end if
 #endif
        iloc=1;lchange=.false.;ldistrib=.true.
+       if (lwrtdbg) then
+          write(uwrtl,*)'precalfAJRE1' ; flush(uwrtl)
+       end if
        call calfoMCGC(iloc,lchange,ldistrib)      
 
-
+       
     end if
 
 
@@ -2203,6 +2232,9 @@ contains
 
     !    if (direc == 0) then
     DO ip = 1, pas_lambda_mc
+       if (lwrtdbg) then
+          write(uwrtl,*)'ip',direc,ip ; flush(uwrtl)
+       end if
        !incrémentation de lambda
        call lambda(direc,ip, protocol)
        !if (rang==0)write(uwrt,*)'DIRECR',rang,direc, ip,protocol,lambda_mc
@@ -2263,7 +2295,10 @@ contains
        end if
 #endif        
        iloc=0;ldistrib=.false.;lchange=.true.
-!       write(uwrt,*)'MCCDBG3 ', rang
+       !       write(uwrt,*)'MCCDBG3 ', rang
+       if (lwrtdbg) then
+          write(uwrtl,*)'precalfLG' ; flush(uwrtl)
+       end if
        call calfoMCGC(iloc,lchange,ldistrib)
 !       write(uwrt,*)'MCCDBG4 ', rang
        if (lbigmaster) then
@@ -2293,8 +2328,14 @@ contains
           DO i=1, atconf_N%im
              atconf_N%vp(1:3,i) = atconf_Nplus1%vp(1:3,i) 
           END DO
-!          write(uwrt,*)'MCCDBG42 ', rang
+          !          write(uwrt,*)'MCCDBG42 ', rang
+          if (lwrtdbg) then
+             write(uwrtl,*)'precaltabt1' ; flush(uwrtl)
+          end if
           call caltabtC(cells_nplus1,atconf_nplus1,lperiod,boxmcgc_p,lchktrav=.false.)
+          if (lwrtdbg) then
+             write(uwrtl,*)'precaltabt2' ; flush(uwrtl)
+          end if
           call caltabtC(cells_n,atconf_n,lperiod,boxmcgc_p,lchktrav=.false.)
 !          write(uwrt,*)'MCCDBG43 ', rang
           call calctemp (tempN,kineN,atconf_N,cells_n,latcomp=.true.)

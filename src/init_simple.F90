@@ -89,7 +89,7 @@ contains
     if (linitpotW)call init_pot
     usdh = 1/(two*tstep)
 
-    call constrconf(atdml,boxndm,celndm,lrepart,filenomIS,psc,lwrtiR)
+    call constrconf(atdml,boxndm,celndm,lrepartl,filenomIS,psc,lwrtiR)
 
        call init_pot2(boxndm,atdml%imm)
 

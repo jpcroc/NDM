@@ -177,7 +177,7 @@ contains
 
     atconf%im=imin
     if (present(im_glob))then
-       write(uwrt,*)'PRESENT imglob',im_glob
+!       write(uwrt,*)'PRESENT imglob',im_glob
        atconf%im_glob=im_glob
 !    else
 !       atconf%im_glob=0
