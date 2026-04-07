@@ -303,13 +303,17 @@ contains
        end if
     end if
     COMPatrcf%ltabvois=at2b%ltabvois; compatrcf%nvois=at2b%nvois; compatrcf%rvois=at2b%rvois
+    write(6,*)'DBG gin2ndm: before constr_2gin at2b%im=',at2b%im,' at2b%im_glob=',at2b%im_glob
     call constr_2gin (COMPatrcf,box2b,cel2b,atrgin,boxrgin,lat,imm_glob)
+    write(6,*)'DBG gin2ndm: after constr_2gin COMPatrcf%im=',COMPatrcf%im,' im_glob=',COMPatrcf%im_glob
     call cryst_to_cart (COMPatrcf%imm, COMPatrcf%xp, box2b%at, 1)
     compatrcf%imm_glob=imm_glob
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.).and.(lrepart)) then
        call repartition(COMPatrcf,at2b,box2b,cel2b)
     else
+       write(6,*)'DBG gin2ndm: calling copy_config COMPatrcf->at2b'
        call compatrcf%copy_config(at2b, lrescl=.true.)
+       write(6,*)'DBG gin2ndm: after copy_config at2b%im=',at2b%im,' at2b%im_glob=',at2b%im_glob
     end if
 #else
     if (ldecoup) then
@@ -402,6 +406,7 @@ contains
     logical :: lprteattrf
     !imtot=lat(1)*lat(2)*lat(3)*atrgin%im
     imloc=lat(1)*lat(2)*lat(3)*atrgin%im
+    write(6,*)'DBG constr_2gin: lat=',lat,' atrgin%im=',atrgin%im,' imloc=',imloc
     immr=imm_glob
     if (present(immread)) immr=immread
     if (imloc>immread) then
@@ -834,6 +839,7 @@ contains
     at=at*1d-8
     call boxrg%init(at,ipbc)
     read (lugin, *) imcell               !number of atoms in UC
+    write(6,*)'DBG read_gin: imcell=',imcell,' itr=',itr,' immr=',immr
     if (itr==0) return
     if (imcell>immr) then
            if ((rang==0).and.(lprt)) write (6, *) 'trop d_atomes dans la cel. unite',immr,imcell

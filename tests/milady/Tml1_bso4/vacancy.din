@@ -6,6 +6,7 @@
 	dmtype=4   ! 7 ph ; 3 CG
     	tinit=150.0
 	rvois=5.5
+	!rvois=5.9998112145764599
 	itmax=10
 	itetemp=1,itesigma=1
 	iseed=1
