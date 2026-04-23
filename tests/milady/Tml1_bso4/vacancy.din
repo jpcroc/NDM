@@ -2,7 +2,7 @@
 
     ipotentiel=20
 	imm=572
-	igen=1 ! from gin
+	igen=1 ! from cin
 	dmtype=4   ! 7 ph ; 3 CG
     	tinit=150.0
 	rvois=5.5

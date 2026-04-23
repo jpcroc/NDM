@@ -1,0 +1,1 @@
+mpirun -np 2 ~/NDM/GH/NDM/build_intel/bin/rundm90_ndm_mpi |tee P2.out

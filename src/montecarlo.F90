@@ -3514,7 +3514,8 @@ contains
        normout(:)=postest(:)/dist
     case(33)
        dist=abs(boxmcgc_p%at(izlins,izlins)*(posred(izlins,1)-zlcenter(izlins)))
-       normout(izlins)=sign(1.,posred(izlins,1)-zlcenter(izlins))
+!       write(uwrt,*)'decd ',boxmcgc_p%at(izlins,izlins),posred(izlins,1),zlcenter(izlins)
+       normout(izlins)=sign(1d0,posred(izlins,1)-zlcenter(izlins))
     case(44)
        dist=0
        do ic=1,3

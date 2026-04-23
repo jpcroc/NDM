@@ -1,0 +1,12 @@
+&input
+   ipotentiel=20
+        imm=512
+        igen=1 ! from gin
+        dmtype=4   ! 7 ph ; 3 CG
+        tinit=150.0
+        rvois=4.9
+        itmax=10
+        itetemp=1,itesigma=1
+        iseed=1
+
+&end
