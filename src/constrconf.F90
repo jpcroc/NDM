@@ -275,7 +275,10 @@ contains
 
     !       end if
 
-
+    if (any(atrcf%ityp(1:atrcf%im)==0)) then
+       write(6,*)'At least one atom has 0 type STOP'
+       call arret_ndm
+    end if
 
     return
 

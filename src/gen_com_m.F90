@@ -198,4 +198,6 @@ module gen_com_m
 
  logical :: lmaxvp ! if true velocities are caped at vplim in pr2.F90 (very crude way of stabilizing dynamics)
  real(double)::vplim
+!crc real(double)::xptclos(3) ! position of the test point for minimum distance of atoms (see distminat in montecarlo)
+ integer::iattcl ! idex of the atom test point for minimum distance of other atoms (see distminat in montecarlo)
 end module gen_com_m

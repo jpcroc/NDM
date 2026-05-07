@@ -89,7 +89,7 @@ contains
     return   
   end subroutine vect_dist
 
-  subroutine closest_at(xPtest,atcf,celcf,boxcf,lperiod,iclose,rumin,dist,lclose,itypt)
+  subroutine closest_at(xPtest,atcf,celcf,boxcf,lperiod,iclose,rumin,dist,lclose,itypt,iskip)
     class(atom_config),intent(in)::atcf
     class(cell_config),intent(in)::celcf
     class(box_config)::boxcf
@@ -100,9 +100,10 @@ contains
     real(double),optional,intent(out)::dist ! distance minimel effective
     integer,intent(out),optional ::iclose !i= indice du plus proche
     integer,intent(in),optional ::itypt !type des atomes à tester
+    integer,optional, allocatable::iskip(:)
 
     real(double)::xpnp(3,2),xp(3,2),dx2(3),XJI(3)
-    integer::ic,i
+    integer::ic,i,j
     real(double)::distance,distance0
 
     if (((present(rumin)).and.(.not.(present(lclose)))).or.((present(lclose)).and.(.not.(present(rumin))))) then
@@ -112,11 +113,17 @@ contains
 
     if (present(lclose))lclose=.false.
     distance0=1d10
-    do i=1,atcf%im
+loopi :    do i=1,atcf%im
        
        if (present(itypt)) then
-          if (atcf%ityp(i).ne.itypt) cycle
+          if (atcf%ityp(i).ne.itypt) cycle loopi
        end if
+       if(present(iskip)) then
+          do j=1,size(iskip)
+             if (atcf%num_at_glob(i)==iskip(j)) cycle loopi
+          end do
+       end if
+
        xp(:,1)=xptest(:)
        xp(:,2)=atcf%xp(:,i)
        call notperiod(2,xp,xpnp,boxcf%at,boxcf%bg,lperiod)
@@ -149,7 +156,7 @@ contains
           distance0=distance
           if (present(iclose)) iclose=i
        end if
-    end do
+    end do loopi
     if (present(dist)) dist=distance0
              
     
@@ -219,5 +226,24 @@ contains
     return
   end subroutine distat
 
-
+  subroutine testclose(atcf,boxcf,celcf,lperiod,distmint,iattcl,xpcl)
+    class(atom_config),intent(in)::atcf
+    class(cell_config),intent(in)::celcf
+    class(box_config),intent(in)::boxcf
+    real(double),intent(in):: distmint,xpcl(3)
+    integer,intent(in)::iattcl
+    logical ::l2close,lperiod
+    integer:: iclose
+    integer,allocatable::skiplist(:)
+    real(double)::distm
+    allocate(skiplist(1))
+    l2close=.false.
+    skiplist(1)=iattcl
+    
+    call closest_at(xpcl,atcf,celcf,boxcf,lperiod,rumin=distmint,lclose=l2close,iskip=skiplist,dist=distm,iclose=iclose)
+    if (l2close.eqv..true.) then
+       write(uwrt,*)'L2close distmin iclose',distm, iclose
+       call arret_ndm(.true.)
+    end if
+  end subroutine testclose
 end module vect_dist_mod

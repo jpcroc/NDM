@@ -113,7 +113,7 @@ contains
        lwrts=lwrt
     end if
 
- if(present(tinitr)) then
+    if(present(tinitr)) then
        tinit0=tinitr
     else
        tinit0=tinit
@@ -399,6 +399,7 @@ contains
           end if
        end if
        tempsauv=tempinstT(atcf)
+       write(6,*)'TEMPSAUV',tempsauv
        if (tempsauv.ne.0)       then
           vv = sqrt(tinit0/tempsauv)
           atcf%vp(:,:atcf%im) = atcf%vp(:,:atcf%im)*vv

@@ -14,7 +14,7 @@ module init_mod
   use boxconfig,only: box_config
   USE constrconf_mod, only :constrconf,lprt
   USE arret_ndm_mod,only: arret_ndm
-
+  use vect_dist_mod,only:testclose
 #ifdef PARA
   USE init_vois_mod,only: init_voisinage
 #endif
@@ -25,14 +25,14 @@ module init_mod
 #ifdef ML
   use mld_interface_mod, only: mld_init_config
 #endif
-  
+  USE montecarlo_mod, ONLY: distminat
 
   
   use Tpara,only:para_space_config
 
   USE gen_com_m, only:uwrt,lwrt,fnam,lenfnam,dmtype,fnamcout,igen,ilangevin,iteration,iteanapos,iterasmol,&
        &itetimestep,kinemean,lcasca,lperiod,lrestart,pmean,rang,timel,two,&
-       &itmax,tmean,tstep,usdh,lspacendm,latcomp,l2T,lcdp,lspecialinit,lwgin
+       &itmax,tmean,tstep,usdh,lspacendm,latcomp,l2T,lcdp,lspecialinit,lwgin,iattcl
   use read_val,only:ltabvois
   use specialinit_mod,only:specialinit
 USE var_pot, ONLY:ipotentiel
@@ -66,9 +66,9 @@ contains
     class(box_config),intent(out)::boxndm
     type(para_space_config)::psc
 
-    integer :: lufilmpaf,itapp,formatsauv
+    integer :: lufilmpaf,itapp,formatsauv,i
     !-----------------------------------------------
-
+    real(double)::xptclos(3)
     logical :: lrepart
 
     tmean = 0.0
@@ -255,6 +255,17 @@ contains
     if (itmax==0) call arret_ndm
 
     if (lcdp) call initcdp
+
+    if(iattcl.gt.0) then
+       xptclos(1:3)=0.
+       do i=1,atdml%im
+          if (atdml%num_at_glob(i)==iattcl) then 
+             xptclos(1:3)=atdml%xp(:,i)
+          end if
+       end do
+       call comm_space%sum(xptclos)
+       call testclose ( atdml,boxndm,celndm,lperiod,distminat,iattcl,xptclos)
+    end if
     return
   end subroutine init
 
