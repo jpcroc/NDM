@@ -83,7 +83,7 @@ contains
     if (igen.ge.1 .and. igen.le.3) then
        allocate (ibuffer(imm_glob))
        allocate (buffer(3,imm_glob))
-       if ((lwrtc).and.(lprt))  write(uwrt,*)'********** reading configuration from file********'
+       if ((lwrtc).and.(lprt))  write(uwrt,*)'********** reading configuration from file******** lrepart',lrepart,nprocspace
        if (lrestart) then
           fnamcin = fnam(1:lenfnam)//'.cout'
        else
@@ -504,7 +504,10 @@ contains
     open(unit=lucin, file=fnamcin, form='unformatted', status='old', err=431)
 
     read (lucin, err=432) icintype
-
+    if (icintype==3) then
+       icintype=5
+       if ((lwrtc).and.(lprt))  write (uwrt, *) ' icintype MIS A 5'
+    end if
     if ((lwrtc).and.(lprt))  write (uwrt, *) 'config type of  .cin file : ', icintype
     if (icintype>5.or.icintype<0) then
        write (uwrt, *) rang, 'wrong icintype'

@@ -593,7 +593,7 @@ contains
                 epotnp1min=pot_npp(ipch)
                 fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
                 write(uwrt,*)'new epotnp1min ', epotnp1min*erg2ev
-                call sauvegardeT(config_atom_nplus1(ipch),config_cells_nplus1(ipch),boxmcgcpath(ipch),3,fnamcout,latcomp=.true.)
+                call sauvegardeT(config_atom_nplus1(ipch),config_cells_nplus1(ipch),boxmcgcpath(ipch),5,fnamcout,latcomp=.true.)
              end if
              call calcul_proba_des ! on vient de choisir ipch qui est accepté. On calcule les proba pour : 1:choisir les atomes à désintégrer et mettre dans old_1 pour les calculs du biais
              call config_atom_nplus1(ipch)%copy_config(config_atom_old_1, lrescl=.true.)
@@ -1004,9 +1004,9 @@ contains
           box_old1=box_new1
           if(lmegamaster) then
              fnamcout = fnam(1:lenfnam)//'.N.cout'
-             call sauvegardeT(config_atom_new_0%atom_config_d,cells_n,box_new0,3,fnamcout,latcomp=.true.)
+             call sauvegardeT(config_atom_new_0%atom_config_d,cells_n,box_new0,5,fnamcout,latcomp=.true.)
              fnamcout = fnam(1:lenfnam)//'.NP1.cout'
-             call sauvegardeT(config_atom_new_1%atom_config_d,cells_nplus1,box_new1,3,fnamcout,latcomp=.true.)
+             call sauvegardeT(config_atom_new_1%atom_config_d,cells_nplus1,box_new1,5,fnamcout,latcomp=.true.)
           end if
 
           if (lmegamaster) then
@@ -1018,7 +1018,7 @@ contains
                    fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
                    write(uwrt,*)'new epotnp1min ', epotnp1min*erg2ev
                    call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),&
-                        &box_new1,3,fnamcout,latcomp=.true.)
+                        &box_new1,5,fnamcout,latcomp=.true.)
                 end if
 
                 call analyse_montecarlo(config_atom_nplus1(ipchemin),&
@@ -1166,9 +1166,9 @@ contains
           box_old1=box_new1
           if(lmegamaster) then
              fnamcout = fnam(1:lenfnam)//'.N.cout'
-             call sauvegardeT(config_atom_new_0%atom_config_d,config_cells_n(ipchemin),box_new0,3,fnamcout,latcomp=.true.)
+             call sauvegardeT(config_atom_new_0%atom_config_d,config_cells_n(ipchemin),box_new0,5,fnamcout,latcomp=.true.)
              fnamcout = fnam(1:lenfnam)//'.NP1.cout'
-             call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
+             call sauvegardeT(config_atom_new_1%atom_config_d,config_cells_nplus1(ipchemin),box_new1,5,fnamcout,latcomp=.true.)
              !CRC CHECK LES cells...
           end if
 
@@ -1181,7 +1181,7 @@ contains
                    fnamcout = fnam(1:lenfnam)//'.NP1min.cout'
                    write(uwrt,*)'new epotnp1min ', epotnp1min*erg2ev
                    call sauvegardeT(config_atom_new_1%atom_config_d&
-                        &,config_cells_nplus1(ipchemin),box_new1,3,fnamcout,latcomp=.true.)
+                        &,config_cells_nplus1(ipchemin),box_new1,5,fnamcout,latcomp=.true.)
                 end if
                 call analyse_montecarlo(config_atom_nplus1(ipchemin),config_cells_nplus1(ipchemin)&
                      &,boxmcgcpath(ipchemin),'SystNP1_accepte')
