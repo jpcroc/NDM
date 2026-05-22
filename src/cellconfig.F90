@@ -407,7 +407,9 @@ contains
     else
        cell%noxyzact = cell%noxyz
     end if
-    if (rang==0)write(uwrt,*)cell%noxyzact ,' active cells among ', cell%noxyz
+    if (rang==0) then
+       if( cell%noxyzact.ne.cell%noxyz)      write(uwrt,*)cell%noxyzact ,' active cells among ', cell%noxyz
+    end if
 
 
 

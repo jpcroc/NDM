@@ -282,8 +282,7 @@ contains
 
     return
 
-456 print *,'Erreur dans la lecture du fichier .cin, verifier son format&
-         & et fmt_cin ATTENTION A BIG_ENDIAN !! SI COMMPILE BIG_ENDIAN NE LIT PLUS QUE CA'
+456 print *,'Erreur dans la lecture du fichier .cin, VERIFIER IMM dans .din = IMM dans sauvegarde'
 
 
   end subroutine constrconf
@@ -686,7 +685,7 @@ contains
 432 print *,'Erreur 432'
 433 print *,'Erreur 433'
 434 print *,'Erreur 434'
-435 print *,'Erreur 435'
+435 print *,'Erreur 435, VERIFIER IMM dans .din = IMM dans sauvegarde'
 436 print *,'Erreur 436'
 437 print *,'Erreur 437'
 438 print *,'Erreur 438'

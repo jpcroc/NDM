@@ -661,20 +661,39 @@ contains
              
 
     if (lmegamaster) then
-       if (dmtype==15) then
-          open(UNIT= 752, FILE="analyse_file", STATUS = 'new')
-
-          open(UNIT= 85, FILE="restart_file", STATUS = 'new')
-          !      open(UNIT= 753, FILE="nrj_pot_systacc", STATUS = 'new')
-          if (nparapath .gt. 1) then
-             write(752,*) '#ACC/REF  direction  ipchemin  WeV(x nparapath)&
-                  & Wprec XPROB(x nparapath +1)'
-          else
-             write(752,*) '#ACC/REF  direction  WeV  Wprec  XPROB   XALEA'
-          end if! sur nparapath
-       else if (dmtype==151) then 
-          open(UNIT= 754, FILE="analyse_file.151")!, STATUS = 'new')
-       end if
+       block
+         logical :: exist
+         if (dmtype==15) then
+            inquire(file="analyse_file", exist=exist)
+            if (exist) then
+               open(UNIT= 752, FILE="analyse_file", status="old", position="append", action="write")
+            else
+               open(UNIT= 752, FILE="analyse_file", status="new", action="write")
+            end if
+            inquire(file="restart_file", exist=exist)
+            if (exist) then
+               open(UNIT= 85, FILE="restart_file", status="old", position="append", action="write")
+            else
+               open(UNIT= 85, FILE="restart_file", status="new", action="write")
+            end if
+            
+            
+            !      open(UNIT= 753, FILE="nrj_pot_systacc", STATUS = 'new')
+            if (nparapath .gt. 1) then
+               write(752,*) '#ACC/REF  direction  ipchemin  WeV(x nparapath)&
+                    & Wprec XPROB(x nparapath +1)'
+            else
+               write(752,*) '#ACC/REF  direction  WeV  Wprec  XPROB   XALEA'
+            end if! sur nparapath
+         else if (dmtype==151) then 
+            inquire(file="analyse_file.151", exist=exist)
+            if (exist) then
+               open(UNIT= 754, FILE="analyse_file", status="old", position="append", action="write")
+            else
+               open(UNIT= 754, FILE="analyse_file", status="new", action="write")
+            end if
+         end if
+       end block
     end if!sur megamaster
 
     !########################################################################################################################
