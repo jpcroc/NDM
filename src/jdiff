@@ -8,6 +8,7 @@ do
 	if  [ -s  rd ]
 	then
 	meld   $temp /home/croc/NDM/ndm2025/src/$temp
+	rm -f rd
 	fi
 	
 
