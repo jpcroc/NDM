@@ -132,27 +132,6 @@ contains
 #endif
     !<---------setting the configuration by generation gin / cin file --------------
 
-    select case (igen)
-    case (-1)
-       formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
-       call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
-       call rasmolT (atdml,boxndm,-1,latcomp=latcomp,ivisumol=5)
-       if (lwgin) call rasmolT (atdml,boxndm,latcomp=latcomp)
-       if (rang==0) write (uwrt, *) 'generation terminee'
-       call arret_ndm
-    case (2)
-       !          call cin2gin
-       call arret_ndm
-
-    case (3)
-       call transf(atdml)
-       formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
-       call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
-       if (lwgin) call rasmolT (atdml,boxndm,-1,latcomp=latcomp,ivisumol=5)
-       if (rang==0) write (uwrt, *) 'modification terminee'
-       call arret_ndm
-    case default
-    end select
 #ifdef PARA
 
 
@@ -209,6 +188,28 @@ contains
           call initspeed(atdml,boxndm,lprt=lprt)
        end select
     end if
+    select case (igen)
+    case (-1)
+       formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
+       call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
+       call rasmolT (atdml,boxndm,-1,latcomp=latcomp,ivisumol=5)
+       if (lwgin) call rasmolT (atdml,boxndm,latcomp=latcomp)
+       if (rang==0) write (uwrt, *) 'generation terminee'
+       call arret_ndm
+    case (2)
+       !          call cin2gin
+       call arret_ndm
+
+    case (3)
+       call transf(atdml)
+       formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
+       call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=latcomp)
+       if (lwgin) call rasmolT (atdml,boxndm,-1,latcomp=latcomp,ivisumol=5)
+       if (rang==0) write (uwrt, *) 'modification terminee'
+       call arret_ndm
+    case default
+    end select
+
     !
     !end init the speed using Maxwell proba density-----------------
     select type(atdml)

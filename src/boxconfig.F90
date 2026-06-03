@@ -245,6 +245,7 @@ contains
         write(unitw,*)'boxprt hdot',boxprt%hdot(:,:)
         write(unitw,*)'boxprt wbox',boxprt%wbox
      end select
+     flush(unitw)
    end subroutine boxprint
 
    subroutine periodbox(box,atcf)
