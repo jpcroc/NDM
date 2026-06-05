@@ -101,7 +101,7 @@ contains
          &nparapath,lparapath,lrestartmcgc, lbiais_retrait,lbiais_inser,fdmc_1,&
          &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
          &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag,protocol_mcc,lmaxvp,vplim,&
-         sig0stara,sig0starb,sig0starc,ntempbabar,&
+         sig0stara,sig0starb,sig0starc,ntempbabar,ltransf,&
          &nbabarprocs,bbtempmin,bbtempmax,itbtherm,itbprod,lbetagrid,iattcl
 
 
