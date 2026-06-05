@@ -50,7 +50,7 @@ contains
     use constrconf_mod,only: ldecalcor
     use arps_mod,only:kmin,kmax,noxyzkmin,noxyzkmax,lpartarps!,lxyz
     use babar_mod,only:ntempbabar,nbabarprocs,bbtempmin,bbtempmax,itbtherm,itbprod,lmultin,lbetagrid
-
+    use transf_mod,only:ltransf
 
 
     ! *****************************************************************
@@ -405,6 +405,8 @@ contains
     vplim=5d6 
     sig0dir(:)=0
     astarsig(:)=.false.
+
+    ltransf=.false. ! true pour changer des choses dans la boite (voir transf.F90)
     if (rang == 0) write (uwrt, *) 'nom fichier din=', fnamdin
     
 
@@ -1018,9 +1020,8 @@ contains
        case(22)
           if (wboxf==1) wboxf=0.2
           if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
-
        case(24)
-          if (wboxf==1) wboxf=0.2
+          if (wboxf==1) wboxf=0.05
           if (sigstop.le.0) sigstop =0.05 ! critere de conv. sur les contraintes par direction UNITE = kbar
        case (3,30,31,32,33,34,35)
           lEev=.true.
@@ -1295,7 +1296,9 @@ contains
     case(112)
        write(uwrt,*)'simple test de distance entre atomes'
     case(113)
-       write(uwrt,*)'recvherche de la position la plus éloignée des atomes'
+       write(uwrt,*)'recherche de la position la plus éloignée des atomes'
+    case(-1)
+       write(uwrt,*)'TRANSFORMATION DE LA CONFIGURATION'
 
     case default
        if (rang==0) write (uwrt, *) 'mauvais type de calcul dmtype=TTT',dmtype

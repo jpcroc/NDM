@@ -1,17 +1,128 @@
 module transf_mod
-  USE gen_com_m, only:uwrt,lwrt
+  USE gen_com_m, only:uwrt,lwrt,rang,fnam,lenfnam,fnamcout,latcomp,lwgin
+
   USE arret_ndm_mod,only:arret_ndm
   USE atomconfig,only:atom_config
-  implicit none 
+  use cellconfig,only:cell_config
+  use boxconfig,only:box_config
+  use var_pot,only:ntyp
+  USE sauvegardeT_mod,only: sauvegardeT!,cin2gin
+  use rasmolT_mod,only:rasmolT
+  use newunit_mod,only:newunit
+  USE Tpara,only:COMM_space
+  implicit none
+  logical:: ltransf
+  logical,allocatable:: lrmtype(:)
+  integer,allocatable::iswitchtype2(:)
+
 contains
   ! **************************************************************
+
+  subroutine transfconf(atcf,celcf,boxcf)
+    class(atom_config),intent(inout),target::atcf
+    type(cell_config),intent(in),target::celcf
+    class(box_config)::boxcf
+
+    integer ::unitlp,i,iti,formatsauv,j
+    character*80::nameo
+    class(atom_config),allocatable::attrf
+    namelist /inputtr/lrmtype,iswitchtype2
+
+    !    call atcf%deftype(attrf)
+
+    if (ltransf) then 
+       allocate (attrf,mold=atcf)
+       attrf=atcf
+       allocate(lrmtype(ntyp))
+       lrmtype(:)=.false.
+       allocate(iswitchtype2(ntyp))
+       do iti=1,ntyp
+          iswitchtype2(iti)=iti
+       end do
+
+
+       call newunit(unitlp)
+       open(unit=unitlp,file='transfin')
+       read(unitlp,nml=inputtr)
+       write(uwrt,*)lrmtype
+       write(uwrt,*)iswitchtype2
+
+       do iti=1,ntyp
+          if(lrmtype(iti).eqv..true.)   then
+             if (lwrt) then
+                write(uwrt,*)'removal of atoms of type ',iti 
+             end if
+          end if
+       end do
+       j=0
+       do i=1,atcf%im
+          if (lrmtype(atcf%ityp(i)).eqv..false.) then
+             j=j+1
+             call atcf%copy_atom(i,attrf,j)
+          end if
+       end do
+       attrf%im=j
+       write(uwrt,*)'im',atcf%im,attrf%im
+       attrf%im_glob=attrf%im
+       call comm_space%sum(attrf%im_glob)
+       write(uwrt,*)'im',attrf%im,attrf%im_glob
+
+
+       do iti=1,ntyp
+          if (iswitchtype2(iti)==iti) cycle
+          if (lwrt) write(uwrt,*)'atoms of type ',iti , 'transformed to type ',iswitchtype2(iti)
+          do i=1,attrf%im
+             if (attrf%ityp(i)==iti) then
+                attrf%ityp(i)=iswitchtype2(iti)
+             end if
+          end do
+       end do
+       formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.trf.cout'
+       call sauvegardeT(attrf,celcf,boxcf,formatsauv,fnamcout,latcomp=latcomp)
+       nameo=fnam(1:lenfnam)
+       nameo=nameo//'.trf'
+       nameo='trf'
+       call rasmolT (attrf,boxcf,namefr=nameo,latcomp=latcomp)
+    else
+       formatsauv = 2 ; fnamcout= fnam(1:lenfnam)//'.cout.'
+       call sauvegardeT(atcf,celcf,boxcf,formatsauv,fnamcout,latcomp=latcomp)
+       call rasmolT (atcf,boxcf,latcomp=latcomp)
+       if (lwgin)       call rasmolT (atcf,boxcf,-1,latcomp=latcomp,ivisumol=5)
+       if (rang==0) write (uwrt, *) 'generation terminee'
+
+    end if
+    !     if (lwgin) call rasmolT (attrf,boxcf,namefr=nameo,latcomp=latcomp,ivisumol=5)
+    if (lwrt) write (uwrt, *) 'generation terminee'
+    call arret_ndm
+
+  end subroutine transfconf
+
+  subroutine poscheck(xp,ityp,im,imm)
+    character*1 rep
+    integer im,imm,ityp(imm),iat
+    real*8 xp(3,imm)
+
+1   continue      
+    write(uwrt,*)'numero de l_atome ?'
+    read(5,*)iat
+    write(uwrt,*)'atome no ',iat,' de type',ityp(iat),' situe en'
+    write(uwrt,*)xp(1,iat)*1d+08,xp(2,iat)*1d+08,xp(3,iat)*1d+08
+
+    write(uwrt,*)
+
+    write(uwrt,*)'autre atome ?'
+    read(5,*)rep
+    if (rep.eq.'o') goto 1
+
+    return
+  end subroutine poscheck
   subroutine transf (atcf)
     !routine de transformation de la boite : ajouter, enlever, transformer des atomes,
     !-----------------------------------------------
     !   M o d u l e s
     !-----------------------------------------------
     USE T_kind_param_m
-   class(atom_config)::atcf
+    class(atom_config)::atcf
 
 
 
@@ -103,24 +214,4 @@ contains
 
     return   
   end subroutine transf
-
-  subroutine poscheck(xp,ityp,im,imm)
-    character*1 rep
-    integer im,imm,ityp(imm),iat
-    real*8 xp(3,imm)
-
-1   continue      
-    write(uwrt,*)'numero de l_atome ?'
-    read(5,*)iat
-    write(uwrt,*)'atome no ',iat,' de type',ityp(iat),' situe en'
-    write(uwrt,*)xp(1,iat)*1d+08,xp(2,iat)*1d+08,xp(3,iat)*1d+08
-
-    write(uwrt,*)
-
-    write(uwrt,*)'autre atome ?'
-    read(5,*)rep
-    if (rep.eq.'o') goto 1
-
-    return
-  end subroutine poscheck
 end module transf_mod

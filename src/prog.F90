@@ -24,13 +24,13 @@ module prog_mod
   use posana,only:initanapos
   use NGC_mod,only:ngc
   use babar_mod,only:babar,init_mpi_babar,init_babar
+  use transf_mod,only:transfconf
 !  use babar_mod,only:init_babar,init_mpi_babar, babar
 #ifdef ML
   use NDM_ML,only:init_config_ml
 #endif
 #ifdef LAMMPS_VERSION
   use lammps_util_mod,only:init_lammps
-
 
 #endif
 
@@ -204,6 +204,9 @@ contains
              case(32,33,34,35)
                 call NGC(atdml,celndm,boxndm,psc0)
                 call endrunT(atdml,celndm,boxndm,latcomp)
+             case default
+                write(6,*)'inconsistent dmtype and atconf type'
+                call arret_ndm
              end select
           end if
        class is (atom_config_d) !velocities
@@ -247,7 +250,8 @@ contains
 
 
           case default
-             write(uwrt,*)'WTF dmtype',dmtype
+                write(6,*)'inconsistent dmtype and atconf type'
+                call arret_ndm
           end select
           !          end select
        end select
@@ -277,6 +281,10 @@ contains
 
        call calcFM(atdml,celndm,boxndm)
        call arret_ndm
+    case(-1)
+       call init_simple(atdml,celndm,boxndm,psc=psc0)
+       call transfconf (atdml,celndm,boxndm)
+       call arret_ndm
     case(12) ! ART calculation special case of case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix) or 12 ART
        call init_mpi_art
        if (ltabvois) then
@@ -285,7 +293,7 @@ contains
           rv=0
        end if
        call atdml%init(im,imm,ltabvois,nvois,rvois=rv) ! initialization of the complete structure (no spatial repartition)
-       call init_simple(atdml,celndm,boxndm,psc=psc0)  ! in init_simple no spatial repartition
+       call init_simple(atdml,celndm,boxndm,psc=psc0)  
        if (lanaposart) call initanapos(atdml,celndm,boxndm)
        call art90(atdml,celndm,boxndm,psc0)
 

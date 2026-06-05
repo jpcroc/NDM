@@ -10,6 +10,6 @@ do
 	meld   $temp /home/croc/NDM/ndm2025/src/$temp
 	rm -f rd
 	fi
-	
+	 rm -f rd
 
 done
