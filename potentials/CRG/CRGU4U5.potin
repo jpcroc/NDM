@@ -1,0 +1,28 @@
+ 3 ! nb de types
+  &ewald
+   iewald=3, rue=11.00
+   alpha=0.420560
+   ipotrep=0
+ &end
+-1.1104 15.9994 8.0 'O '       ! Q CM (masse);  numero atomique ; symbole
+2.2208 238.03  92.0 'U4 '    ! Q CM (masse);  numero atomique ; symbole
+2.776 238.03  92.0 'U5 '    ! Q CM (masse);  numero atomique ; symbole	
+11001  ! nombre de points dans les grilles
+1 !type O
+0.69 106.856 400.0 !G n rhomax (max de la densité SUR ce type)
+2 !type U4
+1.806 3450.995 40.0 !G n rhomax (max de la densité SUR ce type)
+3 !type U5
+1.7921 3448.0359 50.0 !G n rhomax (max de la densité SUR ce type)
+1 1 !paire O O
+0 0 830.283 0.3529 3.884372 0 ! D gam A rho C r0
+1 2 !paire O U4
+0.6608 2.05815 448.779 0.387758 0.0 2.38051
+1 3 !paire O U5
+1.85097 1.917152 1157.0704 0.357723 0.0 1.916728
+2 2 !paire U4 U4
+0 0 18600 0.2747 0 0 ! D gam A rho C r0
+2 3 !paire U4 U5
+0 0 18600 0.297631 0 0 ! D gam A rho C r0
+3 3 !paire U5 U5
+0 0 18600 0.256063 0 0 ! D gam A rho C r0

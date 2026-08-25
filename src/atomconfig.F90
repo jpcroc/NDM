@@ -63,7 +63,6 @@ module atomconfig
      procedure, pass::zero=>zero_atom
      procedure, pass::switch_atom
      procedure, pass::print_type
-!     procedure, pass::copy_allocate2
 
      !
   end type atom_config
@@ -139,7 +138,7 @@ contains
   end subroutine print_type
 
 !**************  INIT   *********
-       
+  
   subroutine init_atom_config(atconf,imin,immin,ltabvois,nvois,rvois,lreallocate,im_glob,imm_glob)
     class(atom_config),intent(inout)::atconf
     integer,intent(in):: imin
