@@ -8,14 +8,14 @@ module dmloop_vverlet_mod
   USE boxconfig,only:box_config
   use var_pot,only:ntyp,cm
   USE gen_com_m, only:uwrt,lwrt, itesauvforce,itesauvposition,ev2erg,rang,iteration,l2t,lTberendsen,potist,sig,sigtot,&
-       &tstep,itesauv,itesigma,lsigat,ltpcel,lspaceNDM,itloopmax,sigkine,timeloopmax,timel,lpcube
+       &tstep,itesauv,itesigma,lsigat,ltpcel,lspaceNDM,itloopmax,sigkine,timeloopmax,timel,lpcube,lcdp
 
   USE eloss, ONLY : calceloss,ibrake !, tcelec,ecelec,ibrake,elstopforce,elosselectot,elosselectot1,elosselec1,ngrdel,elosselec
   USE elec_cell, ONLY :i2t       
   USE calfoberend_mod,only:calfoberend
   use Tpara,only:para_space_config
   use endrunT_mod,only:endrunT
-
+  use sigkinetot_mod,only:sigkinetot
 
   implicit none 
 contains
@@ -49,7 +49,7 @@ contains
     logical :: test_sigma,lreturn
     if (rang==0) write (uwrt, *) '***** PREMIERE ITERATION  VVERLET****',itloopmax,timeloopmax
     ! Appel de la routine generale des forces
-    test_sigma=(mod(iteration,itesigma)==0)
+    test_sigma=((mod(iteration,itesigma)==0).or.(iteration==0))
 
     CALL CalFo(sig,potist,atdml,celndm,boxndm,t_sigma=test_sigma,psc=psc)
     if (l2t)then
@@ -59,7 +59,9 @@ contains
     end if
     if (lTberendsen) call calfoberend(atdml)
     if (itloopmax==0) then
+       call sigkinetot(atdml,boxndm,sig,sigkine,sigtot,celndm)
        call analyseT (atdml,celndm,boxndm,psc)
+       if (lcdp) return
        call endrunT(atdml,celndm,boxndm,.true.)
     end if
     call analyseT (atdml,celndm,boxndm,psc)
@@ -70,56 +72,7 @@ contains
        ! les positions et les vitesses sont synchrones en ce point ; les atomes sont bien r�partis en cellules
 
        if (test_sigma) then
-
-          sigkine=0.
-          do ilocal = 1, atdml%im
-             sigkine(1:3,1) = sigkine(1:3,1) + &
-                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
-             sigkine(1:3,2) = sigkine(1:3,2) + &
-                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
-             sigkine(1:3,3) = sigkine(1:3,3) + &
-                  cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
-             select type (atdml)
-             class is (atom_config_e)
-
-                if (atdml%lsigat) then 
-                   atdml%sigat(1:3,1,ilocal) = atdml%sigat(1:3,1,ilocal) +  &
-                        &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)
-                   atdml%sigat(1:3,2,ilocal) = atdml%sigat(1:3,2,ilocal) + &
-                        &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)
-                   atdml%sigat(1:3,3,ilocal) = atdml%sigat(1:3,3,ilocal) +  &
-                        &cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)
-                end if
-             end select
-             if ((mod(iteration,itesigma)==0).and.(lTPcel.EQV..true.)) then
-                celndm%sigc(1:3,1,atdml%ielat(ilocal)) = celndm%sigc(1:3,1,atdml%ielat(ilocal)) + &
-                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(1,ilocal)*celndm%noxyzact/boxndm%volu
-                celndm%sigc(1:3,2,atdml%ielat(ilocal)) = celndm%sigc(1:3,2,atdml%ielat(ilocal)) + &
-                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(2,ilocal)*celndm%noxyzact/boxndm%volu
-                celndm%sigc(1:3,3,atdml%ielat(ilocal)) = celndm%sigc(1:3,3,atdml%ielat(ilocal)) + &
-                     cm(atdml%ityp(ilocal))*atdml%vp(1:3,ilocal)*atdml%vp(3,ilocal)*celndm%noxyzact/boxndm%volu
-             end if
-          end do
-          sigkine(1:3,1:3) = sigkine(1:3,1:3)/boxndm%volu
-
-#ifdef PARA
-
-          if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-             call comm_space%sum(sigkine)
-             if (allocated(celndm%sigc)) then
-                call comm_space%sum(celndm%sigc)
-             end if
-          end if
-#endif
-          if (lpcube) then
-             pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
-             sigkine=0
-             do ic=1,3
-                sigkine(ic,ic)=pint
-             end do
-          end if
-
-          sigtot = sigkine+sig
+          call sigkinetot(atdml,boxndm,sig,sigkine,sigtot,celndm)
        end if
        call analyseT (atdml,celndm,boxndm,psc)
        call controleT(atdml,celndm,boxndm,psc,lreturn)

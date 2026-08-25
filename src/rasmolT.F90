@@ -20,7 +20,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
     !atmol et boxmol sont les configurations atomiques et de boite
-    !itapp est l'itération (apprente) en cours
+    !itapp est l'itération (apparente) en cours
     !namefr est la racine nom du fichier (par défaut celui de name.in
     !rty est un tableau     character*3,intent(in), dimension(1:atmol%im),optional  :: rty qui donne les symboles des atomes. utile pour utiliser d'autres symboles que les symboles chimiques associés aux types des atomes. En l'absence de rty, on utilise les symboles des types des atomes.
     !latcomp= en PARA latcomp=.true.=> atmol est une cofiguration complète/latcomp=false=>atmol est distributé sur comm_space

@@ -199,7 +199,9 @@ contains
 
     sigcf=sigcalfo;potistcf=potistcalfo
 
-
+    atcf%potist=potistcalfo
+    atcf%sig=sigcalfo
+    
     return
   end subroutine calfo
 

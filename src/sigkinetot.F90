@@ -2,8 +2,9 @@ module sigkinetot_mod
   USE T_kind_param_m, ONLY:  double
   USE arret_ndm_mod,only:arret_ndm
 
-  USE atomconfig,only : atom_config_d
-  USE gen_com_m, only:uwrt,lwrt,lspaceNDM,lpcube,rang
+  USE atomconfig,only : atom_config_d,atom_config_e
+  use cellconfig,only : cell_config
+  USE gen_com_m, only:uwrt,lwrt,lspaceNDM,lpcube,rang,ltpcel
   USE boxconfig,only:box_config_lpr,box_config
   USE var_pot, ONLY:cm
     
@@ -45,37 +46,73 @@ contains
     sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )       
   end subroutine sigkinetotMC
 
-  subroutine sigkinetot(atpr,boxndm,sig,sigkine,sigtot)
-      class(box_config)::boxndm
-        
-    class(atom_config_d),intent(in)::atpr
+  subroutine sigkinetot(atpr,boxndm,sig,sigkine,sigtot,celcf)
+    class(box_config)::boxndm
+    
+    class(atom_config_d)::atpr
+    class(cell_config),optional::celcf  
     real(double),dimension(3,3)::sig,sigkine,sigtot
     real(double)::pint
     integer::i,j,ic
     
     sigkine(:,:)=0.d0
     do i = 1, atpr%im
+       
        do j = 1,3
           sigkine(1:3,j) = sigkine(1:3,j) + cm(atpr%ityp(i))*atpr%vp(1:3,i)*atpr%vp(j,i)
        enddo
-    enddo
+       
+       select type (atpr)
+       class is (atom_config_e)
+          
+          if (atpr%lsigat) then 
+             atpr%sigat(1:3,1,i) = atpr%sigat(1:3,1,i) +  &
+                  &cm(atpr%ityp(i))*atpr%vp(1:3,i)*atpr%vp(1,i)
+             atpr%sigat(1:3,2,i) = atpr%sigat(1:3,2,i) + &
+                  &cm(atpr%ityp(i))*atpr%vp(1:3,i)*atpr%vp(2,i)
+             atpr%sigat(1:3,3,i) = atpr%sigat(1:3,3,i) +  &
+                  &cm(atpr%ityp(i))*atpr%vp(1:3,i)*atpr%vp(3,i)
+          end if
+       end select
+       if(present(celcf)) then
+          if (lTPcel.EQV..true.) then
+             celcf%sigc(1:3,1,atpr%ielat(i)) = celcf%sigc(1:3,1,atpr%ielat(i)) + &
+                  cm(atpr%ityp(i))*atpr%vp(1:3,i)*atpr%vp(1,i)*celcf%noxyzact/boxndm%volu
+             celcf%sigc(1:3,2,atpr%ielat(i)) = celcf%sigc(1:3,2,atpr%ielat(i)) + &
+                  cm(atpr%ityp(i))*atpr%vp(1:3,i)*atpr%vp(2,i)*celcf%noxyzact/boxndm%volu
+             celcf%sigc(1:3,3,atpr%ielat(i)) = celcf%sigc(1:3,3,atpr%ielat(i)) + &
+                  cm(atpr%ityp(i))*atpr%vp(1:3,i)*atpr%vp(3,i)*celcf%noxyzact/boxndm%volu
+          end if
+       end if
+       
+    end do
+       
+
+
     sigkine(1:3,1:3) =sigkine(1:3,1:3)/boxndm%Volu
 
 #ifdef PARA
 
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        call comm_space%sum(sigkine)
+       if (allocated(celcf%sigc)) then
+          call comm_space%sum(celcf%sigc)
+       end if
     end if
 #endif
-              if (lpcube) then
-             pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
-             sigkine=0
-             do ic=1,3
-                sigkine(ic,ic)=pint
-             end do
-          end if
-
-    sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )       
+    if (lpcube) then
+       pint=0.33333333333*(sigkine(1,1)+sigkine(2,2)+sigkine(3,3))
+       sigkine=0
+       do ic=1,3
+          sigkine(ic,ic)=pint
+       end do
+    end if
+    
+    sigtot = 0.5d0*(sigkine + Transpose(sigkine) + sig + Transpose(sig) )
+    sigkine=       0.5d0*(sigkine + Transpose(sigkine)  )
+    atpr%sigkine=sigkine
+    atpr%sigtot=sigtot
+    
   end subroutine sigkinetot
     
 end module sigkinetot_mod

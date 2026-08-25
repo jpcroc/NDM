@@ -37,6 +37,7 @@ module atomconfig
 #ifdef PARA
      integer,allocatable::proc_at(:) ! tableau de taille im_glob total indiquant le numéro du proc qui gère l'atome
      integer::imf=0 ! indice du dernier atome fantome (atomes fantomes entre im+1 et imf
+     real(double)::potist,kine,sigkine(3,3),sig(3,3), sigtot(3,3),temp
 #endif     
    contains
      procedure, pass::init=>init_atom_config
@@ -937,6 +938,13 @@ contains
 
     atcible%im_glob=atsource%im_glob
     atcible%imm_glob=atsource%imm_glob
+    atcible%temp=atsource%temp
+    atcible%potist=atsource%potist
+    atcible%kine=atsource%kine
+    atcible%sig=atsource%sig
+    atcible%sigkine=atsource%sigkine
+    atcible%sigtot=atsource%sigtot
+    
   end subroutine copy_config
 
   subroutine dealloc_atom_config(atconf)

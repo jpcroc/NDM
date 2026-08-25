@@ -25,7 +25,7 @@ contains
     !   M o d u l e s
     !-----------------------------------------------
 
-    class(atom_config_d),intent(in)::atcf
+    class(atom_config_d),intent(inout)::atcf
     type(cell_config),intent(inout)::cellcf
     real(double),intent(out)::temp,kine
     logical, optional::latcomp
@@ -263,6 +263,8 @@ contains
        temp = sumtat2/float(atcf%im)
 #endif
     end if
+    atcf%temp=temp
+    atcf%kine=kine
 
     return
   end subroutine calctemp

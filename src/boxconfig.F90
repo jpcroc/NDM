@@ -21,6 +21,7 @@ module boxconfig
      procedure, pass::showtype=>boxshowtype
      procedure, pass::master2slave=>boxmaster2slave
      procedure, pass::send2proc=>boxsend2proc
+     procedure, pass::copy=>copy_box
      procedure, pass::recv=>boxrecv
   end type box_config
 
@@ -123,6 +124,67 @@ contains
     return
   end subroutine initbox
 
+  subroutine copy_box(boxsource,boxcible)
+    class(box_config),intent(in):: boxsource
+    class(box_config),intent(out):: boxcible
+    boxcible%at=boxsource%at
+    boxcible%bg=boxsource%bg
+    boxcible%as=boxsource%as
+    boxcible%zl=boxsource%zl
+    boxcible%zls2=boxsource%zls2
+    boxcible%nzl=boxsource%nzl
+    boxcible%volu=boxsource%volu
+    boxcible%normat=boxsource%normat
+    boxcible%normbg=boxsource%normbg
+    boxcible%icaltabt=boxsource%icaltabt
+    boxcible%lperiod=boxsource%lperiod
+    boxcible%ismall=boxsource%ismall
+    boxcible%ipbc=boxsource%ipbc
+
+    select type (boxsource)
+       class is (box_config_lpr)
+       select type (boxcible)
+       class is (box_config_lpr)
+          boxcible%h=boxsource%h
+          boxcible%hDot=boxsource%hDot
+          boxcible%h0=boxsource%h0
+          boxcible%trh0=boxsource%trh0
+          boxcible%invh0=boxsource%invh0
+          boxcible%invtrh0=boxsource%invtrh0
+          boxcible%epsi=boxsource%epsi
+          boxcible%tension=boxsource%tension
+          boxcible%trh=boxsource%trh
+          boxcible%invtrh=boxsource%invtrh
+          boxcible%Gmat=boxsource%Gmat
+          boxcible%invGmat=boxsource%invGmat
+          boxcible%Gdot=boxsource%Gdot
+          boxcible%volu0=boxsource%volu0
+          boxcible%invvolu0=boxsource%invvolu0
+          boxcible%ucell=boxsource%ucell
+          boxcible%tempcell=boxsource%tempcell
+          boxcible%ecellpr=boxsource%ecellpr
+          boxcible%invvolu=boxsource%invvolu
+          boxcible%wbox=boxsource%wbox
+          boxcible%gnose=boxsource%gnose
+          boxcible%knose=boxsource%knose
+          boxcible%kcell=boxsource%kcell
+          boxcible%enose=boxsource%enose
+          boxcible%wnose=boxsource%wnose
+          boxcible%fnose=boxsource%fnose
+          boxcible%unose=boxsource%unose
+          boxcible%ppot=boxsource%ppot
+          boxcible%htot=boxsource%htot
+          boxcible%zhoover=boxsource%zhoover
+          boxcible%whoover=boxsource%whoover
+          boxcible%zold=boxsource%zold
+          boxcible%znew=boxsource%znew
+          boxcible%zdot=boxsource%zdot
+          boxcible%khoover=boxsource%khoover
+       end select
+    end select
+  endsubroutine copy_box
+
+    
   subroutine updatebox(boxnew,at,zl,check)
     USE Mat_utils_mod,only:  MatInv
     class(box_config),intent(inout)::boxnew

@@ -2,7 +2,7 @@ module cdp_mod
   USE arret_ndm_mod,only:arret_ndm
   USE T_kind_param_m, ONLY:  double
   USE gen_com_m, only:uwrt,lwrt, iseed_glob=>iseed,rang,dmtype,itmax,lspacendm,iteration,lperiod,itloopmax,ivisu,&
-       &timel,timeloopmax,timemax,lrestart,fnam,lenfnam,text
+       &timel,timeloopmax,timemax,lrestart,fnam,lenfnam,text,erg2ev
   USE arret_ndm_mod,only: arret_ndm
   USE var_pot,only:ntyp
   USE atomconfig,only : atom_config,atom_config_d,atom_config_e
@@ -19,12 +19,17 @@ module cdp_mod
 #endif
   use initspeed_mod,only:init_speed_1at
   use constrconf_mod,only:coord_to_cell
+  use newunit_mod,only:newunit
+
   !#else
   !  USE Tpara,only:myidsp,para_space_config
   !#endif
   !  use endrunT_mod,only:endrunT
   use NGC_mod,only:ngc
   use dmloop_pilot_mod,only:dmloop_pilot
+  USE calfo_mod,only: calfo
+  USE calctemp_mod,only: calctemp
+
 
   implicit none
 
@@ -45,6 +50,8 @@ module cdp_mod
   real (double) :: dminins,rsphdef,centresphdef(3),timecdp
   integer:: ioxdef,icreadp
   logical::ltimec,lcrearead
+  logical::lprtprepost ! energie avant/après introduction des DP
+  logical::lfrom1st ! redémarrage de la conf de départ à chaque CDP
   integer, allocatable :: natproc1(:),natproc2(:),indas1(:),indas2(:),procas1(:),procas2(:),indlocas1(:),&
        &flooras1(:),flooras2(:),indlocas2(:)
   integer,allocatable::nasloc1(:),nasloc2(:),nvacproc(:),nvacproc2(:)
@@ -66,7 +73,7 @@ contains
     !-----------------------------------------------
     namelist /inputcdp/itecdp,nfp,nposI,iseed,dminins,itecdp,itprep,maxposint,minposint,&
          &nvac,nbint,typint,timecdp,lcrearead,ncreadp,&
-         &nas,typas1,typas2
+         &nas,typas1,typas2,lprtprepost,lfrom1st
  
     allocate(nvac(ntyp));allocate(nbint(ntyp))
     npp=comm_space%nproc
@@ -86,6 +93,8 @@ contains
     nas=-1
     typas1=-1
     typas2=-1
+    lprtprepost=.true.
+    lfrom1st=.false.
     open(unit=73, file='creaDPin', status='unknown')
     read (73, nml=inputcdp)
     timecdp=timecdp*1d-15
@@ -191,9 +200,7 @@ contains
     integer :: iint,natgm
     real(double) :: z1,dimin
     real(double),dimension(3)::xpositest
-
     real(double),dimension(3)::x0,xi
-
     integer,allocatable::nb_at_typ(:),last_at_typ(:),iatvac(:)
     integer :: iclose,k
     logical::l2close,lcloseP
@@ -203,10 +210,13 @@ contains
     logical::lsuiv,lcrea0
     character::fnamcout*80
     character :: extension*7
-    integer::ip,ias,ntot1,ntot2,indt1,indt2,ias1loc,ias2loc,itry
+    integer::ip,ias,ntot1,ntot2,indt1,indt2,ias1loc,ias2loc,itry,iloc,itiloc,unit1st
     logical::lfound
-
-    
+    class (atom_config),allocatable:: atcf1st
+    class (box_config),allocatable:: box1st
+    class (cell_config),allocatable:: cell1st
+    real(double):: Etot1st,kine1st,Etotpre,Etotpost,kinepre,kinepost,epotpre,epotpost,kinefin
+    real(double)::potdum,sigdum(3,3),Tdum,deltaEtot,deltaEpot,Epot1st,epotfin,etotfin,deltaepotfin,deltaetotfin
     if (myidsp==0) then
        if (iseed.le.0) then
           call system_clock (iseed) 
@@ -240,7 +250,27 @@ contains
           end select
        end select
     end if
-
+    open (unit=121,file='vac_int')
+    if(lprtprepost)then
+       call newunit(unit1st)
+       open (unit=unit1st,file='deltaE')
+    end if
+    if (lfrom1st) then
+       if (rang==0)write(uwrt,*)'DP always introduced from initial configuration'
+       if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+          call rasmolT(atdml,boxndm,itapp=0,namefr='PREDP',latcomp=.false.,ivisumol=ivisu)
+!          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.false.)
+       else
+          call rasmolT(atdml,boxndm,itapp=0,namefr='PREDP',latcomp=.true.,ivisumol=ivisu)
+!          call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.true.)
+       end if
+       allocate(atcf1st,source=atdml)
+       allocate(box1st,source=boxndm)
+       allocate(cell1st,source=celndm)
+    end if
+    Epot1st=atdml%potist ; kine1st=atdml%kine ; Etot1st=Epot1st+kine1st
+    if ((lprtprepost).and.(myidsp==1)) write(unit1st,*)'ENERGIES INIT',Epot1st*erg2ev,kine1st*erg2ev,Etot1st*erg2ev
+       
     if (.not.lrestart) then
        timel=0
        iteration=0
@@ -267,9 +297,10 @@ contains
     !#else
     !    npp=1
     !#endif
+
     allocate(nb_at_typ(0:npp-1))
     allocate(last_at_typ(-1:npp-1))
-    open (unit=121,file='vac_int')
+
     !*********************************************************************
     lcrea0=.true.
     itinser=0
@@ -293,21 +324,29 @@ contains
           lrestart=.false.
        endif
        if (lcrea0) then 
+          if (lfrom1st) then
+             call atcf1st%copy_config(atdml,lrescl=.false.)
+             call box1st%copy(boxndm)
+             call cell1st%copy(celndm,boxndm)
+             Epotpre=Epot1st;kinepre=kine1st; Etotpre=Etot1st
+          else
+             Epotpre=atdml%potist;kinepre=atdml%kine; Etotpre=Epotpre+kinepre
+          end if
           last_at_typ=0
           natyp=0
           nb_at_typ=0
           itinser=itinser+1
           write(extension,'(i7.7)')itinser
           fnamcout = fnam(1:lenfnam)//'.'//trim(extension)//'.PRECDP.cout'
-          if (lspacendm) then
-             call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
-             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.false.)
-          else
-             call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.true.,ivisumol=ivisu)
-             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.true.)
-          end if
-!          call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
- !         call 
+!crc          if (.not.lfrom1st) then
+          if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
+                call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
+                call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.false.)
+             else
+                call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.true.,ivisumol=ivisu)
+                call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.true.)
+             end if
+!crc          end if
           if (ltimec) then
              timeloopmax=timel+timecdp
           else
@@ -319,12 +358,12 @@ contains
              write(uwrt,*)'iteration,timel, itloopmax,timeloopmax,nvactot, ninttot nas'
              write(uwrt,'(I11,G20.8,I11,G20.8,3I7)')iteration,timel, itloopmax,timeloopmax,nvactot, ninttot,nas
              write(uwrt,*)'****************************************'
+             write(121,'(I11,G20.8,I11,G20.8,3I7)')iteration,timel, itloopmax,timeloopmax,nvactot, ninttot,nas
           end if
           natgm=maxval(atdml%num_at_glob(1:atdml%im))
           !#ifdef PARA
           call comm_space%max(natgm)
           !#endif
-
 !AAAAAAAAAAAAAASSSSSSSSSSSSSSSS          
           if (nas.gt.0) then
              natproc1(:)=0; natproc2(:)=0
@@ -395,7 +434,6 @@ contains
                 end do
 !                write(uwrt,*)'NASLOC',nasloc1,nasloc2
              end if
-
              call comm_space%bcast(0,procas1)
              call comm_space%bcast(0,procas2)
              call comm_space%bcast(0,indas1)
@@ -457,24 +495,27 @@ contains
              end if
 !             write(myidsp+450,*) iteration
              do i=1,nasloc1(myidsp)
+                iloc=indlocas1(i) ; itiloc=atdml%ityp(iloc)
 !                write(myidsp+450,*) typas1, i, indlocas1(i),atdml%num_at_glob(indlocas1(i)), atdml%ityp(indlocas1(i))
-                atdml%ityp(indlocas1(i))=typas2
+                write(121,*)'ASchg from to ',atdml%num_at_glob(iloc), itiloc,typas2
+                atdml%ityp(iloc)=typas2
              end do
              do i=1,nasloc2(myidsp)
-!                write(myidsp+450,*) typas2, i, indlocas2(i), atdml%num_at_glob(indlocas2(i)), atdml%ityp(indlocas2(i))
-                atdml%ityp(indlocas2(i))=typas1
+                iloc=indlocas2(i) ; itiloc=atdml%ityp(iloc)
+!                write(myidsp+450,*) typas1, i, indlocas1(i),atdml%num_at_glob(indlocas1(i)), atdml%ityp(indlocas1(i))
+                write(121,*)'ASchg from to ',atdml%num_at_glob(iloc), itiloc,typas1
+                atdml%ityp(iloc)=typas1
              end do
 !             write(myidsp+450,*)
 !             if (myidsp==0) then
 !                do ip=0,nprocspace-1
-!                   write(uwrt,'(I5,A,I3,A,I4,A,I3)')nasloc1(ip),' atoms of type', typas1,'in proc ',ip ,' changed to type' ,typas2
+!                   write(121,'(I5,A,I3,A,I4,A,I3)')nasloc1(ip),' atoms of type', typas1,'in proc ',ip ,' changed to type' ,typas2
 !                end do
 !                do ip=0,nprocspace-1
-!                   write(uwrt,'(I5,A,I3,A,I4,A,I3)')nasloc2(ip),' atoms of type', typas2,'in proc ',ip ,' changed to type', typas1
+!                   write(121,'(I5,A,I3,A,I4,A,I3)')nasloc2(ip),' atoms of type', typas2,'in proc ',ip ,' changed to type', typas1
 !                end do
 !             end if
           end if
-
           
 
 !!!!!!!!!!!!!§VVVVVVVVVVVVVVVVVVVAAAAAAAAAAAAAAAAAACCCCCCCCC
@@ -809,12 +850,28 @@ contains
           call caltabtC(celndm,atdml,lperiod,boxndm,lchktrav=.true.)
           if (atdml%ltabvois) call caltabi(atdml,celndm,boxndm)
 #ifdef PARA
-          if (lspacendm) call maj_atomes_frt_ftm(atdml,celndm,boxndm,psc=psc)
+          if ((lspacendm).and.(nprocspace.gt.1)) call maj_atomes_frt_ftm(atdml,celndm,boxndm,psc=psc)
 #endif
-          if (lspacendm) then
+          if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
              call rasmolT(atdml,boxndm,itinser,'POST_INSER',latcomp=.false.,ivisumol=ivisu)
           else
              call rasmolT(atdml,boxndm,itinser,'POST_INSER',latcomp=.true.,ivisumol=ivisu)
+          end if
+          if (lprtprepost) then
+             call calfo(sigdum,potdum,atdml,celndm,boxndm,t_sigma=.true.,psc=psc)
+             atdml%kine=0
+             select type (atdml)
+             class is (atom_config_d)
+                call calctemp(Tdum,kinepost,atdml,celndm)
+             end select
+!             write(uwrt,*)kinepost*erg2ev,atdml%kine*erg2ev
+!             write(uwrt,*)potdum*erg2ev,atdml%potist*erg2ev
+             Epotpost=atdml%potist; Etotpost=Epotpost+kinepost
+             deltaEtot=Etotpost-Etotpre
+             deltaEpot=Epotpost-Epotpre
+!             write(6,*)'ETOT',Etotpost*erg2ev,Etotpre*erg2ev
+!             write(6,*)'EPOT',Epotpost*erg2ev,Epotpre*erg2ev
+ !            write(unit1st,*)'deltaE pot tot',deltaEtot*erg2ev,deltaEpot*erg2eV
           end if
        end if
        select type(atdml)
@@ -842,10 +899,24 @@ contains
           write(uwrt,*)'POST itmax,timemax,itecdp,timecdp,iteration,timel'
           write(uwrt,*)itmax,timemax,itecdp,timecdp,iteration,timel
        end if
+       Epotfin=atdml%potist;kinefin=atdml%kine; Etotfin=Epotfin+kinefin
+!       write(6,*)'FIN',Epotfin*erg2ev,kinefin*erg2ev,etotfin*erg2ev
+       if (lfrom1st) then
+          deltaEtotfin=Etotfin-Etot1st
+          deltaEpotfin=Epotfin-Epot1st
+       else
+          deltaEtotfin=Etotfin-Etotpre
+          deltaEpotfin=Epotfin-Epotpre
+       end if
+       if (lprtprepost) then
+          write(unit1st,'(A,4E20.11)')'deltaEif pot tot',deltaEtot*erg2ev,deltaEpot*erg2eV,deltaEtotfin*erg2ev,deltaEpotfin*erg2eV
+          flush(unit1st)
+!          write(unit1st,*)'deltaEf pot tot',deltaEtotfin*erg2ev,deltaEpotfin*erg2eV
+       end if
        lcrea0=.true.
     end do
     fnamcout = fnam(1:lenfnam)//'.F.cout'
-    if (lspacendm) then
+    if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
        call rasmolT(atdml,boxndm,itinser,'POST_INSER',latcomp=.false.,ivisumol=ivisu)
        call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.false.)
     else

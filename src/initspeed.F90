@@ -113,7 +113,7 @@ contains
        lwrts=lwrt
     end if
 
-    if(present(tinitr)) then
+ if(present(tinitr)) then
        tinit0=tinitr
     else
        tinit0=tinit
