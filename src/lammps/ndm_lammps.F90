@@ -64,12 +64,7 @@ subroutine init_lammps(inplammps,iopt)
      
     if (present(inplammps))  INPUT_LAMMPS_FILE=inplammps
   
-    args = [ character(len=32) :: &
-    'lmp', &
-    '-log', &
-    'none', &
-    '-screen', &
-    'none' ]
+    args = [ character(len=32) :: 'lmp', '-log', 'none', '-screen', 'none' ]
 
 #ifdef PARA
 !!$   if (nprocspace==1) then
@@ -89,10 +84,8 @@ subroutine init_lammps(inplammps,iopt)
     call MPI_COMM_Group (MPI_COMM_SPACE,grp_space,ierr)
     call MPI_comm_create(MPI_COMM_WORLD, grp_space,MPI_COMM_lammps,ierr)
     call MPI_COMM_SIZE( MPI_COMM_lammps, npl, ierr )
-     !call lammps_open('lmp -log none -screen none', MPI_COMM_lammps, lmp)
      lmp = lammps(args, MPI_COMM_lammps)
      if (rang==0)write(uwrt,*) "LAMMPS OPEN_MPI_",rang, INPUT_LAMMPS_FILE
-     !call lammps_file (lmp, INPUT_LAMMPS_FILE)
      call lmp%file(INPUT_LAMMPS_FILE)
      num=lmp%get_natoms()
      write(uwrt,*)'NATOM LAMMPS',  rang,num
@@ -100,10 +93,8 @@ subroutine init_lammps(inplammps,iopt)
 !!$  end if
 #else
 
-    !call lammps_open_no_mpi('lmp -log none -screen none', lmp)
     lmp = lammps(args)
     write(uwrt,*) "LAMMPS OPEN_NO_MPI-SEQ"
-    !call lammps_file (lmp, INPUT_LAMMPS_FILE)
     call lmp%file(INPUT_LAMMPS_FILE)
     num=lmp%get_natoms()
     if (rang==0) write(uwrt,*) "after init potential lammps"
@@ -122,6 +113,7 @@ end subroutine init_lammps
   use vars_lammps
   use LIBLAMMPS
   use var_pot,only:ntyp,cm
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY: C_double
 !  use mod_para_phondy
 !  use mpi
 
@@ -160,13 +152,12 @@ end subroutine init_lammps
   if (allocated(pos_lammps)) deallocate (pos_lammps)
   allocate(pos_lammps(3*im), stat=ierr)
   if (firsttime_lammps) then
-     num=lammps_get_natoms(lmp)
+     num=lmp%get_natoms()
      if (num /= im) then
         write(uwrt,*) 'Big problem: gin and lammps files contain different number of atoms',rang,im,num
         stop
      end if
      
-     !call lammps_gather_atoms(lmp, 'type', 1, lammps_types)
      call lmp%gather_atoms('type', 1, lammps_types)
 
      if (num /= size(lammps_types)) then
@@ -213,10 +204,10 @@ end subroutine init_lammps
 
 
   ! Extract energy from LAMMPS
-  call lammps_extract_compute (energy, lmp, 'thermo_pe',0,0)
+  energy = lmp%extract_compute('thermo_pe',lmp%style%global,lmp%type%scalar)
   potislammps=energy*energy_conversion_lammps
   if (mod(iteration,itesigma)==0) then
-     call lammps_extract_compute (p_tensor, lmp, 'thermo_press',0,1)
+     p_tensor = lmp%extract_compute('thermo_press',0,1)
        
        sig_lammps(1,1)=p_tensor(1)
        sig_lammps(2,2)=p_tensor(2)
@@ -231,7 +222,7 @@ end subroutine init_lammps
   end if
 
   ! Extract forces from LAMMPS
-  call lammps_gather_atoms (lmp, 'f', 3, force_lammps)
+  call lmp%gather_atoms ('f', 3, force_lammps)
  ! call lammps_extract_atom (for_tmp, lmp, 'f')
 !!$En séquentiel, gather_atoms et extract_atom donnent la même chose.
 !!$En parallèle :
@@ -303,7 +294,7 @@ subroutine at2xhixlo (at,xp,pos_lammps,im,imm,im3)
      !          write(commande,'(A,2E15.8,A,2E15.8,A,2E15.8,A,1E15.8,A,1E15.8,A,1E15.8,A)')'change_box all x final',xlo,xhi,&
      !               &       ' y final ',ylo,yhi, ' z final ',zlo,zhi,' xy final ',xy,' xz final ', xz,' yz final ',yz,' remap'
 
-     call lammps_command (lmp, commande) !change lammps box
+     call lmp%command(commande) !change lammps box
   end if
 !!$    do i=1, im
 !!$     pos_lammps(3*i-2) = xp(1,i)/position_conversion_lammps
