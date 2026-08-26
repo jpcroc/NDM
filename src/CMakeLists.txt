@@ -9,10 +9,11 @@ list( REMOVE_ITEM NDM_LIB_SOURCES ${NDM_MAIN_SOURCES})  # remove main.F90 from t
 list( APPEND NDM_LIB_SOURCES ${NDM_LIB_SOURCES_ART} )
 
 if ("LAMMPS" IN_LIST ${PROJECT_NAME}_PACKAGE_LIST)
-  log_warning( "NDM gets fortran and c++ sources in ${CMAKE_CURRENT_SOURCE_DIR}/lammps" )
+  log_warning( "NDM gets fortran sources in ${CMAKE_CURRENT_SOURCE_DIR}/lammps" )
+  file( GLOB NDM_LIB_SOURCES_LAMMPS "${CMAKE_CURRENT_SOURCE_DIR}/lammps/[^.]*.f90" )
+  list( APPEND NDM_LIB_SOURCES ${NDM_LIB_SOURCES_LAMMPS} )
   file( GLOB NDM_LIB_SOURCES_LAMMPS "${CMAKE_CURRENT_SOURCE_DIR}/lammps/[^.]*.F90" )
   list( APPEND NDM_LIB_SOURCES ${NDM_LIB_SOURCES_LAMMPS} )
-  list( APPEND NDM_LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/lammps/LAMMPS-wrapper.cpp")
 endif()
 
 if ("MILADY" IN_LIST ${PROJECT_NAME}_PACKAGE_LIST)
