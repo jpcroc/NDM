@@ -47,6 +47,9 @@ macro(CONFIG_INTEL)
     set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0 -check bounds -traceback" CACHE STRING "")
     set(NDM_OPT_DK-IO OFF CACHE BOOL "" FORCE) #Car DK-IO ne compile pas avec les compilateurs INTEL
     log_warning("DK-IO désactivé, car ne compile pas encore avec les compilateurs INTEL")
+    if ("LAMMPS" IN_LIST NDM_PACKAGE_LIST)
+        set(CMAKE_CXX_FLAGS_RELEASE " -no-multibyte-chars " CACHE STRING "")
+    endif()
 endmacro(CONFIG_INTEL)
 
 macro(CONFIG_GNU)
@@ -93,10 +96,6 @@ set(ENABLE_LAPACK95 ON CACHE STRING "lapack fortran 95 api" )
 set(MKL_THREADING "sequential" CACHE STRING "Threading")
 set(MKL_INTERFACE "lp64" CACHE STRING "Interface")
 set(MKL_ARCH "intel64" CACHE STRING "Architecture")
-
-if ("LAMMPS" IN_LIST NDM_PACKAGE_LIST)
-    set(CMAKE_CXX_FLAGS_RELEASE " -no-multibyte-chars " CACHE STRING "")
-endif()
 
 if ("MILADY" IN_LIST NDM_PACKAGE_LIST)
     list(APPEND NDM_COMPILE_DEFINITION "ML")
