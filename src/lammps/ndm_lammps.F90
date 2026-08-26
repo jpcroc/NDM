@@ -1,7 +1,7 @@
 MODULE vars_lammps
   USE T_kind_param_m, ONLY:  double
-  use LAMMPS
-  type (C_ptr) :: lmp
+  use LIBLAMMPS
+  type (lammps) :: lmp
   !old not workingversion
   integer :: comm_lammps, orig_group
   integer, dimension(:), allocatable :: lammps_comm, lammps_group
@@ -17,7 +17,7 @@ end MODULE vars_lammps !vars_lammps
 module lammps_util_mod
   use gen_com_m, ONLY: rang,firsttime_lammps,uwrt,lwrt
   !use gen_com_m,only:
-        use LAMMPS
+        use LIBLAMMPS
         use vars_lammps
 #ifdef PARA
   use Tpara, only: nprocspace,mpi_comm_space,ierr,mpi_comm_world
@@ -39,7 +39,7 @@ module lammps_util_mod
 #ifdef LAMMPS_VERSION
 subroutine init_lammps(inplammps,iopt)
 
-  use LAMMPS
+  use LIBLAMMPS
   use vars_lammps
   integer,optional::iopt
   character(*),optional :: inplammps
@@ -47,6 +47,7 @@ subroutine init_lammps(inplammps,iopt)
   integer::num,npl
   integer::grp_space
   integer::ioptR
+  character(len=32) :: args(5)
 !  type (C_ptr) :: lmp
 
   INPUT_LAMMPS_FILE='in.lammps'
@@ -62,6 +63,14 @@ subroutine init_lammps(inplammps,iopt)
   end select
      
     if (present(inplammps))  INPUT_LAMMPS_FILE=inplammps
+  
+    args = [ character(len=32) :: &
+    'lmp', &
+    '-log', &
+    'none', &
+    '-screen', &
+    'none' ]
+
 #ifdef PARA
 !!$   if (nprocspace==1) then
 !!$    call lammps_open_no_mpi('lmp -log none -screen none', lmp)
@@ -80,20 +89,24 @@ subroutine init_lammps(inplammps,iopt)
     call MPI_COMM_Group (MPI_COMM_SPACE,grp_space,ierr)
     call MPI_comm_create(MPI_COMM_WORLD, grp_space,MPI_COMM_lammps,ierr)
     call MPI_COMM_SIZE( MPI_COMM_lammps, npl, ierr )
-     call lammps_open('lmp -log none -screen none', MPI_COMM_lammps, lmp)
+     !call lammps_open('lmp -log none -screen none', MPI_COMM_lammps, lmp)
+     lmp = lammps(args, MPI_COMM_lammps)
      if (rang==0)write(uwrt,*) "LAMMPS OPEN_MPI_",rang, INPUT_LAMMPS_FILE
-     call lammps_file (lmp, INPUT_LAMMPS_FILE)
-     num=lammps_get_natoms(lmp)
+     !call lammps_file (lmp, INPUT_LAMMPS_FILE)
+     call lmp%file(INPUT_LAMMPS_FILE)
+     num=lmp%get_natoms()
      write(uwrt,*)'NATOM LAMMPS',  rang,num
 
 !!$  end if
 #else
 
-    call lammps_open_no_mpi('lmp -log none -screen none', lmp)
+    !call lammps_open_no_mpi('lmp -log none -screen none', lmp)
+    lmp = lammps(args)
     write(uwrt,*) "LAMMPS OPEN_NO_MPI-SEQ"
-    call lammps_file (lmp, INPUT_LAMMPS_FILE)
-     num=lammps_get_natoms(lmp)
-     if (rang==0) write(uwrt,*) "after init potential lammps"
+    !call lammps_file (lmp, INPUT_LAMMPS_FILE)
+    call lmp%file(INPUT_LAMMPS_FILE)
+    num=lmp%get_natoms()
+    if (rang==0) write(uwrt,*) "after init potential lammps"
     if (rang==0) write(uwrt,*) "init potential lammps"
     if (rang==0)   write(uwrt,'("NDM: reading INPUT_LAMMPS_FILE file  :", (a))') INPUT_LAMMPS_FILE
 #endif
@@ -107,7 +120,7 @@ end subroutine init_lammps
 
   subroutine calcforce_lammps2 (at,im,imm,xp,ityp,fp,potislammps,sigl)
   use vars_lammps
-  use LAMMPS
+  use LIBLAMMPS
   use var_pot,only:ntyp,cm
 !  use mod_para_phondy
 !  use mpi
@@ -153,7 +166,8 @@ end subroutine init_lammps
         stop
      end if
      
-     call lammps_gather_atoms(lmp, 'type', 1, lammps_types)
+     !call lammps_gather_atoms(lmp, 'type', 1, lammps_types)
+     call lmp%gather_atoms('type', 1, lammps_types)
 
      if (num /= size(lammps_types)) then
         write(uwrt,*) 'WARNING:  the atoms type is not correctly read in the LAMMPS wrapper ndm_lammps'
@@ -174,7 +188,7 @@ end subroutine init_lammps
   call at2xhixlo(at,xp,pos_lammps,im,imm,im3)
 !write(1000+idd,*)pos_lammps
     ! Put the coordinates to LAMMPS
-  call lammps_scatter_atoms (lmp, 'x',  pos_lammps)
+  call lmp%scatter_atoms('x',  pos_lammps)
 !  call lammps_command (lmp, 'dump md all custom 1  toto id x y z type ')
 
 !!$       write(commande,'(A,2E15.8,A,2E15.8,A,2E15.8,A,1E15.8,A,1E15.8,A,1E15.8)')'change_box all x final',xlo,xhi,&
@@ -188,7 +202,7 @@ end subroutine init_lammps
   lrun0=.false.
 ! COSMIN DIT QUE LRUN0=TRUE EST SOUCE D'ERREURS PERVERSES
 !  call lammps_command (lmp, 'run 1 pre yes post yes')
-  call lammps_command (lmp, 'run 0 ')
+  call lmp%command('run 0 ')
 !!$  if (lrun0.eqv..true.)then ! check pour LPR
 !!$
 !!$     lrun0=.false.
