@@ -14,9 +14,6 @@ setcolors()                 # setting log colors
 # Cache variables will not be reset if already defined with cmake .. -C <cache file>
 
 set(languages "Fortran")
-if ("LAMMPS" IN_LIST NDM_PACKAGE_LIST)
-    list(APPEND languages "CXX")
-endif()
 
 # met CMAKE_BUILD_TYPE en majuscules
 if(CMAKE_BUILD_TYPE)
