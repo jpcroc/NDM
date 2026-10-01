@@ -305,7 +305,7 @@ contains
        call init_neb0
        call neb  ! (xp, xpp, vp, ax, fp, ielat, iwmax, ityp)
 
-    case(15,151) ! Montecarlo (path or grand canonical)  special case of case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix) or 12 ART
+    case(15,151,152) ! Montecarlo (path or grand canonical)  special case of case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix) or 12 ART
        !#ifdef PARA
 
        call init_mpi_MCGC ! PARAPATH

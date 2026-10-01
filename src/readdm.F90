@@ -154,6 +154,7 @@ contains
     !                              19 -> matrice de forces
     !                              15 -> montecarlo_mCC
     !                              151 -> montecarlo_mcGC
+    !                              152 -> montecarlo_Equilibre_swap
     !                              112 -> histogramme des distances entre atomes
     !                              113 -> recherche de la position la plus éloigné des atomes
     lFire = .false.              ! Fire algorithm is USEd for quenching (cf tr_fire.F90)
@@ -672,21 +673,26 @@ contains
              call arret_ndm
           end if
        end if
-    case(15,151)
+    case(15,151,152)
+       select case(dmtype)
+       case(152)
+          idirectionmcgc=0
+       case(15,151)
 !!$       if ((lpr).and.((nox==-1).or.(noy==-1).or.(noz==-1))) then
 !!$          if (rang==0) then
 !!$             write(uwrt,*)'MONTECARLO constant pressure : nox/noy/noz must be set in the din file STOP'
 !!$          end if
 !!$          call arret_ndm
 !!$       end if
-!       if (igen.ne.0) then
-!          write(uwrt,*)'IGEN MUST BE ZERO (dont know why) stop'
-!          call arret_ndm
-!       end if
-       if (itypcalc.lt.0) then
-          write(uwrt,*)'itypcalc<0'
-          call arret_ndm
-       end if
+          !       if (igen.ne.0) then
+          !          write(uwrt,*)'IGEN MUST BE ZERO (dont know why) stop'
+          !          call arret_ndm
+          !       end if
+          if (itypcalc.lt.0) then
+             write(uwrt,*)'itypcalc<0'
+             call arret_ndm
+          end if
+       end select
        if (n_path.lt.0) then
           write(uwrt,*)'n_path<0'
           call arret_ndm
@@ -724,7 +730,7 @@ contains
     case default
        write(uwrt,*)'DMTYPE',dmtype
        if (rang==0) write(uwrt,*) 'WARNING : VERSION PARALLELE seulement avec ',&
-& 'dmtype=21,22,4,3,9,15,151,1,30,31,32,33,34,19,35,23,24,41'
+& 'dmtype=21,22,4,3,9,15,151,152,1,30,31,32,33,34,19,35,23,24,41'
     end select
 #endif
 
@@ -750,7 +756,7 @@ contains
     end if
     if ((timemax.gt.0).and.(itmax==-1)) itmax=1000000000
 
-    if ((dmtype.EQ.11).or.(dmtype.eq.15).or.(dmtype.eq.151).or.(dmtype.eq.9)) itmax=1
+    if ((dmtype.EQ.11).or.(dmtype.eq.15).or.(dmtype.eq.151).or.(dmtype.eq.152).or.(dmtype.eq.9)) itmax=1
 
 !    if (itmax < 0) then
 !       if (rang==0) write (uwrt, *) rang,'wrong itmax < 0 '
@@ -1247,9 +1253,10 @@ contains
        end if
        if (rang==0) write (uwrt,*)' decal, ndecal lparaFM, naparaFM:',decal,ndecal,lparafm,nparafm
        if (rang==0) write (uwrt,*)
-    case (15,151)
+    case (15,151,152)
        if ((rang==0).and.(dmtype==151)) write (uwrt,'(a)') '      CALCUL MONTE CARLO GRAND CANONIQUE '
        if ((rang==0).and.(dmtype==15)) write (uwrt,'(a)') '      CALCUL MONTE CARLO DES CHEMINS '
+       if ((rang==0).and.(dmtype==152)) write (uwrt,'(a)') '      CALCUL MONTE CARLO SWAP EQUILIBRE '
        if (rang==0) write (uwrt,*)'LPARAPATH NPARAPATH', lparapath, nparapath
 !!$       if ((nparapath.gt.1).and.(.not.lparapath)) then
 !!$          write(uwrt,*)'nparapath >1, needs lparapath = TRUE'
@@ -1331,7 +1338,7 @@ contains
        endif
        if (rang==0) write (uwrt, *) 'TEMPERATURE CONSTANTE a la Berendsen Text= ',text
     endif
-    if ((text.gt.0).and.(.not.((dmtype==15).or.(dmtype==151)))) then
+    if ((text.gt.0).and.(.not.((dmtype==15).or.(dmtype==151).or.(dmtype==152)))) then
               if (.not.(ltberendsen.or.llangevin.or.lThoover.or.lTnose)) then
           write(uwrt,*)'text<0 mais pas dalgo',dmtype ;stop
        end if
@@ -1614,9 +1621,9 @@ contains
 #endif     
 
     !condition d'arret du prog si l'utilisateur veut utilise la methode mcgc mais n'a pas defini le pas lambda pour l'integration de la particule    
-    if((dmtype == 15).or.(dmtype==151))then
+    if((dmtype == 15).or.(dmtype==151).or.(dmtype==152))then
        if (pas_lambda_mc.lt.0) then
-          write(uwrt,*)'To use  MONTE-CARLO, indicate pas_lambda (number of insertion steps'
+          write(uwrt,*)'To use  MONTE-CARLO, indicate pas_lambda (number of insertion steps)'
           call arret_ndm
        end if
        !idem dans le cas ou l'utilisatuer utilise le biais sur les retraits sans avoir defini la fonction alpha (fermi dirac) pilotant celui ci
