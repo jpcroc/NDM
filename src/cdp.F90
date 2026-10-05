@@ -194,7 +194,7 @@ contains
 
 !    type(atomvac_typ)::atomvac
     type(atomint_typ)::atomint
-    integer :: ntry,iti,i,natyp,nvactot,iat,ivac,ivacloc,ivactot,jvac,ninttot,iproc
+    integer :: ntry,iti,i,natyp,nvactot,iat,ivac,ivacloc,ivactot,jvac,ninttot,iproc,i2
     integer :: npp
     integer :: itinser
     integer :: iint,natgm
@@ -340,13 +340,13 @@ contains
           fnamcout = fnam(1:lenfnam)//'.'//trim(extension)//'.PRECDP.cout'
 !crc          if (.not.lfrom1st) then
           if ((nprocspace.gt.1).and.(lspacendm.eqv..true.)) then
-                call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
-                call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.false.)
-             else
-                call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.true.,ivisumol=ivisu)
-                call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.true.)
-             end if
-!crc          end if
+             call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.false.,ivisumol=ivisu)
+             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.false.)
+          else
+             call rasmolT(atdml,boxndm,itinser,'PRE_INSER',latcomp=.true.,ivisumol=ivisu)
+             call sauvegardeT(atdml,celndm,boxndm,formatsauv,fnamcout,latcomp=.true.)
+          end if
+      !crc          end if
           if (ltimec) then
              timeloopmax=timel+timecdp
           else
@@ -374,12 +374,15 @@ contains
              natproc2(myidsp)=count(atdml%ityp(1:atdml%im)==typas2)
 !             write(uwrt,*)'NBAT',myidsp, typas1,natproc1(myidsp)
 !             write(uwrt,*)'NBAT',myidsp, typas2,natproc2(myidsp)
-             call comm_space%sum(natproc1)
-             call comm_space%sum(natproc2)
-             do ip=1,nprocspace-1
-                flooras1(ip)=flooras1(ip-1)+natproc1(ip-1)
-                flooras2(ip)=flooras2(ip-1)+natproc2(ip-1)
-             end do
+             if (lspacendm) then 
+                call comm_space%sum(natproc1)
+                call comm_space%sum(natproc2)
+                
+                do ip=1,nprocspace-1
+                   flooras1(ip)=flooras1(ip-1)+natproc1(ip-1)
+                   flooras2(ip)=flooras2(ip-1)+natproc2(ip-1)
+                end do
+             end if
 !             write(myidsp+450,*)'myidsp floor1',myidsp,flooras1
 !             write(myidsp+450,*)'myidsp floor3',myidsp,flooras2
              if (myidsp==0) then
@@ -398,14 +401,19 @@ contains
                    if (any(indas1(1:ias-1)==itry)) goto 11
                    indas1(ias)=itry
                    lfound=.false.
-                   loopip:do ip=1,nprocspace-1
-                      if( flooras1(ip).ge.itry) then
-                         lfound=.true.
-                         procas1(ias)=ip-1
-                         exit loopip
-                      end if
-                   end do loopip
-                   if (lfound.eqv..false.) procas1(ias)=nprocspace-1
+                   if (lspacendm) then
+                      loopip:do ip=1,nprocspace-1
+                         if( flooras1(ip).ge.itry) then
+                            lfound=.true.
+                            procas1(ias)=ip-1
+                            exit loopip
+                         end if
+                      end do loopip
+                      if (lfound.eqv..false.) procas1(ias)=nprocspace-1
+                   else
+                      lfound=.true.
+                      procas1(ias)=0
+                   end if
                    nasloc1(procas1(ias))=nasloc1(procas1(ias))+1
 !                   write(myidsp+450,*)'ias indas1(ias) proc ',ias,indas1(ias),procas1(ias)
                    
@@ -421,32 +429,42 @@ contains
                    if( any(indas2(1:ias-1)==itry)) goto 22
                    indas2(ias)=itry
                    lfound=.false.
-                   loopip2:do ip=1,nprocspace-1
-                      if( flooras2(ip).ge.itry) then
-                         lfound=.true.
-                         procas2(ias)=ip-1
-                         exit loopip2
-                      end if
-                   end do loopip2
-                   if (lfound.eqv..false.) procas2(ias)=nprocspace-1
-                   nasloc2(procas2(ias))=nasloc2(procas2(ias))+1
+                   if (lspacendm) then 
+                      loopip2:do ip=1,nprocspace-1
+                         if( flooras2(ip).ge.itry) then
+                            lfound=.true.
+                            procas2(ias)=ip-1
+                            exit loopip2
+                         end if
+                      end do loopip2
+                      if (lfound.eqv..false.) procas2(ias)=nprocspace-1
+                   else
+                      lfound=.true.
+                      procas2(ias)=0
+                   end if
 
+                   nasloc2(procas2(ias))=nasloc2(procas2(ias))+1
+                   
                 end do
+!                write(6,*)'INDAS',indas1(:),indas2(:)
 !                write(uwrt,*)'NASLOC',nasloc1,nasloc2
              end if
+
              call comm_space%bcast(0,procas1)
              call comm_space%bcast(0,procas2)
              call comm_space%bcast(0,indas1)
              call comm_space%bcast(0,indas2)
              call comm_space%bcast(0,nasloc1)
              call comm_space%bcast(0,nasloc2)
+             
 !!$             do ias=1,nas
 !!$                write(myidsp+450,*)'ias indas1(ias) proc ',ias,indas1(ias),procas1(ias)
 !!$             end do
 !!$             do ias=1,nas
 !!$                write(myidsp+450,*)'ias indas2(ias) proc ',ias,indas2(ias),procas2(ias)
 !!$             end do
-             ias1loc=0; ias2loc=0
+             if (lspacendm) then 
+                ias1loc=0; ias2loc=0
              do ias=1,nas
 !                write(myidsp+450,*) 'AS1 ',ias,procas1(ias),indas1(ias),flooras1(myidsp)
                 if (procas1(ias)==myidsp) then
@@ -506,6 +524,38 @@ contains
                 write(121,*)'ASchg from to ',atdml%num_at_glob(iloc), itiloc,typas1
                 atdml%ityp(iloc)=typas1
              end do
+          else ! spacendm=False
+             if (myidsp==0) then 
+                do ias=1,nas
+                   indt1=0
+                   loop41:do i=1,atdml%im
+                      if (atdml%ityp(i)==typas1) then
+                         indt1=indt1+1
+!                         write(myidsp+450,*) 'ASttest',i,atdml%im,indt1,indas1(ias)
+                         if (indt1==indas1(ias)) then
+                            exit loop41
+                         end if
+                      end if
+                   end do loop41
+                  
+                   indt2=0
+                   loop42:do i2=1,atdml%im
+                      if (atdml%ityp(i2)==typas2) then
+                         indt2=indt2+1
+!                         write(myidsp+450,*) 'ASttest',i,atdml%im,indt2,indas2(ias)
+                         if (indt2==indas2(ias)) then
+                            exit loop42
+                         end if
+                      end if
+                   end do loop42
+                   call atdml%switch_atom(i,i2)
+                   write(121,*)'AS switch ',i,i2
+                   write(uwrt,*)'AS switch ',i,i2
+                end do
+
+             end if
+             call atdml%send2all(0,comm_space)
+          end if
 !             write(myidsp+450,*)
 !             if (myidsp==0) then
 !                do ip=0,nprocspace-1
@@ -911,6 +961,7 @@ contains
        if (lprtprepost) then
           write(unit1st,'(A,4E20.11)')'deltaEif pot tot',deltaEtot*erg2ev,deltaEpot*erg2eV,deltaEtotfin*erg2ev,deltaEpotfin*erg2eV
           flush(unit1st)
+          write(uwrt,'(A,4E20.11)')'deltaEif pot tot',deltaEtot*erg2ev,deltaEpot*erg2eV,deltaEtotfin*erg2ev,deltaEpotfin*erg2eV
 !          write(unit1st,*)'deltaEf pot tot',deltaEtotfin*erg2ev,deltaEpotfin*erg2eV
        end if
        lcrea0=.true.

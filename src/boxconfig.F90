@@ -297,7 +297,9 @@ contains
     if (present(unit))unitw=unit
     write(unitw,*)'in boxprint ',mess
     write(unitw,*)'boxprt at',boxprt%at(:,:)
-     write(unitw,*)'boxprt bg',boxprt%bg(:,:)
+    write(unitw,*)'boxprt bg',boxprt%bg(:,:)
+    write(unitw,*)'boxprt zl',boxprt%zl(:)
+    write(unitw,*)'boxprt nzl',boxprt%nzl(:)
      write(unitw,*)'boxprt volu',boxprt%volu
      write(unitw,*)'boxprt icaltabt',boxprt%icaltabt
 
