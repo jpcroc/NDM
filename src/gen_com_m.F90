@@ -200,4 +200,5 @@ module gen_com_m
  real(double)::vplim
 !crc real(double)::xptclos(3) ! position of the test point for minimum distance of atoms (see distminat in montecarlo)
  integer::iattcl ! idex of the atom test point for minimum distance of other atoms (see distminat in montecarlo)
+ logical::lwrtfpfin
 end module gen_com_m

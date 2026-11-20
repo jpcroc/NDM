@@ -135,10 +135,10 @@ contains
          vaux(1,1:iatdep)=deplat(1:iatdep)*1d8
          if (lspacendm.and.(nprocspace.gt.1)) then
             if (atdep%im_glob.ne.0)&
-                 &          call rasmolT(atdep,boxcf,iteration,namefilm,latcomp=.false.,ivisumol=ivisu,naux=1,charaux=charaux,vaux=vaux)
+                 & call rasmolT(atdep,boxcf,iteration,namefilm,latcomp=.false.,ivisumol=ivisu,naux=1,charaux=charaux,vaux=vaux)
          else
             if (atdep%im_glob.ne.0)&
-                 &          call rasmolT(atdep,boxcf,iteration,namefilm,latcomp=.true.,ivisumol=ivisu,naux=1,charaux=charaux,vaux=vaux)
+                 & call rasmolT(atdep,boxcf,iteration,namefilm,latcomp=.true.,ivisumol=ivisu,naux=1,charaux=charaux,vaux=vaux)
          end if
        end block
     end if

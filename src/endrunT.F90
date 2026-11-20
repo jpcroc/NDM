@@ -9,13 +9,14 @@ module endrunT_mod
        &iteanapos,iteangle,iterasmol,itesigma,itetemp,linstantfda,&
        &linstantrdf,lpkbar,lprteat,lprteattotm,lprtsigat,unitP,iterdf,&
        &lwgin, lposmoy,l2T,angst,dmtype,iteration,lenfnam,rang,timel,&
-       &fnamcout,fnam,lspaceNDM
+       &fnamcout,fnam,lspaceNDM,lwrtfpfin
   use var_pot, only: eatref,eatref,eatref
   USE cellconfig,only:cell_config
   USE atomconfig,only:atom_config,atom_config_d,atom_config_e
   use boxconfig,only: box_config
   use posana,only:anapos
   USE Tpara,only:nprocspace
+    use newunit_mod,only:newunit
   implicit none
 contains
   ! ****************************************************************
@@ -51,6 +52,14 @@ contains
 
     write (uwrt, *) '####### END OF RUN  ######## = ', iteration, '  time = ', timel
  endif
+ block
+   integer::iprtf
+   if (lwrtfpfin) then
+      call newunit(iprtf)
+      open(file='fpfin',unit=iprtf)
+      call atdml%print(caract='f',unit=iprtf)
+   end if
+ end block
 
  IF (iteSauv.GE.0) then
     fnamcout= fnam(1:lenfnam)//'.cout'
@@ -89,7 +98,6 @@ contains
  if (iterasmol.GE.0) call rasmolT (atdml,boxndm,999999999,latcomp=latcomp)
  if (lwgin) call rasmolT (atdml,boxndm,999999999,latcomp=latcomp,ivisumol=5)
 ! a retravailler if (nprocspace==1.and.iteanapos>=0) call anapos (atdml,celndm,boxndm,iteration)
-
  call arret_ndm
 
 

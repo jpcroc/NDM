@@ -30,7 +30,7 @@ contains
          &lsuivinonpbc,ltberendsen,lthoover,ltnose,ltpcel,lucell,lwgin,nfda,h0R,&
          &nrdf,rang,rcangle,rcrdf,tautcon,tdepla,tdepla2,text,tfcou,iteprtkin&
          &,tpseuils,tstep,unite,unitp,lenfnam,fnam,lanaposart,lpconxyz,iattcl&
-         &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit,lmaxvp,vplim
+         &, lax,ldecoup,lspaceNDM,latcomp,dilat,lrestartmcgc,lspecialinit,lmaxvp,vplim,lwrtfpfin
 #ifdef LAMMPS_VERSION
      USE gen_com_m, only:uwrt, energy_conversion_lammps, position_conversion_lammps, pressure_conversion_lammps
 #endif
@@ -102,7 +102,7 @@ contains
          &fdmc_2,ndecal,decal,lparafm,nparafm,lwritefreq,lwfm,ldecalcor,kmin,kmax,iteprtkin,lspecialinit,&
          &noxyzkmin,noxyzkmax,lpartarps,lspring,k_spring,i_neb_drag,protocol_mcc,lmaxvp,vplim,&
          sig0stara,sig0starb,sig0starc,ntempbabar,ltransf,&
-         &nbabarprocs,bbtempmin,bbtempmax,itbtherm,itbprod,lbetagrid,iattcl
+         &nbabarprocs,bbtempmin,bbtempmax,itbtherm,itbprod,lbetagrid,iattcl,lwrtfpfin
 
 
     !
@@ -418,6 +418,7 @@ contains
     lbetagrid=.true.
     lmultin=.false. ! T==> reads multiple condfiguration files
     iattcl=0
+    lwrtfpfin=.false.
     if (rang == 0) write (uwrt, *) 'nom fichier din=', fnamdin
 
     open(unit=ludin, file=fnamdin, status='unknown', err=456)

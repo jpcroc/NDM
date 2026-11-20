@@ -22,7 +22,7 @@ module ForceMatrix_mod
   USE parautils,only:initloc,pointer_caltabt_calfo
   use config2data_mod,only:config2data
   USE constrconf_mod,only:read_cin
-
+  use newunit_mod,only:newunit
   
   implicit none
 
@@ -54,15 +54,15 @@ contains
     real(double)::fmi,potist,sig(3,3),two_pi
     real(double),allocatable::eigval(:),work(:)
     integer::info,nwork,nskip
-    character*80::fnamfreqout,fnamfmout
-
+    character*80::fnamfreqout,fnamfmout,fnamfmout2
+    integer::iusp1,iusp2
 
     write(uwrt,*)'IN ForceMatrix',rang
 #ifdef PARA    
     celfmloc=>cellcible
     atfmloc=>atcible
 #endif    
-    
+
     
     im3=3*atfm%im
     im=atfm%im
@@ -72,6 +72,7 @@ contains
     FMat=0.
     FpMat=0.
     Fpzero=0.0
+
     nq=int(atfm%im/nparaFM)
     ideb=paraFM%image*nq+1
     if (paraFM%image==paraFM%nimage-1) then 
@@ -136,9 +137,18 @@ contains
     if (rang==0) then
 
        if (lwfm) then
-          fnamfmout = fnam(1:lenfnam)//'.binfreq'
-          open(unit=122,file= fnamfmout, form='unformatted', status='unknown')
-          write(122)Fmat
+          call newunit(iusp1)
+          call newunit(iusp2)
+!          fnamfmout = fnam(1:lenfnam)//'.binsclforces'
+!          open(unit=iusp1,file= fnamfmout, form='unformatted', status='unknown')
+          fnamfmout2 = fnam(1:lenfnam)//'.sclforces'
+          open(unit=iusp2,file=fnamfmout2, form='formatted', status='unknown')
+!          write(iusp1)Fmat
+          do i1=1,im3
+             do i2=1,im3
+                write(iusp2,*)1d8*Fmat(i1,i2)
+             end do
+          end do
        end if
           
 !!$#ifdef MKL
