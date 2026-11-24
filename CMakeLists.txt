@@ -14,9 +14,6 @@ setcolors()                 # setting log colors
 # Cache variables will not be reset if already defined with cmake .. -C <cache file>
 
 set(languages "Fortran")
-if ("LAMMPS" IN_LIST NDM_PACKAGE_LIST)
-    list(APPEND languages "CXX")
-endif()
 
 # met CMAKE_BUILD_TYPE en majuscules
 if(CMAKE_BUILD_TYPE)
@@ -47,6 +44,9 @@ macro(CONFIG_INTEL)
     set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0 -check bounds -traceback" CACHE STRING "")
     set(NDM_OPT_DK-IO OFF CACHE BOOL "" FORCE) #Car DK-IO ne compile pas avec les compilateurs INTEL
     log_warning("DK-IO désactivé, car ne compile pas encore avec les compilateurs INTEL")
+    if ("LAMMPS" IN_LIST NDM_PACKAGE_LIST)
+        set(CMAKE_CXX_FLAGS_RELEASE " -no-multibyte-chars " CACHE STRING "")
+    endif()
 endmacro(CONFIG_INTEL)
 
 macro(CONFIG_GNU)
@@ -79,9 +79,6 @@ if (VAR_MPIEXEC AND NOT NDM_FORCED_SERIAL)
     list(APPEND NDM_COMPILE_DEFINITION "PARAML")
 endif()
 
-set(CMAKE_Fortran_FLAGS_RELEASE " -O3 " CACHE STRING "")
-set(CMAKE_Fortran_FLAGS_DEBUG " -O0 -g -C -fpe-all=0" CACHE STRING "")
-
 if(NOT NDM_WITHOUT_MKL)
     list(APPEND NDM_PACKAGE_LIST "MKL")
     list(APPEND NDM_COMPILE_DEFINITION "MKL")
@@ -93,10 +90,6 @@ set(ENABLE_LAPACK95 ON CACHE STRING "lapack fortran 95 api" )
 set(MKL_THREADING "sequential" CACHE STRING "Threading")
 set(MKL_INTERFACE "lp64" CACHE STRING "Interface")
 set(MKL_ARCH "intel64" CACHE STRING "Architecture")
-
-if ("LAMMPS" IN_LIST NDM_PACKAGE_LIST)
-    set(CMAKE_CXX_FLAGS_RELEASE " -no-multibyte-chars " CACHE STRING "")
-endif()
 
 if ("MILADY" IN_LIST NDM_PACKAGE_LIST)
     list(APPEND NDM_COMPILE_DEFINITION "ML")
