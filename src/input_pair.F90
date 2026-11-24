@@ -112,7 +112,7 @@ contains
     case(7)
        if (rang==0) write (uwrt, *) '----------- POTENTIEL PAIRE TABULE -----------'
     case(5)
-       if (rang==0) write (uwrt, *) '----------- POTENTIEL BMH+Morse -----------'
+       if (rang==0) write (uwrt, *) '----------- POTENTIEL BUCKINGHAM+Morse -----------'
     case(9)
        if (rang==0) write (uwrt, *) '----------- POTENTIEL Basak -----------'
     case(8)
@@ -568,11 +568,20 @@ contains
              read(lupotin,*)nb_paire_a_lire
              if (rang==0) write(uwrt,*)'nb de paires ',  nb_paire_a_lire
              do lect_paire=1,nb_paire_a_lire
-                if (ipotentiel==3) then
-                   read(lupotin,*) tt1,tt2, a_factorm, rom, dipm, rof1m, rof2m, r8m
+                if (ipotrep==0) then
+                   rof1m=0;rof2m=0
+                   if (ipotentiel==3) then
+                      read(lupotin,*) tt1,tt2, a_factorm, rom, dipm, r8m
+                   else !ipotentiel==5
+                      read(lupotin,*) tt1,tt2, a_factorm, rom, dipm, dmr,amr,rmr
+                   endif
                 else
-                   read(lupotin,*) tt1,tt2, a_factorm, rom, dipm, rof1m, rof2m
-                endif
+                   if (ipotentiel==3) then
+                      read(lupotin,*) tt1,tt2, a_factorm, rom, dipm, rof1m, rof2m, r8m
+                   else !ipotentiel==5
+                      read(lupotin,*) tt1,tt2, a_factorm, rom, dipm, rof1m, rof2m,dmr,amr,rmr
+                   endif
+                end if
                 l=ipo(tt1,tt2)
                 if(lue_paire(l)) then
                    write(uwrt,*) rang,'paire l lue deux fois ', l,tt1,tt2
@@ -594,6 +603,10 @@ contains
                 dip(l) = dipm
                 roff1(l) = rof1m
                 roff2(l) = rof2m
+                dmorse(l)=dmr*ecgs/96.485              
+                amorse(l)=amr/A2cm
+                remorse(l)=rmr*A2cm
+
                 lu_roff_pair(l)=.true.
                 if (ipotentiel==3) then
                    r8m=r8m*evA62ergcm6*A2cm*A2cm

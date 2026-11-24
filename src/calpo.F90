@@ -206,16 +206,17 @@ contains
              r6 = r3*r3
              r8 = r6*r2                           ! utile ????
              !                                                ! erg
-             if (ipotentiel==3) then
+!             if (ipotentiel==3) then
                 do l=1,npair
                    if((typ_pot_pair(l)==3).and.(lue_paire(l).eqv..true.)) then
                       pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6 +r8p(l)/r8
                    end if
                 end do
-             else
+!             else
                 do l=1,npair
                    if((typ_pot_pair(l)==5).and.(lue_paire(l).eqv..true.)) then
-                      pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6 
+                      pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6
+                      pot(1,l,k)=pot(1,l,k)+dmorse(l)*((1.-exp(-1.*amorse(l)*(r-remorse(l))))**2 -1.)
                    end if
                 end do
                 do l=1,npair
@@ -227,17 +228,17 @@ contains
 
                 !              where ((typ_pot_pair==5).or.(typ_pot_pair==1)) &
                 !                   &          pot(1,:,k) = pau(:)*exp((-r)/ro(:))-dip(:)/r6
-             endif
-             if (ipotentiel==5) then
-                do l=1,npair
-                   if((typ_pot_pair(l)==5).and.(lue_paire(l).eqv..true.)) then
-                      pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6 
-                   end if
-                end do
-
-                where (typ_pot_pair==5)& 
-                     &              pot(1,:,k)=pot(1,:,k)+dmorse(:)*((1.-exp(-1.*amorse(:)*(r-remorse(:))))**2 -1.)
-             end if
+ !            endif
+ !            if (ipotentiel==5) then
+!                do l=1,npair
+!                   if((typ_pot_pair(l)==5).and.(lue_paire(l).eqv..true.)) then
+!                      pot(1,l,k) = pau(l)*exp((-r)/ro(l))-dip(l)/r6 
+!                   end if
+!                end do
+!
+!                where (typ_pot_pair==5)& 
+!                     &              pot(1,:,k)=pot(1,:,k)+dmorse(:)*((1.-exp(-1.*amorse(:)*(r-remorse(:))))**2 -1.)
+ !            end if
              !8888888888888             
              if (ipotentiel==8) then 
                 do l=1,npair
