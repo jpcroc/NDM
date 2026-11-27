@@ -282,7 +282,7 @@ contains
        call calcFM(atdml,celndm,boxndm)
        call arret_ndm
     case(-1)
-       call init_simple(atdml,celndm,boxndm,psc=psc0)
+       call init_simple(atdml,celndm,boxndm,psc=psc0,lcalccelR=.false.)
        call transfconf (atdml,celndm,boxndm)
        call arret_ndm
     case(12) ! ART calculation special case of case default ! ALL EXCEPT 9 (NEB) OR 15 (MCGC) or 19 (ForceMatrix) or 12 ART

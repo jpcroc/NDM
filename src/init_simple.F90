@@ -25,7 +25,7 @@ module init_simple_mod
 
 contains
   ! **************************************************************
-  subroutine init_simple(atdml,celndm,boxndm,filename,psc,linitpot,tinitr,lwrtiR,lrepart)
+  subroutine init_simple(atdml,celndm,boxndm,filename,psc,linitpot,tinitr,lwrtiR,lrepart,lcalccelR)
 
 
 
@@ -57,9 +57,9 @@ contains
      type(cell_config),intent(out)::celndm
      class(box_config),intent(out)::boxndm
     character(*),optional::filename
-    logical, optional::linitpot,lwrtir,lrepart
+    logical, optional::linitpot,lwrtir,lrepart,lcalccelR
     
-    logical::linitpotW=.true.,lwrti
+    logical::linitpotW=.true.,lwrti,lcalccell=.true.
     character*80::filenomIS
     real(double),optional::tinitr
     real(double)::tinit0
@@ -67,6 +67,9 @@ contains
 
     logical :: lrepartl
     
+     if(present(lcalccelR)) then
+        lcalccell=lcalccelR
+     end if
      if(present(tinitr)) then
         tinit0=tinitr
      else
@@ -91,8 +94,10 @@ contains
 
     call constrconf(atdml,boxndm,celndm,lrepartl,filenomIS,psc,lwrtiR)
 
-       call init_pot2(boxndm,atdml%imm)
+    call init_pot2(boxndm,atdml%imm)
 
+    if (lcalccell) then
+    
 #ifdef PARA
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        CALL comm_space%barrier
@@ -102,6 +107,7 @@ contains
     end if
 #endif
     !<---------end setting the cell diviion ----------------------
+    
     if (.not.lrestart) then
        !    if (rang==0)     write(uwrt,*)'>>>>>>>>>>>avant initspeed'
        select type(atdml)
@@ -117,7 +123,7 @@ contains
     if (ltabvois) then
        call caltabi(atdml,celndm,boxndm)
     end if
-
+ end if
     return
   end subroutine init_simple
 
