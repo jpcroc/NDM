@@ -650,8 +650,10 @@ contains
     else
        ltpcel=cellsource%ltpcel
     end if
+    cellcible%ismall(1:3)=cellsource%ismall(1:3)
+    
     call cellcible%init(box,cellsource%nox(1),cellsource%nox(2),cellsource%nox(3),cellsource%natperc,ltpc=ltpcel,latomalloc=latcp)
-
+    
     cellcible%nox(1)=cellsource%nox(1)
     cellcible%nox(2)=cellsource%nox(2)
     cellcible%nox(3)=cellsource%nox(3)
@@ -672,6 +674,11 @@ contains
     cellcible%ncel(:,:)=cellsource%ncel(:,:)
     cellcible%deltadist(:,:,:)=cellsource%deltadist(:,:,:)
     cellcible%celsize=cellsource%celsize
+    cellcible%isghost=cellsource%isghost
+    if (any(cellcible%ismall(:)))then
+       cellcible%copyof(:)=cellsource%copyof(:)
+    end if
+
   end subroutine copy
 
   subroutine cococe(celloc,celcomp,box,latomcp,psc)
@@ -773,7 +780,7 @@ contains
     !          write(un,*)'cell i',i,'is ghost, copy of ', cellv%copyof(i)
     !       end if
     !    end do
-
+    flush(un)
 
   end subroutine cellprint
 
