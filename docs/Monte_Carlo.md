@@ -21,8 +21,9 @@ This allows to perform calculations close to vacancy/bubble/dislocation/ grain b
 
 Alternatively, a bias can be input for insertions or delations; In this case there is no spring but a bias  in the positions of insertions or the choice of deletions.  
 
-
 A semi grand canonical version has been coded but has not been fully tested.
+  
+With dmtype=152, the quilbrium configurations among atom swicthes is explored. type swicthing of atoms typswitch1 and typswitch2.  
 
 ### paralelization
 The code can run in serial. However multiple paralelization levels make it rather parallel.  
@@ -61,4 +62,5 @@ The number of tasks must be a multiple of 2*nparapath.
     lbiais_retrait  default .false. indicates that a bias will be applied on the positions of  insertions   
     fdmc_1 numbers piloting the delation bias; As of the time of writing, this works only for fluorite UO2 with a bias on the deletion of O interstitials; needs addition coding to work in other cases  
     fdmc_2  
-    nbatplus  insertions of nbatplus atoms at the same time default=1
+    nbatplus  insertions of nbatplus atoms at the same time default=1  
+    typswitch1/2 types of atoms to be swapped for dmtype=152.  

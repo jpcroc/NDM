@@ -62,7 +62,8 @@ timemax=1d25 maximum simulated time in fs
   18 -> Milady fit from NDM  
   19 -> thermodynamics from force matrix diagonalization  
   15 -> Path Monte-Carlo calculation (==151)  
-  151 -> Path Monte-Carlo calculation    OTHER MCC are not documented  
+  151 -> Path Monte-Carlo calculation    OTHER MCC are not documented
+  152 -> Equilibrium exploration of atom switches 
   112 -> histogram of distances between atoms
 
 *nox* = -1 default : the box is automatically divided in cells with as many cells as possible w.r. the potential cutoff  
@@ -277,7 +278,7 @@ lbiais_retrait = .false.biais ou non sur les retraits dans le montecarlo
 lbiais_inser = .false.biais ou non sur les retraits dans le montecarlo
 fdmc_1 = -1000.0param de fermi dirac A DEF PAR UTILISATEUR pour la fct discriminante du biais dans MC
 fdmc_2 = -1000.0valeur devant etre changee
-
+typswitch1/2 types des atomes échangés par dmtype=152
 protocl_mcc= "mcp" ! mcp = linear icnrease of the insertion, "cos"= non linear (1-cos ) insertion; (1-sin) desinsertion  
 fdfactmcgc=18.0
 R0mcgc=-1.0
