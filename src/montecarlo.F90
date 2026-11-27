@@ -193,7 +193,8 @@ contains
              case(1,3,33,44,11,55)
                 call init_instyp
              end select
-                
+             write(6,*)'CCCCCCCCCCC1',dmtype,ipp
+
              call initC1(ipp) ! initialise la configuration N+1
 
           else
@@ -350,10 +351,21 @@ contains
        Weff_npp(:)=0
        pot_npp(:)=0
     end if
+
+    if (dmtype==152) then
+       call pilot152
+    else
+
+
     if (lmegamaster) then
        if (dmtype==151)open(UNIT= 754, FILE="analyse_file.151")!, STATUS = 'new')
     end if
     !  if (rang==0) write(uwrt,*)' IN MCGC nbatplus, idirection',nbatplus,idirectionmcgc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
     if (lrestartmcgc) then
        if (lmegamaster) then
           write(*,*) 'imm_n, imm_1', config_atom_0(1)%imm, config_atom_1(1)%imm
@@ -449,6 +461,7 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!***********************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!***********************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!***********************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     else !cas où lrestart = .false. 
 
        !deplacé !
@@ -471,7 +484,6 @@ contains
           end if
        end if
        if (idirectionmcgc == 0) then
-
           call analyse_montecarlo(config_atom_0(1),config_cells_0(1),boxmcgcpath(1),'SystN_init')
        else
           call analyse_montecarlo(config_atom_1(1),config_cells_1(1),boxmcgcpath(1),'SystNP1_init')
@@ -507,7 +519,7 @@ contains
              direction = idirectionmcgc ! direction = 0 on ajoute un atome, = 1 on retire un atome
 
              call lambda(direction, nstep = 0, protocol_name = protocol_mcc) !initialisation du lambda a 0 pour le premier melange des forces
-             iloc=1;lchange=.false.;ldistrib=.true.
+             iloc=1;lchange=.true.;ldistrib=.true.
              call calfoMCGC(iloc,lchange,ldistrib)
 !             write(uwrt,*)'MCCDBG1 ', rang
              !pour le premier chemin: sens positif, d'ajout d'une particule et acceptation
@@ -907,10 +919,118 @@ contains
           write(uwrt,*)'FEspring=',FEspring
        end if
 
-    
+    end if
   end subroutine montecarlo
 
 
+  subroutine pilot152
+    
+    real(double)::beta, boltzfact,rand,Pacc,kindum,acceptance_rate,pressF,qeff,tempf
+    character :: extension*9
+    character(len=:), allocatable  :: name_file
+    integer::direction,i_path,ipp,n_accepted,iloc
+    logical::exist,ldistrib,lchange
+    beta = 1.0/(bk*Text)
+
+
+    
+    call config_atom_0(1)%copy_config(config_atom_old_0, lrescl=.true.)
+
+
+    !*****************************************
+    !*****************************************       
+    !*****************************************
+    n_accepted=0
+    if (nparapath==1) then ! une seule tentative de  changement de type ==> boucle simple
+       direction = 0 ! direction = 0 on ajoute un atome, = 1 on retire un atome
+       
+       call lambda(direction, nstep = 0, protocol_name = protocol_mcc) !initialisation du lambda a 0 pour le premier melange des forces
+       iloc=1;lchange=.false.;ldistrib=.true.
+       call calfoMCGC(iloc,lchange,ldistrib)
+
+#ifdef PARA
+          call mpi_world%barrier
+#endif
+          direction=0
+          ipp=1
+          atconf_0=> config_atom_0(ipp)
+          cells_0=>config_cells_0(ipp)
+          atconf_1=>config_atom_1(ipp)
+          cells_1=>config_cells_1(ipp)
+          boxmcgc_p=>boxmcgcpath(ipp)
+          
+          config_atom_old_0=atconf_0
+          box_old0=boxmcgc_p
+          config_cells_old=cells_0
+          
+          DO i_path = 1, n_path ! boucle à faire pour tous les procs
+             if (lmegamaster)then
+                write(uwrt,*)
+                write(uwrt,*)'path ',i_path
+             end if
+             ipp=1
+!             call atconf_0%print(unit=200+rang,caracT='xfi')
+!             call atconf_1%print(unit=300+rang,caracT='xfi')
+             
+             
+             if (lprahman) then
+                call langevinLPR(direction, protocol = protocol_mcc)
+             else
+                call langevin(direction, protocol = protocol_mcc,qeff=qeff,work=work) !
+             end if
+             !en ce point on a Weff
+             if (lbigmaster) then
+                tempf=tempinstt(atconf_1,kindum,latcomp=.true.)
+                pressF= (sigtot(1,1)+sigtot(2,2)+sigtot(3,3))/3.
+                
+                Boltzfact=exp(-beta*Weff)
+                write(uwrt,*)rang, 'Weff bolztfact',weff*erg2ev,boltzfact
+                Pacc= min(1.,boltzfact)
+                call random_number(rand)
+                Pacc=rand
+                call random_number(rand)
+                if (rand.le.Pacc) then ! acceptation
+                   n_accepted=n_accepted+1
+                   atconf_0=atconf_1
+                   cells_0=cells_1
+                   config_atom_old_0=atconf_0
+                   config_cells_old=cells_0
+                   box_old0=boxmcgc_p
+                   write(extension,'(i9.9)') i_path
+                   name_file='accept.'
+                   name_file=name_file//trim(extension)
+                   call analyse_montecarlo(atconf_0,cells_0,boxmcgc_p, name_file)
+                   write(uwrt,*)'ACCEPT', n_accepted,i_path
+                else   ! rejet retour au départ
+                   atconf_0=config_atom_old_0
+                   cells_0= config_cells_old
+                   boxmcgc_p=box_old0
+                   atconf_0%vp(:,:)=-1.*atconf_0%vp(:,:)
+                   write(uwrt,*)'REJET', n_accepted,i_path
+                end if
+                acceptance_rate   = (real(n_accepted)/real(i_path))*1.0d2
+                write(uwrt,*)'TAUX ', n_accepted,i_path, acceptance_rate
+
+             end if
+             
+             call initC1(1)
+          end DO
+
+!*****************************************          
+!*****************************************          
+!*****************************************          
+!*****************************************          
+
+
+
+       else ! plusieurs tentatives de  changements de type en parallèle  ==> boucle aller et retour et test final
+
+       END if
+    
+  end subroutine pilot152
+
+    
+  
   subroutine monoproposal(travail_npp, nrjpot_npp, Wprece, Wpreced, ipchemin, dir, accepta, premier_accept, &
        &ngen, lbiais, pot_moy, pot_wrmc, pot_NC, pot_SC,tab_cumul)
 
@@ -2505,13 +2625,18 @@ contains
     logical::lwrite
     real(double)::pins
     !definir le systeme a N+1 en tirant une position aleatoire pour le N+1eme atome
-
+!    write(uwrt,*)'ins_typ,dmtype ',ins_typ,dmtype 
     allocate (cart_vec_1(3,nbatplus))
-    if (ins_typ==2) then
+    if ((ins_typ==2).or.(dmtype==152)) then
        if (lbigmaster) then
           call atconf_1%init(atconf_0%im,atconf_0%imm,atconf_0%ltabvois,&
                &im_glob=atconf_0%im_glob,imm_glob=imm_glob)
-          call type_switch(idirectionmcgc)
+          atconf_1=atconf_0
+          if (ins_typ==2) then
+             call type_switch(idirectionmcgc)
+          else if (dmtype==152) then
+             call  type_switch2
+          end if
           call cells_1%init(boxmcgc_P,cells_0%nox(1),cells_0%nox(2),cells_0%nox(3), cells_0%natperc)
           call cells_0%copy(cells_1,boxmcgc_p)
        else
@@ -2561,7 +2686,6 @@ contains
           call  atconf_1%recv(rgem,paramcgc%mpi_master)
        end if
     end if
-
     if ((nprocspace.gt.1).and.(lspaceNDM.eqv..true.)) then
        if(paramcgc%image==0) then !procs N
           call init_voisinage(cells_0,pscgc)
@@ -3662,6 +3786,37 @@ contains
     end do
 
   end subroutine type_switch
+  
+  subroutine type_switch2
+
+    integer,allocatable::indice1(:),indice2(:)
+    integer::i,i1,i2,j,jjj,icelj
+
+    allocate(indice1(nbatplus))
+    allocate(indice2(nbatplus))
+
+
+    call indice_alea (atconf_0, indice1,typswitch1,nbatplus)
+    call indice_alea (atconf_0, indice2,typswitch2,nbatplus)
+    
+    do i=1,nbatplus
+       i1=indice1(i)
+       i2=indice2(i)
+       if (atconf_0%ityp(i1).ne.typswitch1) then
+          write(uwrt,*)'WTF type_switch1'
+          call arret_ndm(.true.)
+       end if
+       if (atconf_0%ityp(i2).ne.typswitch2) then
+          write(uwrt,*)'WTF type_switch2'
+          call arret_ndm(.true.)
+       end if
+       atconf_1%ityp(i2)=typswitch1
+       atconf_1%vp(:,i2)=atconf_1%vp(:,i2)*cm(typswitch1)/cm(typswitch2)
+       atconf_1%ityp(i1)=typswitch2
+       atconf_1%vp(:,i1)=atconf_1%vp(:,i1)*cm(typswitch1)/cm(typswitch2)
+       
+    end do
+  end subroutine type_switch2
 
 
   subroutine calcdistspring(pos,dist,normout)
